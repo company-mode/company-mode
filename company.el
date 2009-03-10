@@ -18,6 +18,18 @@
   "*"
   :group 'company)
 
+(defface company-tooltip-common
+  '((t :inherit company-tooltip
+       :foreground "red"))
+  "*"
+  :group 'company)
+
+(defface company-tooltip-common-selection
+  '((t :inherit company-tooltip-selection
+       :foreground "red"))
+  "*"
+  :group 'company)
+
 (defcustom company-tooltip-limit 10
   "*"
   :group 'company
@@ -35,6 +47,7 @@
     (define-key keymap (kbd "M-n") 'company-select-next)
     (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap (kbd "M-<return>") 'company-complete-selection)
+    (define-key keymap "\t" 'company-complete-common)
     keymap))
 
 ;;;###autoload
@@ -90,8 +103,14 @@
 (defvar company-candidates nil)
 (make-variable-buffer-local 'company-candidates)
 
+(defvar company-common nil)
+(make-variable-buffer-local 'company-common)
+
 (defvar company-selection 0)
 (make-variable-buffer-local 'company-selection)
+
+(defvar company-selection-changed nil)
+(make-variable-buffer-local 'company-selection-changed)
 
 (defvar company-point nil)
 (make-variable-buffer-local 'company-point)
@@ -108,19 +127,21 @@
               company-prefix prefix
               company-candidates
               (funcall company-backend 'candidates prefix)
+              company-common (try-completion prefix company-candidates)
               company-selection 0
               company-point (point))
         (return prefix)))
-    (unless (or (cdr company-candidates)
-                (when company-candidates
-                  (not (equal (car company-candidates) company-prefix))))
+    (unless (and company-candidates
+                 (not (eq t company-common)))
       (company-cancel))))
 
 (defun company-cancel ()
   (setq company-backend nil
         company-prefix nil
         company-candidates nil
+        company-common nil
         company-selection 0
+        company-selection-changed nil
         company-point nil)
   (company-pseudo-tooltip-hide))
 
@@ -140,15 +161,21 @@
 (defun company-select-next ()
   (interactive)
   (setq company-selection (min (1- (length company-candidates))
-                               (1+ company-selection))))
+                               (1+ company-selection))
+        company-selection-changed t))
 
 (defun company-select-previous ()
   (interactive)
-  (setq company-selection (max 0 (1- company-selection))))
+  (setq company-selection (max 0 (1- company-selection))
+        company-selection-changed t))
 
 (defun company-complete-selection ()
   (interactive)
   (insert (company-strip-prefix (nth company-selection company-candidates))))
+
+(defun company-complete-common ()
+  (interactive)
+  (insert (company-strip-prefix company-common)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -181,9 +208,16 @@
 
 ;;; propertize
 
-(defun company-fill-propertize (line width face)
+(defun company-fill-propertize (line width selected)
   (setq line (company-safe-substring line 0 width))
-  (add-text-properties 0 width (list 'face face) line)
+  (add-text-properties 0 width
+                       (list 'face (if selected
+                                       'company-tooltip-selection
+                                     'company-tooltip)) line)
+  (add-text-properties 0 (length company-common)
+                       (list 'face (if selected
+                                       'company-tooltip-common-selection
+                                     'company-tooltip-common)) line)
   line)
 
 (defun company-fill-propertize-lines (column lines selection)
@@ -195,10 +229,7 @@
       (setq width (max (length (pop lines-copy)) width)))
     (setq width (min width (- (window-width) column)))
     (dotimes (i len)
-      (push (company-fill-propertize (pop lines) width
-                                     (if (equal i selection)
-                                         'company-tooltip-selection
-                                       'company-tooltip))
+      (push (company-fill-propertize (pop lines) width (equal i selection))
             new))
     (nreverse new)))
 
