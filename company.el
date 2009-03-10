@@ -57,6 +57,22 @@
   :group 'company
   :type '(integer :tag "prefix length"))
 
+(defvar company-timer nil)
+
+(defun company-timer-set (variable value)
+  (set variable value)
+  (when company-timer (cancel-timer company-timer))
+  (when (numberp value)
+    (setq company-timer (run-with-idle-timer value t 'company-idle-begin))))
+
+(defcustom company-idle-delay .7
+  "*"
+  :set 'company-timer-set
+  :group 'company
+  :type '(choice (const :tag "never (nil)" nil)
+                 (const :tag "immediate (t)" t)
+                 (number :tag "seconds")))
+
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-mode-map
@@ -74,7 +90,9 @@
   (if company-mode
       (progn
         (add-hook 'pre-command-hook 'company-pre-command nil t)
-        (add-hook 'post-command-hook 'company-post-command nil t))
+        (add-hook 'post-command-hook 'company-post-command nil t)
+        (company-timer-set 'company-idle-delay
+                           company-idle-delay))
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
     (company-cancel)))
@@ -140,7 +158,15 @@
     (max offset 0)))
 
 (defsubst company-should-complete (prefix)
-  (>= (length prefix) company-minimum-prefix-length))
+  (and (eq company-idle-delay t)
+       (>= (length prefix) company-minimum-prefix-length)))
+
+(defun company-idle-begin ()
+  (and company-mode
+       (not company-candidates)
+       (let ((company-idle-delay t))
+         (company-begin)
+         (company-post-command))))
 
 (defun company-begin ()
   (when company-candidates
