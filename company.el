@@ -118,6 +118,10 @@
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
 
+(defsubst company-offset (display-limit)
+  (let ((offset (- company-selection display-limit -1)))
+    (max offset 0)))
+
 (defun company-begin ()
   (let ((completion-ignore-case nil) ;; TODO: make this optional
         prefix)
@@ -268,6 +272,11 @@
   (company-pseudo-tooltip-hide)
   (unless lines (error "No text provided"))
   (save-excursion
+
+    ;; Scroll to offset.
+    (let ((offset (company-offset company-tooltip-limit)))
+      (setq lines (nthcdr offset lines))
+      (decf selection offset))
 
     (setq lines (company-fill-propertize-lines column lines selection))
 
