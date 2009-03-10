@@ -35,6 +35,18 @@
   :group 'company
   :type 'integer)
 
+(defface company-preview
+  '((t :background "blue4"
+       :foreground "wheat"))
+  "*"
+  :group 'company)
+
+(defface company-preview-common
+  '((t :inherit company-preview
+       :foreground "red"))
+  "*"
+  :group 'company)
+
 (defcustom company-backends '(company-elisp-completion)
   "*"
   :group 'company
@@ -150,6 +162,7 @@
   (company-pseudo-tooltip-hide))
 
 (defun company-pre-command ()
+  (company-preview-hide)
   (company-pseudo-tooltip-hide))
 
 (defun company-post-command ()
@@ -158,7 +171,9 @@
   (when company-candidates
     (company-pseudo-tooltip-show-at-point (- (point) (length company-prefix))
                                           company-candidates
-                                          company-selection)))
+                                          company-selection)
+    (company-preview-show-at-point (point) company-candidates
+                                   company-selection)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -306,6 +321,34 @@
   (when company-pseudo-tooltip-overlay
     (delete-overlay company-pseudo-tooltip-overlay)
     (setq company-pseudo-tooltip-overlay nil)))
+
+;;; overlay ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar company-preview-overlay nil)
+(make-variable-buffer-local 'company-preview-overlay)
+
+(defun company-preview-show-at-point (pos text &optional selection)
+  (company-preview-hide)
+
+  (setq company-preview-overlay (make-overlay pos pos))
+
+  (let ((completion (company-strip-prefix (nth company-selection
+                                               company-candidates))))
+    (and (equal pos (point))
+         (not (equal completion ""))
+         (add-text-properties 0 1 '(cursor t) completion))
+
+    (setq completion (propertize completion 'face 'company-preview))
+    (add-text-properties 0 (- (length company-common) (length company-prefix))
+                         '(face company-preview-common) completion)
+
+    (overlay-put company-preview-overlay 'after-string completion)
+    (overlay-put company-preview-overlay 'window (selected-window))))
+
+(defun company-preview-hide ()
+  (when company-preview-overlay
+    (delete-overlay company-preview-overlay)
+    (setq company-preview-overlay nil)))
 
 (provide 'company)
 ;;; company.el ends here
