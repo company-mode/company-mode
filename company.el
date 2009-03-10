@@ -52,6 +52,11 @@
   :group 'company
   :type '(repeat (function :tag "function" nil)))
 
+(defcustom company-minimum-prefix-length 3
+  "*"
+  :group 'company
+  :type '(integer :tag "prefix length"))
+
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-mode-map
@@ -134,18 +139,24 @@
   (let ((offset (- company-selection display-limit -1)))
     (max offset 0)))
 
+(defsubst company-should-complete (prefix)
+  (>= (length prefix) company-minimum-prefix-length))
+
 (defun company-begin ()
+  (when company-candidates
+    (company-cancel))
   (let ((completion-ignore-case nil) ;; TODO: make this optional
         prefix)
     (dolist (backend company-backends)
       (when (setq prefix (funcall backend 'prefix))
-        (setq company-backend backend
-              company-prefix prefix
-              company-candidates
-              (funcall company-backend 'candidates prefix)
-              company-common (try-completion prefix company-candidates)
-              company-selection 0
-              company-point (point))
+        (when (company-should-complete prefix)
+          (setq company-backend backend
+                company-prefix prefix
+                company-candidates
+                (funcall company-backend 'candidates prefix)
+                company-common (try-completion prefix company-candidates)
+                company-selection 0
+                company-point (point)))
         (return prefix)))
     (unless (and company-candidates
                  (not (eq t company-common)))
