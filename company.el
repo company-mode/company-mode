@@ -57,6 +57,13 @@
   "*"
   :group 'company)
 
+(defcustom company-frontends '(company-echo-frontend
+                               company-pseudo-tooltip-frontend
+                               company-completion-frontend)
+  "*"
+  :group 'company
+  :type '(repeat (function :tag "function" nil)))
+
 (defcustom company-backends '(company-elisp-completion)
   "*"
   :group 'company
@@ -172,6 +179,10 @@
   (and (eq company-idle-delay t)
        (>= (length prefix) company-minimum-prefix-length)))
 
+(defsubst company-call-frontends (command)
+  (dolist (frontend company-frontends)
+    (funcall frontend command)))
+
 (defun company-idle-begin ()
   (and company-mode
        (not company-candidates)
@@ -215,7 +226,8 @@
                     (funcall company-backend 'candidates prefix)
                     company-common (try-completion prefix company-candidates)
                     company-selection 0
-                    company-point (point)))
+                    company-point (point))
+              (company-call-frontends 'update))
             (return prefix)))
         (unless (and company-candidates
                      (not (eq t company-common)))
@@ -229,8 +241,7 @@
         company-selection 0
         company-selection-changed nil
         company-point nil)
-  (company-pseudo-tooltip-hide)
-  (company-echo-hide))
+  (company-call-frontends 'hide))
 
 (defun company-abort ()
   (company-cancel)
@@ -238,20 +249,14 @@
   (setq company-point (point)))
 
 (defun company-pre-command ()
-  (company-preview-hide)
-  (company-pseudo-tooltip-hide)
-  (company-echo-refresh))
+  (when company-candidates
+    (company-call-frontends 'pre-command)))
 
 (defun company-post-command ()
   (unless (equal (point) company-point)
     (company-begin))
   (when company-candidates
-    (company-echo-show company-candidates))
-    (company-pseudo-tooltip-show-at-point (- (point) (length company-prefix))
-                                          company-candidates
-                                          company-selection)
-    (company-preview-show-at-point (point) company-candidates
-                                   company-selection))
+    (company-call-frontends 'post-command)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -366,7 +371,7 @@
 
 ;; show
 
-(defun company-pseudo-tooltip-show (row column lines &optional selection)
+(defun company-pseudo-tooltip-show (row column lines selection)
   (company-pseudo-tooltip-hide)
   (unless lines (error "No text provided"))
   (save-excursion
@@ -395,22 +400,29 @@
       (overlay-put company-pseudo-tooltip-overlay 'invisible t)
       (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
 
-(defun company-pseudo-tooltip-show-at-point (pos text &optional selection)
+(defun company-pseudo-tooltip-show-at-point (pos)
   (let ((col-row (posn-col-row (posn-at-point pos))))
-    (company-pseudo-tooltip-show (1+ (cdr col-row))
-                                 (car col-row) text selection)))
+    (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
+                                 company-candidates company-selection)))
 
 (defun company-pseudo-tooltip-hide ()
   (when company-pseudo-tooltip-overlay
     (delete-overlay company-pseudo-tooltip-overlay)
     (setq company-pseudo-tooltip-overlay nil)))
 
+(defun company-pseudo-tooltip-frontend (command)
+  (case command
+    ('pre-command (company-pseudo-tooltip-hide))
+    ('post-command (company-pseudo-tooltip-show-at-point
+                    (- (point) (length company-prefix))))
+    ('hide (company-pseudo-tooltip-hide))))
+
 ;;; overlay ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-preview-overlay nil)
 (make-variable-buffer-local 'company-preview-overlay)
 
-(defun company-preview-show-at-point (pos text &optional selection)
+(defun company-preview-show-at-point (pos)
   (company-preview-hide)
 
   (setq company-preview-overlay (make-overlay pos pos))
@@ -433,6 +445,12 @@
     (delete-overlay company-preview-overlay)
     (setq company-preview-overlay nil)))
 
+(defun company-preview-frontend (command)
+  (case command
+    ('pre-command (company-preview-hide))
+    ('post-command (company-preview-show-at-point (point)))
+    ('hide (company-preview-hide))))
+
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-echo-last-msg nil)
@@ -450,7 +468,7 @@
   (setq candidates (nthcdr company-selection candidates))
 
   (let ((limit (window-width (minibuffer-window)))
-        (len 0)
+        (len -1)
         comp msg)
     (while candidates
       (setq comp (pop candidates)
@@ -465,8 +483,11 @@
     (setq company-echo-last-msg (mapconcat 'identity (nreverse msg) " "))
     (company-echo-refresh)))
 
-(defun company-echo-hide ()
-  (setq company-echo-last-msg nil))
+(defun company-echo-frontend (command)
+  (case command
+    ('pre-command (company-echo-refresh))
+    ('post-command (company-echo-show company-candidates))
+    ('hide (setq company-echo-last-msg nil))))
 
 (provide 'company)
 ;;; company.el ends here
