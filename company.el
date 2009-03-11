@@ -47,6 +47,16 @@
   "*"
   :group 'company)
 
+(defface company-echo nil
+  "*"
+  :group 'company)
+
+(defface company-echo-common
+  '((((background dark)) (:foreground "firebrick1"))
+    (((background light)) (:background "firebrick4")))
+  "*"
+  :group 'company)
+
 (defcustom company-backends '(company-elisp-completion)
   "*"
   :group 'company
@@ -217,21 +227,24 @@
         company-selection 0
         company-selection-changed nil
         company-point nil)
-  (company-pseudo-tooltip-hide))
+  (company-pseudo-tooltip-hide)
+  (company-echo-hide))
 
 (defun company-pre-command ()
   (company-preview-hide)
-  (company-pseudo-tooltip-hide))
+  (company-pseudo-tooltip-hide)
+  (company-echo-refresh))
 
 (defun company-post-command ()
   (unless (equal (point) company-point)
     (company-begin))
   (when company-candidates
+    (company-echo-show company-candidates))
     (company-pseudo-tooltip-show-at-point (- (point) (length company-prefix))
                                           company-candidates
                                           company-selection)
     (company-preview-show-at-point (point) company-candidates
-                                   company-selection)))
+                                   company-selection))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -411,6 +424,41 @@
   (when company-preview-overlay
     (delete-overlay company-preview-overlay)
     (setq company-preview-overlay nil)))
+
+;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar company-echo-last-msg nil)
+(make-variable-buffer-local 'company-echo-last-msg)
+
+(defun company-echo-refresh ()
+  (let ((message-log-max nil))
+    (if company-echo-last-msg
+        (message "%s" company-echo-last-msg)
+      (message ""))))
+
+(defun company-echo-show (candidates)
+
+  ;; Roll to selection.
+  (setq candidates (nthcdr company-selection candidates))
+
+  (let ((limit (window-width (minibuffer-window)))
+        (len 0)
+        comp msg)
+    (while candidates
+      (setq comp (pop candidates)
+            len (+ len 1 (length comp)))
+      (if (>= len limit)
+          (setq candidates nil)
+        (setq comp (propertize comp 'face 'company-echo))
+        (add-text-properties 0 (length company-common)
+                             '(face company-echo-common) comp)
+        (push comp msg)))
+
+    (setq company-echo-last-msg (mapconcat 'identity (nreverse msg) " "))
+    (company-echo-refresh)))
+
+(defun company-echo-hide ()
+  (setq company-echo-last-msg nil))
 
 (provide 'company)
 ;;; company.el ends here
