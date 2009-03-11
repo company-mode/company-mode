@@ -256,6 +256,8 @@
                     company-common (try-completion prefix company-candidates)
                     company-selection 0
                     company-point (point))
+              (unless (funcall company-backend 'sorted)
+                (setq company-candidates (sort company-candidates 'string<)))
               (company-call-frontends 'update))
             (return prefix)))
         (unless (and company-candidates
