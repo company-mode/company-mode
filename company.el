@@ -168,6 +168,15 @@
          (company-begin)
          (company-post-command))))
 
+(defun company-manual-begin ()
+  (and company-mode
+       (not company-candidates)
+       (let ((company-idle-delay t)
+             (company-minimum-prefix-length 0))
+         (company-begin)))
+  ;; Return non-nil if active.
+  company-candidates)
+
 (defun company-begin ()
   (when company-candidates
     (company-cancel))
@@ -216,22 +225,26 @@
 
 (defun company-select-next ()
   (interactive)
-  (setq company-selection (min (1- (length company-candidates))
-                               (1+ company-selection))
-        company-selection-changed t))
+  (when (company-manual-begin)
+    (setq company-selection (min (1- (length company-candidates))
+                                 (1+ company-selection))
+          company-selection-changed t)))
 
 (defun company-select-previous ()
   (interactive)
-  (setq company-selection (max 0 (1- company-selection))
-        company-selection-changed t))
+  (when (company-manual-begin)
+    (setq company-selection (max 0 (1- company-selection))
+          company-selection-changed t)))
 
 (defun company-complete-selection ()
   (interactive)
-  (insert (company-strip-prefix (nth company-selection company-candidates))))
+  (when (company-manual-begin)
+    (insert (company-strip-prefix (nth company-selection company-candidates)))))
 
 (defun company-complete-common ()
   (interactive)
-  (insert (company-strip-prefix company-common)))
+  (when (company-manual-begin)
+    (insert (company-strip-prefix company-common))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
