@@ -93,7 +93,7 @@
                                 company-preview-if-just-one-frontend)
                          (function :tag "custom function" nil))))
 
-(defcustom company-backends '(company-elisp-completion)
+(defcustom company-backends '(company-elisp)
   "*"
   :group 'company
   :type '(repeat (function :tag "function" nil)))
@@ -154,26 +154,6 @@
   (let ((pos (syntax-ppss)))
     (or (nth 3 pos) (nth 4 pos) (nth 7 pos))))
 
-;;; elisp
-
-(defvar company-lisp-symbol-regexp
-  "\\_<\\(\\sw\\|\\s_\\)+\\_>\\=")
-
-(defun company-grab-lisp-symbol ()
-  (let ((prefix (or (company-grab company-lisp-symbol-regexp) "")))
-    (unless (and (company-in-string-or-comment (- (point) (length prefix)))
-                 (/= (char-before (- (point) (length prefix))) ?`))
-      prefix)))
-
-(defun company-elisp-completion (command &optional arg &rest ignored)
-  (case command
-    ('prefix (and (eq major-mode 'emacs-lisp-mode)
-                  (company-grab-lisp-symbol)))
-    ('candidates (let ((completion-ignore-case nil))
-                   (all-completions arg obarray
-                                    (lambda (symbol) (or (boundp symbol)
-                                                         (fboundp symbol))))))))
-
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-backend nil)
@@ -196,6 +176,8 @@
 
 (defvar company-point nil)
 (make-variable-buffer-local 'company-point)
+
+(defvar company-disabled-backends nil)
 
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
@@ -247,19 +229,28 @@
       (let ((completion-ignore-case nil) ;; TODO: make this optional
             prefix)
         (dolist (backend company-backends)
-          (when (setq prefix (funcall backend 'prefix))
-            (when (company-should-complete prefix)
-              (setq company-backend backend
-                    company-prefix prefix
-                    company-candidates
-                    (funcall company-backend 'candidates prefix)
-                    company-common (try-completion prefix company-candidates)
-                    company-selection 0
-                    company-point (point))
-              (unless (funcall company-backend 'sorted)
-                (setq company-candidates (sort company-candidates 'string<)))
-              (company-call-frontends 'update))
-            (return prefix)))
+          (unless (fboundp backend)
+            (ignore-errors (require backend nil t)))
+          (if (fboundp backend)
+              (when (setq prefix (funcall backend 'prefix))
+                (when (company-should-complete prefix)
+                  (setq company-backend backend
+                        company-prefix prefix
+                        company-candidates
+                        (funcall company-backend 'candidates prefix)
+                        company-common
+                        (try-completion prefix company-candidates)
+                        company-selection 0
+                        company-point (point))
+                  (unless (funcall company-backend 'sorted)
+                    (setq company-candidates
+                          (sort company-candidates 'string<)))
+                  (company-call-frontends 'update))
+                (return prefix))
+            (unless (memq backend company-disabled-backends)
+              (push backend company-disabled-backends)
+              (message "Company back-end '%s' could not be initialized"
+                       backend))))
         (unless (and company-candidates
                      (not (eq t company-common)))
           (company-cancel)))))
