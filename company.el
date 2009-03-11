@@ -1,5 +1,9 @@
 (eval-when-compile (require 'cl))
 
+(add-to-list 'debug-ignored-errors
+             "^Pseudo tooltip frontend cannot be used twice$")
+(add-to-list 'debug-ignored-errors "^Preview frontend cannot be used twice$")
+
 (defgroup company nil
   ""
   :group 'abbrev
@@ -57,12 +61,37 @@
   "*"
   :group 'company)
 
+(defun company-frontends-set (variable value)
+  ;; uniquify
+  (let ((remainder value))
+    (setcdr remainder (delq (car remainder) (cdr remainder))))
+  (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
+       (memq 'company-pseudo-tooltip-frontend value)
+       (error "Pseudo tooltip frontend cannot be used twice"))
+  (and (memq 'company-preview-if-just-one-frontend value)
+       (memq 'company-preview-frontend value)
+       (error "Preview frontend cannot be used twice"))
+  ;; preview must come last
+  (dolist (f '(company-preview-if-just-one-frontend company-preview-frontend))
+    (when (memq f value)
+      (setq value (append (delq f value) (list f)))))
+  (set variable value))
+
 (defcustom company-frontends '(company-echo-frontend
-                               company-pseudo-tooltip-frontend
-                               company-completion-frontend)
+                               company-pseudo-tooltip-unless-just-one-frontend
+                               company-preview-if-just-one-frontend)
   "*"
+  :set 'company-frontends-set
   :group 'company
-  :type '(repeat (function :tag "function" nil)))
+  :type '(repeat (choice (const :tag "echo" company-echo-frontend)
+                         (const :tag "pseudo tooltip"
+                                company-pseudo-tooltip-frontend)
+                         (const :tag "pseudo tooltip, multiple only"
+                                company-pseudo-tooltip-unless-just-one-frontend)
+                         (const :tag "preview" company-preview-frontend)
+                         (const :tag "preview, unique only"
+                                company-preview-if-just-one-frontend)
+                         (function :tag "custom function" nil))))
 
 (defcustom company-backends '(company-elisp-completion)
   "*"
@@ -417,6 +446,11 @@
                     (- (point) (length company-prefix))))
     ('hide (company-pseudo-tooltip-hide))))
 
+(defun company-pseudo-tooltip-unless-just-one-frontend (command)
+  (unless (and (eq command 'post-command)
+               (not (cdr company-candidates)))
+    (company-pseudo-tooltip-frontend command)))
+
 ;;; overlay ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-preview-overlay nil)
@@ -450,6 +484,11 @@
     ('pre-command (company-preview-hide))
     ('post-command (company-preview-show-at-point (point)))
     ('hide (company-preview-hide))))
+
+(defun company-preview-if-just-one-frontend (command)
+  (unless (and (eq command 'post-command)
+               (cdr company-candidates))
+    (company-preview-frontend command)))
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
