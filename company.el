@@ -388,7 +388,7 @@
           new
           (company-safe-substring old (+ offset (length new)))))
 
-(defun company-modified-substring (beg end lines column)
+(defun company-modified-substring (beg end lines column nl)
   (let ((old (company-buffer-lines beg end))
         new)
     ;; Inject into old lines.
@@ -397,7 +397,8 @@
     ;; Append whole new lines.
     (while lines
       (push (company-modify-line "" (pop lines) column) new))
-    (concat (mapconcat 'identity (nreverse new) "\n")
+    (concat (when nl "\n")
+            (mapconcat 'identity (nreverse new) "\n")
             "\n")))
 
 ;; show
@@ -416,8 +417,9 @@
 
 
     (move-to-column 0)
-    (move-to-window-line row)
-    (let ((beg (point))
+
+    (let ((nl (< (move-to-window-line row) row))
+          (beg (point))
           (end (save-excursion
                  (move-to-window-line (min (window-height)
                                            (+ row company-tooltip-limit)))
@@ -427,7 +429,7 @@
       (setq company-pseudo-tooltip-overlay (make-overlay beg end))
 
       (overlay-put company-pseudo-tooltip-overlay 'before-string
-                   (company-modified-substring beg end lines column))
+                   (company-modified-substring beg end lines column nl))
       (overlay-put company-pseudo-tooltip-overlay 'invisible t)
       (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
 
