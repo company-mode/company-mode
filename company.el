@@ -105,7 +105,8 @@
                            company-idle-delay))
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
-    (company-cancel)))
+    (company-cancel)
+    (kill-local-variable 'company-point)))
 
 ;;; backends ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -174,6 +175,7 @@
 (defun company-idle-begin ()
   (and company-mode
        (not company-candidates)
+       (not (equal (point) company-point))
        (let ((company-idle-delay t))
          (company-begin)
          (company-post-command))))
@@ -230,6 +232,11 @@
   (company-pseudo-tooltip-hide)
   (company-echo-hide))
 
+(defun company-abort ()
+  (company-cancel)
+  ;; Don't start again, unless started manually.
+  (setq company-point (point)))
+
 (defun company-pre-command ()
   (company-preview-hide)
   (company-pseudo-tooltip-hide)
@@ -264,7 +271,8 @@
 (defun company-complete-selection ()
   (interactive)
   (when (company-manual-begin)
-    (insert (company-strip-prefix (nth company-selection company-candidates)))))
+    (insert (company-strip-prefix (nth company-selection company-candidates)))
+    (company-abort)))
 
 (defun company-complete-common ()
   (interactive)
