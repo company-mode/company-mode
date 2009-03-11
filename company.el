@@ -177,25 +177,37 @@
   ;; Return non-nil if active.
   company-candidates)
 
-(defun company-begin ()
+(defun company-continue-or-cancel ()
   (when company-candidates
-    (company-cancel))
-  (let ((completion-ignore-case nil) ;; TODO: make this optional
-        prefix)
-    (dolist (backend company-backends)
-      (when (setq prefix (funcall backend 'prefix))
-        (when (company-should-complete prefix)
-          (setq company-backend backend
-                company-prefix prefix
-                company-candidates
-                (funcall company-backend 'candidates prefix)
-                company-common (try-completion prefix company-candidates)
-                company-selection 0
-                company-point (point)))
-        (return prefix)))
-    (unless (and company-candidates
-                 (not (eq t company-common)))
-      (company-cancel))))
+    (let ((old-point (- company-point (length company-prefix)))
+          (company-idle-delay t)
+          (company-minimum-prefix-length 0))
+      ;; TODO: Make more efficient.
+      (setq company-candidates nil)
+      (company-begin)
+      (unless (and company-candidates
+                   (equal old-point (- company-point (length company-prefix))))
+        (company-cancel))
+      company-candidates)))
+
+(defun company-begin ()
+  (or (company-continue-or-cancel)
+      (let ((completion-ignore-case nil) ;; TODO: make this optional
+            prefix)
+        (dolist (backend company-backends)
+          (when (setq prefix (funcall backend 'prefix))
+            (when (company-should-complete prefix)
+              (setq company-backend backend
+                    company-prefix prefix
+                    company-candidates
+                    (funcall company-backend 'candidates prefix)
+                    company-common (try-completion prefix company-candidates)
+                    company-selection 0
+                    company-point (point)))
+            (return prefix)))
+        (unless (and company-candidates
+                     (not (eq t company-common)))
+          (company-cancel)))))
 
 (defun company-cancel ()
   (setq company-backend nil
