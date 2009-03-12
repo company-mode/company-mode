@@ -183,10 +183,6 @@
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
 
-(defsubst company-offset (display-limit)
-  (let ((offset (- company-selection display-limit -1)))
-    (max offset 0)))
-
 (defsubst company-reformat (candidate)
   ;; company-ispell needs this, because the results are always lower-case
   ;; It's mory efficient to fix it only when they are displayed.
@@ -342,6 +338,9 @@
 (defvar company-pseudo-tooltip-overlay nil)
 (make-variable-buffer-local 'company-pseudo-tooltip-overlay)
 
+(defvar company-tooltip-offset 0)
+(make-variable-buffer-local 'company-tooltip-offset)
+
 ;;; propertize
 
 (defun company-fill-propertize (line width selected)
@@ -408,9 +407,12 @@
   (save-excursion
 
     ;; Scroll to offset.
-    (let ((offset (company-offset company-tooltip-limit)))
-      (setq lines (nthcdr offset lines))
-      (decf selection offset))
+    (setq company-tooltip-offset
+          (max (min selection company-tooltip-offset)
+               (- selection -1 company-tooltip-limit)))
+
+    (setq lines (nthcdr company-tooltip-offset lines))
+    (decf selection company-tooltip-offset)
 
     (setq lines (company-fill-propertize-lines column lines selection))
 
@@ -447,7 +449,8 @@
     ('pre-command (company-pseudo-tooltip-hide))
     ('post-command (company-pseudo-tooltip-show-at-point
                     (- (point) (length company-prefix))))
-    ('hide (company-pseudo-tooltip-hide))))
+    ('hide (company-pseudo-tooltip-hide)
+           (setq company-tooltip-offset 0))))
 
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
   (unless (and (eq command 'post-command)
