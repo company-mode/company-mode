@@ -93,7 +93,8 @@
                                 company-preview-if-just-one-frontend)
                          (function :tag "custom function" nil))))
 
-(defcustom company-backends '(company-elisp company-nxml company-css)
+(defcustom company-backends '(company-elisp company-nxml company-css
+                              company-ispell)
   "*"
   :group 'company
   :type '(repeat (function :tag "function" nil)))
@@ -186,6 +187,11 @@
   (let ((offset (- company-selection display-limit -1)))
     (max offset 0)))
 
+(defsubst company-reformat (candidate)
+  ;; company-ispell needs this, because the results are always lower-case
+  ;; It's mory efficient to fix it only when they are displayed.
+  (concat company-prefix (substring candidate (length company-prefix))))
+
 (defsubst company-should-complete (prefix)
   (and (eq company-idle-delay t)
        (>= (length prefix) company-minimum-prefix-length)))
@@ -226,8 +232,7 @@
 
 (defun company-begin ()
   (or (company-continue-or-cancel)
-      (let ((completion-ignore-case nil) ;; TODO: make this optional
-            prefix)
+      (let (prefix)
         (dolist (backend company-backends)
           (unless (fboundp backend)
             (ignore-errors (require backend nil t)))
@@ -239,7 +244,9 @@
                         company-candidates
                         (funcall company-backend 'candidates prefix)
                         company-common
-                        (try-completion prefix company-candidates)
+                        (let ((completion-ignore-case (funcall backend
+                                                               'ignore-case)))
+                          (try-completion prefix company-candidates))
                         company-selection 0
                         company-point (point))
                   (unless (funcall company-backend 'sorted)
@@ -358,7 +365,8 @@
       (setq width (max (length (pop lines-copy)) width)))
     (setq width (min width (- (window-width) column)))
     (dotimes (i len)
-      (push (company-fill-propertize (pop lines) width (equal i selection))
+      (push (company-fill-propertize (company-reformat (pop lines))
+                                     width (equal i selection))
             new))
     (nreverse new)))
 
@@ -505,7 +513,7 @@
         (len -1)
         comp msg)
     (while candidates
-      (setq comp (pop candidates)
+      (setq comp (company-reformat (pop candidates))
             len (+ len 1 (length comp)))
       (if (>= len limit)
           (setq candidates nil)
