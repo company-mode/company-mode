@@ -93,7 +93,7 @@
                                 company-preview-if-just-one-frontend)
                          (function :tag "custom function" nil))))
 
-(defcustom company-backends '(company-elisp company-nxml)
+(defcustom company-backends '(company-elisp company-nxml company-css)
   "*"
   :group 'company
   :type '(repeat (function :tag "function" nil)))
