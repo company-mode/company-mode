@@ -355,20 +355,6 @@
                                      'company-tooltip-common)) line)
   line)
 
-(defun company-fill-propertize-lines (column lines selection)
-  (let ((width 0)
-        (lines-copy lines)
-        (len (min company-tooltip-limit (length lines)))
-        new)
-    (dotimes (i len)
-      (setq width (max (length (pop lines-copy)) width)))
-    (setq width (min width (- (window-width) column)))
-    (dotimes (i len)
-      (push (company-fill-propertize (company-reformat (pop lines))
-                                     width (equal i selection))
-            new))
-    (nreverse new)))
-
 ;;; replace
 
 (defun company-buffer-lines (beg end)
@@ -414,8 +400,19 @@
     (setq lines (nthcdr company-tooltip-offset lines))
     (decf selection company-tooltip-offset)
 
-    (setq lines (company-fill-propertize-lines column lines selection))
+    (let ((width 0)
+          (lines-copy lines)
+          (len (min company-tooltip-limit (length lines)))
+          new)
+      (dotimes (i len)
+        (setq width (max (length (pop lines-copy)) width)))
+      (setq width (min width (- (window-width) column)))
+      (dotimes (i len)
+        (push (company-fill-propertize (company-reformat (pop lines))
+                                       width (equal i selection))
+              new))
 
+      (setq lines (nreverse new)))
 
     (move-to-column 0)
 
