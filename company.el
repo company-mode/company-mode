@@ -341,6 +341,24 @@
 (defvar company-tooltip-offset 0)
 (make-variable-buffer-local 'company-tooltip-offset)
 
+(defun company-pseudo-tooltip-update-offset (selection num-lines limit)
+
+  (decf limit 2)
+  (setq company-tooltip-offset
+        (max (min selection company-tooltip-offset)
+             (- selection -1 limit)))
+
+  (when (<= company-tooltip-offset 1)
+    (incf limit)
+    (setq company-tooltip-offset 0))
+
+  (when (>= company-tooltip-offset (- num-lines limit 1))
+    (incf limit)
+    (when (= selection (1- num-lines))
+      (setq company-tooltip-offset (max (1- company-tooltip-offset) 0))))
+
+  limit)
+
 ;;; propertize
 
 (defun company-fill-propertize (line width selected)
@@ -392,24 +410,47 @@
   (unless lines (error "No text provided"))
   (save-excursion
 
-    ;; Scroll to offset.
-    (setq company-tooltip-offset
-          (max (min selection company-tooltip-offset)
-               (- selection -1 company-tooltip-limit)))
-
-    (setq lines (nthcdr company-tooltip-offset lines))
-    (decf selection company-tooltip-offset)
-
-    (let ((width 0)
-          (lines-copy lines)
-          (len (min company-tooltip-limit (length lines)))
+    (let ((limit (max company-tooltip-limit 3))
+          (len (length lines))
+          width
+          lines-copy
+          previous
+          remainder
           new)
+
+      ;; Scroll to offset.
+      (setq limit (company-pseudo-tooltip-update-offset selection len limit))
+
+      (when (> company-tooltip-offset 0)
+        (setq previous (format "...(%d)" company-tooltip-offset)))
+
+      (setq remainder (- len limit company-tooltip-offset)
+            remainder (when (> remainder 0)
+                        (setq remainder (format "...(%d)" remainder))))
+
+      (decf selection company-tooltip-offset)
+      (setq width (min (length previous) (length remainder))
+            lines (nthcdr company-tooltip-offset lines)
+            len (min limit (length lines))
+            lines-copy lines)
+
       (dotimes (i len)
         (setq width (max (length (pop lines-copy)) width)))
       (setq width (min width (- (window-width) column)))
+
+      (when previous
+        (push (propertize (company-safe-substring previous 0 width)
+                          'face 'company-tooltip)
+              new))
+
       (dotimes (i len)
         (push (company-fill-propertize (company-reformat (pop lines))
                                        width (equal i selection))
+              new))
+
+      (when remainder
+        (push (propertize (company-safe-substring remainder 0 width)
+                          'face 'company-tooltip)
               new))
 
       (setq lines (nreverse new)))
