@@ -127,7 +127,7 @@
     (define-key keymap (kbd "M-n") 'company-select-next)
     (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap (kbd "M-<return>") 'company-complete-selection)
-    (define-key keymap "\t" 'company-complete-common)
+    (define-key keymap "\t" 'company-complete)
     keymap))
 
 ;;;###autoload
@@ -308,6 +308,15 @@
   (interactive)
   (when (company-manual-begin)
     (insert (company-strip-prefix company-common))))
+
+(defun company-complete ()
+  (interactive)
+  (when (company-manual-begin)
+    (if (or company-selection-changed
+            (eq last-command 'company-complete-common))
+        (call-interactively 'company-complete-selection)
+      (call-interactively 'company-complete-common)
+      (setq this-command 'company-complete-common))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
