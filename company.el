@@ -296,15 +296,24 @@
 
 (defun company-pre-command ()
   (unless (eq this-command 'company-show-doc-buffer)
-    (when company-candidates
-      (company-call-frontends 'pre-command))))
+    (condition-case err
+        (when company-candidates
+          (company-call-frontends 'pre-command))
+      (error (message "Company: An error occurred in pre-command")
+             (message "%s" (error-message-string err))
+             (company-cancel)))))
 
 (defun company-post-command ()
   (unless (eq this-command 'company-show-doc-buffer)
-    (unless (equal (point) company-point)
-      (company-begin))
-    (when company-candidates
-      (company-call-frontends 'post-command))))
+    (condition-case err
+        (progn
+          (unless (equal (point) company-point)
+            (company-begin))
+          (when company-candidates
+            (company-call-frontends 'post-command)))
+      (error (message "Company: An error occurred in post-command")
+             (message "%s" (error-message-string err))
+             (company-cancel)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
