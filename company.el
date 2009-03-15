@@ -213,50 +213,65 @@
   ;; Return non-nil if active.
   company-candidates)
 
-(defun company-continue-or-cancel ()
+(defun company-continue-add (new-prefix)
+  (let ((completion-ignore-case (funcall company-backend 'ignore-case)))
+    (and (< (length company-prefix) (length new-prefix))
+         (equal (substring new-prefix 0 (length company-prefix)) company-prefix)
+         (setq company-candidates
+               (all-completions new-prefix company-candidates))
+         (setq company-prefix new-prefix)
+         (setq company-selection 0))))
+
+(defun company-continue-remove (new-prefix)
+  (and (> (length company-prefix) (length new-prefix))
+       (equal (substring company-prefix 0 (length new-prefix)) new-prefix)
+       (setq company-candidates
+             (funcall company-backend 'candidates new-prefix))
+       (setq company-prefix new-prefix)
+       (setq company-selection 0)))
+
+(defun company-continue ()
   (when company-candidates
-    (let ((old-point (- company-point (length company-prefix)))
-          (company-idle-delay t)
-          (company-minimum-prefix-length 0))
-      ;; TODO: Make more efficient.
-      (setq company-candidates nil)
-      (company-begin)
-      (unless (and company-candidates
-                   (equal old-point (- company-point (length company-prefix))))
-        (company-cancel))
-      company-candidates)))
+    (let ((new-prefix (funcall company-backend 'prefix)))
+      (if (and (= (- (point) (length new-prefix))
+                  (- company-point (length company-prefix)))
+               (or (equal company-prefix new-prefix)
+                   (company-continue-add new-prefix)
+                   (company-continue-remove new-prefix)))
+          (company-call-frontends 'update)
+        (setq company-candidates nil)))))
 
 (defun company-begin ()
-  (or (company-continue-or-cancel)
-      (let (prefix)
-        (dolist (backend company-backends)
-          (unless (fboundp backend)
-            (ignore-errors (require backend nil t)))
-          (if (fboundp backend)
-              (when (setq prefix (funcall backend 'prefix))
-                (when (company-should-complete prefix)
-                  (setq company-backend backend
-                        company-prefix prefix
-                        company-candidates
-                        (funcall company-backend 'candidates prefix)
-                        company-common
-                        (let ((completion-ignore-case (funcall backend
-                                                               'ignore-case)))
-                          (try-completion prefix company-candidates))
-                        company-selection 0
-                        company-point (point))
-                  (unless (funcall company-backend 'sorted)
-                    (setq company-candidates
-                          (sort company-candidates 'string<)))
-                  (company-call-frontends 'update))
-                (return prefix))
-            (unless (memq backend company-disabled-backends)
-              (push backend company-disabled-backends)
-              (message "Company back-end '%s' could not be initialized"
-                       backend))))
-        (unless (and company-candidates
-                     (not (eq t company-common)))
-          (company-cancel)))))
+  (company-continue)
+  (unless company-candidates
+    (let (prefix)
+      (dolist (backend company-backends)
+        (unless (fboundp backend)
+          (ignore-errors (require backend nil t)))
+        (if (fboundp backend)
+            (when (setq prefix (funcall backend 'prefix))
+              (when (company-should-complete prefix)
+                (setq company-backend backend
+                      company-prefix prefix
+                      company-candidates
+                      (funcall company-backend 'candidates prefix)
+                      company-selection 0)
+                (unless (funcall company-backend 'sorted)
+                  (setq company-candidates
+                        (sort company-candidates 'string<)))
+                (company-call-frontends 'update))
+              (return prefix))
+          (unless (memq backend company-disabled-backends)
+            (push backend company-disabled-backends)
+            (message "Company back-end '%s' could not be initialized"
+                     backend))))))
+  (if (or (not company-candidates)
+          (eq t (let ((completion-ignore-case (funcall company-backend
+                                                       'ignore-case)))
+                  (setq company-common
+                        (try-completion company-prefix company-candidates)))))
+      (company-cancel)
+    (setq company-point (point))))
 
 (defun company-cancel ()
   (setq company-backend nil
