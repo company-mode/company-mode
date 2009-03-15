@@ -4,6 +4,7 @@
              "^Pseudo tooltip frontend cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^Preview frontend cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^Echo area cannot be used twice$")
+(add-to-list 'debug-ignored-errors "^No documentation available$")
 
 (defgroup company nil
   ""
@@ -132,6 +133,7 @@
     (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap (kbd "M-<return>") 'company-complete-selection)
     (define-key keymap "\t" 'company-complete)
+    (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     keymap))
 
 ;;;###autoload
@@ -293,14 +295,16 @@
   (setq company-point (point)))
 
 (defun company-pre-command ()
-  (when company-candidates
-    (company-call-frontends 'pre-command)))
+  (unless (eq this-command 'company-show-doc-buffer)
+    (when company-candidates
+      (company-call-frontends 'pre-command))))
 
 (defun company-post-command ()
-  (unless (equal (point) company-point)
-    (company-begin))
-  (when company-candidates
-    (company-call-frontends 'post-command)))
+  (unless (eq this-command 'company-show-doc-buffer)
+    (unless (equal (point) company-point)
+      (company-begin))
+    (when company-candidates
+      (company-call-frontends 'post-command))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -374,6 +378,25 @@
       (setq company-last-metadata
             (cons selected (funcall company-backend 'meta selected))))
     (cdr company-last-metadata)))
+
+(defun company-doc-buffer (&optional string)
+  (with-current-buffer (get-buffer-create "*Company meta-data*")
+    (erase-buffer)
+    (current-buffer)))
+
+(defun company-show-doc-buffer ()
+  (interactive)
+  (when company-candidates
+    (save-window-excursion
+      (let* ((selected (nth company-selection company-candidates))
+             (buffer (funcall company-backend 'doc-buffer selected)))
+        (if (not buffer)
+            (error "No documentation available.")
+          (display-buffer buffer)
+          (read-event)
+          (when last-input-event
+            (clear-this-command-keys t)
+            (setq unread-command-events (list last-input-event))))))))
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

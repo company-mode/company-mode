@@ -27,6 +27,15 @@
                     "\n"))
             doc)))
 
+(defun company-semantic-doc-buffer (tag)
+  (let ((doc (semantic-documentation-for-tag tag)))
+    (when doc
+      (with-current-buffer (company-doc-buffer)
+        (insert (funcall semantic-idle-summary-function tag nil t)
+                "\n"
+                doc)
+        (current-buffer)))))
+
 (defsubst company-semantic-completions (prefix)
   (ignore-errors
     (let ((completion-ignore-case nil)
@@ -42,7 +51,9 @@
                      (mapcar 'semantic-tag-name
                              (semantic-analyze-find-tags-by-prefix arg))))
     ('meta (funcall company-semantic-metadata-function
-                    (semantic-analyze-find-tag arg)))))
+                    (semantic-analyze-find-tag arg)))
+    ('doc-buffer (company-semantic-doc-buffer (semantic-analyze-find-tag arg)))
+    ))
 
 (provide 'company-semantic)
 ;;; company-semantic.el ends here

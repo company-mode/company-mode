@@ -52,7 +52,9 @@
                    (append (all-completions arg (company-elisp-parse-let))
                            (all-completions arg obarray
                                             'company-elisp-predicate))))
-    ('meta (company-elisp-doc arg))))
+    ('meta (company-elisp-doc arg))
+    ('doc-buffer (describe-function 'describe-function)
+                 (help-buffer))))
 
 (provide 'company-elisp)
 ;;; company-elisp.el ends here
