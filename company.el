@@ -161,21 +161,28 @@
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-mode-map
+(defvar company-current-map (make-sparse-keymap))
+
+(defvar company-mode-map (make-sparse-keymap))
+
+(defvar company-active-map
   (let ((keymap (make-sparse-keymap)))
+    (set-keymap-parent keymap company-mode-map)
     (define-key keymap (kbd "M-n") 'company-select-next)
     (define-key keymap (kbd "M-p") 'company-select-previous)
-    (define-key keymap (kbd "M-<return>") 'company-complete-selection)
-    (define-key keymap "\t" 'company-complete)
+    (define-key keymap "\C-m" 'company-complete-selection)
+    (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     keymap))
 
 ;;;###autoload
 (define-minor-mode company-mode
   ""
-  nil " comp" company-mode-map
+  nil " comp" nil
   (if company-mode
       (progn
+        (add-to-list 'minor-mode-overriding-map-alist
+                     (cons 'company-mode company-current-map))
         (add-hook 'pre-command-hook 'company-pre-command nil t)
         (add-hook 'post-command-hook 'company-post-command nil t)
         (company-timer-set 'company-idle-delay
@@ -309,6 +316,7 @@
   (if company-candidates
       (progn
         (setq company-point (point))
+        (set-keymap-parent company-current-map company-active-map)
         (company-call-frontends 'update))
     (company-cancel)))
 
@@ -321,7 +329,8 @@
         company-selection 0
         company-selection-changed nil
         company-point nil)
-  (company-call-frontends 'hide))
+  (company-call-frontends 'hide)
+  (set-keymap-parent company-current-map company-mode-map))
 
 (defun company-abort ()
   (company-cancel)

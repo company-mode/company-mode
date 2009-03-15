@@ -60,8 +60,9 @@
          (doc (if (fboundp symbol)
                   (documentation symbol t)
                 (documentation-property symbol 'variable-documentation t))))
-    (when (string-match ".*$" doc)
-      (match-string 0 doc))))
+    (and (stringp doc)
+         (string-match ".*$" doc)
+         (match-string 0 doc))))
 
 (defun company-elisp (command &optional arg &rest ignored)
   (case command
