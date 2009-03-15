@@ -305,13 +305,15 @@
   (when (company-manual-begin)
     (setq company-selection (min (1- (length company-candidates))
                                  (1+ company-selection))
-          company-selection-changed t)))
+          company-selection-changed t))
+  (company-call-frontends 'update))
 
 (defun company-select-previous ()
   (interactive)
   (when (company-manual-begin)
     (setq company-selection (max 0 (1- company-selection))
-          company-selection-changed t)))
+          company-selection-changed t))
+  (company-call-frontends 'update))
 
 (defun company-complete-selection ()
   (interactive)
@@ -414,9 +416,8 @@
           new
           (company-safe-substring old (+ offset (length new)))))
 
-(defun company-modified-substring (beg end lines column nl)
-  (let ((old (company-buffer-lines beg end))
-        new)
+(defun company-replacement-string (old lines column nl)
+  (let (new)
     ;; Inject into old lines.
     (while old
       (push (company-modify-line (pop old) (pop lines) column) new))
@@ -427,6 +428,53 @@
             (mapconcat 'identity (nreverse new) "\n")
             "\n")))
 
+(defun company-create-lines (column lines selection)
+
+  (let ((limit (max company-tooltip-limit 3))
+        (len (length lines))
+        width
+        lines-copy
+        previous
+        remainder
+        new)
+
+    ;; Scroll to offset.
+    (setq limit (company-pseudo-tooltip-update-offset selection len limit))
+
+    (when (> company-tooltip-offset 0)
+      (setq previous (format "...(%d)" company-tooltip-offset)))
+
+    (setq remainder (- len limit company-tooltip-offset)
+          remainder (when (> remainder 0)
+                      (setq remainder (format "...(%d)" remainder))))
+
+    (decf selection company-tooltip-offset)
+    (setq width (min (length previous) (length remainder))
+          lines (nthcdr company-tooltip-offset lines)
+          len (min limit (length lines))
+          lines-copy lines)
+
+    (dotimes (i len)
+      (setq width (max (length (pop lines-copy)) width)))
+    (setq width (min width (- (window-width) column)))
+
+    (when previous
+      (push (propertize (company-safe-substring previous 0 width)
+                        'face 'company-tooltip)
+            new))
+
+    (dotimes (i len)
+      (push (company-fill-propertize (company-reformat (pop lines))
+                                     width (equal i selection))
+            new))
+
+    (when remainder
+      (push (propertize (company-safe-substring remainder 0 width)
+                        'face 'company-tooltip)
+            new))
+
+    (setq lines (nreverse new))))
+
 ;; show
 
 (defun company-pseudo-tooltip-show (row column lines selection)
@@ -434,66 +482,26 @@
   (unless lines (error "No text provided"))
   (save-excursion
 
-    (let ((limit (max company-tooltip-limit 3))
-          (len (length lines))
-          width
-          lines-copy
-          previous
-          remainder
-          new)
-
-      ;; Scroll to offset.
-      (setq limit (company-pseudo-tooltip-update-offset selection len limit))
-
-      (when (> company-tooltip-offset 0)
-        (setq previous (format "...(%d)" company-tooltip-offset)))
-
-      (setq remainder (- len limit company-tooltip-offset)
-            remainder (when (> remainder 0)
-                        (setq remainder (format "...(%d)" remainder))))
-
-      (decf selection company-tooltip-offset)
-      (setq width (min (length previous) (length remainder))
-            lines (nthcdr company-tooltip-offset lines)
-            len (min limit (length lines))
-            lines-copy lines)
-
-      (dotimes (i len)
-        (setq width (max (length (pop lines-copy)) width)))
-      (setq width (min width (- (window-width) column)))
-
-      (when previous
-        (push (propertize (company-safe-substring previous 0 width)
-                          'face 'company-tooltip)
-              new))
-
-      (dotimes (i len)
-        (push (company-fill-propertize (company-reformat (pop lines))
-                                       width (equal i selection))
-              new))
-
-      (when remainder
-        (push (propertize (company-safe-substring remainder 0 width)
-                          'face 'company-tooltip)
-              new))
-
-      (setq lines (nreverse new)))
-
     (move-to-column 0)
 
-    (let ((nl (< (move-to-window-line row) row))
-          (beg (point))
-          (end (save-excursion
-                 (move-to-window-line (min (window-height)
-                                           (+ row company-tooltip-limit)))
-                 (point)))
-          str)
+    (let* ((lines (company-create-lines column lines selection))
+           (nl (< (move-to-window-line row) row))
+           (beg (point))
+           (end (save-excursion
+                  (move-to-window-line (min (window-height)
+                                            (+ row company-tooltip-limit)))
+                  (point)))
+           (old-string (company-buffer-lines beg end))
+           str)
 
       (setq company-pseudo-tooltip-overlay (make-overlay beg end))
 
-      (overlay-put company-pseudo-tooltip-overlay 'before-string
-                   (company-modified-substring beg end lines column nl))
-      (overlay-put company-pseudo-tooltip-overlay 'invisible t)
+      (overlay-put company-pseudo-tooltip-overlay 'company-old old-string)
+      (overlay-put company-pseudo-tooltip-overlay 'company-column column)
+      (overlay-put company-pseudo-tooltip-overlay 'company-nl nl)
+      (overlay-put company-pseudo-tooltip-overlay 'company-before
+                   (company-replacement-string old-string lines column nl))
+
       (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
@@ -501,18 +509,43 @@
     (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
                                  company-candidates company-selection)))
 
+(defun company-pseudo-tooltip-edit (lines selection)
+  (let* ((old-string (overlay-get company-pseudo-tooltip-overlay 'company-old))
+         (column (overlay-get company-pseudo-tooltip-overlay 'company-column))
+         (nl (overlay-get company-pseudo-tooltip-overlay 'company-nl))
+         (lines (company-create-lines column lines selection)))
+    (overlay-put company-pseudo-tooltip-overlay 'company-before
+                 (company-replacement-string old-string lines column nl))))
+
 (defun company-pseudo-tooltip-hide ()
   (when company-pseudo-tooltip-overlay
     (delete-overlay company-pseudo-tooltip-overlay)
     (setq company-pseudo-tooltip-overlay nil)))
 
+(defun company-pseudo-tooltip-hide-temporarily ()
+  (when (overlayp company-pseudo-tooltip-overlay)
+    (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
+    (overlay-put company-pseudo-tooltip-overlay 'before-string nil)))
+
+(defun company-pseudo-tooltip-unhide ()
+  (when company-pseudo-tooltip-overlay
+    (overlay-put company-pseudo-tooltip-overlay 'invisible t)
+    (overlay-put company-pseudo-tooltip-overlay 'before-string
+                 (overlay-get company-pseudo-tooltip-overlay 'company-before))))
+
 (defun company-pseudo-tooltip-frontend (command)
   (case command
-    ('pre-command (company-pseudo-tooltip-hide))
-    ('post-command (company-pseudo-tooltip-show-at-point
-                    (- (point) (length company-prefix))))
+    ('pre-command (company-pseudo-tooltip-hide-temporarily))
+    ('post-command
+     (unless (overlayp company-pseudo-tooltip-overlay)
+       (company-pseudo-tooltip-show-at-point (- (point)
+                                                (length company-prefix))))
+     (company-pseudo-tooltip-unhide))
     ('hide (company-pseudo-tooltip-hide)
-           (setq company-tooltip-offset 0))))
+           (setq company-tooltip-offset 0))
+    ('update (when (overlayp company-pseudo-tooltip-overlay)
+               (company-pseudo-tooltip-edit company-candidates
+                                            company-selection)))))
 
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
   (unless (and (eq command 'post-command)
