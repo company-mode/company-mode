@@ -3,6 +3,7 @@
 (add-to-list 'debug-ignored-errors
              "^Pseudo tooltip frontend cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^Preview frontend cannot be used twice$")
+(add-to-list 'debug-ignored-errors "^Echo area cannot be used twice$")
 
 (defgroup company nil
   ""
@@ -71,15 +72,18 @@
   (and (memq 'company-preview-if-just-one-frontend value)
        (memq 'company-preview-frontend value)
        (error "Preview frontend cannot be used twice"))
+  (and (memq 'company-echo value)
+       (memq 'company-echo-metadata-frontend value)
+       (error "Echo area cannot be used twice"))
   ;; preview must come last
   (dolist (f '(company-preview-if-just-one-frontend company-preview-frontend))
     (when (memq f value)
       (setq value (append (delq f value) (list f)))))
   (set variable value))
 
-(defcustom company-frontends '(company-echo-frontend
-                               company-pseudo-tooltip-unless-just-one-frontend
-                               company-preview-if-just-one-frontend)
+(defcustom company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
+                               company-preview-if-just-one-frontend
+                               company-echo-metadata-frontend)
   "*"
   :set 'company-frontends-set
   :group 'company
@@ -359,6 +363,18 @@
                   (company-space-string (- to len)))
         (substring str from to)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar company-last-metadata nil)
+(make-variable-buffer-local 'company-last-metadata)
+
+(defun company-fetch-metadata ()
+  (let ((selected (nth company-selection company-candidates)))
+    (unless (equal selected (car company-last-metadata))
+      (setq company-last-metadata
+            (cons selected (funcall company-backend 'meta selected))))
+    (cdr company-last-metadata)))
+
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-pseudo-tooltip-overlay nil)
@@ -628,6 +644,14 @@
     ('pre-command (company-echo-refresh))
     ('post-command (company-echo-show company-candidates))
     ('hide (setq company-echo-last-msg nil))))
+
+(defun company-echo-metadata-frontend (command)
+  (case command
+    ('pre-command (company-echo-refresh))
+    ('post-command (setq company-echo-last-msg (company-fetch-metadata))
+                   (company-echo-refresh))
+    ('hide (setq company-echo-last-msg nil))))
+
 
 (provide 'company)
 ;;; company.el ends here

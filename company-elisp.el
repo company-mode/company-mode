@@ -36,6 +36,14 @@
                   (forward-sexp))))))))
     vars))
 
+(defun company-elisp-doc (symbol)
+  (let* ((symbol (intern symbol))
+         (doc (if (fboundp symbol)
+                  (documentation symbol t)
+                (documentation-property symbol 'variable-documentation t))))
+    (when (string-match ".*$" doc)
+      (match-string 0 doc))))
+
 (defun company-elisp (command &optional arg &rest ignored)
   (case command
     ('prefix (and (eq major-mode 'emacs-lisp-mode)
@@ -43,7 +51,8 @@
     ('candidates (let ((completion-ignore-case nil))
                    (append (all-completions arg (company-elisp-parse-let))
                            (all-completions arg obarray
-                                            'company-elisp-predicate))))))
+                                            'company-elisp-predicate))))
+    ('meta (company-elisp-doc arg))))
 
 (provide 'company-elisp)
 ;;; company-elisp.el ends here
