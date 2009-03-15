@@ -166,6 +166,9 @@
 (defvar company-candidates nil)
 (make-variable-buffer-local 'company-candidates)
 
+(defvar company-candidates-cache nil)
+(make-variable-buffer-local 'company-candidates-cache)
+
 (defvar company-common nil)
 (make-variable-buffer-local 'company-common)
 
@@ -196,6 +199,30 @@
   (dolist (frontend company-frontends)
     (funcall frontend command)))
 
+(defsubst company-calculate-candidates (prefix)
+  (or (setq company-candidates (cdr (assoc prefix company-candidates-cache)))
+      (let ((len (length prefix))
+            (completion-ignore-case (funcall company-backend 'ignore-case))
+            prev)
+        (dotimes (i len)
+          (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
+                                       company-candidates-cache)))
+            (setq company-candidates (all-completions prefix prev))
+            (return t))))
+      (progn
+        (setq company-candidates (funcall company-backend 'candidates prefix))
+        (unless (funcall company-backend 'sorted)
+          (setq company-candidates (sort company-candidates 'string<)))))
+  (unless (assoc prefix company-candidates-cache)
+    (push (cons prefix company-candidates) company-candidates-cache))
+  (setq company-selection 0
+        company-prefix prefix)
+  (let ((completion-ignore-case (funcall company-backend 'ignore-case)))
+    (setq company-common (try-completion company-prefix company-candidates)))
+  (when (eq company-common t)
+    (setq company-candidates nil))
+  company-candidates)
+
 (defun company-idle-begin ()
   (and company-mode
        (not company-candidates)
@@ -213,32 +240,13 @@
   ;; Return non-nil if active.
   company-candidates)
 
-(defun company-continue-add (new-prefix)
-  (let ((completion-ignore-case (funcall company-backend 'ignore-case)))
-    (and (< (length company-prefix) (length new-prefix))
-         (equal (substring new-prefix 0 (length company-prefix)) company-prefix)
-         (setq company-candidates
-               (all-completions new-prefix company-candidates))
-         (setq company-prefix new-prefix)
-         (setq company-selection 0))))
-
-(defun company-continue-remove (new-prefix)
-  (and (> (length company-prefix) (length new-prefix))
-       (equal (substring company-prefix 0 (length new-prefix)) new-prefix)
-       (setq company-candidates
-             (funcall company-backend 'candidates new-prefix))
-       (setq company-prefix new-prefix)
-       (setq company-selection 0)))
-
 (defun company-continue ()
   (when company-candidates
     (let ((new-prefix (funcall company-backend 'prefix)))
-      (if (and (= (- (point) (length new-prefix))
-                  (- company-point (length company-prefix)))
-               (or (equal company-prefix new-prefix)
-                   (company-continue-add new-prefix)
-                   (company-continue-remove new-prefix)))
-          (company-call-frontends 'update)
+      (unless (and (= (- (point) (length new-prefix))
+                      (- company-point (length company-prefix)))
+                   (or (equal company-prefix new-prefix)
+                       (company-calculate-candidates new-prefix)))
         (setq company-candidates nil)))))
 
 (defun company-begin ()
@@ -251,32 +259,24 @@
         (if (fboundp backend)
             (when (setq prefix (funcall backend 'prefix))
               (when (company-should-complete prefix)
-                (setq company-backend backend
-                      company-prefix prefix
-                      company-candidates
-                      (funcall company-backend 'candidates prefix)
-                      company-selection 0)
-                (unless (funcall company-backend 'sorted)
-                  (setq company-candidates
-                        (sort company-candidates 'string<)))
-                (company-call-frontends 'update))
+                (setq company-backend backend)
+                (company-calculate-candidates prefix))
               (return prefix))
           (unless (memq backend company-disabled-backends)
             (push backend company-disabled-backends)
             (message "Company back-end '%s' could not be initialized"
                      backend))))))
-  (if (or (not company-candidates)
-          (eq t (let ((completion-ignore-case (funcall company-backend
-                                                       'ignore-case)))
-                  (setq company-common
-                        (try-completion company-prefix company-candidates)))))
-      (company-cancel)
-    (setq company-point (point))))
+  (if company-candidates
+      (progn
+        (setq company-point (point))
+        (company-call-frontends 'update))
+    (company-cancel)))
 
 (defun company-cancel ()
   (setq company-backend nil
         company-prefix nil
         company-candidates nil
+        company-candidates-cache nil
         company-common nil
         company-selection 0
         company-selection-changed nil
