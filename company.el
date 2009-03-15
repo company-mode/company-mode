@@ -99,7 +99,8 @@
                          (function :tag "custom function" nil))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-semantic company-oddmuse company-ispell)
+                              company-semantic company-oddmuse
+                              company-dabbrev)
   "*"
   :group 'company
   :type '(repeat (function :tag "function" nil)))
