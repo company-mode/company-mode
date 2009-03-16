@@ -281,6 +281,13 @@
   (dolist (frontend company-frontends)
     (funcall frontend command)))
 
+(defsubst company-set-selection (selection)
+  (setq selection (max 0 (min (1- (length company-candidates)) selection)))
+  (unless (equal selection company-selection)
+    (setq company-selection selection
+          company-selection-changed t)
+    (company-call-frontends 'update)))
+
 (defsubst company-calculate-candidates (prefix)
   (or (setq company-candidates (cdr (assoc prefix company-candidates-cache)))
       (let ((len (length prefix))
@@ -402,17 +409,12 @@
 (defun company-select-next ()
   (interactive)
   (when (company-manual-begin)
-    (setq company-selection (min (1- (length company-candidates))
-                                 (1+ company-selection))
-          company-selection-changed t))
-  (company-call-frontends 'update))
+    (company-set-selection (1+ company-selection))))
 
 (defun company-select-previous ()
   (interactive)
   (when (company-manual-begin)
-    (setq company-selection (max 0 (1- company-selection))
-          company-selection-changed t))
-  (company-call-frontends 'update))
+    (company-set-selection (1- company-selection))))
 
 (defun company-complete-selection ()
   (interactive)
