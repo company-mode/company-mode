@@ -481,11 +481,16 @@
   (interactive)
   (when company-candidates
     (save-window-excursion
-      (let* ((selected (nth company-selection company-candidates))
+      (let* ((height (window-height))
+             (row (cdr (posn-col-row (posn-at-point))))
+             (selected (nth company-selection company-candidates))
              (buffer (funcall company-backend 'doc-buffer selected)))
         (if (not buffer)
             (error "No documentation available.")
           (display-buffer buffer)
+          (and (< (window-height) height)
+               (< (- (window-height) row 2) company-tooltip-limit)
+               (recenter (- (window-height) row 2)))
           (read-event)
           (when last-input-event
             (clear-this-command-keys t)
