@@ -161,13 +161,10 @@
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-current-map (make-sparse-keymap))
-
 (defvar company-mode-map (make-sparse-keymap))
 
 (defvar company-active-map
   (let ((keymap (make-sparse-keymap)))
-    (set-keymap-parent keymap company-mode-map)
     (define-key keymap (kbd "M-n") 'company-select-next)
     (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap "\C-m" 'company-complete-selection)
@@ -178,11 +175,9 @@
 ;;;###autoload
 (define-minor-mode company-mode
   ""
-  nil " comp" nil
+  nil " comp" company-mode-map
   (if company-mode
       (progn
-        (add-to-list 'minor-mode-overriding-map-alist
-                     (cons 'company-mode company-current-map))
         (add-hook 'pre-command-hook 'company-pre-command nil t)
         (add-hook 'post-command-hook 'company-post-command nil t)
         (company-timer-set 'company-idle-delay
@@ -191,6 +186,46 @@
     (remove-hook 'post-command-hook 'company-post-command t)
     (company-cancel)
     (kill-local-variable 'company-point)))
+
+;;; keymaps ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar company-overriding-keymap-bound nil)
+(make-variable-buffer-local 'company-overriding-keymap-bound)
+
+(defvar company-old-keymap nil)
+(make-variable-buffer-local 'company-old-keymap)
+
+(defvar company-my-keymap nil)
+(make-variable-buffer-local 'company-my-keymap)
+
+(defsubst company-enable-overriding-keymap (keymap)
+  (setq company-my-keymap keymap)
+  (when company-overriding-keymap-bound
+    (company-uninstall-map)))
+
+(defun company-install-map ()
+  (unless (or company-overriding-keymap-bound
+              (null company-my-keymap))
+    (setq company-old-keymap overriding-terminal-local-map
+          overriding-terminal-local-map company-my-keymap
+          company-overriding-keymap-bound t)))
+
+(defun company-uninstall-map ()
+  (when (and company-overriding-keymap-bound
+             (eq overriding-terminal-local-map company-my-keymap))
+    (setq overriding-terminal-local-map company-old-keymap
+          company-overriding-keymap-bound nil)))
+
+;; Hack:
+;; Emacs calculates the active keymaps before reading the event.  That means we
+;; cannot change the keymap from a timer.  So we send a bogus command.
+(defun company-ignore ()
+  (interactive))
+
+(global-set-key '[31415926] 'company-ignore)
+
+(defun company-input-noop ()
+  (push 31415926 unread-command-events))
 
 ;;; backends ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -276,7 +311,9 @@
        (not (equal (point) company-point))
        (let ((company-idle-delay t))
          (company-begin)
-         (company-post-command))))
+         (when company-candidates
+           (company-input-noop)
+           (company-post-command)))))
 
 (defun company-manual-begin ()
   (and company-mode
@@ -316,7 +353,7 @@
   (if company-candidates
       (progn
         (setq company-point (point))
-        (set-keymap-parent company-current-map company-active-map)
+        (company-enable-overriding-keymap company-active-map)
         (company-call-frontends 'update))
     (company-cancel)))
 
@@ -330,7 +367,7 @@
         company-selection-changed nil
         company-point nil)
   (company-call-frontends 'hide)
-  (set-keymap-parent company-current-map company-mode-map))
+  (company-enable-overriding-keymap nil))
 
 (defun company-abort ()
   (company-cancel)
@@ -344,7 +381,8 @@
           (company-call-frontends 'pre-command))
       (error (message "Company: An error occurred in pre-command")
              (message "%s" (error-message-string err))
-             (company-cancel)))))
+             (company-cancel))))
+  (company-uninstall-map))
 
 (defun company-post-command ()
   (unless (eq this-command 'company-show-doc-buffer)
@@ -356,7 +394,8 @@
             (company-call-frontends 'post-command)))
       (error (message "Company: An error occurred in post-command")
              (message "%s" (error-message-string err))
-             (company-cancel)))))
+             (company-cancel))))
+  (company-install-map))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
