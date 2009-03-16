@@ -649,7 +649,9 @@
           (and (< (window-height) height)
                (< (- (window-height) row 2) company-tooltip-limit)
                (recenter (- (window-height) row 2)))
-          (read-event)
+          (while (eq 'scroll-other-window
+                     (key-binding (vector (list (read-event)))))
+            (scroll-other-window))
           (when last-input-event
             (clear-this-command-keys t)
             (setq unread-command-events (list last-input-event))))))))
