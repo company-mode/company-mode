@@ -252,6 +252,9 @@
 (defvar company-candidates-cache nil)
 (make-variable-buffer-local 'company-candidates-cache)
 
+(defvar company-candidates-predicate nil)
+(make-variable-buffer-local 'company-candidates-predicate)
+
 (defvar company-common nil)
 (make-variable-buffer-local 'company-common)
 
@@ -289,6 +292,13 @@
           company-selection-changed t)
     (company-call-frontends 'update)))
 
+(defun company-apply-predicate (candidates predicate)
+  (let (new)
+    (dolist (c candidates)
+      (when (funcall predicate c)
+        (push c new)))
+    (nreverse new)))
+
 (defsubst company-calculate-candidates (prefix)
   (or (setq company-candidates (cdr (assoc prefix company-candidates-cache)))
       (let ((len (length prefix))
@@ -301,6 +311,10 @@
             (return t))))
       (progn
         (setq company-candidates (funcall company-backend 'candidates prefix))
+        (when company-candidates-predicate
+          (setq company-candidates
+                (company-apply-predicate company-candidates
+                                         company-candidates-predicate)))
         (unless (funcall company-backend 'sorted)
           (setq company-candidates (sort company-candidates 'string<)))))
   (unless (assoc prefix company-candidates-cache)
@@ -376,6 +390,7 @@
         company-prefix nil
         company-candidates nil
         company-candidates-cache nil
+        company-candidates-predicate nil
         company-common nil
         company-selection 0
         company-selection-changed nil
@@ -465,6 +480,14 @@
         (ding)
       (company-set-selection (- company-selection pos 1) t))))
 
+(defun company-search-kill-others ()
+  (interactive)
+  (let ((predicate `(lambda (candidate)
+                      (string-match ,company-search-string candidate))))
+    (company-cancel)
+    (setq company-candidates-predicate predicate)
+    (company-manual-begin)))
+
 (defun company-search-abort ()
   (interactive)
   (company-set-selection company-search-old-selection t)
@@ -499,6 +522,7 @@
     (define-key keymap "\C-g" 'company-search-abort)
     (define-key keymap "\C-s" 'company-search-repeat-forward)
     (define-key keymap "\C-r" 'company-search-repeat-backward)
+    (define-key keymap "\C-o" 'company-search-kill-others)
     keymap))
 
 (define-minor-mode company-search-mode
