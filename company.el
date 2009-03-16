@@ -299,32 +299,48 @@
         (push c new)))
     (nreverse new)))
 
-(defsubst company-calculate-candidates (prefix)
-  (or (setq company-candidates (cdr (assoc prefix company-candidates-cache)))
-      (let ((len (length prefix))
-            (completion-ignore-case (funcall company-backend 'ignore-case))
-            prev)
-        (dotimes (i len)
-          (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
-                                       company-candidates-cache)))
-            (setq company-candidates (all-completions prefix prev))
-            (return t))))
-      (progn
-        (setq company-candidates (funcall company-backend 'candidates prefix))
-        (when company-candidates-predicate
-          (setq company-candidates
-                (company-apply-predicate company-candidates
-                                         company-candidates-predicate)))
-        (unless (funcall company-backend 'sorted)
-          (setq company-candidates (sort company-candidates 'string<)))))
-  (unless (assoc prefix company-candidates-cache)
-    (push (cons prefix company-candidates) company-candidates-cache))
-  (setq company-selection 0
-        company-prefix prefix)
+(defun company-update-candidates (candidates)
+  (if (> company-selection 0)
+      ;; Try to restore the selection
+      (let ((selected (nth company-selection company-candidates)))
+        (setq company-selection 0
+              company-candidates candidates)
+        (when selected
+          (while (and candidates (string< (pop candidates) selected))
+            (incf company-selection))
+          (unless candidates
+            ;; Make sure selection isn't out of bounds.
+            (setq company-selection (min (1- (length company-candidates))
+                                         company-selection)))))
+    (setq company-selection 0
+          company-candidates candidates))
+  ;; Calculate common.
   (let ((completion-ignore-case (funcall company-backend 'ignore-case)))
     (setq company-common (try-completion company-prefix company-candidates)))
   (when (eq company-common t)
-    (setq company-candidates nil))
+    (setq company-candidates nil)))
+
+(defsubst company-calculate-candidates (prefix)
+  (setq company-prefix prefix)
+  (company-update-candidates
+   (or (cdr (assoc prefix company-candidates-cache))
+       (let ((len (length prefix))
+             (completion-ignore-case (funcall company-backend 'ignore-case))
+             prev)
+         (dotimes (i len)
+           (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
+                                        company-candidates-cache)))
+             (return (all-completions prefix prev)))))
+       (let ((candidates (funcall company-backend 'candidates prefix)))
+         (and company-candidates-predicate
+              (setq candidates
+                    (company-apply-predicate candidates
+                                             company-candidates-predicate)))
+         (unless (funcall company-backend 'sorted)
+           (setq candidates (sort candidates 'string<)))
+         candidates)))
+  (unless (assoc prefix company-candidates-cache)
+    (push (cons prefix company-candidates) company-candidates-cache))
   company-candidates)
 
 (defun company-idle-begin ()
