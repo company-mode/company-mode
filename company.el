@@ -133,7 +133,7 @@
 
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-semantic company-oddmuse
-                              company-dabbrev)
+                              company-files company-dabbrev)
   "*"
   :group 'company
   :type '(repeat (function :tag "function" nil)))
@@ -334,6 +334,9 @@
 
 (defun company-continue ()
   (when company-candidates
+    (when (funcall company-backend 'no-cache)
+      ;; Don't complete existing candidates, fetch new ones.
+      (setq company-candidates-cache nil))
     (let ((new-prefix (funcall company-backend 'prefix)))
       (unless (and (= (- (point) (length new-prefix))
                       (- company-point (length company-prefix)))
