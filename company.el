@@ -513,7 +513,10 @@
   (when (>= company-tooltip-offset (- num-lines limit 1))
     (incf limit)
     (when (= selection (1- num-lines))
-      (setq company-tooltip-offset (max (1- company-tooltip-offset) 0))))
+      (decf company-tooltip-offset)
+      (when (<= company-tooltip-offset 1)
+        (setq company-tooltip-offset 0)
+        (incf limit))))
 
   limit)
 

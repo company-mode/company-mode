@@ -48,7 +48,8 @@
               (ignore-errors
                 (dotimes (i company-elisp-parse-limit)
                   (save-excursion
-                    (down-list 1)
+                    (when (looking-at "[ \t\n]*(")
+                      (down-list 1))
                     (if (looking-at "[ \t\n]*\\(\\(?:\\sw\\|\\s_\\)+\\)")
                         (add-to-list 'vars (match-string-no-properties 1))
                       (error)))
