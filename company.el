@@ -500,9 +500,11 @@
   (interactive)
   (let ((predicate `(lambda (candidate)
                       (string-match ,company-search-string candidate))))
-    (company-cancel)
     (setq company-candidates-predicate predicate)
-    (company-manual-begin)))
+    (company-update-candidates (company-apply-predicate company-candidates
+                                                        predicate))
+    (company-search-mode 0)
+    (company-call-frontends 'update)))
 
 (defun company-search-abort ()
   (interactive)
