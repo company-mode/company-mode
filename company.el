@@ -341,22 +341,25 @@
         (setq company-candidates nil)))))
 
 (defun company-begin ()
-  (company-continue)
-  (unless company-candidates
-    (let (prefix)
-      (dolist (backend company-backends)
-        (unless (fboundp backend)
-          (ignore-errors (require backend nil t)))
-        (if (fboundp backend)
-            (when (setq prefix (funcall backend 'prefix))
-              (when (company-should-complete prefix)
-                (setq company-backend backend)
-                (company-calculate-candidates prefix))
-              (return prefix))
-          (unless (memq backend company-disabled-backends)
-            (push backend company-disabled-backends)
-            (message "Company back-end '%s' could not be initialized"
-                     backend))))))
+  (if (or buffer-read-only overriding-terminal-local-map overriding-local-map)
+      ;; Don't complete in these cases.
+      (setq company-candidates nil)
+    (company-continue)
+    (unless company-candidates
+      (let (prefix)
+        (dolist (backend company-backends)
+          (unless (fboundp backend)
+            (ignore-errors (require backend nil t)))
+          (if (fboundp backend)
+              (when (setq prefix (funcall backend 'prefix))
+                (when (company-should-complete prefix)
+                  (setq company-backend backend)
+                  (company-calculate-candidates prefix))
+                (return prefix))
+            (unless (memq backend company-disabled-backends)
+              (push backend company-disabled-backends)
+              (message "Company back-end '%s' could not be initialized"
+                       backend)))))))
   (if company-candidates
       (progn
         (setq company-point (point))
