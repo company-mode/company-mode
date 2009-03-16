@@ -170,6 +170,7 @@
     (define-key keymap "\C-m" 'company-complete-selection)
     (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
+    (define-key keymap "\C-s" 'company-search-candidates)
     keymap))
 
 ;;;###autoload
@@ -281,9 +282,9 @@
   (dolist (frontend company-frontends)
     (funcall frontend command)))
 
-(defsubst company-set-selection (selection)
+(defsubst company-set-selection (selection &optional force-update)
   (setq selection (max 0 (min (1- (length company-candidates)) selection)))
-  (unless (equal selection company-selection)
+  (when (or force-update (not (equal selection company-selection)))
     (setq company-selection selection
           company-selection-changed t)
     (company-call-frontends 'update)))
@@ -376,6 +377,7 @@
         company-selection 0
         company-selection-changed nil
         company-point nil)
+  (company-search-mode 0)
   (company-call-frontends 'hide)
   (company-enable-overriding-keymap nil))
 
@@ -406,6 +408,114 @@
              (message "%s" (error-message-string err))
              (company-cancel))))
   (company-install-map))
+
+;;; search ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar company-search-string nil)
+(make-variable-buffer-local 'company-search-string)
+
+(defvar company-search-lighter " Search: \"\"")
+(make-variable-buffer-local 'company-search-lighter)
+
+(defvar company-search-old-map nil)
+(make-variable-buffer-local 'company-search-old-map)
+
+(defvar company-search-old-selection 0)
+(make-variable-buffer-local 'company-search-old-selection)
+
+(defun company-search (text lines)
+  (let ((quoted (regexp-quote text))
+        (i 0))
+    (dolist (line lines)
+      (when (string-match quoted line (length company-prefix))
+        (return i))
+      (incf i))))
+
+(defun company-search-printing-char ()
+  (interactive)
+  (setq company-search-string
+        (concat (or company-search-string "") (string last-command-event))
+        company-search-lighter (concat " Search: \"" company-search-string
+                                        "\""))
+  (let ((pos (company-search company-search-string
+                              (nthcdr company-selection company-candidates))))
+    (if (null pos)
+        (ding)
+      (company-set-selection (+ company-selection pos) t))))
+
+(defun company-search-repeat-forward ()
+  (interactive)
+  (let ((pos (company-search company-search-string
+                              (cdr (nthcdr company-selection
+                                           company-candidates)))))
+    (if (null pos)
+        (ding)
+      (company-set-selection (+ company-selection pos 1) t))))
+
+(defun company-search-repeat-backward ()
+  (interactive)
+  (let ((pos (company-search company-search-string
+                              (nthcdr (- (length company-candidates)
+                                         company-selection)
+                                      (reverse company-candidates)))))
+    (if (null pos)
+        (ding)
+      (company-set-selection (- company-selection pos 1) t))))
+
+(defun company-search-abort ()
+  (interactive)
+  (company-set-selection company-search-old-selection t)
+  (company-search-mode 0))
+
+(defun company-search-other-char ()
+  (interactive)
+  (company-search-mode 0)
+  (when last-input-event
+    (clear-this-command-keys t)
+    (setq unread-command-events (list last-input-event))))
+
+(defvar company-search-map
+  (let ((i 0)
+        (keymap (make-keymap)))
+    (set-char-table-range (nth 1 keymap) (cons #x100 (max-char))
+                          'company-search-printing-char)
+    (define-key keymap [t] 'company-search-other-char)
+    (while (< i ?\s)
+      (define-key keymap (make-string 1 i) 'company-search-other-char)
+      (incf i))
+    (while (< i 256)
+      (define-key keymap (vector i) 'company-search-printing-char)
+      (incf i))
+    (let ((meta-map (make-sparse-keymap)))
+      (define-key keymap (char-to-string meta-prefix-char) meta-map)
+      (define-key keymap [escape] meta-map))
+    (define-key keymap (vector meta-prefix-char t) 'company-search-other-char)
+    (define-key keymap "\e\e\e" 'company-search-other-char)
+    (define-key keymap  [escape escape escape] 'company-search-other-char)
+
+    (define-key keymap "\C-g" 'company-search-abort)
+    (define-key keymap "\C-s" 'company-search-repeat-forward)
+    (define-key keymap "\C-r" 'company-search-repeat-backward)
+    keymap))
+
+(define-minor-mode company-search-mode
+  ""
+  nil company-search-lighter nil
+  (if company-search-mode
+      (if (company-manual-begin)
+          (progn
+            (setq company-search-old-selection company-selection)
+            (company-enable-overriding-keymap company-search-map)
+            (company-call-frontends 'update))
+        (setq company-search-mode nil))
+    (kill-local-variable 'company-search-string)
+    (kill-local-variable 'company-search-lighter)
+    (kill-local-variable 'company-search-old-selection)
+    (company-enable-overriding-keymap company-active-map)))
+
+(defun company-search-candidates ()
+  (interactive)
+  (company-search-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -532,14 +642,24 @@
 
 (defun company-fill-propertize (line width selected)
   (setq line (company-safe-substring line 0 width))
-  (add-text-properties 0 width
-                       (list 'face (if selected
-                                       'company-tooltip-selection
-                                     'company-tooltip)) line)
+  (add-text-properties 0 width (list 'face 'company-tooltip) line)
   (add-text-properties 0 (length company-common)
-                       (list 'face (if selected
-                                       'company-tooltip-common-selection
-                                     'company-tooltip-common)) line)
+                       (list 'face 'company-tooltip-common) line)
+  (when selected
+    (if (and company-search-string
+             (string-match (regexp-quote company-search-string) line
+                           (length company-prefix)))
+        (progn
+          (add-text-properties (match-beginning 0) (match-end 0)
+                               '(face company-tooltip-selection) line)
+          (when (< (match-beginning 0) (length company-common))
+            (add-text-properties (match-beginning 0) (length company-common)
+                                 '(face company-tooltip-common-selection)
+                                 line)))
+      (add-text-properties 0 width '(face company-tooltip-selection) line)
+      (add-text-properties 0 (length company-common)
+                           (list 'face 'company-tooltip-common-selection)
+                           line)))
   line)
 
 ;;; replace
