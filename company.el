@@ -143,17 +143,8 @@
   :group 'company
   :type '(integer :tag "prefix length"))
 
-(defvar company-timer nil)
-
-(defun company-timer-set (variable value)
-  (set variable value)
-  (when company-timer (cancel-timer company-timer))
-  (when (numberp value)
-    (setq company-timer (run-with-idle-timer value t 'company-idle-begin))))
-
 (defcustom company-idle-delay .7
   "*"
-  :set 'company-timer-set
   :group 'company
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (t)" t)
@@ -180,9 +171,7 @@
   (if company-mode
       (progn
         (add-hook 'pre-command-hook 'company-pre-command nil t)
-        (add-hook 'post-command-hook 'company-post-command nil t)
-        (company-timer-set 'company-idle-delay
-                           company-idle-delay))
+        (add-hook 'post-command-hook 'company-post-command nil t))
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
     (company-cancel)
@@ -267,6 +256,8 @@
 (defvar company-point nil)
 (make-variable-buffer-local 'company-point)
 
+(defvar company-timer nil)
+
 (defvar company-disabled-backends nil)
 
 (defsubst company-strip-prefix (str)
@@ -343,8 +334,12 @@
     (push (cons prefix company-candidates) company-candidates-cache))
   company-candidates)
 
-(defun company-idle-begin ()
+(defun company-idle-begin (buf win tick pos)
   (and company-mode
+       (eq buf (current-buffer))
+       (eq win (selected-window))
+       (eq tick (buffer-chars-modified-tick))
+       (eq pos (point))
        (not company-candidates)
        (not (equal (point) company-point))
        (let ((company-idle-delay t))
@@ -411,6 +406,8 @@
         company-selection 0
         company-selection-changed nil
         company-point nil)
+  (when company-timer
+    (cancel-timer company-timer))
   (company-search-mode 0)
   (company-call-frontends 'hide)
   (company-enable-overriding-keymap nil))
@@ -428,6 +425,8 @@
       (error (message "Company: An error occurred in pre-command")
              (message "%s" (error-message-string err))
              (company-cancel))))
+  (when company-timer
+    (cancel-timer company-timer))
   (company-uninstall-map))
 
 (defun company-post-command ()
@@ -437,7 +436,12 @@
           (unless (equal (point) company-point)
             (company-begin))
           (when company-candidates
-            (company-call-frontends 'post-command)))
+            (company-call-frontends 'post-command))
+          (when (numberp company-idle-delay)
+            (setq company-timer
+                  (run-with-timer company-idle-delay nil 'company-idle-begin
+                                  (current-buffer) (selected-window)
+                                  (buffer-chars-modified-tick) (point)))))
       (error (message "Company: An error occurred in post-command")
              (message "%s" (error-message-string err))
              (company-cancel))))
