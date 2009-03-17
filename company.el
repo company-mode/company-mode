@@ -274,7 +274,10 @@
 
 (defsubst company-call-frontends (command)
   (dolist (frontend company-frontends)
-    (funcall frontend command)))
+    (condition-case err
+        (funcall frontend command)
+      (error (error "Company: Front-end %s error \"%s\" on command %s"
+                    frontend (error-message-string err) command)))))
 
 (defsubst company-set-selection (selection &optional force-update)
   (setq selection (max 0 (min (1- (length company-candidates)) selection)))
