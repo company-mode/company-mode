@@ -72,7 +72,8 @@
     ('meta (funcall company-semantic-metadata-function
                     (semantic-analyze-find-tag arg)))
     ('doc-buffer (company-semantic-doc-buffer (semantic-analyze-find-tag arg)))
-    ))
+    ;; because "" is an empty context and doesn't return local variables
+    ('no-cache (equal arg ""))))
 
 (provide 'company-semantic)
 ;;; company-semantic.el ends here

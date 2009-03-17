@@ -362,7 +362,7 @@
 
 (defun company-continue ()
   (when company-candidates
-    (when (funcall company-backend 'no-cache)
+    (when (funcall company-backend 'no-cache company-prefix)
       ;; Don't complete existing candidates, fetch new ones.
       (setq company-candidates-cache nil))
     (let ((new-prefix (funcall company-backend 'prefix)))
