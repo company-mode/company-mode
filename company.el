@@ -694,6 +694,18 @@
 
 ;;; propertize
 
+(defsubst company-round-tab (arg)
+  (* (/ (+ arg tab-width) tab-width) tab-width))
+
+(defun company-untabify (str)
+  (let* ((pieces (split-string str "\t"))
+         (copy pieces))
+    (while (cdr copy)
+      (setcar copy (company-safe-substring
+                    (car copy) 0 (company-round-tab (string-width (car copy)))))
+      (pop copy))
+    (apply 'concat pieces)))
+
 (defun company-fill-propertize (line width selected)
   (setq line (company-safe-substring line 0 width))
   (add-text-properties 0 width (list 'face 'company-tooltip) line)
@@ -814,7 +826,8 @@
            (end (save-excursion
                   (move-to-window-line (+ row height))
                   (point)))
-           (old-string (company-buffer-lines beg end))
+           (old-string
+            (mapcar 'company-untabify (company-buffer-lines beg end)))
            str)
 
       (setq company-pseudo-tooltip-overlay (make-overlay beg end))
