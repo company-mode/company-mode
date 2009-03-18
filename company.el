@@ -238,6 +238,9 @@
 (defvar company-candidates nil)
 (make-variable-buffer-local 'company-candidates)
 
+(defvar company-candidates-length nil)
+(make-variable-buffer-local 'company-candidates-length)
+
 (defvar company-candidates-cache nil)
 (make-variable-buffer-local 'company-candidates-cache)
 
@@ -280,7 +283,7 @@
                     frontend (error-message-string err) command)))))
 
 (defsubst company-set-selection (selection &optional force-update)
-  (setq selection (max 0 (min (1- (length company-candidates)) selection)))
+  (setq selection (max 0 (min (1- company-candidates-length) selection)))
   (when (or force-update (not (equal selection company-selection)))
     (setq company-selection selection
           company-selection-changed t)
@@ -294,6 +297,7 @@
     (nreverse new)))
 
 (defun company-update-candidates (candidates)
+  (setq company-candidates-length (length candidates))
   (if (> company-selection 0)
       ;; Try to restore the selection
       (let ((selected (nth company-selection company-candidates)))
@@ -304,7 +308,7 @@
             (incf company-selection))
           (unless candidates
             ;; Make sure selection isn't out of bounds.
-            (setq company-selection (min (1- (length company-candidates))
+            (setq company-selection (min (1- company-candidates-length)
                                          company-selection)))))
     (setq company-selection 0
           company-candidates candidates))
@@ -403,6 +407,7 @@
   (setq company-backend nil
         company-prefix nil
         company-candidates nil
+        company-candidates-length nil
         company-candidates-cache nil
         company-candidates-predicate nil
         company-common nil
@@ -496,7 +501,7 @@
 (defun company-search-repeat-backward ()
   (interactive)
   (let ((pos (company-search company-search-string
-                              (nthcdr (- (length company-candidates)
+                              (nthcdr (- company-candidates-length
                                          company-selection)
                                       (reverse company-candidates)))))
     (if (null pos)
@@ -759,9 +764,10 @@
             (mapconcat 'identity (nreverse new) "\n")
             "\n")))
 
-(defun company-create-lines (column lines selection limit)
+(defun company-create-lines (column selection limit)
 
-  (let ((len (length lines))
+  (let ((len company-candidates-length)
+        lines
         width
         lines-copy
         previous
@@ -780,8 +786,8 @@
 
     (decf selection company-tooltip-offset)
     (setq width (min (length previous) (length remainder))
-          lines (nthcdr company-tooltip-offset lines)
-          len (min limit (length lines))
+          lines (nthcdr company-tooltip-offset company-candidates)
+          len (min limit len)
           lines-copy lines)
 
     (dotimes (i len)
@@ -812,15 +818,14 @@
   (max 3 (min company-tooltip-limit
               (- (window-height) (cdr (posn-col-row (posn-at-point))) 2))))
 
-(defun company-pseudo-tooltip-show (row column lines selection)
+(defun company-pseudo-tooltip-show (row column selection)
   (company-pseudo-tooltip-hide)
-  (unless lines (error "No text provided"))
   (save-excursion
 
     (move-to-column 0)
 
     (let* ((height (company-pseudo-tooltip-height))
-           (lines (company-create-lines column lines selection height))
+           (lines (company-create-lines column selection height))
            (nl (< (move-to-window-line row) row))
            (beg (point))
            (end (save-excursion
@@ -843,15 +848,14 @@
 
 (defun company-pseudo-tooltip-show-at-point (pos)
   (let ((col-row (posn-col-row (posn-at-point pos))))
-    (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
-                                 company-candidates company-selection)))
+    (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row) company-selection)))
 
 (defun company-pseudo-tooltip-edit (lines selection)
   (let* ((old-string (overlay-get company-pseudo-tooltip-overlay 'company-old))
          (column (overlay-get company-pseudo-tooltip-overlay 'company-column))
          (nl (overlay-get company-pseudo-tooltip-overlay 'company-nl))
          (height (overlay-get company-pseudo-tooltip-overlay 'company-height))
-         (lines (company-create-lines column lines selection height)))
+         (lines (company-create-lines column selection height)))
     (overlay-put company-pseudo-tooltip-overlay 'company-before
                  (company-replacement-string old-string lines column nl))))
 
