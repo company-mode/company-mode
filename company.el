@@ -942,20 +942,32 @@
 (defvar company-echo-last-msg nil)
 (make-variable-buffer-local 'company-echo-last-msg)
 
-(defun company-echo-refresh ()
+(defvar company-echo-timer nil)
+
+(defvar company-echo-delay .1)
+
+(defun company-echo-show (&optional getter)
+  (when getter
+    (setq company-echo-last-msg (funcall getter)))
   (let ((message-log-max nil))
     (if company-echo-last-msg
         (message "%s" company-echo-last-msg)
       (message ""))))
 
-(defun company-echo-show (candidates)
+(defsubst company-echo-show-soon (&optional getter)
+  (when company-echo-timer
+    (cancel-timer company-echo-timer))
+  (setq company-echo-timer (run-with-timer company-echo-delay nil
+                                           'company-echo-show getter)))
 
-  ;; Roll to selection.
-  (setq candidates (nthcdr company-selection candidates))
+(defun company-echo-format ()
 
   (let ((limit (window-width (minibuffer-window)))
         (len -1)
+        ;; Roll to selection.
+        (candidates (nthcdr company-selection company-candidates))
         comp msg)
+
     (while candidates
       (setq comp (company-reformat (pop candidates))
             len (+ len 1 (length comp)))
@@ -966,22 +978,25 @@
                              '(face company-echo-common) comp)
         (push comp msg)))
 
-    (setq company-echo-last-msg (mapconcat 'identity (nreverse msg) " "))
-    (company-echo-refresh)))
+    (mapconcat 'identity (nreverse msg) " ")))
+
+(defun company-echo-hide ()
+  (when company-echo-timer
+    (cancel-timer company-echo-timer))
+  (setq company-echo-last-msg "")
+  (company-echo-show))
 
 (defun company-echo-frontend (command)
   (case command
-    ('pre-command (company-echo-refresh))
-    ('post-command (company-echo-show company-candidates))
-    ('hide (setq company-echo-last-msg nil))))
+    ('pre-command (company-echo-show-soon))
+    ('post-command (company-echo-show-soon 'company-echo-format))
+    ('hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
   (case command
-    ('pre-command (company-echo-refresh))
-    ('post-command (setq company-echo-last-msg (company-fetch-metadata))
-                   (company-echo-refresh))
-    ('hide (setq company-echo-last-msg nil))))
-
+    ('pre-command (company-echo-show-soon))
+    ('post-command (company-echo-show-soon 'company-fetch-metadata))
+    ('hide (company-echo-hide))))
 
 (provide 'company)
 ;;; company.el ends here
