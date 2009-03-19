@@ -540,8 +540,16 @@
 (defvar company-search-map
   (let ((i 0)
         (keymap (make-keymap)))
-    (set-char-table-range (nth 1 keymap) (cons #x100 (max-char))
-                          'company-search-printing-char)
+    (if (fboundp 'max-char)
+        (set-char-table-range (nth 1 keymap) (cons #x100 (max-char))
+                              'company-search-printing-char)
+      (with-no-warnings
+        ;; obselete in Emacs 23
+        (let ((l (generic-character-list))
+              (table (nth 1 keymap)))
+          (while l
+            (set-char-table-default table (car l) 'isearch-printing-char)
+            (setq l (cdr l))))))
     (define-key keymap [t] 'company-search-other-char)
     (while (< i ?\s)
       (define-key keymap (make-string 1 i) 'company-search-other-char)
