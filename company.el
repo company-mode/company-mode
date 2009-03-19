@@ -62,6 +62,8 @@
 (add-to-list 'debug-ignored-errors "^Preview frontend cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^Echo area cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^No documentation available$")
+(add-to-list 'debug-ignored-errors "^Company not enabled$")
+(add-to-list 'debug-ignored-errors "^Company not in search mode$")
 
 (defgroup company nil
   "Extensible inline text completion mechanism"
@@ -450,6 +452,7 @@ keymap during active completions:
            (company-post-command)))))
 
 (defun company-manual-begin ()
+  (unless company-mode (error "Company not enabled"))
   (and company-mode
        (not company-candidates)
        (let ((company-idle-delay t)
@@ -573,6 +576,8 @@ keymap during active completions:
 
 (defun company-search-printing-char ()
   (interactive)
+  (unless company-mode (error "Company not enabled"))
+  (unless company-search-mode (error "Company not in search mode"))
   (setq company-search-string
         (concat (or company-search-string "") (string last-command-event))
         company-search-lighter (concat " Search: \"" company-search-string
@@ -586,6 +591,8 @@ keymap during active completions:
 (defun company-search-repeat-forward ()
   "Repeat the incremental search in completion candidates forward."
   (interactive)
+  (unless company-mode (error "Company not enabled"))
+  (unless company-search-mode (error "Company not in search mode"))
   (let ((pos (company-search company-search-string
                               (cdr (nthcdr company-selection
                                            company-candidates)))))
@@ -596,6 +603,8 @@ keymap during active completions:
 (defun company-search-repeat-backward ()
   "Repeat the incremental search in completion candidates backwards."
   (interactive)
+  (unless company-mode (error "Company not enabled"))
+  (unless company-search-mode (error "Company not in search mode"))
   (let ((pos (company-search company-search-string
                               (nthcdr (- company-candidates-length
                                          company-selection)
@@ -614,6 +623,8 @@ keymap during active completions:
 (defun company-search-kill-others ()
   "Limit the completion candidates to the ones matching the search string."
   (interactive)
+  (unless company-mode (error "Company not enabled"))
+  (unless company-search-mode (error "Company not in search mode"))
   (let ((predicate (company-create-match-predicate company-search-string)))
     (setq company-candidates-predicate predicate)
     (company-update-candidates (company-apply-predicate company-candidates
@@ -624,11 +635,15 @@ keymap during active completions:
 (defun company-search-abort ()
   "Abort searching the completion candidates."
   (interactive)
+  (unless company-mode (error "Company not enabled"))
+  (unless company-search-mode (error "Company not in search mode"))
   (company-set-selection company-search-old-selection t)
   (company-search-mode 0))
 
 (defun company-search-other-char ()
   (interactive)
+  (unless company-mode (error "Company not enabled"))
+  (unless company-search-mode (error "Company not in search mode"))
   (company-search-mode 0)
   (when last-input-event
     (clear-this-command-keys t)
@@ -791,7 +806,8 @@ when the selection has been changed, the selected candidate is completed."
 (defun company-show-doc-buffer ()
   "Temporarily show a buffer with the complete documentation for the selection."
   (interactive)
-  (when company-candidates
+  (unless company-mode (error "Company not enabled"))
+  (when (company-manual-begin)
     (save-window-excursion
       (let* ((height (window-height))
              (row (cdr (posn-col-row (posn-at-point))))
