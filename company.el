@@ -132,7 +132,7 @@
                          (function :tag "custom function" nil))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-semantic company-oddmuse
+                              company-semantic company-gtags company-oddmuse
                               company-files company-dabbrev)
   "*"
   :group 'company
@@ -748,7 +748,7 @@
       (push (buffer-substring beg end) lines))
     (nreverse lines)))
 
-(defun company-modify-line (old new offset)
+(defsubst company-modify-line (old new offset)
   (concat (company-safe-substring old 0 offset)
           new
           (company-safe-substring old (+ offset (length new)))))
@@ -760,7 +760,7 @@
       (push (company-modify-line (pop old) (pop lines) column) new))
     ;; Append whole new lines.
     (while lines
-      (push (company-modify-line "" (pop lines) column) new))
+      (push (concat (company-space-string column) (pop lines)) new))
     (concat (when nl "\n")
             (mapconcat 'identity (nreverse new) "\n")
             "\n")))
