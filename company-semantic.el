@@ -62,6 +62,7 @@
       (all-completions prefix (semantic-ia-get-completions context (point))))))
 
 (defun company-semantic (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end using CEDET Semantic."
   (case command
     ('prefix (and (memq major-mode '(c-mode c++-mode jde-mode java-mode))
                   (not (company-in-string-or-comment))

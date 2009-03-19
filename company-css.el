@@ -272,6 +272,7 @@ Returns \"\" if no property found, but feasible at this position."
   "A regular expression matching CSS tags")
 
 (defun company-css (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end for `css-mode'."
   (case command
     ('prefix (and (eq major-mode 'css-mode)
                   (or (company-grab company-css-tag-regexp 1)

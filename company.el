@@ -25,6 +25,30 @@
 ;;
 ;;; Commentary:
 ;;
+;; Company is a modular completion mechanism.  Modules for retrieving completion
+;; candidates are called back-ends, modules for displaying them are front-ends.
+;;
+;; Company comes with many back-ends, e.g. `company-elisp'.  These are
+;; distributed in individual files and can be used individually.
+;;
+;; Place company.el and the back-ends you want to use in a directory and add the
+;; following to your .emacs:
+;; (add-to-list 'load-path "/path/to/company")
+;; (autoload 'company-mode "company" nil t)
+;;
+;; Enable company-mode with M-x company-mode.  For further information look at
+;; the documentation for `company-mode' (C-h f company-mode RET)
+;;
+;; To write your own back-end, look at the documentation for `company-backends'.
+;; Here is a simple example completing "foo":
+;;
+;; (defun company-my-backend (command &optional arg &rest ignored)
+;;   (case command
+;;     ('prefix (when (looking-back "foo\\>")
+;;                (match-string 0)))
+;;     ('candidates (list "foobar" "foobaz" "foobarbaz"))
+;;     ('meta (format "This value is named %s" arg))))
+;;
 ;;; Change Log:
 ;;
 ;;    Initial release.
@@ -40,7 +64,7 @@
 (add-to-list 'debug-ignored-errors "^No documentation available$")
 
 (defgroup company nil
-  ""
+  "Extensible inline text completion mechanism"
   :group 'abbrev
   :group 'convenience
   :group 'maching)
@@ -48,52 +72,52 @@
 (defface company-tooltip
   '((t :background "yellow"
        :foreground "black"))
-  "*"
+  "*Face used for the tool tip."
   :group 'company)
 
 (defface company-tooltip-selection
   '((t :background "orange1"
        :foreground "black"))
-  "*"
+  "*Face used for the selection in the tool tip."
   :group 'company)
 
 (defface company-tooltip-common
   '((t :inherit company-tooltip
        :foreground "red"))
-  "*"
+  "*Face used for the common completion in the tool tip."
   :group 'company)
 
 (defface company-tooltip-common-selection
   '((t :inherit company-tooltip-selection
        :foreground "red"))
-  "*"
+  "*Face used for the selected common completion in the tool tip."
   :group 'company)
 
 (defcustom company-tooltip-limit 10
-  "*"
+  "*The maximum number of candidates in the tool tip"
   :group 'company
   :type 'integer)
 
 (defface company-preview
   '((t :background "blue4"
        :foreground "wheat"))
-  "*"
+  "*Face used for the completion preview."
   :group 'company)
 
 (defface company-preview-common
   '((t :inherit company-preview
        :foreground "red"))
-  "*"
+  "*Face used for the common part of the completion preview."
   :group 'company)
 
 (defface company-echo nil
-  "*"
+  "*Face used for completions in the echo area."
   :group 'company)
 
 (defface company-echo-common
   '((((background dark)) (:foreground "firebrick1"))
     (((background light)) (:background "firebrick4")))
-  "*"
+  "*Face used for the common part of completions in the echo area."
   :group 'company)
 
 (defun company-frontends-set (variable value)
@@ -118,7 +142,25 @@
 (defcustom company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
                                company-preview-if-just-one-frontend
                                company-echo-metadata-frontend)
-  "*"
+  "*The list of active front-ends (visualizations).
+Each front-end is a function that takes one argument.  It is called with
+one of the following arguments:
+
+'show: When the visualization should start.
+
+'hide: When the visualization should end.
+
+'update: When the data has been updated.
+
+'pre-command: Before every command that is executed while the
+visualization is active.
+
+'post-command: After every command that is executed while the
+visualization is active.
+
+The visualized data is stored in `company-prefix', `company-candidates',
+`company-common', `company-selection', `company-point' and
+`company-search-string'."
   :set 'company-frontends-set
   :group 'company
   :type '(repeat (choice (const :tag "echo" company-echo-frontend)
@@ -134,17 +176,48 @@
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-semantic company-gtags company-oddmuse
                               company-files company-dabbrev)
-  "*"
+  "*The list of active back-ends (completion engines).
+Each back-end is a function that takes a variable number of arguments.
+The first argument is the command requested from the back-end.  It is one
+of the following:
+
+'prefix: The back-end should return the text to be completed.  It must be
+text immediately before `point'.  Returning nil passes control to the next
+back-end.
+
+'candidates: The second argument is the prefix to be completed.  The
+return value should be a list of candidates that start with the prefix.
+
+Optional commands:
+
+'sorted: The back-end may return t here to indicate that the candidates
+are sorted and will not need to be sorted again.
+
+'no-cache: Usually company doesn't ask for candidates again as completion
+progresses, unless the back-end returns t for this command.  The second
+argument is the latest prefix.
+
+'meta: The second argument is a completion candidate.  The back-end should
+return a (short) documentation string for it.
+
+'doc-buffer: The second argument is a completion candidate.  The back-end should
+create a buffer (preferably with `company-doc-buffer'), fill it with
+documentation and return it.
+
+The back-end should return nil for all commands it does not support or
+does not know about."
   :group 'company
   :type '(repeat (function :tag "function" nil)))
 
 (defcustom company-minimum-prefix-length 3
-  "*"
+  "*The minimum prefix length for automatic completion."
   :group 'company
   :type '(integer :tag "prefix length"))
 
 (defcustom company-idle-delay .7
-  "*"
+  "*The idle delay in seconds until automatic completions starts.
+A value of nil means never complete automatically, t means complete
+immediately when a prefix of `company-minimum-prefix-length' is reached."
   :group 'company
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (t)" t)
@@ -152,7 +225,8 @@
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-mode-map (make-sparse-keymap))
+(defvar company-mode-map (make-sparse-keymap)
+  "Keymap used by `company-mode'.")
 
 (defvar company-active-map
   (let ((keymap (make-sparse-keymap)))
@@ -162,11 +236,30 @@
     (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     (define-key keymap "\C-s" 'company-search-candidates)
-    keymap))
+    keymap)
+  "Keymap that is enabled during an active completion.")
 
 ;;;###autoload
 (define-minor-mode company-mode
-  ""
+  "\"complete anything\"; in in-buffer completion framework.
+Completion starts automatically, depending on the values
+`company-idle-delay' and `company-minimum-prefix-length'
+
+Completion can be controlled with the commands:
+`company-complete-common', `company-complete-selection', `company-complete',
+`company-select-next', `company-select-previous'.
+
+Completions can be searched with `company-search-candidates'.
+
+The completion data is retrieved using `company-backends' and displayed using
+`company-frontends'.
+
+regular keymap:
+
+\\{company-mode-map}
+keymap during active completions:
+
+\\{company-active-map}"
   nil " comp" company-mode-map
   (if company-mode
       (progn
@@ -491,6 +584,7 @@
       (company-set-selection (+ company-selection pos) t))))
 
 (defun company-search-repeat-forward ()
+  "Repeat the incremental search in completion candidates forward."
   (interactive)
   (let ((pos (company-search company-search-string
                               (cdr (nthcdr company-selection
@@ -500,6 +594,7 @@
       (company-set-selection (+ company-selection pos 1) t))))
 
 (defun company-search-repeat-backward ()
+  "Repeat the incremental search in completion candidates backwards."
   (interactive)
   (let ((pos (company-search company-search-string
                               (nthcdr (- company-candidates-length
@@ -517,6 +612,7 @@
         `(string-match ,company-search-string candidate))))
 
 (defun company-search-kill-others ()
+  "Limit the completion candidates to the ones matching the search string."
   (interactive)
   (let ((predicate (company-create-match-predicate company-search-string)))
     (setq company-candidates-predicate predicate)
@@ -526,6 +622,7 @@
     (company-call-frontends 'update)))
 
 (defun company-search-abort ()
+  "Abort searching the completion candidates."
   (interactive)
   (company-set-selection company-search-old-selection t)
   (company-search-mode 0))
@@ -568,10 +665,21 @@
     (define-key keymap "\C-s" 'company-search-repeat-forward)
     (define-key keymap "\C-r" 'company-search-repeat-backward)
     (define-key keymap "\C-o" 'company-search-kill-others)
-    keymap))
+    keymap)
+  "Keymap used for incrementally searching the completion candidates.")
 
 (define-minor-mode company-search-mode
-  ""
+  "Start searching the completion candidates incrementally.
+
+\\<company-search-map>Search can be controlled with the commands:
+- `company-search-repeat-forward' (\\[company-search-repeat-forward])
+- `company-search-repeat-backward' (\\[company-search-repeat-backward])
+- `company-search-abort' (\\[company-search-abort])
+
+Regular characters are appended to the search string.
+
+The command `company-search-kill-others' (\\[company-search-kill-others]) uses
+ the search string to limit the completion candidates."
   nil company-search-lighter nil
   (if company-search-mode
       (if (company-manual-begin)
@@ -586,33 +694,51 @@
     (company-enable-overriding-keymap company-active-map)))
 
 (defun company-search-candidates ()
+  "Start searching the completion candidates incrementally.
+
+\\<company-search-map>Search can be controlled with the commands:
+- `company-search-repeat-forward' (\\[company-search-repeat-forward])
+- `company-search-repeat-backward' (\\[company-search-repeat-backward])
+- `company-search-abort' (\\[company-search-abort])
+
+Regular characters are appended to the search string.
+
+The command `company-search-kill-others' (\\[company-search-kill-others]) uses
+ the search string to limit the completion candidates."
   (interactive)
   (company-search-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun company-select-next ()
+  "Select the next candidate in the list."
   (interactive)
   (when (company-manual-begin)
     (company-set-selection (1+ company-selection))))
 
 (defun company-select-previous ()
+  "Select the previous candidate in the list."
   (interactive)
   (when (company-manual-begin)
     (company-set-selection (1- company-selection))))
 
 (defun company-complete-selection ()
+  "Complete the selected candidate."
   (interactive)
   (when (company-manual-begin)
     (insert (company-strip-prefix (nth company-selection company-candidates)))
     (company-abort)))
 
 (defun company-complete-common ()
+  "Complete the common part of all candidates."
   (interactive)
   (when (company-manual-begin)
     (insert (company-strip-prefix company-common))))
 
 (defun company-complete ()
+  "Complete the common part of all candidates or the current selection.
+The first time this is called, the common part is completed, the second time, or
+when the selection has been changed, the selected candidate is completed."
   (interactive)
   (when (company-manual-begin)
     (if (or company-selection-changed
@@ -663,6 +789,7 @@
     (current-buffer)))
 
 (defun company-show-doc-buffer ()
+  "Temporarily show a buffer with the complete documentation for the selection."
   (interactive)
   (when company-candidates
     (save-window-excursion
@@ -892,6 +1019,7 @@
                  (overlay-get company-pseudo-tooltip-overlay 'company-before))))
 
 (defun company-pseudo-tooltip-frontend (command)
+  "A `company-mode' front-end similar to a tool-tip but based on overlays."
   (case command
     ('pre-command (company-pseudo-tooltip-hide-temporarily))
     ('post-command
@@ -910,6 +1038,7 @@
                                             company-selection)))))
 
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
+  "`company-pseudo-tooltip-frontend', but not shown for single candidates."
   (unless (and (eq command 'post-command)
                (not (cdr company-candidates)))
     (company-pseudo-tooltip-frontend command)))
@@ -943,12 +1072,14 @@
     (setq company-preview-overlay nil)))
 
 (defun company-preview-frontend (command)
+  "A `company-mode' front-end showing the selection as if it had been inserted."
   (case command
     ('pre-command (company-preview-hide))
     ('post-command (company-preview-show-at-point (point)))
     ('hide (company-preview-hide))))
 
 (defun company-preview-if-just-one-frontend (command)
+  "`company-preview-frontend', but only shown for single candidates."
   (unless (and (eq command 'post-command)
                (cdr company-candidates))
     (company-preview-frontend command)))
@@ -1003,12 +1134,14 @@
   (company-echo-show))
 
 (defun company-echo-frontend (command)
+  "A `company-mode' front-end showing the candidates in the echo area."
   (case command
     ('pre-command (company-echo-show-soon))
     ('post-command (company-echo-show-soon 'company-echo-format))
     ('hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
+  "A `company-mode' front-end showing the documentation in the echo area."
   (case command
     ('pre-command (company-echo-show-soon))
     ('post-command (company-echo-show-soon 'company-fetch-metadata))

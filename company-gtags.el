@@ -58,6 +58,7 @@
       (nreverse tags))))
 
 (defun company-gtags (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end for GNU Global."
   (case command
     ('prefix (and (memq major-mode company-gtags-modes)
                   (company-gtags-available)

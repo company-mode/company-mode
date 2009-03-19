@@ -57,6 +57,7 @@
     (cdr company-files-completion-cache)))
 
 (defun company-files (command &optional arg &rest ignored)
+  "a `company-mode' completion back-end existing file names."
   (case command
     ('prefix (company-files-grab-existing-name))
     ('candidates (company-files-complete arg))

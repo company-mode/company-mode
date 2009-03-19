@@ -25,6 +25,7 @@
   "\\(\\<[A-Z][[:alnum:]]*\\>\\)\\|\\[\\[\\([[:alnum:]]+\\>\\|\\)")
 
 (defun company-oddmuse (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end for `oddmuse-mode'."
   (case command
     ('prefix (let ((case-fold-search nil))
                (and (eq major-mode 'oddmuse-mode)

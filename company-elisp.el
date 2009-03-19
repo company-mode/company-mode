@@ -66,6 +66,7 @@
          (match-string 0 doc))))
 
 (defun company-elisp (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end for `emacs-lisp-mode'."
   (case command
     ('prefix (and (eq major-mode 'emacs-lisp-mode)
                   (company-grab-lisp-symbol)))

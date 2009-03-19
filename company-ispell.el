@@ -42,6 +42,7 @@ If nil, use `ispell-complete-word-dict'."
   company-ispell-available)
 
 (defun company-ispell (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end using ispell."
   (case command
     ('prefix (when (company-ispell-available)
                (company-grab "\\<\\w+\\>")))

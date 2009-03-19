@@ -30,6 +30,7 @@
         (buffer-substring-no-properties (point) end)))))
 
 (defun company-dabbrev (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end for `dabbrev-completion'."
   (case command
     ('prefix (company-grab-dabbrev-prefix))
     ('candidates (let ((dabbrev-check-other-buffers))

@@ -103,6 +103,7 @@
                            (rng-match-possible-value-strings))))))))
 
 (defun company-nxml (command &optional arg &rest ignored)
+  "A `company-mode' completion back-end for `nxml-mode'."
   (case command
     ('prefix (or (company-nxml-tag 'prefix)
                  (company-nxml-attribute 'prefix)
