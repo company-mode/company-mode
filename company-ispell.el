@@ -28,9 +28,23 @@ If nil, use `ispell-complete-word-dict'."
   :type '(choice (const :tag "default (nil)" nil)
                  (file :tag "dictionary" t)))
 
+(defvar company-ispell-available 'unknown)
+
+(defun company-ispell-available ()
+  (when (eq company-ispell-available 'unknown)
+    (condition-case err
+        (progn
+          (lookup-words "WHATEVER")
+          (setq company-ispell-available t))
+      (error
+       (message "Company: ispell-look-command not found")
+       (setq company-ispell-available nil))))
+  company-ispell-available)
+
 (defun company-ispell (command &optional arg &rest ignored)
   (case command
-    ('prefix (company-grab "\\<\\w+\\>"))
+    ('prefix (when (company-ispell-available)
+               (company-grab "\\<\\w+\\>")))
     ('candidates (lookup-words arg (or company-ispell-dictionary
                                        ispell-complete-word-dict)))
     ('sorted t)
