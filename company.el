@@ -322,18 +322,19 @@
   (setq company-prefix prefix)
   (company-update-candidates
    (or (cdr (assoc prefix company-candidates-cache))
-       (let ((len (length prefix))
-             (completion-ignore-case (funcall company-backend 'ignore-case))
-             prev)
-         (dotimes (i len)
-           (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
-                                        company-candidates-cache)))
-             (return (all-completions prefix prev)))))
+       (when company-candidates-cache
+         (let ((len (length prefix))
+               (completion-ignore-case (funcall company-backend 'ignore-case))
+               prev)
+           (dotimes (i len)
+             (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
+                                          company-candidates-cache)))
+               (return (all-completions prefix prev))))))
        (let ((candidates (funcall company-backend 'candidates prefix)))
-         (and company-candidates-predicate
-              (setq candidates
-                    (company-apply-predicate candidates
-                                             company-candidates-predicate)))
+         (when company-candidates-predicate
+           (setq candidates
+                 (company-apply-predicate candidates
+                                          company-candidates-predicate)))
          (unless (funcall company-backend 'sorted)
            (setq candidates (sort candidates 'string<)))
          candidates)))
