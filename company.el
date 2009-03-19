@@ -509,10 +509,16 @@
         (ding)
       (company-set-selection (- company-selection pos 1) t))))
 
+(defsubst company-create-match-predicate (search-string)
+  `(lambda (candidate)
+     ,(if company-candidates-predicate
+          `(and (string-match ,search-string candidate)
+                (funcall ,company-candidates-predicate candidate))
+        `(string-match ,company-search-string candidate))))
+
 (defun company-search-kill-others ()
   (interactive)
-  (let ((predicate `(lambda (candidate)
-                      (string-match ,company-search-string candidate))))
+  (let ((predicate (company-create-match-predicate company-search-string)))
     (setq company-candidates-predicate predicate)
     (company-update-candidates (company-apply-predicate company-candidates
                                                         predicate))
