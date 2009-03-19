@@ -817,7 +817,8 @@
 (defsubst company-pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height."
   (max 3 (min company-tooltip-limit
-              (- (window-height) (cdr (posn-col-row (posn-at-point))) 2))))
+              (- (window-height) 2
+                 (count-lines (window-start) (point-at-bol))))))
 
 (defun company-pseudo-tooltip-show (row column selection)
   (company-pseudo-tooltip-hide)
