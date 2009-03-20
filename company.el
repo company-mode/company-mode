@@ -276,7 +276,13 @@ keymap during active completions:
   (if company-mode
       (progn
         (add-hook 'pre-command-hook 'company-pre-command nil t)
-        (add-hook 'post-command-hook 'company-post-command nil t))
+        (add-hook 'post-command-hook 'company-post-command nil t)
+        (dolist (backend company-backends)
+          (unless (fboundp backend)
+            (ignore-errors (require backend nil t)))
+          (unless (fboundp backend)
+            (message "Company back-end '%s' could not be initialized"
+                     backend))))
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
     (company-cancel)
@@ -365,8 +371,6 @@ keymap during active completions:
 (make-variable-buffer-local 'company-point)
 
 (defvar company-timer nil)
-
-(defvar company-disabled-backends nil)
 
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
@@ -491,18 +495,12 @@ keymap during active completions:
     (unless company-candidates
       (let (prefix)
         (dolist (backend company-backends)
-          (unless (fboundp backend)
-            (ignore-errors (require backend nil t)))
-          (if (fboundp backend)
-              (when (setq prefix (funcall backend 'prefix))
-                (when (company-should-complete prefix)
-                  (setq company-backend backend)
-                  (company-calculate-candidates prefix))
-                (return prefix))
-            (unless (memq backend company-disabled-backends)
-              (push backend company-disabled-backends)
-              (message "Company back-end '%s' could not be initialized"
-                       backend)))))))
+          (and (fboundp backend)
+               (setq prefix (funcall backend 'prefix))
+               (company-should-complete prefix)
+               (setq company-backend backend)
+               (company-calculate-candidates prefix))
+          (return prefix)))))
   (if company-candidates
       (progn
         (setq company-point (point))
