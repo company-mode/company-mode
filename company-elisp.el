@@ -68,7 +68,7 @@
 (defun company-elisp (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `emacs-lisp-mode'."
   (case command
-    ('prefix (and (eq major-mode 'emacs-lisp-mode)
+    ('prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
                   (company-grab-lisp-symbol)))
     ('candidates (let ((completion-ignore-case nil))
                    (append (all-completions arg (company-elisp-parse-let))
