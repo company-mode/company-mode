@@ -235,6 +235,8 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "M-n") 'company-select-next)
     (define-key keymap (kbd "M-p") 'company-select-previous)
+    (define-key keymap (kbd "<down>") 'company-select-next)
+    (define-key keymap (kbd "<up>") 'company-select-previous)
     (define-key keymap "\C-m" 'company-complete-selection)
     (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
