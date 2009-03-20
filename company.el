@@ -55,6 +55,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Don't hide the echo message if it isn't shown.
+;;
 ;; 2009-03-20 (0.1)
 ;;    Initial release.
 ;;
@@ -1155,8 +1157,9 @@ when the selection has been changed, the selected candidate is completed."
 (defun company-echo-hide ()
   (when company-echo-timer
     (cancel-timer company-echo-timer))
-  (setq company-echo-last-msg "")
-  (company-echo-show))
+  (unless (equal company-echo-last-msg "")
+    (setq company-echo-last-msg "")
+    (company-echo-show)))
 
 (defun company-echo-frontend (command)
   "A `company-mode' front-end showing the candidates in the echo area."
