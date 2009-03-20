@@ -1039,7 +1039,8 @@ when the selection has been changed, the selected candidate is completed."
   (when company-pseudo-tooltip-overlay
     (overlay-put company-pseudo-tooltip-overlay 'invisible t)
     (overlay-put company-pseudo-tooltip-overlay 'before-string
-                 (overlay-get company-pseudo-tooltip-overlay 'company-before))))
+                 (overlay-get company-pseudo-tooltip-overlay 'company-before))
+    (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))
 
 (defun company-pseudo-tooltip-frontend (command)
   "A `company-mode' front-end similar to a tool-tip but based on overlays."
