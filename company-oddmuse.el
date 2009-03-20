@@ -18,23 +18,29 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'company)
-(require 'oddmuse)
+(eval-when 'compile (require 'yaooddmuse nil t))
+(eval-when 'compile (require 'oddmuse nil t))
 (eval-when-compile (require 'cl))
 
 (defvar company-oddmuse-link-regexp
   "\\(\\<[A-Z][[:alnum:]]*\\>\\)\\|\\[\\[\\([[:alnum:]]+\\>\\|\\)")
 
+(defun company-oddmuse-get-page-table ()
+  (case major-mode
+    ('yaoddmuse-mode (with-no-warnings
+                       (yaoddmuse-get-pagename-table yaoddmuse-wikiname)))
+    ('oddmuse-mode (with-no-warnings
+                     (oddmuse-make-completion-table oddmuse-wiki)))))
+
 (defun company-oddmuse (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `oddmuse-mode'."
   (case command
     ('prefix (let ((case-fold-search nil))
-               (and (eq major-mode 'oddmuse-mode)
+               (and (memq major-mode '(oddmuse-mode yaoddmuse-mode))
                     (looking-back company-oddmuse-link-regexp (point-at-bol))
                     (or (match-string 1)
                         (match-string 2)))))
-    ('candidates (all-completions arg
-                                  (oddmuse-make-completion-table oddmuse-wiki)))
-    ))
+    ('candidates (all-completions arg (company-oddmuse-get-page-table)))))
 
 (provide 'company-oddmuse)
 ;;; company-oddmuse.el ends here
