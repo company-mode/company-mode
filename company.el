@@ -78,8 +78,9 @@
   :group 'company)
 
 (defface company-tooltip-selection
-  '((t :background "orange1"
-       :foreground "black"))
+  '((default :inherit company-tooltip)
+    (((class color) (min-colors 88)) (:background "orange1"))
+    (t (:background "green")))
   "*Face used for the selection in the tool tip."
   :group 'company)
 
