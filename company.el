@@ -49,6 +49,10 @@
 ;;     ('candidates (list "foobar" "foobaz" "foobarbaz"))
 ;;     ('meta (format "This value is named %s" arg))))
 ;;
+;; Known Issues:
+;; When point is at the very end of the buffer, the pseudo-tooltip appears very
+;; wrong.
+;;
 ;;; Change Log:
 ;;
 ;;    Initial release.
