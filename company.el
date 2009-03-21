@@ -71,6 +71,7 @@
 (add-to-list 'debug-ignored-errors "^No documentation available$")
 (add-to-list 'debug-ignored-errors "^Company not enabled$")
 (add-to-list 'debug-ignored-errors "^Company not in search mode$")
+(add-to-list 'debug-ignored-errors "^No candidate number ")
 
 (defgroup company nil
   "Extensible inline text completion mechanism"
@@ -233,6 +234,12 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
                  (const :tag "immediate (t)" t)
                  (number :tag "seconds")))
 
+(defcustom company-show-numbers nil
+  "*If enabled, show quick-access numbers for the first ten candidates."
+  :group 'company
+  :type '(choice (const :tag "off" nil)
+                 (const :tag "on" t)))
+
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-mode-map (make-sparse-keymap)
@@ -248,6 +255,10 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
     (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     (define-key keymap "\C-s" 'company-search-candidates)
+    (dotimes (i 10)
+      (define-key keymap (vector (+ (aref (kbd "M-0") 0) i))
+        `(lambda () (interactive) (company-complete-number ,i))))
+
     keymap)
   "Keymap that is enabled during an active completion.")
 
@@ -770,6 +781,15 @@ when the selection has been changed, the selected candidate is completed."
       (call-interactively 'company-complete-common)
       (setq this-command 'company-complete-common))))
 
+(defun company-complete-number (n)
+  "Complete the Nth candidate."
+  (when (company-manual-begin)
+    (and (< n 1) (> n company-candidates-length)
+         (error "No candidate number %d" n))
+    (decf n)
+    (insert (company-strip-prefix (nth n company-candidates)))
+    (company-abort)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defconst company-space-strings-limit 100)
@@ -933,6 +953,7 @@ when the selection has been changed, the selected candidate is completed."
 (defun company-create-lines (column selection limit)
 
   (let ((len company-candidates-length)
+        (numbered 99999)
         lines
         width
         lines-copy
@@ -960,14 +981,28 @@ when the selection has been changed, the selected candidate is completed."
       (setq width (max (length (pop lines-copy)) width)))
     (setq width (min width (- (window-width) column)))
 
+    (setq lines-copy lines)
+
+    ;; number can make tooltip too long
+    (and company-show-numbers
+         (< (setq numbered company-tooltip-offset) 10)
+         (incf width 2))
+
     (when previous
       (push (propertize (company-safe-substring previous 0 width)
                         'face 'company-tooltip)
             new))
 
     (dotimes (i len)
-      (push (company-fill-propertize (company-reformat (pop lines))
-                                     width (equal i selection))
+      (push (company-fill-propertize
+             (if (>= numbered 10)
+                 (company-reformat (pop lines))
+               (incf numbered)
+               (format "%s %d"
+                       (company-safe-substring (company-reformat (pop lines))
+                                               0 (- width 2))
+                       (mod numbered 10)))
+             width (equal i selection))
             new))
 
     (when remainder
@@ -1138,16 +1173,26 @@ when the selection has been changed, the selected candidate is completed."
         (len -1)
         ;; Roll to selection.
         (candidates (nthcdr company-selection company-candidates))
+        (i (if company-show-numbers company-selection 99999))
         comp msg)
 
     (while candidates
       (setq comp (company-reformat (pop candidates))
             len (+ len 1 (length comp)))
-      (if (>= len limit)
-          (setq candidates nil)
+      (if (< i 10)
+          ;; Add number.
+          (progn
+            (setq comp (propertize (format "%d: %s" i comp)
+                                   'face 'company-echo))
+            (incf len 3)
+            (incf i)
+            (add-text-properties 3 (+ 3 (length company-common))
+                                 '(face company-echo-common) comp))
         (setq comp (propertize comp 'face 'company-echo))
         (add-text-properties 0 (length company-common)
-                             '(face company-echo-common) comp)
+                             '(face company-echo-common) comp))
+      (if (>= len limit)
+          (setq candidates nil)
         (push comp msg)))
 
     (mapconcat 'identity (nreverse msg) " ")))
