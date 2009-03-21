@@ -276,7 +276,8 @@ Completion starts automatically, depending on the values
 
 Completion can be controlled with the commands:
 `company-complete-common', `company-complete-selection', `company-complete',
-`company-select-next', `company-select-previous'.
+`company-select-next', `company-select-previous'.  If these commands are
+called before `company-idle-delay', completion will also start.
 
 Completions can be searched with `company-search-candidates'.
 
