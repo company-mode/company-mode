@@ -55,6 +55,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Fixed elisp documentation buffer always showing the same doc.
 ;;    Added `company-echo-strip-common-frontend'.
 ;;    Added `company-show-numbers' option and M-0 ... M-9 default bindings.
 ;;    Don't hide the echo message if it isn't shown.

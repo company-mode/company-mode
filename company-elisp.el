@@ -75,8 +75,10 @@
                            (all-completions arg obarray
                                             'company-elisp-predicate))))
     ('meta (company-elisp-doc arg))
-    ('doc-buffer (describe-function 'describe-function)
-                 (help-buffer))))
+    ('doc-buffer (let ((symbol (intern arg)))
+                   (when (or (ignore-errors (describe-function symbol))
+                             (ignore-errors (describe-variable symbol)))
+                     (help-buffer))))))
 
 (provide 'company-elisp)
 ;;; company-elisp.el ends here
