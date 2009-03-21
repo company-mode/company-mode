@@ -36,7 +36,12 @@
 (defvar company-elisp-parse-limit 30)
 (defvar company-elisp-parse-depth 100)
 
-(defun company-elisp-parse-let (prefix vars)
+(defvar company-elisp-binding-regexp
+  (concat "([ \t\n]*\\_<" (regexp-opt '("let" "defun" "defmacro" "defsubst"
+                                        "lambda" "lexical-let"))
+          "\\*?"))
+
+(defun company-elisp-parse-local (prefix vars)
   (let ((regexp (concat "[ \t\n]*\\(" (regexp-quote prefix)
                         "\\(?:\\sw\\|\\s_\\)*\\_>\\)")))
     (ignore-errors
@@ -44,7 +49,7 @@
         (dotimes (i company-elisp-parse-depth)
           (up-list -1)
           (save-excursion
-            (when (looking-at "([ \t\n]*let")
+            (when (looking-at company-elisp-binding-regexp)
               (down-list 2)
               (ignore-errors
                 (dotimes (i company-elisp-parse-limit)
@@ -60,7 +65,7 @@
 (defun company-elisp-candidates (prefix)
   (let* ((completion-ignore-case nil)
          (candidates (all-completions prefix obarray 'company-elisp-predicate)))
-    (company-elisp-parse-let prefix candidates)))
+    (company-elisp-parse-local prefix candidates)))
 
 (defun company-elisp-doc (symbol)
   (let* ((symbol (intern symbol))

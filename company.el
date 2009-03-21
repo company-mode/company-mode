@@ -55,6 +55,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    More local Lisp variables are now included in the candidates.
+;;
 ;; 2009-03-21 (0.1.5)
 ;;    Fixed elisp documentation buffer always showing the same doc.
 ;;    Added `company-echo-strip-common-frontend'.
