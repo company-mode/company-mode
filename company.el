@@ -179,6 +179,8 @@ The visualized data is stored in `company-prefix', `company-candidates',
   :type '(repeat (choice (const :tag "echo" company-echo-frontend)
                          (const :tag "echo, strip common"
                                 company-echo-strip-common-frontend)
+                         (const :tag "show echo meta-data in echo"
+                                company-echo-metadata-frontend)
                          (const :tag "pseudo tooltip"
                                 company-pseudo-tooltip-frontend)
                          (const :tag "pseudo tooltip, multiple only"
