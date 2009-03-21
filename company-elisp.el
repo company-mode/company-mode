@@ -36,8 +36,9 @@
 (defvar company-elisp-parse-limit 30)
 (defvar company-elisp-parse-depth 100)
 
-(defun company-elisp-parse-let ()
-  (let (vars)
+(defun company-elisp-parse-let (prefix vars)
+  (let ((regexp (concat "[ \t\n]*\\(" (regexp-quote prefix)
+                        "\\(?:\\sw\\|\\s_\\)*\\_>\\)")))
     (ignore-errors
       (save-excursion
         (dotimes (i company-elisp-parse-depth)
@@ -50,11 +51,16 @@
                   (save-excursion
                     (when (looking-at "[ \t\n]*(")
                       (down-list 1))
-                    (if (looking-at "[ \t\n]*\\(\\(?:\\sw\\|\\s_\\)+\\)")
+                    (if (looking-at regexp)
                         (add-to-list 'vars (match-string-no-properties 1))
                       (error)))
                   (forward-sexp))))))))
     vars))
+
+(defun company-elisp-candidates (prefix)
+  (let* ((completion-ignore-case nil)
+         (candidates (all-completions prefix obarray 'company-elisp-predicate)))
+    (company-elisp-parse-let prefix candidates)))
 
 (defun company-elisp-doc (symbol)
   (let* ((symbol (intern symbol))
@@ -70,10 +76,7 @@
   (case command
     ('prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
                   (company-grab-lisp-symbol)))
-    ('candidates (let ((completion-ignore-case nil))
-                   (append (all-completions arg (company-elisp-parse-let))
-                           (all-completions arg obarray
-                                            'company-elisp-predicate))))
+    ('candidates (company-elisp-candidates arg))
     ('meta (company-elisp-doc arg))
     ('doc-buffer (let ((symbol (intern arg)))
                    (when (or (ignore-errors (describe-function symbol))
