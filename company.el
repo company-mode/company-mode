@@ -483,6 +483,7 @@ keymap during active completions:
            (company-post-command)))))
 
 (defun company-manual-begin ()
+  (interactive)
   (unless company-mode (error "Company not enabled"))
   (and company-mode
        (not company-candidates)
