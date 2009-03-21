@@ -272,7 +272,7 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
 (define-minor-mode company-mode
   "\"complete anything\"; in in-buffer completion framework.
 Completion starts automatically, depending on the values
-`company-idle-delay' and `company-minimum-prefix-length'
+`company-idle-delay' and `company-minimum-prefix-length'.
 
 Completion can be controlled with the commands:
 `company-complete-common', `company-complete-selection', `company-complete',
