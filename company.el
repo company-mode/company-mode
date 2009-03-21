@@ -55,6 +55,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-echo-strip-common-frontend'.
 ;;    Added `company-show-numbers' option and M-0 ... M-9 default bindings.
 ;;    Don't hide the echo message if it isn't shown.
 ;;
@@ -176,6 +177,8 @@ The visualized data is stored in `company-prefix', `company-candidates',
   :set 'company-frontends-set
   :group 'company
   :type '(repeat (choice (const :tag "echo" company-echo-frontend)
+                         (const :tag "echo, strip common"
+                                company-echo-strip-common-frontend)
                          (const :tag "pseudo tooltip"
                                 company-pseudo-tooltip-frontend)
                          (const :tag "pseudo tooltip, multiple only"
@@ -1198,6 +1201,31 @@ when the selection has been changed, the selected candidate is completed."
 
     (mapconcat 'identity (nreverse msg) " ")))
 
+(defun company-echo-strip-common-format ()
+
+  (let ((limit (window-width (minibuffer-window)))
+        (len (+ (length company-prefix) 2))
+        ;; Roll to selection.
+        (candidates (nthcdr company-selection company-candidates))
+        (i (if company-show-numbers company-selection 99999))
+        msg comp)
+
+    (while candidates
+      (setq comp (company-strip-prefix (pop candidates))
+            len (+ len 2 (length comp)))
+      (when (< i 10)
+        ;; Add number.
+        (setq comp (format "%s (%d)" comp i))
+        (incf len 4)
+        (incf i))
+      (if (>= len limit)
+          (setq candidates nil)
+        (push (propertize comp 'face 'company-echo) msg)))
+
+    (concat (propertize company-prefix 'face 'company-echo-common) "{"
+            (mapconcat 'identity (nreverse msg) ", ")
+            "}")))
+
 (defun company-echo-hide ()
   (when company-echo-timer
     (cancel-timer company-echo-timer))
@@ -1210,6 +1238,13 @@ when the selection has been changed, the selected candidate is completed."
   (case command
     ('pre-command (company-echo-show-soon))
     ('post-command (company-echo-show-soon 'company-echo-format))
+    ('hide (company-echo-hide))))
+
+(defun company-echo-strip-common-frontend (command)
+  "A `company-mode' front-end showing the candidates in the echo area."
+  (case command
+    ('pre-command (company-echo-show-soon))
+    ('post-command (company-echo-show-soon 'company-echo-strip-common-format))
     ('hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
