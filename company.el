@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 0.1
+;; Version: 0.1.5
 ;; Keywords: abbrev, convenience, matchis
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
@@ -55,6 +55,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2009-03-21 (0.1.5)
 ;;    Fixed elisp documentation buffer always showing the same doc.
 ;;    Added `company-echo-strip-common-frontend'.
 ;;    Added `company-show-numbers' option and M-0 ... M-9 default bindings.
