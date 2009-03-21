@@ -55,6 +55,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-show-numbers' option and M-0 ... M-9 default bindings.
 ;;    Don't hide the echo message if it isn't shown.
 ;;
 ;; 2009-03-20 (0.1)
