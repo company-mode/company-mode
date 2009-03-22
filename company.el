@@ -128,6 +128,12 @@
   "*Face used for the common part of the completion preview."
   :group 'company)
 
+(defface company-preview-search
+  '((t :inherit company-preview
+       :background "blue1"))
+  "*Face used for the search string in the completion preview."
+  :group 'company)
+
 (defface company-echo nil
   "*Face used for completions in the echo area."
   :group 'company)
@@ -158,7 +164,7 @@
   (set variable value))
 
 (defcustom company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
-                               company-preview-if-just-one-frontend
+                               company-preview-frontend
                                company-echo-metadata-frontend)
   "*The list of active front-ends (visualizations).
 Each front-end is a function that takes one argument.  It is called with
@@ -1145,15 +1151,24 @@ when the selection has been changed, the selected candidate is completed."
 
   (setq company-preview-overlay (make-overlay pos pos))
 
-  (let ((completion (company-strip-prefix (nth company-selection
-                                               company-candidates))))
+  (let ((completion(nth company-selection company-candidates)))
+    (setq completion (propertize completion 'face 'company-preview))
+    (add-text-properties 0 (length company-common)
+                         '(face company-preview-common) completion)
+
+    ;; Add search string
+    (and company-search-string
+         (string-match (regexp-quote company-search-string) completion)
+         (add-text-properties (match-beginning 0)
+                              (match-end 0)
+                              '(face company-preview-search)
+                              completion))
+
+    (setq completion (company-strip-prefix completion))
+
     (and (equal pos (point))
          (not (equal completion ""))
          (add-text-properties 0 1 '(cursor t) completion))
-
-    (setq completion (propertize completion 'face 'company-preview))
-    (add-text-properties 0 (- (length company-common) (length company-prefix))
-                         '(face company-preview-common) completion)
 
     (overlay-put company-preview-overlay 'after-string completion)
     (overlay-put company-preview-overlay 'window (selected-window))))
