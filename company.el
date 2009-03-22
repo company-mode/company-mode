@@ -703,7 +703,7 @@ keymap during active completions:
         (let ((l (generic-character-list))
               (table (nth 1 keymap)))
           (while l
-            (set-char-table-default table (car l) 'isearch-printing-char)
+            (set-char-table-default table (car l) 'company-search-printing-char)
             (setq l (cdr l))))))
     (define-key keymap [t] 'company-search-other-char)
     (while (< i ?\s)
