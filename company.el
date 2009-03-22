@@ -479,6 +479,8 @@ keymap during active completions (`company-active-map'):
          (unless (funcall company-backend 'sorted)
            (setq candidates (sort candidates 'string<)))
          candidates)))
+  (unless company-candidates-cache
+    (company-call-frontends 'show))
   (unless (assoc prefix company-candidates-cache)
     (push (cons prefix company-candidates) company-candidates-cache))
   company-candidates)
