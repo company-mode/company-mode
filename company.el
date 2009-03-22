@@ -727,17 +727,9 @@ keymap during active completions:
   "Keymap used for incrementally searching the completion candidates.")
 
 (define-minor-mode company-search-mode
-  "Start searching the completion candidates incrementally.
-
-\\<company-search-map>Search can be controlled with the commands:
-- `company-search-repeat-forward' (\\[company-search-repeat-forward])
-- `company-search-repeat-backward' (\\[company-search-repeat-backward])
-- `company-search-abort' (\\[company-search-abort])
-
-Regular characters are appended to the search string.
-
-The command `company-search-kill-others' (\\[company-search-kill-others]) uses
- the search string to limit the completion candidates."
+  "Search mode for completion candidates.
+Don't start this directly, use `company-search-candidates' or
+`company-filter-candidates'."
   nil company-search-lighter nil
   (if company-search-mode
       (if (company-manual-begin)
