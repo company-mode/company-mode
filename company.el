@@ -56,6 +56,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added etags back-end.
 ;;    Added work-around for end-of-buffer bug.
 ;;    Added `company-filter-candidates'.
 ;;    More local Lisp variables are now included in the candidates.
@@ -204,8 +205,8 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (function :tag "custom function" nil))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-semantic company-gtags company-oddmuse
-                              company-files company-dabbrev)
+                              company-semantic company-gtags company-etags
+                              company-oddmuse company-files company-dabbrev)
   "*The list of active back-ends (completion engines).
 Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
