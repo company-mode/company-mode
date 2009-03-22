@@ -540,12 +540,12 @@ keymap during active completions (`company-active-map'):
     (unless company-candidates
       (let (prefix)
         (dolist (backend company-backends)
-          (and (fboundp backend)
-               (setq prefix (funcall backend 'prefix))
-               (company-should-complete prefix)
-               (setq company-backend backend)
-               (company-calculate-candidates prefix))
-          (return prefix)))))
+          (when (and (fboundp backend)
+                     (setq prefix (funcall backend 'prefix)))
+            (setq company-backend backend)
+            (when (company-should-complete prefix)
+              (company-calculate-candidates prefix))
+            (return prefix))))))
   (if company-candidates
       (progn
         (when (and company-end-of-buffer-workaround (eobp))
