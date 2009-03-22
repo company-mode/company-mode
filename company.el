@@ -51,10 +51,12 @@
 ;;
 ;; Known Issues:
 ;; When point is at the very end of the buffer, the pseudo-tooltip appears very
-;; wrong.
+;; wrong, unless company is allowed to temporarily insert a fake newline.
+;; This behavior is enabled by `company-end-of-buffer-workaround'.
 ;;
 ;;; Change Log:
 ;;
+;;    Added work-around for end-of-buffer bug.
 ;;    Added `company-filter-candidates'.
 ;;    More local Lisp variables are now included in the candidates.
 ;;
@@ -257,6 +259,10 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
+(defvar company-end-of-buffer-workaround t
+  "*Work around a visualization bug when completing at the end of the buffer.
+The work-around consists of adding a newline.")
+
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-mode-map (make-sparse-keymap)
@@ -404,6 +410,9 @@ keymap during active completions (`company-active-map'):
 
 (defvar company-timer nil)
 
+(defvar company-added-newline nil)
+(make-variable-buffer-local 'company-added-newline)
+
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
 
@@ -538,13 +547,21 @@ keymap during active completions (`company-active-map'):
           (return prefix)))))
   (if company-candidates
       (progn
+        (and company-end-of-buffer-workaround
+             (eobp)
+             (setq company-added-newline t)
+             (save-excursion (insert "\n")))
         (setq company-point (point))
         (company-enable-overriding-keymap company-active-map)
         (company-call-frontends 'update))
     (company-cancel)))
 
 (defun company-cancel ()
-  (setq company-backend nil
+  (and company-added-newline
+       (> (point-max) (point-min))
+       (delete-region (1- (point-max)) (point-max)))
+  (setq company-added-newline nil
+        company-backend nil
         company-prefix nil
         company-candidates nil
         company-candidates-length nil
