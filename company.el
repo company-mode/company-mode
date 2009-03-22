@@ -896,28 +896,32 @@ when the selection has been changed, the selected candidate is completed."
     (erase-buffer)
     (current-buffer)))
 
+(defmacro company-electric (&rest body)
+  (declare (indent 0) (debug t))
+  `(if company-mode
+       (when (company-manual-begin)
+         (save-window-excursion
+           (let ((height (window-height))
+                 (row (cdr (posn-col-row (posn-at-point)))))
+             ,@body
+             (and (< (window-height) height)
+                  (< (- (window-height) row 2) company-tooltip-limit)
+                  (recenter (- (window-height) row 2)))
+             (while (eq 'scroll-other-window
+                        (key-binding (vector (list (read-event)))))
+               (call-interactively 'scroll-other-window))
+             (when last-input-event
+               (clear-this-command-keys t)
+               (setq unread-command-events (list last-input-event))))))
+     (error "Company not enabled")))
+
 (defun company-show-doc-buffer ()
   "Temporarily show a buffer with the complete documentation for the selection."
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (when (company-manual-begin)
-    (save-window-excursion
-      (let* ((height (window-height))
-             (row (cdr (posn-col-row (posn-at-point))))
-             (selected (nth company-selection company-candidates))
-             (buffer (funcall company-backend 'doc-buffer selected)))
-        (if (not buffer)
-            (error "No documentation available.")
-          (display-buffer buffer)
-          (and (< (window-height) height)
-               (< (- (window-height) row 2) company-tooltip-limit)
-               (recenter (- (window-height) row 2)))
-          (while (eq 'scroll-other-window
-                     (key-binding (vector (list (read-event)))))
-            (scroll-other-window))
-          (when last-input-event
-            (clear-this-command-keys t)
-            (setq unread-command-events (list last-input-event))))))))
+  (company-electric
+    (let ((selected (nth company-selection company-candidates)))
+      (display-buffer (or (funcall company-backend 'doc-buffer selected)
+                          (error "No documentation available")) t))))
 (put 'company-show-doc-buffer 'company-keep t)
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

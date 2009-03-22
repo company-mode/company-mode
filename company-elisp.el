@@ -84,9 +84,10 @@
     ('candidates (company-elisp-candidates arg))
     ('meta (company-elisp-doc arg))
     ('doc-buffer (let ((symbol (intern arg)))
-                   (when (or (ignore-errors (describe-function symbol))
-                             (ignore-errors (describe-variable symbol)))
-                     (help-buffer))))))
+                   (save-window-excursion
+                     (when (or (ignore-errors (describe-function symbol))
+                               (ignore-errors (describe-variable symbol)))
+                       (help-buffer)))))))
 
 (provide 'company-elisp)
 ;;; company-elisp.el ends here
