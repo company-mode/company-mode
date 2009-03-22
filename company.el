@@ -292,7 +292,8 @@ Completion can be controlled with the commands:
 called before `company-idle-delay', completion will also start.
 
 Completions can be searched with `company-search-candidates' or
-`company-filter-candidates'.
+`company-filter-candidates'.  These can be used while completion is
+inactive, as well.
 
 The completion data is retrieved using `company-backends' and displayed using
 `company-frontends'.
