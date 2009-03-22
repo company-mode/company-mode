@@ -547,10 +547,9 @@ keymap during active completions (`company-active-map'):
           (return prefix)))))
   (if company-candidates
       (progn
-        (and company-end-of-buffer-workaround
-             (eobp)
-             (setq company-added-newline t)
-             (save-excursion (insert "\n")))
+        (when (and company-end-of-buffer-workaround (eobp))
+          (save-excursion (insert "\n"))
+          (setq company-added-newline (buffer-chars-modified-tick)))
         (setq company-point (point))
         (company-enable-overriding-keymap company-active-map)
         (company-call-frontends 'update))
@@ -559,7 +558,11 @@ keymap during active completions (`company-active-map'):
 (defun company-cancel ()
   (and company-added-newline
        (> (point-max) (point-min))
-       (delete-region (1- (point-max)) (point-max)))
+       (let ((tick (buffer-chars-modified-tick)))
+         (delete-region (1- (point-max)) (point-max))
+         (equal tick company-added-newline))
+       ;; Only set unmodified when tick remained the same since insert.
+       (set-buffer-modified-p nil))
   (setq company-added-newline nil
         company-backend nil
         company-prefix nil
