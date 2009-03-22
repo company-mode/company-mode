@@ -61,6 +61,7 @@
   "A `company-mode' completion back-end for GNU Global."
   (case command
     ('prefix (and (memq major-mode company-gtags-modes)
+                  (not (company-in-string-or-comment))
                   (company-gtags-available)
                (or (company-grab company-gtags-symbol-regexp) "")))
     ('candidates (company-gtags-fetch-tags arg))
