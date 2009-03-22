@@ -74,7 +74,11 @@
                     (semantic-analyze-find-tag arg)))
     ('doc-buffer (company-semantic-doc-buffer (semantic-analyze-find-tag arg)))
     ;; because "" is an empty context and doesn't return local variables
-    ('no-cache (equal arg ""))))
+    ('no-cache (equal arg ""))
+    ('location (let ((tag (semantic-analyze-find-tag arg)))
+                 (when (buffer-live-p (semantic-tag-buffer tag))
+                   (cons (semantic-tag-buffer tag)
+                         (semantic-tag-start tag)))))))
 
 (provide 'company-semantic)
 ;;; company-semantic.el ends here

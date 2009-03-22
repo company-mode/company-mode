@@ -56,6 +56,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-show-location'.
 ;;    Added etags back-end.
 ;;    Added work-around for end-of-buffer bug.
 ;;    Added `company-filter-candidates'.
@@ -79,6 +80,7 @@
 (add-to-list 'debug-ignored-errors "^Preview frontend cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^Echo area cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^No documentation available$")
+(add-to-list 'debug-ignored-errors "^No location available$")
 (add-to-list 'debug-ignored-errors "^Company not enabled$")
 (add-to-list 'debug-ignored-errors "^Company not in search mode$")
 (add-to-list 'debug-ignored-errors "^No candidate number ")
@@ -235,6 +237,10 @@ return a (short) documentation string for it.
 create a buffer (preferably with `company-doc-buffer'), fill it with
 documentation and return it.
 
+'location: The second argument is a completion candidate.  The back-end can
+return the cons of buffer and buffer location, or of file and line
+number where the completion candidate was defined.
+
 The back-end should return nil for all commands it does not support or
 does not know about."
   :group 'company
@@ -278,6 +284,7 @@ The work-around consists of adding a newline.")
     (define-key keymap "\C-m" 'company-complete-selection)
     (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
+    (define-key keymap "\C-w" 'company-show-location)
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (dotimes (i 10)
@@ -923,6 +930,22 @@ when the selection has been changed, the selected candidate is completed."
       (display-buffer (or (funcall company-backend 'doc-buffer selected)
                           (error "No documentation available")) t))))
 (put 'company-show-doc-buffer 'company-keep t)
+
+(defun company-show-location ()
+  "Temporarily display a buffer showing the selected candidate in context."
+  (interactive)
+  (company-electric
+    (let* ((selected (nth company-selection company-candidates))
+           (location (funcall company-backend 'location selected))
+           (pos (or (cdr location) (error "No location available")))
+           (buffer (or (and (bufferp (car location)) (car location))
+                       (find-file-noselect (car location) t))))
+      (with-selected-window (display-buffer buffer t)
+        (if (bufferp (car location))
+            (goto-char pos)
+          (goto-line pos))
+        (set-window-start nil (point))))))
+(put 'company-show-location 'company-keep t)
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

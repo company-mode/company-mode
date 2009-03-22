@@ -87,7 +87,11 @@
                    (save-window-excursion
                      (when (or (ignore-errors (describe-function symbol))
                                (ignore-errors (describe-variable symbol)))
-                       (help-buffer)))))))
+                       (help-buffer)))))
+    ('location (let ((sym (intern arg)))
+                 (or (ignore-errors (find-definition-noselect sym nil))
+                     (ignore-errors (find-definition-noselect sym 'defvar))
+                     (ignore-errors (find-definition-noselect sym t)))))))
 
 (provide 'company-elisp)
 ;;; company-elisp.el ends here

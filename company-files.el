@@ -61,6 +61,8 @@
   (case command
     ('prefix (company-files-grab-existing-name))
     ('candidates (company-files-complete arg))
+    ('location (cons (dired-noselect
+                      (file-name-directory (directory-file-name arg))) 1))
     ('sorted t)
     ('no-cache t)))
 

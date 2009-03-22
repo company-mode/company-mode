@@ -57,6 +57,17 @@
           (forward-line)))
       (nreverse tags))))
 
+(defun company-gtags-location (tag)
+  (with-temp-buffer
+    (when (= 0 (call-process "global" nil (list (current-buffer) nil)
+                               nil "-x" tag))
+        (goto-char (point-min))
+        (when (looking-at (concat (regexp-quote tag)
+                                  "[ \t]+\\([[:digit:]]+\\)"
+                                  "[ \t]+\\([^ \t]+\\)"))
+          (cons (expand-file-name (match-string 2))
+                (string-to-number (match-string 1)))))))
+
 (defun company-gtags (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for GNU Global."
   (case command
@@ -65,7 +76,8 @@
                   (company-gtags-available)
                (or (company-grab company-gtags-symbol-regexp) "")))
     ('candidates (company-gtags-fetch-tags arg))
-    ('sorted t)))
+    ('sorted t)
+    ('location (company-gtags-location arg))))
 
 (provide 'company-gtags)
 ;;; company-gtags.el ends here
