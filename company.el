@@ -291,10 +291,10 @@ Completions can be searched with `company-search-candidates' or
 The completion data is retrieved using `company-backends' and displayed using
 `company-frontends'.
 
-regular keymap:
+regular keymap (`company-mode-map'):
 
 \\{company-mode-map}
-keymap during active completions:
+keymap during active completions (`company-active-map'):
 
 \\{company-active-map}"
   nil " comp" company-mode-map
