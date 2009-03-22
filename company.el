@@ -55,6 +55,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-filter-candidates'.
 ;;    More local Lisp variables are now included in the candidates.
 ;;
 ;; 2009-03-21 (0.1.5)
@@ -265,6 +266,7 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
     (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     (define-key keymap "\C-s" 'company-search-candidates)
+    (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (dotimes (i 10)
       (define-key keymap (vector (+ (aref (kbd "M-0") 0) i))
         `(lambda () (interactive) (company-complete-number ,i))))
@@ -283,7 +285,8 @@ Completion can be controlled with the commands:
 `company-select-next', `company-select-previous'.  If these commands are
 called before `company-idle-delay', completion will also start.
 
-Completions can be searched with `company-search-candidates'.
+Completions can be searched with `company-search-candidates' or
+`company-filter-candidates'.
 
 The completion data is retrieved using `company-backends' and displayed using
 `company-frontends'.
@@ -644,24 +647,33 @@ keymap during active completions:
         (ding)
       (company-set-selection (- company-selection pos 1) t))))
 
-(defsubst company-create-match-predicate (search-string)
-  `(lambda (candidate)
-     ,(if company-candidates-predicate
-          `(and (string-match ,search-string candidate)
-                (funcall ,company-candidates-predicate candidate))
-        `(string-match ,company-search-string candidate))))
+(defun company-create-match-predicate ()
+  (setq company-candidates-predicate
+        `(lambda (candidate)
+           ,(if company-candidates-predicate
+                `(and (string-match ,company-search-string candidate)
+                      (funcall ,company-candidates-predicate
+                               candidate))
+              `(string-match ,company-search-string candidate))))
+  (company-update-candidates
+   (company-apply-predicate company-candidates company-candidates-predicate)))
+
+(defun company-filter-printing-char ()
+  (interactive)
+  (unless company-mode (error "Company not enabled"))
+  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-printing-char)
+  (company-create-match-predicate)
+  (company-call-frontends 'update))
 
 (defun company-search-kill-others ()
   "Limit the completion candidates to the ones matching the search string."
   (interactive)
   (unless company-mode (error "Company not enabled"))
   (unless company-search-mode (error "Company not in search mode"))
-  (let ((predicate (company-create-match-predicate company-search-string)))
-    (setq company-candidates-predicate predicate)
-    (company-update-candidates (company-apply-predicate company-candidates
-                                                        predicate))
-    (company-search-mode 0)
-    (company-call-frontends 'update)))
+  (company-create-match-predicate)
+  (company-search-mode 0)
+  (company-call-frontends 'update))
 
 (defun company-search-abort ()
   "Abort searching the completion candidates."
@@ -731,7 +743,6 @@ The command `company-search-kill-others' (\\[company-search-kill-others]) uses
       (if (company-manual-begin)
           (progn
             (setq company-search-old-selection company-selection)
-            (company-enable-overriding-keymap company-search-map)
             (company-call-frontends 'update))
         (setq company-search-mode nil))
     (kill-local-variable 'company-search-string)
@@ -752,7 +763,24 @@ Regular characters are appended to the search string.
 The command `company-search-kill-others' (\\[company-search-kill-others]) uses
  the search string to limit the completion candidates."
   (interactive)
-  (company-search-mode 1))
+  (company-search-mode 1)
+  (company-enable-overriding-keymap company-search-map))
+
+(defvar company-filter-map
+  (let ((keymap (make-keymap)))
+    (define-key keymap [remap company-search-printing-char]
+      'company-filter-printing-char)
+    (set-keymap-parent keymap company-search-map)
+    keymap)
+  "Keymap used for incrementally searching the completion candidates.")
+
+(defun company-filter-candidates ()
+  "Start filtering the completion candidates incrementally.
+This works the same way as `company-search-candidates' immediately
+followed by `company-search-kill-others' after each input."
+  (interactive)
+  (company-search-mode 1)
+  (company-enable-overriding-keymap company-filter-map))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
