@@ -586,8 +586,11 @@ keymap during active completions (`company-active-map'):
   ;; Don't start again, unless started manually.
   (setq company-point (point)))
 
+(defsubst company-keep (command)
+  (and (symbolp command) (get command 'company-keep)))
+
 (defun company-pre-command ()
-  (unless (eq this-command 'company-show-doc-buffer)
+  (unless (company-keep this-command)
     (condition-case err
         (when company-candidates
           (company-call-frontends 'pre-command))
@@ -599,7 +602,7 @@ keymap during active completions (`company-active-map'):
   (company-uninstall-map))
 
 (defun company-post-command ()
-  (unless (eq this-command 'company-show-doc-buffer)
+  (unless (company-keep this-command)
     (condition-case err
         (progn
           (unless (equal (point) company-point)
@@ -915,6 +918,7 @@ when the selection has been changed, the selected candidate is completed."
           (when last-input-event
             (clear-this-command-keys t)
             (setq unread-command-events (list last-input-event))))))))
+(put 'company-show-doc-buffer 'company-keep t)
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
