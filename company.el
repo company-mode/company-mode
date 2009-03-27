@@ -56,7 +56,7 @@
 ;;
 ;;; Change Log:
 ;;
-;;    Added `company-elisp-functions-only-in-context' option.
+;;    Added `company-elisp-detect-function-context' option.
 ;;    The mouse can now be used for selection.
 ;;
 ;; 2009-03-22 (0.2)
