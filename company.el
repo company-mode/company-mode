@@ -56,6 +56,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    The mouse can now be used for selection.
+;;
 ;; 2009-03-22 (0.2)
 ;;    Added `company-show-location'.
 ;;    Added etags back-end.
@@ -103,6 +105,11 @@
     (((class color) (min-colors 88)) (:background "orange1"))
     (t (:background "green")))
   "*Face used for the selection in the tool tip."
+  :group 'company)
+
+(defface company-tooltip-mouse
+  '((default :inherit highlight))
+  "*Face used for the tool tip item under the mouse."
   :group 'company)
 
 (defface company-tooltip-common
@@ -282,6 +289,12 @@ The work-around consists of adding a newline.")
     (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap (kbd "<down>") 'company-select-next)
     (define-key keymap (kbd "<up>") 'company-select-previous)
+    (define-key keymap [down-mouse-1] 'ignore)
+    (define-key keymap [down-mouse-3] 'ignore)
+    (define-key keymap [mouse-1] 'company-complete-mouse)
+    (define-key keymap [mouse-3] 'company-select-mouse)
+    (define-key keymap [up-mouse-1] 'ignore)
+    (define-key keymap [up-mouse-3] 'ignore)
     (define-key keymap "\C-m" 'company-complete-selection)
     (define-key keymap "\t" 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
@@ -829,6 +842,21 @@ followed by `company-search-kill-others' after each input."
   (when (company-manual-begin)
     (company-set-selection (1- company-selection))))
 
+(defun company-select-mouse (event)
+  "Select the candidate picked by the mouse."
+  (interactive "e")
+  (when (nth 4 (event-start event))
+    (company-set-selection (- (cdr (posn-col-row (event-start event)))
+                              (cdr (posn-col-row (posn-at-point)))
+                              1))
+    t))
+
+(defun company-complete-mouse (event)
+  "Complete the candidate picked by the mouse."
+  (interactive "e")
+  (when (company-select-mouse event)
+    (company-complete-selection)))
+
 (defun company-complete-selection ()
   "Complete the selected candidate."
   (interactive)
@@ -993,23 +1021,31 @@ when the selection has been changed, the selected candidate is completed."
 
 (defun company-fill-propertize (line width selected)
   (setq line (company-safe-substring line 0 width))
-  (add-text-properties 0 width (list 'face 'company-tooltip) line)
+  (add-text-properties 0 width '(face company-tooltip
+                                 mouse-face company-tooltip-mouse)
+                       line)
   (add-text-properties 0 (length company-common)
-                       (list 'face 'company-tooltip-common) line)
+                       '(face company-tooltip-common
+                         mouse-face company-tooltip-mouse)
+                       line)
   (when selected
     (if (and company-search-string
              (string-match (regexp-quote company-search-string) line
                            (length company-prefix)))
         (progn
           (add-text-properties (match-beginning 0) (match-end 0)
-                               '(face company-tooltip-selection) line)
+                               '(face company-tooltip-selection)
+                               line)
           (when (< (match-beginning 0) (length company-common))
             (add-text-properties (match-beginning 0) (length company-common)
                                  '(face company-tooltip-common-selection)
                                  line)))
-      (add-text-properties 0 width '(face company-tooltip-selection) line)
+      (add-text-properties 0 width '(face company-tooltip-selection
+                                          mouse-face company-tooltip-selection)
+                           line)
       (add-text-properties 0 (length company-common)
-                           (list 'face 'company-tooltip-common-selection)
+                           '(face company-tooltip-common-selection
+                             mouse-face company-tooltip-selection)
                            line)))
   line)
 
