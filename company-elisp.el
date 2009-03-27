@@ -20,6 +20,13 @@
 (require 'company)
 (eval-when-compile (require 'cl))
 
+(defcustom company-elisp-functions-only-in-context nil
+  "*If enabled, offer lisp functions only in appropriate contexts.
+Functions are offered for completion only after ' and \(."
+  :group 'company
+  :type '(choice (const :tag "off (nil)" nil)
+                 (integer :tag "count" t)))
+
 (defvar company-lisp-symbol-regexp
   "\\_<\\(\\sw\\|\\s_\\)+\\_>\\=")
 
@@ -64,7 +71,14 @@
 
 (defun company-elisp-candidates (prefix)
   (let* ((completion-ignore-case nil)
-         (candidates (all-completions prefix obarray 'company-elisp-predicate)))
+         (before (char-before (- (point) (length prefix))))
+         (predicate (if (and company-elisp-functions-only-in-context
+                             (not (eq before ?')))
+                        (if (eq before ?\()
+                            'fboundp
+                          'boundp)
+                      'company-elisp-predicate))
+         (candidates (all-completions prefix obarray predicate)))
     (company-elisp-parse-local prefix candidates)))
 
 (defun company-elisp-doc (symbol)
@@ -77,7 +91,8 @@
          (match-string 0 doc))))
 
 (defun company-elisp (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for `emacs-lisp-mode'."
+  "A `company-mode' completion back-end for `emacs-lisp-mode'.
+See `company-elisp-functions-only-in-context'."
   (case command
     ('prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
                   (company-grab-lisp-symbol)))
