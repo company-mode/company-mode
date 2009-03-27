@@ -45,7 +45,8 @@ buffer automatically."
       (unless (file-exists-p (setq file (expand-file-name "TAGS" dir)))
         (setq file nil
               dir (file-name-directory (directory-file-name dir)))))
-    (list file)))
+    (when file
+      (list file))))
 
 (defun company-etags-buffer-table ()
   (or (and company-etags-use-main-table-list tags-table-list)
