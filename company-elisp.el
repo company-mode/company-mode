@@ -63,9 +63,8 @@ Functions are offered for completion only after ' and \(."
                   (save-excursion
                     (when (looking-at "[ \t\n]*(")
                       (down-list 1))
-                    (if (looking-at regexp)
-                        (add-to-list 'vars (match-string-no-properties 1))
-                      (error)))
+                    (when (looking-at regexp)
+                      (add-to-list 'vars (match-string-no-properties 1))))
                   (forward-sexp))))))))
     vars))
 
