@@ -49,7 +49,7 @@ Functions are offered for completion only after ' and \(."
           "\\*?"))
 
 (defun company-elisp-parse-local (prefix vars)
-  (let ((regexp (concat "[ \t\n]*\\(" (regexp-quote prefix)
+  (let ((regexp (concat "[ \t\n]*\\(\\_<" (regexp-quote prefix)
                         "\\(?:\\sw\\|\\s_\\)*\\_>\\)")))
     (ignore-errors
       (save-excursion
