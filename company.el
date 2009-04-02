@@ -711,7 +711,9 @@ keymap during active completions (`company-active-map'):
                                candidate))
               `(string-match ,company-search-string candidate))))
   (company-update-candidates
-   (company-apply-predicate company-candidates company-candidates-predicate)))
+   (company-apply-predicate company-candidates company-candidates-predicate))
+  ;; Invalidate cache.
+  (setq company-candidates-cache (cons company-prefix company-candidates)))
 
 (defun company-filter-printing-char ()
   (interactive)
