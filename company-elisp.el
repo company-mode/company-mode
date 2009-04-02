@@ -46,7 +46,12 @@ Functions are offered for completion only after ' and \(."
 (defvar company-elisp-binding-regexp
   (concat "([ \t\n]*\\_<" (regexp-opt '("let" "defun" "defmacro" "defsubst"
                                         "lambda" "lexical-let"))
-          "\\*?"))
+          "\\*?")
+  "Regular expression matching sexps containing variable bindings.")
+
+(defvar company-elisp-binding-regexp-1
+  (concat "([ \t\n]*\\_<" (regexp-opt '("dolist" "dotimes")))
+  "Regular expression matching sexps containing one variable binding.")
 
 (defun company-elisp-parse-local (prefix vars)
   (let ((regexp (concat "[ \t\n]*\\(\\_<" (regexp-quote prefix)
@@ -56,7 +61,8 @@ Functions are offered for completion only after ' and \(."
         (dotimes (i company-elisp-parse-depth)
           (up-list -1)
           (save-excursion
-            (when (looking-at company-elisp-binding-regexp)
+            (cond
+             ((looking-at company-elisp-binding-regexp)
               (down-list 2)
               (ignore-errors
                 (dotimes (i company-elisp-parse-limit)
@@ -65,7 +71,11 @@ Functions are offered for completion only after ' and \(."
                       (down-list 1))
                     (when (looking-at regexp)
                       (add-to-list 'vars (match-string-no-properties 1))))
-                  (forward-sexp))))))))
+                  (forward-sexp))))
+             ((looking-at company-elisp-binding-regexp-1)
+              (down-list 2)
+              (when (looking-at regexp)
+                (add-to-list 'vars (match-string-no-properties 1)))))))))
     vars))
 
 (defun company-elisp-candidates (prefix)
