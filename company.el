@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Improved Emacs Lisp back-end behavior for local variables.
 ;;    Added `company-elisp-detect-function-context' option.
 ;;    The mouse can now be used for selection.
 ;;
