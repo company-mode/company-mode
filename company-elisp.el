@@ -55,7 +55,8 @@ Functions are offered for completion only after ' and \(."
 
 (defun company-elisp-parse-local (prefix vars)
   (let ((regexp (concat "[ \t\n]*\\(\\_<" (regexp-quote prefix)
-                        "\\(?:\\sw\\|\\s_\\)*\\_>\\)")))
+                        "\\(?:\\sw\\|\\s_\\)*\\_>\\)"))
+        (pos (point)))
     (ignore-errors
       (save-excursion
         (dotimes (i company-elisp-parse-depth)
@@ -69,13 +70,17 @@ Functions are offered for completion only after ' and \(."
                   (save-excursion
                     (when (looking-at "[ \t\n]*(")
                       (down-list 1))
-                    (when (looking-at regexp)
-                      (add-to-list 'vars (match-string-no-properties 1))))
+                    (and (looking-at regexp)
+                         ;; Don't add incomplete text as candidate.
+                         (not (eq (match-end 0) pos))
+                         (add-to-list 'vars (match-string-no-properties 1))))
                   (forward-sexp))))
              ((looking-at company-elisp-binding-regexp-1)
               (down-list 2)
-              (when (looking-at regexp)
-                (add-to-list 'vars (match-string-no-properties 1)))))))))
+              (and (looking-at regexp)
+                   ;; Don't add incomplete text as candidate.
+                   (not (eq (match-end 0) pos))
+                   (add-to-list 'vars (match-string-no-properties 1)))))))))
     vars))
 
 (defun company-elisp-candidates (prefix)
