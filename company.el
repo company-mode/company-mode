@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 0.2
+;; Version: 0.2.1
 ;; Keywords: abbrev, convenience, matchis
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2009-04-05 (0.2.1)
 ;;    Improved Emacs Lisp back-end behavior for local variables.
 ;;    Added `company-elisp-detect-function-context' option.
 ;;    The mouse can now be used for selection.
