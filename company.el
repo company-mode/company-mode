@@ -49,6 +49,15 @@
 ;;     ('candidates (list "foobar" "foobaz" "foobarbaz"))
 ;;     ('meta (format "This value is named %s" arg))))
 ;;
+;; Sometimes it is a good idea to mix two back-ends together, for example to
+;; enrich gtags with dabbrev text (to emulate local variables):
+;;
+;; (defun gtags-gtags-dabbrev-backend (command &optional arg &rest ignored)
+;;   (case command
+;;     (prefix (company-gtags 'prefix))
+;;     (candidates (append (company-gtags 'candidates arg)
+;;                         (company-dabbrev 'candidates arg)))))
+;;
 ;; Known Issues:
 ;; When point is at the very end of the buffer, the pseudo-tooltip appears very
 ;; wrong, unless company is allowed to temporarily insert a fake newline.
