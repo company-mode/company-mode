@@ -376,6 +376,11 @@ keymap during active completions (`company-active-map'):
     (company-cancel)
     (kill-local-variable 'company-point)))
 
+(defsubst company-assert-enabled ()
+  (unless company-mode
+    (company-uninstall-map)
+    (error "Company not enabled")))
+
 ;;; keymaps ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-overriding-keymap-bound nil)
@@ -400,8 +405,7 @@ keymap during active completions (`company-active-map'):
           company-overriding-keymap-bound t)))
 
 (defun company-uninstall-map ()
-  (when (and company-overriding-keymap-bound
-             (eq overriding-terminal-local-map company-my-keymap))
+  (when (eq overriding-terminal-local-map company-my-keymap)
     (setq overriding-terminal-local-map company-old-keymap
           company-overriding-keymap-bound nil)))
 
@@ -564,7 +568,7 @@ keymap during active completions (`company-active-map'):
 
 (defun company-manual-begin ()
   (interactive)
-  (unless company-mode (error "Company not enabled"))
+  (company-assert-enabled)
   (and company-mode
        (not company-candidates)
        (let ((company-idle-delay t)
@@ -723,8 +727,7 @@ keymap during active completions (`company-active-map'):
 
 (defun company-search-printing-char ()
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-assert-enabled)
   (setq company-search-string
         (concat (or company-search-string "") (string last-command-event))
         company-search-lighter (concat " Search: \"" company-search-string
@@ -738,8 +741,7 @@ keymap during active completions (`company-active-map'):
 (defun company-search-repeat-forward ()
   "Repeat the incremental search in completion candidates forward."
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-assert-enabled)
   (let ((pos (company-search company-search-string
                               (cdr (nthcdr company-selection
                                            company-candidates)))))
@@ -750,8 +752,7 @@ keymap during active completions (`company-active-map'):
 (defun company-search-repeat-backward ()
   "Repeat the incremental search in completion candidates backwards."
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-assert-enabled)
   (let ((pos (company-search company-search-string
                               (nthcdr (- company-candidates-length
                                          company-selection)
@@ -775,8 +776,7 @@ keymap during active completions (`company-active-map'):
 
 (defun company-filter-printing-char ()
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-assert-enabled)
   (company-search-printing-char)
   (company-create-match-predicate)
   (company-call-frontends 'update))
@@ -784,8 +784,7 @@ keymap during active completions (`company-active-map'):
 (defun company-search-kill-others ()
   "Limit the completion candidates to the ones matching the search string."
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-assert-enabled)
   (company-create-match-predicate)
   (company-search-mode 0)
   (company-call-frontends 'update))
@@ -793,15 +792,13 @@ keymap during active completions (`company-active-map'):
 (defun company-search-abort ()
   "Abort searching the completion candidates."
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-assert-enabled)
   (company-set-selection company-search-old-selection t)
   (company-search-mode 0))
 
 (defun company-search-other-char ()
   (interactive)
-  (unless company-mode (error "Company not enabled"))
-  (unless company-search-mode (error "Company not in search mode"))
+  (company-search-assert-enabled)
   (company-search-mode 0)
   (when last-input-event
     (clear-this-command-keys t)
@@ -856,6 +853,12 @@ Don't start this directly, use `company-search-candidates' or
     (kill-local-variable 'company-search-lighter)
     (kill-local-variable 'company-search-old-selection)
     (company-enable-overriding-keymap company-active-map)))
+
+(defsubst company-search-assert-enabled ()
+  (company-assert-enabled)
+  (unless company-search-mode
+    (company-uninstall-map)
+    (error "Company not in search mode")))
 
 (defun company-search-candidates ()
   "Start searching the completion candidates incrementally.
@@ -995,22 +998,20 @@ when the selection has been changed, the selected candidate is completed."
 
 (defmacro company-electric (&rest body)
   (declare (indent 0) (debug t))
-  `(if company-mode
-       (when (company-manual-begin)
-         (save-window-excursion
-           (let ((height (window-height))
-                 (row (cdr (posn-col-row (posn-at-point)))))
-             ,@body
-             (and (< (window-height) height)
-                  (< (- (window-height) row 2) company-tooltip-limit)
-                  (recenter (- (window-height) row 2)))
-             (while (eq 'scroll-other-window
-                        (key-binding (vector (list (read-event)))))
-               (call-interactively 'scroll-other-window))
-             (when last-input-event
-               (clear-this-command-keys t)
-               (setq unread-command-events (list last-input-event))))))
-     (error "Company not enabled")))
+  `(when (company-manual-begin)
+     (save-window-excursion
+       (let ((height (window-height))
+             (row (cdr (posn-col-row (posn-at-point)))))
+         ,@body
+         (and (< (window-height) height)
+              (< (- (window-height) row 2) company-tooltip-limit)
+              (recenter (- (window-height) row 2)))
+         (while (eq 'scroll-other-window
+                    (key-binding (vector (list (read-event)))))
+           (call-interactively 'scroll-other-window))
+         (when last-input-event
+           (clear-this-command-keys t)
+           (setq unread-command-events (list last-input-event)))))))
 
 (defun company-show-doc-buffer ()
   "Temporarily show a buffer with the complete documentation for the selection."
