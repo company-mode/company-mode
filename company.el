@@ -92,14 +92,10 @@
 
 (eval-when-compile (require 'cl))
 
-(add-to-list 'debug-ignored-errors
-             "^Pseudo tooltip frontend cannot be used twice$")
-(add-to-list 'debug-ignored-errors "^Preview frontend cannot be used twice$")
+(add-to-list 'debug-ignored-errors "^.* frontend cannot be used twice$")
 (add-to-list 'debug-ignored-errors "^Echo area cannot be used twice$")
-(add-to-list 'debug-ignored-errors "^No documentation available$")
-(add-to-list 'debug-ignored-errors "^No location available$")
-(add-to-list 'debug-ignored-errors "^Company not enabled$")
-(add-to-list 'debug-ignored-errors "^Company not in search mode$")
+(add-to-list 'debug-ignored-errors "^No \\(document\\|loc\\)ation available$")
+(add-to-list 'debug-ignored-errors "^Company not ")
 (add-to-list 'debug-ignored-errors "^No candidate number ")
 
 (defgroup company nil
