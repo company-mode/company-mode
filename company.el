@@ -496,37 +496,32 @@ keymap during active completions (`company-active-map'):
                                          company-selection)))))
     (setq company-selection 0
           company-candidates candidates))
+  ;; Save in cache:
+  (push (cons company-prefix company-candidates) company-candidates-cache)
   ;; Calculate common.
   (let ((completion-ignore-case (funcall company-backend 'ignore-case)))
     (setq company-common (try-completion company-prefix company-candidates)))
   (when (eq company-common t)
     (setq company-candidates nil)))
 
-(defsubst company-calculate-candidates (prefix)
-  (setq company-prefix prefix)
-  (company-update-candidates
-   (or (cdr (assoc prefix company-candidates-cache))
-       (when company-candidates-cache
-         (let ((len (length prefix))
-               (completion-ignore-case (funcall company-backend 'ignore-case))
-               prev)
-           (dotimes (i len)
-             (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
-                                          company-candidates-cache)))
-               (return (all-completions prefix prev))))))
-       (let ((candidates (funcall company-backend 'candidates prefix)))
-         (when company-candidates-predicate
-           (setq candidates
-                 (company-apply-predicate candidates
-                                          company-candidates-predicate)))
-         (unless (funcall company-backend 'sorted)
-           (setq candidates (sort candidates 'string<)))
-         candidates)))
-  (unless company-candidates-cache
-    (company-call-frontends 'show))
-  (unless (assoc prefix company-candidates-cache)
-    (push (cons prefix company-candidates) company-candidates-cache))
-  company-candidates)
+(defun company-calculate-candidates (prefix)
+  (or (cdr (assoc prefix company-candidates-cache))
+      (when company-candidates-cache
+        (let ((len (length prefix))
+              (completion-ignore-case (funcall company-backend 'ignore-case))
+              prev)
+          (dotimes (i len)
+            (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
+                                         company-candidates-cache)))
+              (return (all-completions prefix prev))))))
+      (let ((candidates (funcall company-backend 'candidates prefix)))
+        (when company-candidates-predicate
+          (setq candidates
+                (company-apply-predicate candidates
+                                         company-candidates-predicate)))
+        (unless (funcall company-backend 'sorted)
+          (setq candidates (sort candidates 'string<)))
+        candidates)))
 
 (defun company-idle-begin (buf win tick pos)
   (and company-mode
@@ -562,7 +557,11 @@ keymap during active completions (`company-active-map'):
       (unless (and (= (- (point) (length new-prefix))
                       (- company-point (length company-prefix)))
                    (or (equal company-prefix new-prefix)
-                       (company-calculate-candidates new-prefix)))
+                       (let ((c (company-calculate-candidates new-prefix)))
+                         (when c
+                           (setq company-prefix new-prefix)
+                           (company-update-candidates c)
+                           t))))
         (setq company-candidates nil)))))
 
 (defun company-begin ()
@@ -577,7 +576,9 @@ keymap during active completions (`company-active-map'):
                      (setq prefix (funcall backend 'prefix)))
             (setq company-backend backend)
             (when (company-should-complete prefix)
-              (company-calculate-candidates prefix))
+              (setq company-prefix prefix)
+              (company-update-candidates (company-calculate-candidates prefix))
+              (company-call-frontends 'show))
             (return prefix))))))
   (if company-candidates
       (progn
