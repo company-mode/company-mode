@@ -65,6 +65,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-require-match' option.
+;;
 ;; 2009-04-05 (0.2.1)
 ;;    Improved Emacs Lisp back-end behavior for local variables.
 ;;    Added `company-elisp-detect-function-context' option.
@@ -261,6 +263,11 @@ documentation and return it.
 return the cons of buffer and buffer location, or of file and line
 number where the completion candidate was defined.
 
+'require-match: If this value is t, the user is not allowed to enter anything
+not offering as a candidate.  Use with care!  The default value nil gives the
+user that choice with `company-require-match'.  Return value 'never overrides
+that option the other way around.
+
 The back-end should return nil for all commands it does not support or
 does not know about."
   :group 'company
@@ -270,6 +277,16 @@ does not know about."
   "*The minimum prefix length for automatic completion."
   :group 'company
   :type '(integer :tag "prefix length"))
+
+(defcustom company-require-match nil
+  "*If enabled, disallow non-matching input.
+This can be a function do determine if a match is required.
+This can be overridden by the back-end, if it returns t or 'never to
+'require-match."
+  :group 'company
+  :type '(choice (const :tag "Off" nil)
+                 (function :tag "Predicate function")
+                 (const :tag "On" t)))
 
 (defcustom company-idle-delay .7
   "*The idle delay in seconds until automatic completions starts.
@@ -548,6 +565,18 @@ keymap during active completions (`company-active-map'):
   ;; Return non-nil if active.
   company-candidates)
 
+(defsubst company-incremental-p (old-prefix new-prefix)
+  (and (> (length new-prefix) (length old-prefix))
+       (equal old-prefix (substring new-prefix 0 (length old-prefix)))))
+
+(defun company-require-match-p ()
+  (if (functionp company-require-match)
+      (funcall company-require-match)
+    (let ((backend-value (funcall company-backend 'require-match)))
+      (or (eq backend-value t)
+          (and (eq company-require-match t)
+               (not (eq backend-value 'never)))))))
+
 (defun company-continue ()
   (when company-candidates
     (when (funcall company-backend 'no-cache company-prefix)
@@ -562,7 +591,14 @@ keymap during active completions (`company-active-map'):
                            (setq company-prefix new-prefix)
                            (company-update-candidates c)
                            t))))
-        (setq company-candidates nil)))))
+        (if (not (and (company-incremental-p company-prefix new-prefix)
+                      (company-require-match-p)))
+            (setq company-candidates nil)
+          (backward-delete-char (length new-prefix))
+          (insert company-prefix)
+          (ding)
+          (message "Matching input is required")
+          company-candidates)))))
 
 (defun company-begin ()
   (if (or buffer-read-only overriding-terminal-local-map overriding-local-map)
