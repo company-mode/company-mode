@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added hooks.
 ;;    Added `company-require-match' option.
 ;;
 ;; 2009-04-05 (0.2.1)
@@ -268,6 +269,28 @@ The back-end should return nil for all commands it does not support or
 does not know about."
   :group 'company
   :type '(repeat (function :tag "function" nil)))
+
+(defvar start-count 0)
+
+(defcustom company-completion-started-hook nil
+  "*Hook run when company starts completing.
+The hook is called with one argument that is non-nil if the completion was
+started manually."
+  :group 'company
+  :type 'hook)
+
+(defcustom company-completion-cancelled-hook nil
+  "*Hook run when company cancels completing.
+The hook is called with one argument that is non-nil if the completion was
+aborted manually."
+  :group 'company
+  :type 'hook)
+
+(defcustom company-completion-finished-hook nil
+  "*Hook run when company successfully completes.
+The hook is called with the selected candidate as an argument."
+  :group 'company
+  :type 'hook)
 
 (defcustom company-minimum-prefix-length 3
   "*The minimum prefix length for automatic completion."
@@ -550,7 +573,10 @@ keymap during active completions (`company-active-map'):
                                          company-candidates-predicate)))
         (unless (funcall company-backend 'sorted)
           (setq candidates (sort candidates 'string<)))
-        candidates)))
+        (when (or (cdr candidates)
+                  (not (equal (car candidates) prefix)))
+          ;; Don't start when already completed and unique.
+          candidates))))
 
 (defun company-idle-begin (buf win tick pos)
   (and company-mode
@@ -625,9 +651,13 @@ keymap during active completions (`company-active-map'):
                      (setq prefix (funcall backend 'prefix)))
             (setq company-backend backend)
             (when (company-should-complete prefix)
-              (setq company-prefix prefix)
-              (company-update-candidates (company-calculate-candidates prefix))
-              (company-call-frontends 'show))
+              (let ((c (company-calculate-candidates prefix)))
+                (when c
+                  (setq company-prefix prefix)
+                  (company-update-candidates c)
+                  (run-hook-with-args 'company-completion-started-hook
+                                      (company-explicit-action-p))
+                  (company-call-frontends 'show))))
             (return prefix))))))
   (if company-candidates
       (progn
@@ -639,7 +669,7 @@ keymap during active completions (`company-active-map'):
         (company-call-frontends 'update))
     (company-cancel)))
 
-(defun company-cancel ()
+(defun company-cancel (&optional result)
   (and company-added-newline
        (> (point-max) (point-min))
        (let ((tick (buffer-chars-modified-tick)))
@@ -647,6 +677,10 @@ keymap during active completions (`company-active-map'):
          (equal tick company-added-newline))
        ;; Only set unmodified when tick remained the same since insert.
        (set-buffer-modified-p nil))
+  (when company-prefix
+    (if (stringp result)
+        (run-hook-with-args 'company-completion-finished-hook result)
+      (run-hook-with-args 'company-completion-cancelled-hook result)))
   (setq company-added-newline nil
         company-backend nil
         company-prefix nil
@@ -666,7 +700,13 @@ keymap during active completions (`company-active-map'):
   (company-enable-overriding-keymap nil))
 
 (defun company-abort ()
-  (company-cancel)
+  (company-cancel t)
+  ;; Don't start again, unless started manually.
+  (setq company-point (point)))
+
+(defun company-finish (result)
+  (insert (company-strip-prefix result))
+  (company-cancel result)
   ;; Don't start again, unless started manually.
   (setq company-point (point)))
 
@@ -925,14 +965,16 @@ followed by `company-search-kill-others' after each input."
   "Complete the selected candidate."
   (interactive)
   (when (company-manual-begin)
-    (insert (company-strip-prefix (nth company-selection company-candidates)))
-    (company-abort)))
+    (company-finish (nth company-selection company-candidates))))
 
 (defun company-complete-common ()
   "Complete the common part of all candidates."
   (interactive)
   (when (company-manual-begin)
-    (insert (company-strip-prefix company-common))))
+    (if (equal company-common (car company-candidates))
+        ;; for success message
+        (company-complete-selection)
+      (insert (company-strip-prefix company-common)))))
 
 (defun company-complete ()
   "Complete the common part of all candidates or the current selection.
@@ -952,8 +994,7 @@ when the selection has been changed, the selected candidate is completed."
     (and (< n 1) (> n company-candidates-length)
          (error "No candidate number %d" n))
     (decf n)
-    (insert (company-strip-prefix (nth n company-candidates)))
-    (company-abort)))
+    (company-finish (nth n company-candidates))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
