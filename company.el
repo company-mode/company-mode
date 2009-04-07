@@ -278,14 +278,17 @@ does not know about."
   :group 'company
   :type '(integer :tag "prefix length"))
 
-(defcustom company-require-match nil
+(defcustom company-require-match 'company-explicit-action-p
   "*If enabled, disallow non-matching input.
 This can be a function do determine if a match is required.
+
 This can be overridden by the back-end, if it returns t or 'never to
 'require-match."
   :group 'company
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
+                 (const :tag "On, if user interaction took place"
+                        'company-explicit-action-p)
                  (const :tag "On" t)))
 
 (defcustom company-idle-delay .7
@@ -456,6 +459,10 @@ keymap during active completions (`company-active-map'):
 (defvar company-selection-changed nil)
 (make-variable-buffer-local 'company-selection-changed)
 
+(defvar company--explicit-action nil
+  "Non-nil, if explicit completion took place.")
+(make-variable-buffer-local 'company--explicit-action)
+
 (defvar company-point nil)
 (make-variable-buffer-local 'company-point)
 
@@ -466,6 +473,11 @@ keymap during active completions (`company-active-map'):
 
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
+
+(defun company-explicit-action-p ()
+  "Return whether explicit completion action was taken by the user."
+  (or company--explicit-action
+      company-selection-changed))
 
 (defsubst company-reformat (candidate)
   ;; company-ispell needs this, because the results are always lower-case
@@ -561,6 +573,7 @@ keymap during active completions (`company-active-map'):
        (not company-candidates)
        (let ((company-idle-delay t)
              (company-minimum-prefix-length 0))
+         (setq company--explicit-action t)
          (company-begin)))
   ;; Return non-nil if active.
   company-candidates)
@@ -570,12 +583,12 @@ keymap during active completions (`company-active-map'):
        (equal old-prefix (substring new-prefix 0 (length old-prefix)))))
 
 (defun company-require-match-p ()
-  (if (functionp company-require-match)
-      (funcall company-require-match)
-    (let ((backend-value (funcall company-backend 'require-match)))
-      (or (eq backend-value t)
-          (and (eq company-require-match t)
-               (not (eq backend-value 'never)))))))
+  (let ((backend-value (funcall company-backend 'require-match)))
+    (or (eq backend-value t)
+        (and (if (functionp company-require-match)
+                 (funcall company-require-match)
+               (eq company-require-match t))
+             (not (eq backend-value 'never))))))
 
 (defun company-continue ()
   (when company-candidates
@@ -644,6 +657,7 @@ keymap during active completions (`company-active-map'):
         company-common nil
         company-selection 0
         company-selection-changed nil
+        company--explicit-action nil
         company-point nil)
   (when company-timer
     (cancel-timer company-timer))
