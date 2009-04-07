@@ -39,7 +39,9 @@ buffer automatically."
 (make-variable-buffer-local 'company-etags-buffer-table)
 
 (defun company-etags-find-table ()
-  (let ((dir (file-name-directory buffer-file-name))
+  (let ((dir (if buffer-file-name
+                 (file-name-directory buffer-file-name)
+               (expand-file-name default-directory)))
         file)
     (while (not (or file (equal dir "/")))
       (unless (file-exists-p (setq file (expand-file-name "TAGS" dir)))
