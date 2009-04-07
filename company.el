@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-begin-with' for starting company from elisp-code.
 ;;    Added hooks.
 ;;    Added `company-require-match' and `company-auto-complete' options.
 ;;
@@ -420,11 +421,12 @@ keymap during active completions (`company-active-map'):
         (add-hook 'pre-command-hook 'company-pre-command nil t)
         (add-hook 'post-command-hook 'company-post-command nil t)
         (dolist (backend company-backends)
-          (unless (fboundp backend)
-            (ignore-errors (require backend nil t)))
-          (unless (fboundp backend)
-            (message "Company back-end '%s' could not be initialized"
-                     backend))))
+          (when (symbolp backend)
+            (unless (fboundp backend)
+              (ignore-errors (require backend nil t)))
+            (unless (fboundp backend)
+              (message "Company back-end '%s' could not be initialized"
+                       backend)))))
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
     (company-cancel)
@@ -708,8 +710,11 @@ keymap during active completions (`company-active-map'):
     (company-continue)
     (unless company-candidates
       (let (prefix)
-        (dolist (backend company-backends)
-          (when (and (fboundp backend)
+        (dolist (backend (if company-backend
+                             ;; prefer manual override
+                             (list company-backend)
+                           (cons company-backend company-backends)))
+          (when (and (functionp backend)
                      (setq prefix (funcall backend 'prefix)))
             (setq company-backend backend)
             (when (company-should-complete prefix)
@@ -1142,6 +1147,49 @@ when the selection has been changed, the selected candidate is completed."
           (goto-line pos))
         (set-window-start nil (point))))))
 (put 'company-show-location 'company-keep t)
+
+;;; package functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar company-callback nil)
+(make-variable-buffer-local 'company-callback)
+
+(defun company-remove-callback (&optional ignored)
+  (remove-hook 'company-completion-finished-hook company-callback t)
+  (remove-hook 'company-completion-cancelled-hook 'company-remove-callback t))
+
+(defun company-begin-backend (backend &optional callback)
+  "Start a completion at point using BACKEND."
+  (when callback
+    (setq company-callback
+          `(lambda (completion)
+             (funcall ',callback completion)
+             (company-remove-callback)))
+    (add-hook 'company-completion-cancelled-hook 'company-remove-callback nil t)
+    (add-hook 'company-completion-finished-hook company-callback nil t))
+  (setq company-backend backend)
+  (company-manual-begin))
+
+(defun company-begin-with (candidates
+                           &optional prefix-length require-match callback)
+  "Start a completion at point.
+CANDIDATES is the list of candidates to use and PREFIX-LENGTH is the length of
+the prefix that already is in the buffer before point.  It defaults to 0.
+
+CALLBACK is a function called with the selected result if the user successfully
+completes the input.
+
+Example:
+\(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
+  (company-begin-backend
+   (let ((start (- (point) (or prefix-length 0))))
+     `(lambda (command &optional arg &rest ignored)
+        (case command-history
+          ('prefix (message "prefix %s" (buffer-substring ,start (point)))
+                   (when (>= (point) ,start)
+                     (buffer-substring ,start (point))))
+          ('candidates (all-completions arg ',candidates))
+          ('require-match ,require-match))))
+   callback))
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
