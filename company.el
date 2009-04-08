@@ -336,6 +336,8 @@ The work-around consists of adding a newline.")
 
 (defvar company-active-map
   (let ((keymap (make-sparse-keymap)))
+    (define-key keymap "\e\e\e" 'company-abort)
+    (define-key keymap "\C-g" 'company-abort)
     (define-key keymap (kbd "M-n") 'company-select-next)
     (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap (kbd "<down>") 'company-select-next)
@@ -712,6 +714,7 @@ keymap during active completions (`company-active-map'):
   (company-enable-overriding-keymap nil))
 
 (defun company-abort ()
+  (interactive)
   (company-cancel t)
   ;; Don't start again, unless started manually.
   (setq company-point (point)))
