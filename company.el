@@ -557,26 +557,30 @@ keymap during active completions (`company-active-map'):
     (setq company-candidates nil)))
 
 (defun company-calculate-candidates (prefix)
-  (or (cdr (assoc prefix company-candidates-cache))
-      (when company-candidates-cache
-        (let ((len (length prefix))
-              (completion-ignore-case (funcall company-backend 'ignore-case))
-              prev)
-          (dotimes (i len)
-            (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
-                                         company-candidates-cache)))
-              (return (all-completions prefix prev))))))
-      (let ((candidates (funcall company-backend 'candidates prefix)))
-        (when company-candidates-predicate
-          (setq candidates
-                (company-apply-predicate candidates
-                                         company-candidates-predicate)))
-        (unless (funcall company-backend 'sorted)
-          (setq candidates (sort candidates 'string<)))
-        (when (or (cdr candidates)
-                  (not (equal (car candidates) prefix)))
-          ;; Don't start when already completed and unique.
-          candidates))))
+  (let ((candidates
+         (or (cdr (assoc prefix company-candidates-cache))
+             (when company-candidates-cache
+               (let ((len (length prefix))
+                     (completion-ignore-case (funcall company-backend
+                                                      'ignore-case))
+                     prev)
+                 (dotimes (i len)
+                   (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
+                                                company-candidates-cache)))
+                     (return (all-completions prefix prev))))))
+             (let ((c (funcall company-backend 'candidates prefix)))
+               (when company-candidates-predicate
+                 (setq c (company-apply-predicate
+                          c company-candidates-predicate)))
+               (unless (funcall company-backend 'sorted)
+                 (setq c (sort c 'string<)))
+               c))))
+    (if (or (cdr candidates)
+            (not (equal (car candidates) prefix)))
+        ;; Don't start when already completed and unique.
+        candidates
+      ;; Not the right place? maybe when setting?
+      (and company-candidates t))))
 
 (defun company-idle-begin (buf win tick pos)
   (and company-mode
@@ -626,13 +630,20 @@ keymap during active completions (`company-active-map'):
                       (- company-point (length company-prefix)))
                    (or (equal company-prefix new-prefix)
                        (let ((c (company-calculate-candidates new-prefix)))
-                         (when c
-                           (setq company-prefix new-prefix)
-                           (company-update-candidates c)
-                           t))))
+                         ;; t means complete/unique.
+                         (if (eq c t)
+                             (progn (company-cancel new-prefix) t)
+                           (when (consp c)
+                             (setq company-prefix new-prefix)
+                             (company-update-candidates c)
+                             t)))))
         (if (not (and (company-incremental-p company-prefix new-prefix)
                       (company-require-match-p)))
-            (setq company-candidates nil)
+            (progn
+              (when (equal company-prefix (car company-candidates))
+                ;; cancel, but last input was actually success
+                (company-cancel company-prefix))
+              (setq company-candidates nil))
           (backward-delete-char (length new-prefix))
           (insert company-prefix)
           (ding)
@@ -652,7 +663,8 @@ keymap during active completions (`company-active-map'):
             (setq company-backend backend)
             (when (company-should-complete prefix)
               (let ((c (company-calculate-candidates prefix)))
-                (when c
+                ;; t means complete/unique.  We don't start, so no hooks.
+                (when (consp c)
                   (setq company-prefix prefix)
                   (company-update-candidates c)
                   (run-hook-with-args 'company-completion-started-hook
