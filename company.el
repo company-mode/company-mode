@@ -66,7 +66,7 @@
 ;;; Change Log:
 ;;
 ;;    Added hooks.
-;;    Added `company-require-match' option.
+;;    Added `company-require-match' and `company-auto-complete' options.
 ;;
 ;; 2009-04-05 (0.2.1)
 ;;    Improved Emacs Lisp back-end behavior for local variables.
@@ -302,13 +302,42 @@ The hook is called with the selected candidate as an argument."
 This can be a function do determine if a match is required.
 
 This can be overridden by the back-end, if it returns t or 'never to
-'require-match."
+'require-match.  `company-auto-complete' also takes precedence over this."
   :group 'company
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
                         'company-explicit-action-p)
                  (const :tag "On" t)))
+
+(defcustom company-auto-complete '(?\  ?\( ?\) ?. ?\" ?$ ?\' ?< ?| ?!)
+  "Determines which characters trigger an automatic completion.
+If this is a function, it is called with the new input and should return non-nil
+if company should auto-complete.
+
+If this is a string, all characters in that string will complete automatically.
+
+A list of characters represent the syntax (see `modify-syntax-entry') of
+characters that complete automatically."
+  :group 'company
+  :type '(choice (const :tag "Off" nil)
+                 (function :tag "Predicate function")
+                 (string :tag "Characters")
+                 (set :tag "Syntax"
+                      (const :tag "Whitespace" ?\ )
+                      (const :tag "Symbol" ?_)
+                      (const :tag "Opening parentheses" ?\()
+                      (const :tag "Closing parentheses" ?\))
+                      (const :tag "Word constituent" ?w)
+                      (const :tag "Punctuation." ?.)
+                      (const :tag "String quote." ?\")
+                      (const :tag "Paired delimiter." ?$)
+                      (const :tag "Expression quote or prefix operator." ?\')
+                      (const :tag "Comment starter." ?<)
+                      (const :tag "Comment ender." ?>)
+                      (const :tag "Character-quote." ?/)
+                      (const :tag "Generic string fence." ?|)
+                      (const :tag "Generic comment fence." ?!))))
 
 (defcustom company-idle-delay .7
   "*The idle delay in seconds until automatic completions starts.
@@ -623,6 +652,20 @@ keymap during active completions (`company-active-map'):
                (eq company-require-match t))
              (not (eq backend-value 'never))))))
 
+(defun company-punctuation-p (input)
+  "Return non-nil, if input starts with punctuation or parentheses."
+  (memq (char-syntax (string-to-char input)) '(?. ?\( ?\))))
+
+(defun company-auto-complete-p (beg end)
+  "Return non-nil, if input starts with punctuation or parentheses."
+  (and (> end beg)
+       (if (functionp company-auto-complete)
+           (funcall company-auto-complete (buffer-substring beg end))
+         (if (consp company-auto-complete)
+             (memq (char-syntax (char-after beg)) company-auto-complete)
+           (string-match (buffer-substring beg (1+ beg))
+                         company-auto-complete)))))
+
 (defun company-continue ()
   (when company-candidates
     (when (funcall company-backend 'no-cache company-prefix)
@@ -640,18 +683,23 @@ keymap during active completions (`company-active-map'):
                              (setq company-prefix new-prefix)
                              (company-update-candidates c)
                              t)))))
-        (if (not (and (company-incremental-p company-prefix new-prefix)
-                      (company-require-match-p)))
-            (progn
-              (when (equal company-prefix (car company-candidates))
-                ;; cancel, but last input was actually success
-                (company-cancel company-prefix))
+        (if (company-auto-complete-p company-point (point))
+            (save-excursion
+              (goto-char company-point)
+              (company-complete-selection)
               (setq company-candidates nil))
-          (backward-delete-char (length new-prefix))
-          (insert company-prefix)
-          (ding)
-          (message "Matching input is required")
-          company-candidates)))))
+          (if (not (and (company-incremental-p company-prefix new-prefix)
+                        (company-require-match-p)))
+              (progn
+                (when (equal company-prefix (car company-candidates))
+                  ;; cancel, but last input was actually success
+                  (company-cancel company-prefix))
+                (setq company-candidates nil))
+            (backward-delete-char (length new-prefix))
+            (insert company-prefix)
+            (ding)
+            (message "Matching input is required")))
+        company-candidates))))
 
 (defun company-begin ()
   (if (or buffer-read-only overriding-terminal-local-map overriding-local-map)
