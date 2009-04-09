@@ -511,6 +511,7 @@ keymap during active completions (`company-active-map'):
 
 (defsubst company-should-complete (prefix)
   (and (eq company-idle-delay t)
+       (not (and transient-mark-mode mark-active))
        (>= (length prefix) company-minimum-prefix-length)))
 
 (defsubst company-call-frontends (command)
