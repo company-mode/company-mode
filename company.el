@@ -319,19 +319,29 @@ This can be overridden by the back-end, if it returns t or 'never to
                         'company-explicit-action-p)
                  (const :tag "On" t)))
 
-(defcustom company-auto-complete '(?\  ?\( ?\) ?. ?\" ?$ ?\' ?< ?| ?!)
-  "Determines which characters trigger an automatic completion.
-If this is a function, it is called with the new input and should return non-nil
-if company should auto-complete.
-
-If this is a string, all characters in that string will complete automatically.
-
-A list of characters represent the syntax (see `modify-syntax-entry') of
-characters that complete automatically."
+(defcustom company-auto-complete 'company-explicit-action-p
+  "Determines when to auto-complete.
+If this is enabled, all characters from `company-auto-complete-chars' complete
+the selected completion.  This can also be a function."
   :group 'company
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
-                 (string :tag "Characters")
+                 (const :tag "On, if user interaction took place"
+                        'company-explicit-action-p)
+                 (const :tag "On" t)))
+
+(defcustom company-auto-complete-chars '(?\  ?\( ?\) ?. ?\" ?$ ?\' ?< ?| ?!)
+  "Determines which characters trigger an automatic completion.
+See `company-auto-complete'.  If this is a string, each string character causes
+completion.  If it is a list of syntax description characters (see
+`modify-char-syntax'), all characters with that syntax auto-complete.
+
+This can also be a function, which is called with the new input and should
+return non-nil if company should auto-complete.
+
+A character that is part of a valid candidate never starts auto-completion."
+  :group 'company
+  :type '(choice (string :tag "Characters")
                  (set :tag "Syntax"
                       (const :tag "Whitespace" ?\ )
                       (const :tag "Symbol" ?_)
@@ -346,7 +356,8 @@ characters that complete automatically."
                       (const :tag "Comment ender." ?>)
                       (const :tag "Character-quote." ?/)
                       (const :tag "Generic string fence." ?|)
-                      (const :tag "Generic comment fence." ?!))))
+                      (const :tag "Generic comment fence." ?!))
+                 (function :tag "Predicate function")))
 
 (defcustom company-idle-delay .7
   "*The idle delay in seconds until automatic completions starts.
@@ -671,11 +682,14 @@ keymap during active completions (`company-active-map'):
   "Return non-nil, if input starts with punctuation or parentheses."
   (and (> end beg)
        (if (functionp company-auto-complete)
-           (funcall company-auto-complete (buffer-substring beg end))
-         (if (consp company-auto-complete)
-             (memq (char-syntax (char-after beg)) company-auto-complete)
+           (funcall company-auto-complete)
+         company-auto-complete)
+       (if (functionp company-auto-complete-chars)
+           (funcall company-auto-complete-chars (buffer-substring beg end))
+         (if (consp company-auto-complete-chars)
+             (memq (char-syntax (char-after beg)) company-auto-complete-chars)
            (string-match (buffer-substring beg (1+ beg))
-                         company-auto-complete)))))
+                         company-auto-complete-chars)))))
 
 (defun company-continue ()
   (when company-candidates
