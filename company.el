@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Back-ends are now interactive.  You can start them with M-x backend-name.
 ;;    Added `company-begin-with' for starting company from elisp-code.
 ;;    Added hooks.
 ;;    Added `company-require-match' and `company-auto-complete' options.
@@ -99,6 +100,7 @@
 (add-to-list 'debug-ignored-errors "^No \\(document\\|loc\\)ation available$")
 (add-to-list 'debug-ignored-errors "^Company not ")
 (add-to-list 'debug-ignored-errors "^No candidate number ")
+(add-to-list 'debug-ignored-errors "^Cannot complete at point$")
 
 (defgroup company nil
   "Extensible inline text completion mechanism"
@@ -267,7 +269,8 @@ user that choice with `company-require-match'.  Return value 'never overrides
 that option the other way around.
 
 The back-end should return nil for all commands it does not support or
-does not know about."
+does not know about.  It should also be callable interactively and use
+`company-begin-backend' to start itself in that case."
   :group 'company
   :type '(repeat (function :tag "function" nil)))
 
@@ -407,7 +410,8 @@ Completions can be searched with `company-search-candidates' or
 inactive, as well.
 
 The completion data is retrieved using `company-backends' and displayed using
-`company-frontends'.
+`company-frontends'.  If you want to start a specific back-end, call it
+interactively or use `company-begin-backend'.
 
 regular keymap (`company-mode-map'):
 
@@ -1159,6 +1163,11 @@ when the selection has been changed, the selected candidate is completed."
 
 (defun company-begin-backend (backend &optional callback)
   "Start a completion at point using BACKEND."
+  (interactive (let ((val (completing-read "Company back-end: "
+                                           obarray
+                                           'functionp nil "company-")))
+                 (when val
+                   (list (intern val)))))
   (when callback
     (setq company-callback
           `(lambda (completion)
@@ -1167,7 +1176,9 @@ when the selection has been changed, the selected candidate is completed."
     (add-hook 'company-completion-cancelled-hook 'company-remove-callback nil t)
     (add-hook 'company-completion-finished-hook company-callback nil t))
   (setq company-backend backend)
-  (company-manual-begin))
+  ;; Return non-nil if active.
+  (or (company-manual-begin)
+      (error "Cannot complete at point")))
 
 (defun company-begin-with (candidates
                            &optional prefix-length require-match callback)

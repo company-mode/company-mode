@@ -41,9 +41,12 @@ If nil, use `ispell-complete-word-dict'."
        (setq company-ispell-available nil))))
   company-ispell-available)
 
+;;;###autoload
 (defun company-ispell (command &optional arg &rest ignored)
   "A `company-mode' completion back-end using ispell."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-ispell))
     ('prefix (when (company-ispell-available)
                (company-grab "\\<\\w+\\>")))
     ('candidates (lookup-words arg (or company-ispell-dictionary

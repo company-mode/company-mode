@@ -32,9 +32,12 @@
     ('oddmuse-mode (with-no-warnings
                      (oddmuse-make-completion-table oddmuse-wiki)))))
 
+;;;###autoload
 (defun company-oddmuse (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `oddmuse-mode'."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-oddmuse))
     ('prefix (let ((case-fold-search nil))
                (and (memq major-mode '(oddmuse-mode yaoddmuse-mode))
                     (looking-back company-oddmuse-link-regexp (point-at-bol))

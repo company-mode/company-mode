@@ -61,9 +61,12 @@
           (context (semantic-analyze-current-context)))
       (all-completions prefix (semantic-ia-get-completions context (point))))))
 
+;;;###autoload
 (defun company-semantic (command &optional arg &rest ignored)
   "A `company-mode' completion back-end using CEDET Semantic."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-semantic))
     ('prefix (and (memq major-mode '(c-mode c++-mode jde-mode java-mode))
                   (not (company-in-string-or-comment))
                   (or (company-grab company-semantic-context-regexp 2) "")))

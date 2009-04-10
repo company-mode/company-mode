@@ -102,9 +102,12 @@
                           (all-completions arg
                            (rng-match-possible-value-strings))))))))
 
+;;;###autoload
 (defun company-nxml (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `nxml-mode'."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-nxml))
     ('prefix (or (company-nxml-tag 'prefix)
                  (company-nxml-attribute 'prefix)
                  (company-nxml-attribute-value 'prefix)))

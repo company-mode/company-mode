@@ -271,9 +271,12 @@ Returns \"\" if no property found, but feasible at this position."
   "\\_<\\([[:alpha:]-]+\\):\\(?:[^};]*[[:space:]]+\\)?\\([^};]*\\_>\\|\\)\\="
   "A regular expression matching CSS tags")
 
+;;;###autoload
 (defun company-css (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `css-mode'."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-css))
     ('prefix (and (eq major-mode 'css-mode)
                   (or (company-grab company-css-tag-regexp 1)
                       (company-grab company-css-pseudo-regexp 1)

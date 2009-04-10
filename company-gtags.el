@@ -68,9 +68,12 @@
           (cons (expand-file-name (match-string 2))
                 (string-to-number (match-string 1)))))))
 
+;;;###autoload
 (defun company-gtags (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for GNU Global."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-gtags))
     ('prefix (and (memq major-mode company-gtags-modes)
                   (not (company-in-string-or-comment))
                   (company-gtags-available)

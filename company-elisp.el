@@ -104,9 +104,12 @@ Functions are offered for completion only after ' and \(."
          (string-match ".*$" doc)
          (match-string 0 doc))))
 
+;;;###autoload
 (defun company-elisp (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `emacs-lisp-mode'."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-elisp))
     ('prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
                   (company-grab-lisp-symbol)))
     ('candidates (company-elisp-candidates arg))

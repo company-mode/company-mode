@@ -56,9 +56,12 @@
       (setq company-files-completion-cache (cons dir (nreverse candidates))))
     (cdr company-files-completion-cache)))
 
+;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
   "a `company-mode' completion back-end existing file names."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-files))
     ('prefix (company-files-grab-existing-name))
     ('candidates (company-files-complete arg))
     ('location (cons (dired-noselect

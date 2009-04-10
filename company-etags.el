@@ -56,9 +56,12 @@ buffer automatically."
           (setq company-etags-buffer-table (company-etags-find-table))
         company-etags-buffer-table)))
 
+;;;###autoload
 (defun company-etags (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for etags."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-etags))
     ('prefix (and (memq major-mode company-etags-modes)
                   (not (company-in-string-or-comment))
                   (require 'etags nil t)

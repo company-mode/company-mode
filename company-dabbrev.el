@@ -29,9 +29,12 @@
         (dabbrev--goto-start-of-abbrev)
         (buffer-substring-no-properties (point) end)))))
 
+;;;###autoload
 (defun company-dabbrev (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `dabbrev-completion'."
+  (interactive (list 'interactive))
   (case command
+    ('interactive (company-begin-backend 'company-dabbrev))
     ('prefix (company-grab-dabbrev-prefix))
     ('candidates (let ((dabbrev-check-other-buffers))
                    (dabbrev--reset-global-variables)
