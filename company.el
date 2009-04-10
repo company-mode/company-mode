@@ -69,7 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
-;;    Added abbrev back-end.
+;;    Added abbrev and tempo back-ends.
 ;;    Back-ends are now interactive.  You can start them with M-x backend-name.
 ;;    Added `company-begin-with' for starting company from elisp-code.
 ;;    Added hooks.
