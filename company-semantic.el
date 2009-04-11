@@ -68,6 +68,7 @@
   (case command
     ('interactive (company-begin-backend 'company-semantic))
     ('prefix (and (memq major-mode '(c-mode c++-mode jde-mode java-mode))
+                  (semantic-active-p)
                   (not (company-in-string-or-comment))
                   (or (company-grab company-semantic-context-regexp 2) "")))
     ('candidates (or (company-semantic-completions arg)
