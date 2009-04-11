@@ -69,7 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
-;;    Added abbrev and tempo back-ends.
+;;    Added abbrev, tempo and Xcode back-ends.
 ;;    Back-ends are now interactive.  You can start them with M-x backend-name.
 ;;    Added `company-begin-with' for starting company from elisp-code.
 ;;    Added hooks.
@@ -234,8 +234,9 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (function :tag "custom function" nil))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-semantic company-gtags company-etags
-                              company-oddmuse company-files company-dabbrev)
+                              company-semantic company-xcode company-gtags
+                              company-etags company-oddmuse company-files
+                              company-dabbrev)
   "*The list of active back-ends (completion engines).
 Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
