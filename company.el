@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 0.2.1
+;; Version: 0.3
 ;; Keywords: abbrev, convenience, matchis
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2009-04-12 (0.3)
 ;;    Added `company-begin-commands' option.
 ;;    Added abbrev, tempo and Xcode back-ends.
 ;;    Back-ends are now interactive.  You can start them with M-x backend-name.
