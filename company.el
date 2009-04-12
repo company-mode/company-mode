@@ -1064,8 +1064,8 @@ followed by `company-search-kill-others' after each input."
   "Complete the common part of all candidates."
   (interactive)
   (when (company-manual-begin)
-    (if (equal company-common (car company-candidates))
-        ;; for success message
+    (if (and (not (cdr company-candidates))
+             (equal company-common (car company-candidates)))
         (company-complete-selection)
       (insert (company-strip-prefix company-common)))))
 
