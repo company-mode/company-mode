@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-begin-commands' option.
 ;;    Added abbrev, tempo and Xcode back-ends.
 ;;    Back-ends are now interactive.  You can start them with M-x backend-name.
 ;;    Added `company-begin-with' for starting company from elisp-code.
@@ -369,6 +370,17 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
                  (const :tag "immediate (t)" t)
                  (number :tag "seconds")))
 
+(defcustom company-begin-commands t
+  "*A list of commands following which company will start completing.
+If this is t, it will complete after any command.  See `company-idle-delay'.
+
+Alternatively any command with a non-nil 'company-begin property is treated as
+if it was on this list."
+  :group 'company
+  :type '(choice (const :tag "Any command" t)
+                 (const :tag "Self insert command" '(self-insert-command))
+                 (repeat :tag "Commands" function)))
+
 (defcustom company-show-numbers nil
   "*If enabled, show quick-access numbers for the first ten candidates."
   :group 'company
@@ -563,6 +575,9 @@ keymap during active completions (`company-active-map'):
 
 (defsubst company-should-complete (prefix)
   (and (eq company-idle-delay t)
+       (or (eq t company-begin-commands)
+           (memq this-command company-begin-commands)
+           (and (symbolp this-command) (get this-command 'company-begin)))
        (not (and transient-mark-mode mark-active))
        (>= (length prefix) company-minimum-prefix-length)))
 
@@ -657,7 +672,8 @@ keymap during active completions (`company-active-map'):
   (and company-mode
        (not company-candidates)
        (let ((company-idle-delay t)
-             (company-minimum-prefix-length 0))
+             (company-minimum-prefix-length 0)
+             (company-begin-commands t))
          (setq company--explicit-action t)
          (company-begin)))
   ;; Return non-nil if active.
