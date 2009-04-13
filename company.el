@@ -39,6 +39,10 @@
 ;; Enable company-mode with M-x company-mode.  For further information look at
 ;; the documentation for `company-mode' (C-h f company-mode RET)
 ;;
+;; If you want to start a specific back-end, call it interactively or use
+;; `company-begin-backend'.  For example:
+;; M-x company-abbrev will prompt for and insert an abbrev.
+;;
 ;; To write your own back-end, look at the documentation for `company-backends'.
 ;; Here is a simple example completing "foo":
 ;;
@@ -65,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added abbrev back-end.
 ;;    Back-ends are now interactive.  You can start them with M-x backend-name.
 ;;    Added `company-begin-with' for starting company from elisp-code.
 ;;    Added hooks.
