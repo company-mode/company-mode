@@ -1464,8 +1464,9 @@ Example:
 
 (defun company-pseudo-tooltip-show-at-point (pos)
   (let ((col-row (posn-actual-col-row (posn-at-point pos))))
-    (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
-                                 company-selection)))
+    (when col-row
+      (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
+                                   company-selection))))
 
 (defun company-pseudo-tooltip-edit (lines selection)
   (let* ((old-string (overlay-get company-pseudo-tooltip-overlay 'company-old))
