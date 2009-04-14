@@ -1118,7 +1118,9 @@ when the selection has been changed, the selected candidate is completed."
       (setq this-command 'company-complete-common))))
 
 (defun company-complete-number (n)
-  "Complete the Nth candidate."
+  "Complete the Nth candidate.
+To show the number next to the candidates in some back-ends, enable
+`company-show-numbers'."
   (when (company-manual-begin)
     (and (< n 1) (> n company-candidates-length)
          (error "No candidate number %d" n))
