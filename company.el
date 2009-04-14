@@ -772,7 +772,7 @@ keymap during active completions (`company-active-map'):
       (dolist (backend (if company-backend
                            ;; prefer manual override
                            (list company-backend)
-                         (cons company-backend company-backends)))
+                         company-backends))
         (when (and (functionp backend)
                    (setq prefix (funcall backend 'prefix)))
           (setq company-backend backend)
