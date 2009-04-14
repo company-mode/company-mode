@@ -48,7 +48,7 @@ If nil, use `ispell-complete-word-dict'."
   (case command
     ('interactive (company-begin-backend 'company-ispell))
     ('prefix (when (company-ispell-available)
-               (company-grab "\\<\\w+\\>")))
+               (company-grab-word)))
     ('candidates (lookup-words arg (or company-ispell-dictionary
                                        ispell-complete-word-dict)))
     ('sorted t)

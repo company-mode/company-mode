@@ -69,6 +69,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Performance enhancements.
+;;
 ;; 2009-04-12 (0.3)
 ;;    Added `company-begin-commands' option.
 ;;    Added abbrev, tempo and Xcode back-ends.
@@ -512,9 +514,24 @@ keymap during active completions (`company-active-map'):
 
 ;;; backends ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun company-grab (regexp &optional expression)
-  (when (looking-back regexp)
+(defun company-grab (regexp &optional expression limit)
+  (when (looking-back regexp limit)
     (or (match-string-no-properties (or expression 0)) "")))
+
+(defun company-grab-line (regexp &optional expression)
+  (company-grab regexp expression (point-at-bol)))
+
+(defun company-grab-symbol ()
+  (if (looking-at "\\_>")
+      (buffer-substring (point) (save-excursion (skip-syntax-backward "w_")
+                                                (point)))
+    ""))
+
+(defun company-grab-word ()
+  (if (looking-at "\\>")
+      (buffer-substring (point) (save-excursion (skip-syntax-backward "w")
+                                                (point)))
+    ""))
 
 (defun company-in-string-or-comment (&optional point)
   (let ((pos (syntax-ppss)))

@@ -28,9 +28,9 @@
 
 (defun company-files-grab-existing-name ()
   ;; Grab file names with spaces, only when they include quotes.
-  (let ((file (or (company-grab "\"\\(~?/[^\"\n]*\\)" 1)
-                  (company-grab "\'\\(~?/[^\'\n]*\\)" 1)
-                  (company-grab "[ \t\n]\\(~?/[^ \t\n]*\\)" 1)))
+  (let ((file (or (company-grab-line "\"\\(~?/[^\"\n]*\\)" 1)
+                  (company-grab-line "\'\\(~?/[^\'\n]*\\)" 1)
+                  (company-grab-line "[ \t\n]\\(~?/[^ \t\n]*\\)" 1)))
         dir)
     (and file
          (setq dir (file-name-directory file))

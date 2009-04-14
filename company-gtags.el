@@ -27,9 +27,6 @@
   :type 'string
   :group 'company)
 
-(defvar company-gtags-symbol-regexp
-  "\\_<[A-Za-z_][A-Za-z_0-9]*\\_>")
-
 (defvar company-gtags-modes '(c-mode c++-mode jde-mode java-mode php-mode))
 
 (defvar company-gtags-available 'unknown)
@@ -52,10 +49,7 @@
       (when (= 0 (call-process "global" nil (list (current-buffer) nil)
                                nil "-c" prefix))
         (goto-char (point-min))
-        (while (looking-at company-gtags-symbol-regexp)
-          (push (match-string-no-properties 0) tags)
-          (forward-line)))
-      (nreverse tags))))
+        (split-string (buffer-string) "\n" t)))))
 
 (defun company-gtags-location (tag)
   (with-temp-buffer
@@ -77,7 +71,7 @@
     ('prefix (and (memq major-mode company-gtags-modes)
                   (not (company-in-string-or-comment))
                   (company-gtags-available)
-               (or (company-grab company-gtags-symbol-regexp) "")))
+               (company-grab-symbol)))
     ('candidates (company-gtags-fetch-tags arg))
     ('sorted t)
     ('location (company-gtags-location arg))))

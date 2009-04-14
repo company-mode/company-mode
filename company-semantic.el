@@ -26,9 +26,6 @@
   :group 'company
   :type 'function)
 
-(defvar company-semantic-context-regexp
-  "\\(->\\|\\.\\|\\_<\\)\\(\\(\\s_\\|\\sw\\)+\\_>\\=\\)")
-
 (defun company-semantic-doc-or-summary (tag)
   (or (semantic-documentation-for-tag tag)
       (funcall semantic-idle-summary-function tag nil t)))
@@ -70,7 +67,7 @@
     ('prefix (and (memq major-mode '(c-mode c++-mode jde-mode java-mode))
                   (semantic-active-p)
                   (not (company-in-string-or-comment))
-                  (or (company-grab company-semantic-context-regexp 2) "")))
+                  (company-grab-symbol)))
     ('candidates (or (company-semantic-completions arg)
                      (mapcar 'semantic-tag-name
                              (semantic-analyze-find-tags-by-prefix arg))))

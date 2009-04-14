@@ -51,9 +51,6 @@ valid in most contexts."
               (const "Type") (const "Union") (const "Variable")
               (const "Function")))
 
-(defvar company-xcode-symbol-regexp
-  "\\_<[A-Za-z_][A-Za-z_0-9]*\\_>")
-
 (defvar company-xcode-project 'unknown)
 (make-variable-buffer-local 'company-xcode-project)
 
@@ -104,7 +101,7 @@ valid in most contexts."
     ('prefix (and company-xcode-xcodeindex-executable
                   (not (company-in-string-or-comment))
                   (company-xcode-tags)
-                  (or (company-grab company-xcode-symbol-regexp) "")))
+                  (company-grab-symbol)))
     ('candidates (let ((completion-ignore-case nil))
                    (all-completions arg (company-xcode-tags))))))
 

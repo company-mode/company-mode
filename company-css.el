@@ -263,8 +263,7 @@
   "Return the CSS property before point, if any.
 Returns \"\" if no property found, but feasible at this position."
   (when (company-css-inside-braces-p)
-    (or (company-grab "\\_<[[:alpha:]-]+\\_>\\=")
-        (company-grab "{\\|[[:space:]]" 1))))
+    (company-grab-symbol)))
 
 ;;; values
 (defconst company-css-property-value-regexp

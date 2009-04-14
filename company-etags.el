@@ -29,9 +29,6 @@ buffer automatically."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
-(defvar company-etags-symbol-regexp
-  "\\_<[A-Za-z_][A-Za-z_0-9]*\\_>")
-
 (defvar company-etags-modes '(c-mode objc-mode c++-mode java-mode jde-mode
                               pascal-mode perl-mode python-mode))
 
@@ -66,7 +63,7 @@ buffer automatically."
                   (not (company-in-string-or-comment))
                   (require 'etags nil t)
                   (company-etags-buffer-table)
-                  (or (company-grab company-etags-symbol-regexp) "")))
+                  (company-grab-symbol)))
     ('candidates (let ((tags-table-list (company-etags-buffer-table))
                        (completion-ignore-case nil))
                    (and (fboundp 'tags-completion-table)

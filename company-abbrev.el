@@ -32,7 +32,7 @@
   (case command
         ('interactive (company-begin-backend 'company-abbrev
                                              'company-abbrev-insert))
-        ('prefix (or (company-grab "\\_<\\(\\sw\\|\\s_\\)+\\_>") ""))
+        ('prefix (company-grab-symbol))
         ('candidates (nconc
                       (delete "" (all-completions arg global-abbrev-table))
                       (delete "" (all-completions arg local-abbrev-table))))

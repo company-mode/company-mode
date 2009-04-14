@@ -28,11 +28,8 @@ Functions are offered for completion only after ' and \(."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
-(defvar company-lisp-symbol-regexp
-  "\\_<\\(\\sw\\|\\s_\\)+\\_>\\=")
-
 (defun company-grab-lisp-symbol ()
-  (let ((prefix (or (company-grab company-lisp-symbol-regexp) "")))
+  (let ((prefix (company-grab-symbol)))
     (unless (and (company-in-string-or-comment (- (point) (length prefix)))
                  (/= (char-before (- (point) (length prefix))) ?`))
       prefix)))
