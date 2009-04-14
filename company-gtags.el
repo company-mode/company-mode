@@ -20,40 +20,29 @@
 (require 'company)
 (eval-when-compile (require 'cl))
 
-(defcustom company-gtags-gnu-global-program-name
-  (or (locate-file "global" exec-path exec-suffixes 'file-executable-p)
-      "global")
+(defcustom company-gtags-executable
+  (executable-find "global")
   "*Location of GNU global executable"
   :type 'string
   :group 'company)
 
+(define-obsolete-variable-alias
+  'company-gtags-gnu-global-program-name
+  'company-gtags-executable)
+
 (defvar company-gtags-modes '(c-mode c++-mode jde-mode java-mode php-mode))
-
-(defvar company-gtags-available 'unknown)
-(make-variable-buffer-local 'company-gtags-available)
-
-(defun company-gtags-available ()
-  (when (eq company-gtags-available 'unknown)
-    (condition-case err
-        (setq company-gtags-available
-              (= 0 (call-process company-gtags-gnu-global-program-name
-                                 nil nil nil "-c" "WHATEVER")))
-      (error
-       (message "Company: GNU Global not found")
-       (setq-default company-gtags-available nil))))
-  company-gtags-available)
 
 (defun company-gtags-fetch-tags (prefix)
   (with-temp-buffer
     (let (tags)
-      (when (= 0 (call-process company-gtags-gnu-global-program-name nil
+      (when (= 0 (call-process company-gtags-executable nil
                                (list (current-buffer) nil) nil "-c" prefix))
         (goto-char (point-min))
         (split-string (buffer-string) "\n" t)))))
 
 (defun company-gtags-location (tag)
   (with-temp-buffer
-    (when (= 0 (call-process company-gtags-gnu-global-program-name nil
+    (when (= 0 (call-process company-gtags-executable nil
                              (list (current-buffer) nil) nil "-x" tag))
         (goto-char (point-min))
         (when (looking-at (concat (regexp-quote tag)
@@ -68,10 +57,10 @@
   (interactive (list 'interactive))
   (case command
     ('interactive (company-begin-backend 'company-gtags))
-    ('prefix (and (memq major-mode company-gtags-modes)
+    ('prefix (and company-gtags-executable
+                  (memq major-mode company-gtags-modes)
                   (not (company-in-string-or-comment))
-                  (company-gtags-available)
-               (company-grab-symbol)))
+                  (company-grab-symbol)))
     ('candidates (company-gtags-fetch-tags arg))
     ('sorted t)
     ('location (company-gtags-location arg))))
