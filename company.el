@@ -339,7 +339,7 @@ the selected completion.  This can also be a function."
   "Determines which characters trigger an automatic completion.
 See `company-auto-complete'.  If this is a string, each string character causes
 completion.  If it is a list of syntax description characters (see
-`modify-char-syntax'), all characters with that syntax auto-complete.
+`modify-syntax-entry'), all characters with that syntax auto-complete.
 
 This can also be a function, which is called with the new input and should
 return non-nil if company should auto-complete.
