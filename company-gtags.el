@@ -23,7 +23,7 @@
 (defcustom company-gtags-gnu-global-program-name
   (or (locate-file "global" exec-path exec-suffixes 'file-executable-p)
       "global")
-  "*"
+  "*Location of GNU global executable"
   :type 'string
   :group 'company)
 
@@ -46,15 +46,15 @@
 (defun company-gtags-fetch-tags (prefix)
   (with-temp-buffer
     (let (tags)
-      (when (= 0 (call-process "global" nil (list (current-buffer) nil)
-                               nil "-c" prefix))
+      (when (= 0 (call-process company-gtags-gnu-global-program-name nil
+                               (list (current-buffer) nil) nil "-c" prefix))
         (goto-char (point-min))
         (split-string (buffer-string) "\n" t)))))
 
 (defun company-gtags-location (tag)
   (with-temp-buffer
-    (when (= 0 (call-process "global" nil (list (current-buffer) nil)
-                               nil "-x" tag))
+    (when (= 0 (call-process company-gtags-gnu-global-program-name nil
+                             (list (current-buffer) nil) nil "-x" tag))
         (goto-char (point-min))
         (when (looking-at (concat (regexp-quote tag)
                                   "[ \t]+\\([[:digit:]]+\\)"
