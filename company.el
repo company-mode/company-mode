@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Fixed issues with tabbar-mode and line-spacing.
 ;;    Performance enhancements.
 ;;
 ;; 2009-04-12 (0.3)
@@ -1080,8 +1081,8 @@ followed by `company-search-kill-others' after each input."
   "Select the candidate picked by the mouse."
   (interactive "e")
   (when (nth 4 (event-start event))
-    (company-set-selection (- (cdr (posn-col-row (event-start event)))
-                              (cdr (posn-col-row (posn-at-point)))
+    (company-set-selection (- (cdr (posn-actual-col-row (event-start event)))
+                              (cdr (posn-actual-col-row (posn-at-point)))
                               1))
     t))
 
@@ -1172,7 +1173,7 @@ when the selection has been changed, the selected candidate is completed."
   `(when (company-manual-begin)
      (save-window-excursion
        (let ((height (window-height))
-             (row (cdr (posn-col-row (posn-at-point)))))
+             (row (cdr (posn-actual-col-row (posn-at-point)))))
          ,@body
          (and (< (window-height) height)
               (< (- (window-height) row 2) company-tooltip-limit)
@@ -1336,7 +1337,7 @@ Example:
 
 (defun company-buffer-lines (beg end)
   (goto-char beg)
-  (let ((row (cdr (posn-col-row (posn-at-point))))
+  (let ((row (cdr (posn-actual-col-row (posn-at-point))))
         lines)
     (while (and (equal (move-to-window-line (incf row)) row)
                 (<= (point) end))
@@ -1462,8 +1463,9 @@ Example:
       (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
-  (let ((col-row (posn-col-row (posn-at-point pos))))
-    (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row) company-selection)))
+  (let ((col-row (posn-actual-col-row (posn-at-point pos))))
+    (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
+                                 company-selection)))
 
 (defun company-pseudo-tooltip-edit (lines selection)
   (let* ((old-string (overlay-get company-pseudo-tooltip-overlay 'company-old))
