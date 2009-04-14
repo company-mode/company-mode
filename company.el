@@ -534,9 +534,9 @@ keymap during active completions (`company-active-map'):
                                                 (point)))
     ""))
 
-(defun company-in-string-or-comment (&optional point)
-  (let ((pos (syntax-ppss)))
-    (or (nth 3 pos) (nth 4 pos) (nth 7 pos))))
+(defun company-in-string-or-comment ()
+  (let ((ppss (syntax-ppss)))
+    (or (nth 3 ppss) (nth 4 ppss) (nth 7 ppss))))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -30,7 +30,7 @@ Functions are offered for completion only after ' and \(."
 
 (defun company-grab-lisp-symbol ()
   (let ((prefix (company-grab-symbol)))
-    (unless (and (company-in-string-or-comment (- (point) (length prefix)))
+    (unless (and (company-in-string-or-comment)
                  (/= (char-before (- (point) (length prefix))) ?`))
       prefix)))
 
