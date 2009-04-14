@@ -594,13 +594,14 @@ keymap during active completions (`company-active-map'):
   ;; It's mory efficient to fix it only when they are displayed.
   (concat company-prefix (substring candidate (length company-prefix))))
 
-(defsubst company-should-complete (prefix)
-  (and (eq company-idle-delay t)
+(defun company--should-complete ()
+  (and (not (or buffer-read-only overriding-terminal-local-map
+                overriding-local-map))
+       (eq company-idle-delay t)
        (or (eq t company-begin-commands)
            (memq company--this-command company-begin-commands)
            (and (symbolp this-command) (get this-command 'company-begin)))
-       (not (and transient-mark-mode mark-active))
-       (>= (length prefix) company-minimum-prefix-length)))
+       (not (and transient-mark-mode mark-active))))
 
 (defsubst company-call-frontends (command)
   (dolist (frontend company-frontends)
@@ -730,64 +731,61 @@ keymap during active completions (`company-active-map'):
                          company-auto-complete-chars)))))
 
 (defun company-continue ()
-  (when company-candidates
-    (when (funcall company-backend 'no-cache company-prefix)
-      ;; Don't complete existing candidates, fetch new ones.
-      (setq company-candidates-cache nil))
-    (let ((new-prefix (funcall company-backend 'prefix)))
-      (unless (and (= (- (point) (length new-prefix))
-                      (- company-point (length company-prefix)))
-                   (or (equal company-prefix new-prefix)
-                       (let ((c (company-calculate-candidates new-prefix)))
-                         ;; t means complete/unique.
-                         (if (eq c t)
-                             (progn (company-cancel new-prefix) t)
-                           (when (consp c)
-                             (setq company-prefix new-prefix)
-                             (company-update-candidates c)
-                             t)))))
-        (if (company-auto-complete-p company-point (point))
-            (save-excursion
-              (goto-char company-point)
-              (company-complete-selection)
+  (when (funcall company-backend 'no-cache company-prefix)
+    ;; Don't complete existing candidates, fetch new ones.
+    (setq company-candidates-cache nil))
+  (let ((new-prefix (funcall company-backend 'prefix)))
+    (unless (and (= (- (point) (length new-prefix))
+                    (- company-point (length company-prefix)))
+                 (or (equal company-prefix new-prefix)
+                     (let ((c (company-calculate-candidates new-prefix)))
+                       ;; t means complete/unique.
+                       (if (eq c t)
+                           (progn (company-cancel new-prefix) t)
+                         (when (consp c)
+                           (setq company-prefix new-prefix)
+                           (company-update-candidates c)
+                           t)))))
+      (if (company-auto-complete-p company-point (point))
+          (save-excursion
+            (goto-char company-point)
+            (company-complete-selection)
+            (setq company-candidates nil))
+        (if (not (and (company-incremental-p company-prefix new-prefix)
+                      (company-require-match-p)))
+            (progn
+              (when (equal company-prefix (car company-candidates))
+                ;; cancel, but last input was actually success
+                (company-cancel company-prefix))
               (setq company-candidates nil))
-          (if (not (and (company-incremental-p company-prefix new-prefix)
-                        (company-require-match-p)))
-              (progn
-                (when (equal company-prefix (car company-candidates))
-                  ;; cancel, but last input was actually success
-                  (company-cancel company-prefix))
-                (setq company-candidates nil))
-            (backward-delete-char (length new-prefix))
-            (insert company-prefix)
-            (ding)
-            (message "Matching input is required")))
-        company-candidates))))
+          (backward-delete-char (length new-prefix))
+          (insert company-prefix)
+          (ding)
+          (message "Matching input is required")))
+      company-candidates)))
 
 (defun company-begin ()
-  (if (or buffer-read-only overriding-terminal-local-map overriding-local-map)
-      ;; Don't complete in these cases.
-      (setq company-candidates nil)
-    (company-continue)
-    (unless company-candidates
-      (let (prefix)
-        (dolist (backend (if company-backend
-                             ;; prefer manual override
-                             (list company-backend)
-                           (cons company-backend company-backends)))
-          (when (and (functionp backend)
-                     (setq prefix (funcall backend 'prefix)))
-            (setq company-backend backend)
-            (when (company-should-complete prefix)
-              (let ((c (company-calculate-candidates prefix)))
-                ;; t means complete/unique.  We don't start, so no hooks.
-                (when (consp c)
-                  (setq company-prefix prefix)
-                  (company-update-candidates c)
-                  (run-hook-with-args 'company-completion-started-hook
-                                      (company-explicit-action-p))
-                  (company-call-frontends 'show))))
-            (return prefix))))))
+  (when (if company-candidates
+            (not (company-continue))
+          (company--should-complete))
+    (let (prefix)
+      (dolist (backend (if company-backend
+                           ;; prefer manual override
+                           (list company-backend)
+                         (cons company-backend company-backends)))
+        (when (and (functionp backend)
+                   (setq prefix (funcall backend 'prefix)))
+          (setq company-backend backend)
+          (when (>= (length prefix) company-minimum-prefix-length)
+            (let ((c (company-calculate-candidates prefix)))
+              ;; t means complete/unique.  We don't start, so no hooks.
+              (when (consp c)
+                (setq company-prefix prefix)
+                (company-update-candidates c)
+                (run-hook-with-args 'company-completion-started-hook
+                                    (company-explicit-action-p))
+                (company-call-frontends 'show))))
+          (return prefix)))))
   (if company-candidates
       (progn
         (when (and company-end-of-buffer-workaround (eobp))
