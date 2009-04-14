@@ -58,6 +58,13 @@
           (context (semantic-analyze-current-context)))
       (all-completions prefix (semantic-ia-get-completions context (point))))))
 
+(defun company-semantic-completions-raw (prefix)
+  (let (candidates)
+    (dolist (tag (semantic-analyze-find-tags-by-prefix prefix))
+      (unless (eq (semantic-tag-class tag) 'include)
+        (push (semantic-tag-name tag) candidates)))
+    (delete "" candidates)))
+
 ;;;###autoload
 (defun company-semantic (command &optional arg &rest ignored)
   "A `company-mode' completion back-end using CEDET Semantic."
@@ -69,8 +76,7 @@
                   (not (company-in-string-or-comment))
                   (company-grab-symbol)))
     ('candidates (or (company-semantic-completions arg)
-                     (mapcar 'semantic-tag-name
-                             (semantic-analyze-find-tags-by-prefix arg))))
+                     (company-semantic-completions-raw arg)))
     ('meta (funcall company-semantic-metadata-function
                     (semantic-analyze-find-tag arg)))
     ('doc-buffer (company-semantic-doc-buffer (semantic-analyze-find-tag arg)))
