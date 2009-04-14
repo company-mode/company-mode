@@ -570,6 +570,8 @@ keymap during active completions (`company-active-map'):
   "Non-nil, if explicit completion took place.")
 (make-variable-buffer-local 'company--explicit-action)
 
+(defvar company--this-command nil)
+
 (defvar company-point nil)
 (make-variable-buffer-local 'company-point)
 
@@ -594,7 +596,7 @@ keymap during active completions (`company-active-map'):
 (defsubst company-should-complete (prefix)
   (and (eq company-idle-delay t)
        (or (eq t company-begin-commands)
-           (memq this-command company-begin-commands)
+           (memq company--this-command company-begin-commands)
            (and (symbolp this-command) (get this-command 'company-begin)))
        (not (and transient-mark-mode mark-active))
        (>= (length prefix) company-minimum-prefix-length)))
@@ -856,6 +858,7 @@ keymap during active completions (`company-active-map'):
   (unless (company-keep this-command)
     (condition-case err
         (progn
+          (setq company--this-command this-command)
           (unless (equal (point) company-point)
             (company-begin))
           (when company-candidates
