@@ -1398,9 +1398,8 @@ Example:
     (setq lines-copy lines)
 
     ;; number can make tooltip too long
-    (and company-show-numbers
-         (< (setq numbered company-tooltip-offset) 10)
-         (incf width 2))
+    (when company-show-numbers
+      (setq numbered company-tooltip-offset))
 
     (when previous
       (push (propertize (company-safe-substring previous 0 width)
