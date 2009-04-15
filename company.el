@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 0.3
+;; Version: 0.3.1
 ;; Keywords: abbrev, convenience, matchis
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2009-04-15 (0.3.1)
 ;;    Added 'stop prefix to prevent dabbrev from completing inside of symbols.
 ;;    Fixed issues with tabbar-mode and line-spacing.
 ;;    Performance enhancements.
