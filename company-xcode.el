@@ -100,9 +100,9 @@ valid in most contexts."
     ('interactive (company-begin-backend 'company-xcode))
     ('prefix (and company-xcode-xcodeindex-executable
                   (not (company-in-string-or-comment))
-                  (company-xcode-tags)
                   (or (company-grab-symbol) 'stop)))
     ('candidates (let ((completion-ignore-case nil))
+                   (company-xcode-tags)
                    (all-completions arg (company-xcode-tags))))))
 
 
