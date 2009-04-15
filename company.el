@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added 'stop prefix to prevent dabbrev from completing inside of symbols.
 ;;    Fixed issues with tabbar-mode and line-spacing.
 ;;    Performance enhancements.
 ;;
@@ -249,7 +250,8 @@ of the following:
 
 'prefix: The back-end should return the text to be completed.  It must be
 text immediately before `point'.  Returning nil passes control to the next
-back-end.
+back-end.  The function should return 'stop if it should complete but cannot
+(e.g. if it is in the middle of a string).
 
 'candidates: The second argument is the prefix to be completed.  The
 return value should be a list of candidates that start with the prefix.
@@ -526,13 +528,15 @@ keymap during active completions (`company-active-map'):
   (if (looking-at "\\_>")
       (buffer-substring (point) (save-excursion (skip-syntax-backward "w_")
                                                 (point)))
-    ""))
+    (unless (and (char-after) (memq (char-syntax (char-after)) '(?w ?_)))
+      "")))
 
 (defun company-grab-word ()
   (if (looking-at "\\>")
       (buffer-substring (point) (save-excursion (skip-syntax-backward "w")
                                                 (point)))
-    ""))
+    (unless (and (char-after) (eq (char-syntax (char-after)) ?w))
+      "")))
 
 (defun company-in-string-or-comment ()
   (let ((ppss (syntax-ppss)))
@@ -775,12 +779,13 @@ keymap during active completions (`company-active-map'):
                          company-backends))
         (when (and (functionp backend)
                    (setq prefix (funcall backend 'prefix)))
-          (setq company-backend backend)
-          (when (>= (length prefix) company-minimum-prefix-length)
+          (when (and (stringp prefix)
+                     (>= (length prefix) company-minimum-prefix-length))
+            (setq company-backend backend
+                  company-prefix prefix)
             (let ((c (company-calculate-candidates prefix)))
               ;; t means complete/unique.  We don't start, so no hooks.
               (when (consp c)
-                (setq company-prefix prefix)
                 (company-update-candidates c)
                 (run-hook-with-args 'company-completion-started-hook
                                     (company-explicit-action-p))

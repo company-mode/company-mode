@@ -101,7 +101,7 @@ valid in most contexts."
     ('prefix (and company-xcode-xcodeindex-executable
                   (not (company-in-string-or-comment))
                   (company-xcode-tags)
-                  (company-grab-symbol)))
+                  (or (company-grab-symbol) 'stop)))
     ('candidates (let ((completion-ignore-case nil))
                    (all-completions arg (company-xcode-tags))))))
 

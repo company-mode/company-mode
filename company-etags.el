@@ -63,7 +63,7 @@ buffer automatically."
                   (not (company-in-string-or-comment))
                   (require 'etags nil t)
                   (company-etags-buffer-table)
-                  (company-grab-symbol)))
+                  (or (company-grab-symbol) 'stop)))
     ('candidates (let ((tags-table-list (company-etags-buffer-table))
                        (completion-ignore-case nil))
                    (and (fboundp 'tags-completion-table)

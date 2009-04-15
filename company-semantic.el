@@ -74,7 +74,7 @@
     ('prefix (and (memq major-mode '(c-mode c++-mode jde-mode java-mode))
                   (semantic-active-p)
                   (not (company-in-string-or-comment))
-                  (company-grab-symbol)))
+                  (or (company-grab-symbol) 'stop)))
     ('candidates (or (company-semantic-completions arg)
                      (company-semantic-completions-raw arg)))
     ('meta (funcall company-semantic-metadata-function

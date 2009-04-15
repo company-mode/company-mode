@@ -109,7 +109,7 @@ Functions are offered for completion only after ' and \(."
   (case command
     ('interactive (company-begin-backend 'company-elisp))
     ('prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
-                  (company-grab-lisp-symbol)))
+                  (or (company-grab-lisp-symbol) 'stop)))
     ('candidates (company-elisp-candidates arg))
     ('meta (company-elisp-doc arg))
     ('doc-buffer (let ((symbol (intern arg)))

@@ -60,7 +60,7 @@
     ('prefix (and company-gtags-executable
                   (memq major-mode company-gtags-modes)
                   (not (company-in-string-or-comment))
-                  (company-grab-symbol)))
+                  (or (company-grab-symbol) 'stop)))
     ('candidates (company-gtags-fetch-tags arg))
     ('sorted t)
     ('location (company-gtags-location arg))))
