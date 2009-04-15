@@ -69,6 +69,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Fixed `company-begin-with'.
+;;
 ;; 2009-04-15 (0.3.1)
 ;;    Added 'stop prefix to prevent dabbrev from completing inside of symbols.
 ;;    Fixed issues with tabbar-mode and line-spacing.
@@ -1221,9 +1223,14 @@ To show the number next to the candidates in some back-ends, enable
 (defvar company-callback nil)
 (make-variable-buffer-local 'company-callback)
 
+(defvar company-begin-with-marker nil)
+(make-variable-buffer-local 'company-begin-with-marker)
+
 (defun company-remove-callback (&optional ignored)
   (remove-hook 'company-completion-finished-hook company-callback t)
-  (remove-hook 'company-completion-cancelled-hook 'company-remove-callback t))
+  (remove-hook 'company-completion-cancelled-hook 'company-remove-callback t)
+  (remove-hook 'company-completion-finished-hook 'company-remove-callback t)
+  (set-marker company-begin-with-marker nil))
 
 (defun company-begin-backend (backend &optional callback)
   "Start a completion at point using BACKEND."
@@ -1232,13 +1239,10 @@ To show the number next to the candidates in some back-ends, enable
                                            'functionp nil "company-")))
                  (when val
                    (list (intern val)))))
-  (when callback
-    (setq company-callback
-          `(lambda (completion)
-             (funcall ',callback completion)
-             (company-remove-callback)))
-    (add-hook 'company-completion-cancelled-hook 'company-remove-callback nil t)
+  (when (setq company-callback callback)
     (add-hook 'company-completion-finished-hook company-callback nil t))
+  (add-hook 'company-completion-cancelled-hook 'company-remove-callback nil t)
+  (add-hook 'company-completion-finished-hook 'company-remove-callback nil t)
   (setq company-backend backend)
   ;; Return non-nil if active.
   (or (company-manual-begin)
@@ -1257,10 +1261,11 @@ Example:
 \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
   (company-begin-backend
    (let ((start (- (point) (or prefix-length 0))))
+     (setq company-begin-with-marker (copy-marker (point) t))
      `(lambda (command &optional arg &rest ignored)
-        (case command-history
-          ('prefix (message "prefix %s" (buffer-substring ,start (point)))
-                   (when (>= (point) ,start)
+        (case command
+          ('prefix (when (equal (point)
+                                (marker-position company-begin-with-marker))
                      (buffer-substring ,start (point))))
           ('candidates (all-completions arg ',candidates))
           ('require-match ,require-match))))
