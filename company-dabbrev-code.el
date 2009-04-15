@@ -29,23 +29,55 @@
   "*Modes that use `company-dabbrev-code'.
 In all these modes `company-dabbrev-code' will complete only symbols, not text
 in comments or strings.  In other modes `company-dabbrev-code' will pass control
-to other back-ends \(e.g. `company-dabbrev'\)"
+to other back-ends \(e.g. `company-dabbrev'\).
+Value t means complete in all modes."
   :group 'company
-  :type '(repeat (symbol :tag "Major mode")))
+  :type '(choice (repeat (symbol :tag "Major mode"))
+                 (const tag "All modes" t)))
 
-(defun company-dabbrev-code--buffer-symbols (prefix)
+(defcustom company-dabbrev-code-other-buffers .5
+  "*Determines whether `company-dabbrev-code' should search other buffers.
+If t, search all buffers with the same major-mode.  A numeric value means
+search other buffers for that many seconds and then return."
+  :group 'company
+  :type '(choice (const :tag "Off" nil)
+                 (const :tag "Same major mode" t)
+                 (number :tag "Seconds")))
+
+(defun company-dabbrev-code--buffer-symbols (prefix &optional symbols
+                                            start limit)
   (save-excursion
     (goto-char (point-min))
     (let ((regexp (concat "\\_<" (if (equal prefix "")
                                      "\\([a-zA-Z]\\|\\s_\\)"
                                    (regexp-quote prefix))
                           "\\(\\sw\\|\\s_\\)*\\_>"))
-           match symbols)
+          (i 0)
+          match)
       (while (re-search-forward regexp nil t)
         (setq match (match-string-no-properties 0))
         (unless (company-in-string-or-comment)
-          (add-to-list 'symbols match)))
+          (push match symbols))
+        (and limit
+             (eq (incf i) 25)
+             (setq i 0)
+             (> (float-time (time-since start)) limit)
+             (return symbols)))
       symbols)))
+
+(defun company-dabbrev-code--symbols (prefix &optional limit)
+  (let ((start (current-time))
+        (symbols (company-dabbrev-code--buffer-symbols prefix)))
+    (dolist (buffer (delq (current-buffer) (buffer-list)))
+      (and (eq (buffer-local-value 'major-mode buffer) major-mode)
+           (with-current-buffer buffer
+             (setq symbols
+                   (company-dabbrev-code--buffer-symbols prefix symbols
+                                                        start limit))))
+      (and limit
+           (> (float-time (time-since start)) limit)
+           (return)))
+    symbols))
 
 ;;;###autoload
 (defun company-dabbrev-code (command &optional arg &rest ignored)
@@ -55,11 +87,18 @@ comments or strings."
   (interactive (list 'interactive))
   (case command
     ('interactive (company-begin-backend 'company-dabbrev-code))
-    ('prefix (and (apply 'derived-mode-p company-dabbrev-code-modes)
+    ('prefix (and (or (eq t company-dabbrev-code-modes)
+                      (apply 'derived-mode-p company-dabbrev-code-modes))
                   (not (company-in-string-or-comment))
                   (or (company-grab-symbol) 'stop)))
     ('candidates (let ((case-fold-search nil))
-                   (company-dabbrev-code--buffer-symbols arg)))))
+                   (if company-dabbrev-code-other-buffers
+                       (company-dabbrev-code--symbols
+                        arg
+                        (when (numberp company-dabbrev-code-other-buffers)
+                          company-dabbrev-code-other-buffers))
+                     (company-dabbrev-code--buffer-symbols arg))))
+    ('duplicates t)))
 
 (provide 'company-dabbrev-code)
 ;;; company-dabbrev-code.el ends here
