@@ -772,9 +772,8 @@ keymap during active completions (`company-active-map'):
       company-candidates)))
 
 (defun company-begin ()
-  (when (if company-candidates
-            (not (company-continue))
-          (company--should-complete))
+  (when (and (not (and company-candidates (company-continue)))
+             (company--should-complete))
     (let (prefix)
       (dolist (backend (if company-backend
                            ;; prefer manual override
