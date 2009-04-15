@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added back-end `company-dabbrev-code' for generic code.
 ;;    Fixed `company-begin-with'.
 ;;
 ;; 2009-04-15 (0.3.1)
@@ -245,7 +246,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-semantic company-xcode company-gtags
                               company-etags company-oddmuse company-files
-                              company-dabbrev)
+                              company-dabbrev-code company-dabbrev)
   "*The list of active back-ends (completion engines).
 Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
