@@ -33,7 +33,7 @@
   (setq company-xcode-tags nil))
 
 (defcustom company-xcode-types
-  '("Class" "Const" "Constant" "Enum" "Macro" "Modeled Class" "Structure"
+  '("Class" "Constant" "Enum" "Macro" "Modeled Class" "Structure"
     "Type" "Union" "Function")
   "*The types of symbols offered by `company-xcode'
 No context-enabled completion is available.  Types like methods will be
@@ -44,8 +44,8 @@ valid in most contexts."
          (company-xcode-reset))
   :group 'company-xcode
   :type '(set (const "Category") (const "Class") (const "Class Method")
-              (const "Const") (const "Constant") (const "Enum") (const "Field")
-              (const "Instance Method") (const "Instance Variables")
+              (const "Constant") (const "Enum") (const "Field")
+              (const "Instance Method") (const "Instance Variable")
               (const "Macro") (const "Modeled Class") (const "Modeled Method")
               (const "Property") (const "Protocol") (const "Structure")
               (const "Type") (const "Union") (const "Variable")
