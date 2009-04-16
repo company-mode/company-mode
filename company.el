@@ -667,7 +667,7 @@ keymap during active completions (`company-active-map'):
                      (completion-ignore-case (funcall company-backend
                                                       'ignore-case))
                      prev)
-                 (dotimes (i len)
+                 (dotimes (i (1+ len))
                    (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
                                                 company-candidates-cache)))
                      (return (all-completions prefix prev))))))
