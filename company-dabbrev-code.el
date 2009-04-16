@@ -44,8 +44,8 @@ search other buffers for that many seconds and then return."
                  (const :tag "Same major mode" t)
                  (number :tag "Seconds")))
 
-(defun company-dabbrev-code--buffer-symbols (prefix &optional symbols
-                                            start limit)
+(defun company-dabbrev-code--buffer-symbols (prefix pos &optional symbols
+                                             start limit)
   (save-excursion
     (goto-char (point-min))
     (let ((regexp (concat "\\_<" (if (equal prefix "")
@@ -56,7 +56,8 @@ search other buffers for that many seconds and then return."
           match)
       (while (re-search-forward regexp nil t)
         (setq match (match-string-no-properties 0))
-        (unless (company-in-string-or-comment)
+        (unless (or (eq (match-end 0) pos) ;; ignore match before point
+                    (company-in-string-or-comment))
           (push match symbols))
         (and limit
              (eq (incf i) 25)
@@ -67,13 +68,13 @@ search other buffers for that many seconds and then return."
 
 (defun company-dabbrev-code--symbols (prefix &optional limit)
   (let ((start (current-time))
-        (symbols (company-dabbrev-code--buffer-symbols prefix)))
+        (symbols (company-dabbrev-code--buffer-symbols prefix (point))))
     (dolist (buffer (delq (current-buffer) (buffer-list)))
       (and (eq (buffer-local-value 'major-mode buffer) major-mode)
            (with-current-buffer buffer
              (setq symbols
-                   (company-dabbrev-code--buffer-symbols prefix symbols
-                                                        start limit))))
+                   (company-dabbrev-code--buffer-symbols prefix nil symbols
+                                                         start limit))))
       (and limit
            (> (float-time (time-since start)) limit)
            (return)))
@@ -97,7 +98,7 @@ comments or strings."
                         arg
                         (when (numberp company-dabbrev-code-other-buffers)
                           company-dabbrev-code-other-buffers))
-                     (company-dabbrev-code--buffer-symbols arg))))
+                     (company-dabbrev-code--buffer-symbols arg (point)))))
     ('duplicates t)))
 
 (provide 'company-dabbrev-code)
