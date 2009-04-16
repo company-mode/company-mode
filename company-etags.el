@@ -74,9 +74,5 @@ buffer automatically."
                      (cons buffer (with-current-buffer buffer (point)))))))
     ('sorted t)))
 
-(add-to-list 'company-backends 'company-etags)
-
 (provide 'company-etags)
 ;;; company-etags.el ends here
-
-
