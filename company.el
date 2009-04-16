@@ -563,7 +563,9 @@ keymap during active completions (`company-active-map'):
 
 (defun company-in-string-or-comment ()
   (let ((ppss (syntax-ppss)))
-    (or (nth 3 ppss) (nth 4 ppss) (nth 7 ppss))))
+    (or (car (setq ppss (nthcdr 3 ppss)))
+        (car (setq ppss (cdr ppss)))
+        (nth 3 ppss))))
 
 (defun company-call-backend (&rest args)
   (apply 'company-backend args))
