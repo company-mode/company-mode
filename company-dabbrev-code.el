@@ -56,9 +56,10 @@ search other buffers for that many seconds and then return."
           match)
       (while (re-search-forward regexp nil t)
         (setq match (match-string-no-properties 0))
-        (unless (or (eq (match-end 0) pos) ;; ignore match before point
-                    (company-in-string-or-comment))
-          (push match symbols))
+        (if (company-in-string-or-comment)
+            (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
+          (unless (eq (match-end 0) pos) ;; ignore match before point
+            (push match symbols)))
         (and limit
              (eq (incf i) 25)
              (setq i 0)
