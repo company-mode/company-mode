@@ -254,7 +254,7 @@ of the following:
 'prefix: The back-end should return the text to be completed.  It must be
 text immediately before `point'.  Returning nil passes control to the next
 back-end.  The function should return 'stop if it should complete but cannot
-(e.g. if it is in the middle of a string).
+\(e.g. if it is in the middle of a string\).
 
 'candidates: The second argument is the prefix to be completed.  The
 return value should be a list of candidates that start with the prefix.
