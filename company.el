@@ -438,7 +438,9 @@ The work-around consists of adding a newline.")
   (when (symbolp backend)
     (unless (fboundp backend)
       (ignore-errors (require backend nil t)))
-    (unless (fboundp backend)
+    (if (and (fboundp backend)
+             (ignore-errors (funcall backend 'init) t))
+        (put backend 'company-init t)
       (message "Company back-end '%s' could not be initialized"
                backend))))
 
@@ -792,7 +794,8 @@ keymap during active completions (`company-active-map'):
                            ;; prefer manual override
                            (list company-backend)
                          company-backends))
-        (when (and (functionp backend)
+        (when (and (get backend 'company-init)
+                   (functionp backend)
                    (setq prefix (funcall backend 'prefix)))
           (when (and (stringp prefix)
                      (>= (length prefix) company-minimum-prefix-length))
