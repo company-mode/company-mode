@@ -294,8 +294,6 @@ does not know about.  It should also be callable interactively and use
   :group 'company
   :type '(repeat (function :tag "function" nil)))
 
-(defvar start-count 0)
-
 (defcustom company-completion-started-hook nil
   "*Hook run when company starts completing.
 The hook is called with one argument that is non-nil if the completion was
