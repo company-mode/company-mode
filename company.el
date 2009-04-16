@@ -549,6 +549,9 @@ keymap during active completions (`company-active-map'):
   (let ((ppss (syntax-ppss)))
     (or (nth 3 ppss) (nth 4 ppss) (nth 7 ppss))))
 
+(defun company-call-backend (&rest args)
+  (apply 'company-backend args))
+
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-backend nil)
@@ -654,7 +657,7 @@ keymap during active completions (`company-active-map'):
   ;; Save in cache:
   (push (cons company-prefix company-candidates) company-candidates-cache)
   ;; Calculate common.
-  (let ((completion-ignore-case (funcall company-backend 'ignore-case)))
+  (let ((completion-ignore-case (company-call-backend 'ignore-case)))
     (setq company-common (try-completion company-prefix company-candidates)))
   (when (eq company-common t)
     (setq company-candidates nil)))
@@ -664,18 +667,18 @@ keymap during active completions (`company-active-map'):
          (or (cdr (assoc prefix company-candidates-cache))
              (when company-candidates-cache
                (let ((len (length prefix))
-                     (completion-ignore-case (funcall company-backend
-                                                      'ignore-case))
+                     (completion-ignore-case (company-call-backend
+                                              'ignore-case))
                      prev)
                  (dotimes (i (1+ len))
                    (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
                                                 company-candidates-cache)))
                      (return (all-completions prefix prev))))))
-             (let ((c (funcall company-backend 'candidates prefix)))
+             (let ((c (company-call-backend 'candidates prefix)))
                (when company-candidates-predicate
                  (setq c (company-apply-predicate
                           c company-candidates-predicate)))
-               (unless (funcall company-backend 'sorted)
+               (unless (company-call-backend 'sorted)
                  (setq c (sort c 'string<)))
                (when (company-call-backend 'duplicates)
                  ;; strip duplicates
@@ -723,7 +726,7 @@ keymap during active completions (`company-active-map'):
        (equal old-prefix (substring new-prefix 0 (length old-prefix)))))
 
 (defun company-require-match-p ()
-  (let ((backend-value (funcall company-backend 'require-match)))
+  (let ((backend-value (company-call-backend 'require-match)))
     (or (eq backend-value t)
         (and (if (functionp company-require-match)
                  (funcall company-require-match)
@@ -748,10 +751,10 @@ keymap during active completions (`company-active-map'):
                          company-auto-complete-chars)))))
 
 (defun company-continue ()
-  (when (funcall company-backend 'no-cache company-prefix)
+  (when (company-call-backend 'no-cache company-prefix)
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
-  (let ((new-prefix (funcall company-backend 'prefix)))
+  (let ((new-prefix (company-call-backend 'prefix)))
     (unless (and (= (- (point) (length new-prefix))
                     (- company-point (length company-prefix)))
                  (or (equal company-prefix new-prefix)
@@ -1177,7 +1180,7 @@ To show the number next to the candidates in some back-ends, enable
   (let ((selected (nth company-selection company-candidates)))
     (unless (equal selected (car company-last-metadata))
       (setq company-last-metadata
-            (cons selected (funcall company-backend 'meta selected))))
+            (cons selected (company-call-backend 'meta selected))))
     (cdr company-last-metadata)))
 
 (defun company-doc-buffer (&optional string)
@@ -1207,7 +1210,7 @@ To show the number next to the candidates in some back-ends, enable
   (interactive)
   (company-electric
     (let ((selected (nth company-selection company-candidates)))
-      (display-buffer (or (funcall company-backend 'doc-buffer selected)
+      (display-buffer (or (company-call-backend 'doc-buffer selected)
                           (error "No documentation available")) t))))
 (put 'company-show-doc-buffer 'company-keep t)
 
@@ -1216,7 +1219,7 @@ To show the number next to the candidates in some back-ends, enable
   (interactive)
   (company-electric
     (let* ((selected (nth company-selection company-candidates))
-           (location (funcall company-backend 'location selected))
+           (location (company-call-backend 'location selected))
            (pos (or (cdr location) (error "No location available")))
            (buffer (or (and (bufferp (car location)) (car location))
                        (find-file-noselect (car location) t))))
