@@ -434,6 +434,14 @@ The work-around consists of adding a newline.")
     keymap)
   "Keymap that is enabled during an active completion.")
 
+(defun company-init-backend (backend)
+  (when (symbolp backend)
+    (unless (fboundp backend)
+      (ignore-errors (require backend nil t)))
+    (unless (fboundp backend)
+      (message "Company back-end '%s' could not be initialized"
+               backend))))
+
 ;;;###autoload
 (define-minor-mode company-mode
   "\"complete anything\"; in in-buffer completion framework.
@@ -464,13 +472,7 @@ keymap during active completions (`company-active-map'):
       (progn
         (add-hook 'pre-command-hook 'company-pre-command nil t)
         (add-hook 'post-command-hook 'company-post-command nil t)
-        (dolist (backend company-backends)
-          (when (symbolp backend)
-            (unless (fboundp backend)
-              (ignore-errors (require backend nil t)))
-            (unless (fboundp backend)
-              (message "Company back-end '%s' could not be initialized"
-                       backend)))))
+        (mapc 'company-init-backend company-backends))
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
     (company-cancel)
