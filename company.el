@@ -264,6 +264,9 @@ Optional commands:
 'sorted: The back-end may return t here to indicate that the candidates
 are sorted and will not need to be sorted again.
 
+'duplicates: If non-nil, company will take care of removing duplicates
+from the list.
+
 'no-cache: Usually company doesn't ask for candidates again as completion
 progresses, unless the back-end returns t for this command.  The second
 argument is the latest prefix.
@@ -673,6 +676,12 @@ keymap during active completions (`company-active-map'):
                           c company-candidates-predicate)))
                (unless (funcall company-backend 'sorted)
                  (setq c (sort c 'string<)))
+               (when (company-call-backend 'duplicates)
+                 ;; strip duplicates
+                 (let ((c2 c))
+                   (while c2
+                     (setcdr c2 (progn (while (equal (pop c2) (car c2)))
+                                       c2)))))
                c))))
     (if (or (cdr candidates)
             (not (equal (car candidates) prefix)))
