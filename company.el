@@ -243,6 +243,18 @@ The visualized data is stored in `company-prefix', `company-candidates',
                                 company-preview-if-just-one-frontend)
                          (function :tag "custom function" nil))))
 
+(defvar company-safe-backends
+  '(company-abbrev company-css company-dabbrev-code company-dabbrev
+    company-elisp company-etags company-files company-gtags company-ispell
+    company-nxml company-oddmuse company-semantic company-tempo company-xcode))
+(put 'company-safe-backends 'risky-local-variable t)
+
+(defun company-safe-backends-p (backends)
+  (and (consp backends)
+       (not (dolist (backend backends)
+              (unless (memq backend company-safe-backends)
+                (return t))))))
+
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-semantic company-xcode company-gtags
                               company-etags company-oddmuse company-files
@@ -293,6 +305,8 @@ does not know about.  It should also be callable interactively and use
 `company-begin-backend' to start itself in that case."
   :group 'company
   :type '(repeat (function :tag "function" nil)))
+
+(put 'company-backends 'safe-local-variable 'company-safe-backend-p)
 
 (defcustom company-completion-started-hook nil
   "*Hook run when company starts completing.
