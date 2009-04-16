@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Automatic completion is now aborted if the prefix gets too short.
 ;;    Added option `company-dabbrev-time-limit'.
 ;;    `company-backends' now supports merging back-ends.
 ;;    Added back-end `company-dabbrev-code' for generic code.
@@ -826,8 +827,10 @@ keymap during active completions (`company-active-map'):
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
   (let ((new-prefix (company-call-backend 'prefix)))
-    (if (= (- (point) (length new-prefix))
-           (- company-point (length company-prefix)))
+    (if (and (or (company-explicit-action-p)
+                 (>= (length new-prefix) company-minimum-prefix-length))
+             (= (- (point) (length new-prefix))
+                (- company-point (length company-prefix))))
         (unless (or (equal company-prefix new-prefix)
                     (let ((c (company-calculate-candidates new-prefix)))
                       ;; t means complete/unique.
