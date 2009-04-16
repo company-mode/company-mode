@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    `company-backends' now supports merging back-ends.
 ;;    Added back-end `company-dabbrev-code' for generic code.
 ;;    Fixed `company-begin-with'.
 ;;
@@ -252,14 +253,20 @@ The visualized data is stored in `company-prefix', `company-candidates',
 (defun company-safe-backends-p (backends)
   (and (consp backends)
        (not (dolist (backend backends)
-              (unless (memq backend company-safe-backends)
+              (unless (if (consp backend)
+                          (company-safe-backends-p backend)
+                        (memq backend company-safe-backends))
                 (return t))))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-semantic company-xcode company-gtags
-                              company-etags company-oddmuse company-files
-                              company-dabbrev-code company-dabbrev)
+                              company-semantic company-xcode
+                              (company-gtags company-etags company-dabbrev-code)
+                              company-oddmuse company-files company-dabbrev)
   "*The list of active back-ends (completion engines).
+Each list elements can itself be a list of back-ends.  In that case their
+completions are merged.  Otherwise only the first matching back-end returns
+results.
+
 Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
 of the following:
@@ -304,7 +311,9 @@ The back-end should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
 `company-begin-backend' to start itself in that case."
   :group 'company
-  :type '(repeat (function :tag "function" nil)))
+  :type '(repeat (choice (symbol :tag "Back-end")
+                         (repeat :tag "Merge"
+                                 (symbol :tag "Back-end")))))
 
 (put 'company-backends 'safe-local-variable 'company-safe-backend-p)
 
@@ -449,14 +458,17 @@ The work-around consists of adding a newline.")
   "Keymap that is enabled during an active completion.")
 
 (defun company-init-backend (backend)
-  (when (symbolp backend)
-    (unless (fboundp backend)
-      (ignore-errors (require backend nil t)))
-    (if (and (fboundp backend)
-             (ignore-errors (funcall backend 'init) t))
-        (put backend 'company-init t)
-      (message "Company back-end '%s' could not be initialized"
-               backend))))
+  (and (symbolp backend)
+       (not (fboundp backend))
+       (ignore-errors (require backend nil t)))
+
+  (if (or (symbolp backend)
+          (functionp backend))
+      (if (ignore-errors (funcall backend 'init) t)
+          (put backend 'company-init t)
+        (message "Company back-end '%s' could not be initialized"
+                 backend))
+    (mapc 'company-init-backend backend)))
 
 ;;;###autoload
 (define-minor-mode company-mode
@@ -568,7 +580,22 @@ keymap during active completions (`company-active-map'):
         (nth 3 ppss))))
 
 (defun company-call-backend (&rest args)
-  (apply 'company-backend args))
+  (if (functionp company-backend)
+      (apply company-backend args)
+    (apply 'company--multi-backend-adapter company-backend args)))
+
+(defun company--multi-backend-adapter (backends command &rest args)
+  (case command
+    ('candidates
+     (apply 'append (mapcar (lambda (backend) (apply backend command args))
+                            backends)))
+    ('sorted nil)
+    ('duplicates t)
+    (otherwise
+     (let (value)
+       (dolist (backend backends)
+         (when (setq value (apply backend command args))
+           (return value)))))))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -810,9 +837,14 @@ keymap during active completions (`company-active-map'):
                            ;; prefer manual override
                            (list company-backend)
                          company-backends))
-        (when (and (get backend 'company-init)
-                   (functionp backend)
-                   (setq prefix (funcall backend 'prefix)))
+        (setq prefix
+              (if (or (symbolp backend)
+                      (functionp backend))
+                  (when (or (not (symbolp backend))
+                            (get backend 'company-init))
+                    (funcall backend 'prefix))
+                (company--multi-backend-adapter backend 'prefix)))
+        (when prefix
           (when (and (stringp prefix)
                      (>= (length prefix) company-minimum-prefix-length))
             (setq company-backend backend
