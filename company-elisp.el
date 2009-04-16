@@ -30,9 +30,11 @@ Functions are offered for completion only after ' and \(."
 
 (defun company-grab-lisp-symbol ()
   (let ((prefix (company-grab-symbol)))
-    (unless (and (company-in-string-or-comment)
-                 (/= (char-before (- (point) (length prefix))) ?`))
-      prefix)))
+    (if prefix
+        (unless (and (company-in-string-or-comment)
+                     (/= (char-before (- (point) (length prefix))) ?`))
+          prefix)
+      'stop)))
 
 (defun company-elisp-predicate (symbol)
   (or (boundp symbol)
@@ -109,7 +111,7 @@ Functions are offered for completion only after ' and \(."
   (case command
     ('interactive (company-begin-backend 'company-elisp))
     ('prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
-                  (or (company-grab-lisp-symbol) 'stop)))
+                  (company-grab-lisp-symbol)))
     ('candidates (company-elisp-candidates arg))
     ('meta (company-elisp-doc arg))
     ('doc-buffer (let ((symbol (intern arg)))
