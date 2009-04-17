@@ -66,7 +66,9 @@ buffer automatically."
                   (or (company-grab-symbol) 'stop)))
     ('candidates (let ((tags-table-list (company-etags-buffer-table))
                        (completion-ignore-case nil))
-                   (and (fboundp 'tags-completion-table)
+                   (and (or tags-file-name tags-table-list)
+                        (fboundp 'tags-completion-table)
+                        tags-table-list
                         (all-completions arg (tags-completion-table)))))
     ('location (let ((tags-table-list (company-etags-buffer-table)))
                  (when (fboundp 'find-tag-noselect)
