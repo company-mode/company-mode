@@ -37,11 +37,13 @@ Value t means complete in all modes."
 
 (defcustom company-dabbrev-code-other-buffers t
   "*Determines whether `company-dabbrev-code' should search other buffers.
-If t, search all buffers with the same major-mode.
+If 'all, search all other buffers.  If t, search buffers with the same
+major-mode.
 See also `company-dabbrev-code-time-limit'."
   :group 'company
   :type '(choice (const :tag "Off" nil)
-                 (const :tag "Same major mode" t)))
+                 (const :tag "Same major mode" t)
+                 (const :tag "All" all)))
 
 (defcustom company-dabbrev-code-time-limit .5
   "*Determines how long `company-dabbrev-code' should look for matches."
@@ -96,7 +98,8 @@ See also `company-dabbrev-code-time-limit'."
                                                         start limit)))
     (when company-dabbrev-code-other-buffers
       (dolist (buffer (delq (current-buffer) (buffer-list)))
-        (and (eq (buffer-local-value 'major-mode buffer) major-mode)
+        (and (or (eq company-dabbrev-code-other-buffers 'all)
+                 (eq (buffer-local-value 'major-mode buffer) major-mode))
              (with-current-buffer buffer
                (setq symbols
                      (company-dabbrev-code--buffer-symbols regexp nil symbols
