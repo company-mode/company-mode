@@ -35,13 +35,18 @@ Value t means complete in all modes."
   :type '(choice (repeat (symbol :tag "Major mode"))
                  (const tag "All modes" t)))
 
-(defcustom company-dabbrev-code-other-buffers .5
+(defcustom company-dabbrev-code-other-buffers t
   "*Determines whether `company-dabbrev-code' should search other buffers.
-If t, search all buffers with the same major-mode.  A numeric value means
-search other buffers for that many seconds and then return."
+If t, search all buffers with the same major-mode.
+See also `company-dabbrev-code-time-limit'."
   :group 'company
   :type '(choice (const :tag "Off" nil)
-                 (const :tag "Same major mode" t)
+                 (const :tag "Same major mode" t)))
+
+(defcustom company-dabbrev-code-time-limit .5
+  "*Determines how long `company-dabbrev-code' should look for matches."
+  :group 'company
+  :type '(choice (const :tag "Off" nil)
                  (number :tag "Seconds")))
 
 (defmacro company-dabrev-code--time-limit-while (test start limit &rest body)
@@ -65,29 +70,40 @@ search other buffers for that many seconds and then return."
 (defun company-dabbrev-code--buffer-symbols (regexp pos &optional symbols
                                              start limit)
   (save-excursion
-    (goto-char (point-min))
     (let (match)
+      (goto-char (if pos (1- pos) (point-min)))
+      ;; search before pos
+      (company-dabrev-code--time-limit-while (re-search-backward regexp nil t)
+          start limit
+        (setq match (match-string-no-properties 0))
+        (if (company-in-string-or-comment)
+            (re-search-backward "\\s<\\|\\s!\\|\\s\"\\|\\s|" nil t)
+          (push match symbols)))
+      (goto-char (or pos (point-min)))
+      ;; search after pos
       (company-dabrev-code--time-limit-while (re-search-forward regexp nil t)
           start limit
         (setq match (match-string-no-properties 0))
         (if (company-in-string-or-comment)
             (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
-          (unless (eq (match-end 0) pos) ;; ignore match before point
-            (push match symbols))))
+          (push match symbols)))
       symbols)))
 
-(defun company-dabbrev-code--symbols (regexp &optional limit)
-  (let ((start (current-time))
-        (symbols (company-dabbrev-code--buffer-symbols regexp (point))))
-    (dolist (buffer (delq (current-buffer) (buffer-list)))
-      (and (eq (buffer-local-value 'major-mode buffer) major-mode)
-           (with-current-buffer buffer
-             (setq symbols
-                   (company-dabbrev-code--buffer-symbols regexp nil symbols
-                                                         start limit))))
-      (and limit
-           (> (float-time (time-since start)) limit)
-           (return)))
+(defun company-dabbrev-code--symbols (regexp)
+  (let* ((start (current-time))
+         (limit company-dabbrev-code-time-limit)
+         (symbols (company-dabbrev-code--buffer-symbols regexp (point) nil
+                                                        start limit)))
+    (when company-dabbrev-code-other-buffers
+      (dolist (buffer (delq (current-buffer) (buffer-list)))
+        (and (eq (buffer-local-value 'major-mode buffer) major-mode)
+             (with-current-buffer buffer
+               (setq symbols
+                     (company-dabbrev-code--buffer-symbols regexp nil symbols
+                                                           start limit))))
+        (and limit
+             (> (float-time (time-since start)) limit)
+             (return))))
     symbols))
 
 ;;;###autoload
@@ -102,14 +118,9 @@ comments or strings."
                       (apply 'derived-mode-p company-dabbrev-code-modes))
                   (not (company-in-string-or-comment))
                   (or (company-grab-symbol) 'stop)))
-    ('candidates (let ((case-fold-search nil)
-                       (regexp (company-dabbrev-code--make-regexp prefix)))
-                   (if company-dabbrev-code-other-buffers
-                       (company-dabbrev-code--symbols
-                        arg
-                        (when (numberp company-dabbrev-code-other-buffers)
-                          company-dabbrev-code-other-buffers))
-                     (company-dabbrev-code--buffer-symbols arg (point)))))
+    ('candidates (let ((case-fold-search nil))
+                   (company-dabbrev-code--symbols
+                    (company-dabbrev-code--make-regexp arg))))
     ('duplicates t)))
 
 (provide 'company-dabbrev-code)
