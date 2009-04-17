@@ -62,12 +62,11 @@ search other buffers for that many seconds and then return."
                    (regexp-quote prefix))
           "\\(\\sw\\|\\s_\\)*\\_>"))
 
-(defun company-dabbrev-code--buffer-symbols (prefix pos &optional symbols
+(defun company-dabbrev-code--buffer-symbols (regexp pos &optional symbols
                                              start limit)
   (save-excursion
     (goto-char (point-min))
-    (let ((regexp (company-dabbrev-code--make-regexp prefix))
-          match)
+    (let (match)
       (company-dabrev-code--time-limit-while (re-search-forward regexp nil t)
           start limit
         (setq match (match-string-no-properties 0))
@@ -77,14 +76,14 @@ search other buffers for that many seconds and then return."
             (push match symbols))))
       symbols)))
 
-(defun company-dabbrev-code--symbols (prefix &optional limit)
+(defun company-dabbrev-code--symbols (regexp &optional limit)
   (let ((start (current-time))
-        (symbols (company-dabbrev-code--buffer-symbols prefix (point))))
+        (symbols (company-dabbrev-code--buffer-symbols regexp (point))))
     (dolist (buffer (delq (current-buffer) (buffer-list)))
       (and (eq (buffer-local-value 'major-mode buffer) major-mode)
            (with-current-buffer buffer
              (setq symbols
-                   (company-dabbrev-code--buffer-symbols prefix nil symbols
+                   (company-dabbrev-code--buffer-symbols regexp nil symbols
                                                          start limit))))
       (and limit
            (> (float-time (time-since start)) limit)
@@ -103,7 +102,8 @@ comments or strings."
                       (apply 'derived-mode-p company-dabbrev-code-modes))
                   (not (company-in-string-or-comment))
                   (or (company-grab-symbol) 'stop)))
-    ('candidates (let ((case-fold-search nil))
+    ('candidates (let ((case-fold-search nil)
+                       (regexp (company-dabbrev-code--make-regexp prefix)))
                    (if company-dabbrev-code-other-buffers
                        (company-dabbrev-code--symbols
                         arg
