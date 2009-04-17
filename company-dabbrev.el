@@ -36,6 +36,11 @@ See also `company-dabbrev-time-limit'."
   :type '(choice (const :tag "Off" nil)
                  (number :tag "Seconds")))
 
+(defcustom company-dabbrev-char-regexp "\\sw"
+  "*A regular expression matching the characters `company-dabbrev' looks for."
+  :group 'company
+  :type 'regexp)
+
 (defmacro company-dabrev--time-limit-while (test start limit &rest body)
   (declare (indent 3) (debug t))
   `(let ((company-time-limit-while-counter 0))
@@ -49,7 +54,10 @@ See also `company-dabbrev-time-limit'."
               (throw 'done 'company-time-out))))))
 
 (defsubst company-dabbrev--make-regexp (prefix)
-  (concat "\\<" (if (equal prefix "") "\\sw" (regexp-quote prefix)) "\\sw*\\>"))
+  (concat "\\<" (if (equal prefix "")
+              company-dabbrev-char-regexp
+            (regexp-quote prefix))
+          "\\(" company-dabbrev-char-regexp "\\)*\\>"))
 
 (defun company-dabbrev--search-buffer (regexp pos symbols start limit
                                        ignore-comments)
