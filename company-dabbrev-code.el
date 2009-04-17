@@ -56,14 +56,17 @@ search other buffers for that many seconds and then return."
               (> (float-time (time-since ,start)) ,limit)
               (throw 'done 'company-time-out))))))
 
+(defsubst company-dabbrev-code--make-regexp (prefix)
+  (concat "\\_<" (if (equal prefix "")
+                     "\\([a-zA-Z]\\|\\s_\\)"
+                   (regexp-quote prefix))
+          "\\(\\sw\\|\\s_\\)*\\_>"))
+
 (defun company-dabbrev-code--buffer-symbols (prefix pos &optional symbols
                                              start limit)
   (save-excursion
     (goto-char (point-min))
-    (let ((regexp (concat "\\_<" (if (equal prefix "")
-                                     "\\([a-zA-Z]\\|\\s_\\)"
-                                   (regexp-quote prefix))
-                          "\\(\\sw\\|\\s_\\)*\\_>"))
+    (let ((regexp (company-dabbrev-code--make-regexp prefix))
           match)
       (company-dabrev-code--time-limit-while (re-search-forward regexp nil t)
           start limit
