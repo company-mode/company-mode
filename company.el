@@ -565,7 +565,8 @@ keymap during active completions (`company-active-map'):
 ;; Emacs calculates the active keymaps before reading the event.  That means we
 ;; cannot change the keymap from a timer.  So we send a bogus command.
 (defun company-ignore ()
-  (interactive))
+  (interactive)
+  (setq this-command last-command))
 
 (global-set-key '[31415926] 'company-ignore)
 
