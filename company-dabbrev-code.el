@@ -44,6 +44,18 @@ search other buffers for that many seconds and then return."
                  (const :tag "Same major mode" t)
                  (number :tag "Seconds")))
 
+(defmacro company-dabrev-code--time-limit-while (test start limit &rest body)
+  (declare (indent 3) (debug t))
+  `(let ((company-time-limit-while-counter 0))
+     (catch 'done
+       (while ,test
+         ,@body
+         (and ,limit
+              (eq (incf company-time-limit-while-counter) 25)
+              (setq company-time-limit-while-counter 0)
+              (> (float-time (time-since ,start)) ,limit)
+              (throw 'done 'company-time-out))))))
+
 (defun company-dabbrev-code--buffer-symbols (prefix pos &optional symbols
                                              start limit)
   (save-excursion
@@ -52,19 +64,14 @@ search other buffers for that many seconds and then return."
                                      "\\([a-zA-Z]\\|\\s_\\)"
                                    (regexp-quote prefix))
                           "\\(\\sw\\|\\s_\\)*\\_>"))
-          (i 0)
           match)
-      (while (re-search-forward regexp nil t)
+      (company-dabrev-code--time-limit-while (re-search-forward regexp nil t)
+          start limit
         (setq match (match-string-no-properties 0))
         (if (company-in-string-or-comment)
             (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
           (unless (eq (match-end 0) pos) ;; ignore match before point
-            (push match symbols)))
-        (and limit
-             (eq (incf i) 25)
-             (setq i 0)
-             (> (float-time (time-since start)) limit)
-             (return symbols)))
+            (push match symbols))))
       symbols)))
 
 (defun company-dabbrev-code--symbols (prefix &optional limit)
