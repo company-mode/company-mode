@@ -791,10 +791,6 @@ keymap during active completions (`company-active-map'):
   ;; Return non-nil if active.
   company-candidates)
 
-(defsubst company-incremental-p (old-prefix new-prefix)
-  (and (> (length new-prefix) (length old-prefix))
-       (equal old-prefix (substring new-prefix 0 (length old-prefix)))))
-
 (defun company-require-match-p ()
   (let ((backend-value (company-call-backend 'require-match)))
     (or (eq backend-value t)
@@ -807,59 +803,79 @@ keymap during active completions (`company-active-map'):
   "Return non-nil, if input starts with punctuation or parentheses."
   (memq (char-syntax (string-to-char input)) '(?. ?\( ?\))))
 
-(defun company-auto-complete-p (beg end)
+(defun company-auto-complete-p (input)
   "Return non-nil, if input starts with punctuation or parentheses."
-  (and (> end beg)
-       ;; Make sure something was inserted, and we didn't just move forward.
-       (> (point-max) company--point-max)
-       (if (functionp company-auto-complete)
+  (and (if (functionp company-auto-complete)
            (funcall company-auto-complete)
          company-auto-complete)
        (if (functionp company-auto-complete-chars)
-           (funcall company-auto-complete-chars (buffer-substring beg end))
+           (funcall company-auto-complete-chars input)
          (if (consp company-auto-complete-chars)
-             (memq (char-syntax (char-after beg)) company-auto-complete-chars)
-           (string-match (buffer-substring beg (1+ beg))
-                         company-auto-complete-chars)))))
+             (memq (char-syntax (string-to-char input))
+                   company-auto-complete-chars)
+           (string-match (substring input 0 1) company-auto-complete-chars)))))
 
-(defun company-continue ()
+(defun company--incremental-p ()
+  (and (> (point) company-point)
+       (> (point-max) company--point-max)
+       (equal (buffer-substring (- company-point (length company-prefix))
+                                company-point)
+              company-prefix)))
+
+(defsubst company--string-incremental-p (old-prefix new-prefix)
+  (and (> (length new-prefix) (length old-prefix))
+       (equal old-prefix (substring new-prefix 0 (length old-prefix)))))
+
+(defun company--continue-failed (new-prefix)
+  (when (company--incremental-p)
+    (let ((input (buffer-substring-no-properties (point) company-point)))
+      (cond
+       ((company-auto-complete-p input)
+        ;; auto-complete
+        (save-excursion
+          (goto-char company-point)
+          (company-complete-selection)
+          nil))
+       ((and (company--string-incremental-p company-prefix new-prefix)
+             (company-require-match-p))
+        ;; wrong incremental input, but required match
+        (backward-delete-char (length input))
+        (ding)
+        (message "Matching input is required")
+        company-candidates)
+       ((equal company-prefix (car company-candidates))
+        ;; last input was actually success
+        (company-cancel company-prefix)
+        nil)))))
+
+(defun company--continue ()
   (when (company-call-backend 'no-cache company-prefix)
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
-  (let ((new-prefix (company-call-backend 'prefix)))
-    (if (and (or (company-explicit-action-p)
-                 (>= (length new-prefix) company-minimum-prefix-length))
-             (= (- (point) (length new-prefix))
-                (- company-point (length company-prefix))))
-        (unless (or (equal company-prefix new-prefix)
-                    (let ((c (company-calculate-candidates new-prefix)))
-                      ;; t means complete/unique.
-                      (if (eq c t)
-                          (progn (company-cancel new-prefix) t)
-                        (when (consp c)
-                          (setq company-prefix new-prefix)
-                          (company-update-candidates c)
-                          t))))
-          (if (not (and (company-incremental-p company-prefix new-prefix)
-                        (company-require-match-p)))
-              (progn
-                (when (equal company-prefix (car company-candidates))
-                  ;; cancel, but last input was actually success
-                  (company-cancel company-prefix))
-                (setq company-candidates nil))
-            (backward-delete-char (length new-prefix))
-            (insert company-prefix)
-            (ding)
-            (message "Matching input is required")))
-      (when (company-auto-complete-p company-point (point))
-        (save-excursion
-          (goto-char company-point)
-          (company-complete-selection)))
-      (setq company-candidates nil))
-    company-candidates))
+  (let* ((new-prefix (company-call-backend 'prefix))
+         (c (when (and (stringp new-prefix)
+                       (or (company-explicit-action-p)
+                           (>= (length new-prefix)
+                               company-minimum-prefix-length))
+                       (= (- (point) (length new-prefix))
+                          (- company-point (length company-prefix))))
+              (company-calculate-candidates new-prefix))))
+    (cond
+     ((eq c t)
+      ;; t means complete/unique.
+      (company-cancel new-prefix)
+      nil)
+     ((consp c)
+      ;; incremental match
+      (setq company-prefix new-prefix)
+      (company-update-candidates c)
+      c)
+     (t (company--continue-failed new-prefix)))))
 
 (defun company-begin ()
-  (when (and (not (and company-candidates (company-continue)))
+  (when company-candidates
+    (setq company-candidates (company--continue)))
+  (when (and (not company-candidates)
              (company--should-complete))
     (let (prefix)
       (dolist (backend (if company-backend
