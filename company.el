@@ -1347,12 +1347,14 @@ Example:
    (let ((start (- (point) (or prefix-length 0))))
      (setq company-begin-with-marker (copy-marker (point) t))
      `(lambda (command &optional arg &rest ignored)
-        (case command
-          ('prefix (when (equal (point)
-                                (marker-position company-begin-with-marker))
-                     (buffer-substring ,start (point))))
-          ('candidates (all-completions arg ',candidates))
-          ('require-match ,require-match))))
+        (cond
+         ((eq command 'prefix)
+          (when (equal (point) (marker-position company-begin-with-marker))
+            (buffer-substring ,start (point))))
+         ((eq command 'candidates)
+          (all-completions arg ',candidates))
+         ((eq command 'require-match)
+          ,require-match))))
    callback))
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
