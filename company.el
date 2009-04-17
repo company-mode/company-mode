@@ -651,6 +651,9 @@ keymap during active completions (`company-active-map'):
   "Non-nil, if explicit completion took place.")
 (make-variable-buffer-local 'company--explicit-action)
 
+(defvar company--point-max nil)
+(make-variable-buffer-local 'company--point-max)
+
 (defvar company--this-command nil)
 
 (defvar company-point nil)
@@ -806,6 +809,8 @@ keymap during active completions (`company-active-map'):
 (defun company-auto-complete-p (beg end)
   "Return non-nil, if input starts with punctuation or parentheses."
   (and (> end beg)
+       ;; Make sure something was inserted, and we didn't just move forward.
+       (> (point-max) company--point-max)
        (if (functionp company-auto-complete)
            (funcall company-auto-complete)
          company-auto-complete)
@@ -883,7 +888,8 @@ keymap during active completions (`company-active-map'):
         (when (and company-end-of-buffer-workaround (eobp))
           (save-excursion (insert "\n"))
           (setq company-added-newline (buffer-chars-modified-tick)))
-        (setq company-point (point))
+        (setq company-point (point)
+              company--point-max (point-max))
         (company-enable-overriding-keymap company-active-map)
         (company-call-frontends 'update))
     (company-cancel)))
@@ -911,6 +917,7 @@ keymap during active completions (`company-active-map'):
         company-selection 0
         company-selection-changed nil
         company--explicit-action nil
+        company--point-max nil
         company-point nil)
   (when company-timer
     (cancel-timer company-timer))
