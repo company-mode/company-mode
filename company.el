@@ -1481,7 +1481,7 @@ Example:
                       (setq remainder (format "...(%d)" remainder))))
 
     (decf selection company-tooltip-offset)
-    (setq width (min (length previous) (length remainder))
+    (setq width (max (length previous) (length remainder))
           lines (nthcdr company-tooltip-offset company-candidates)
           len (min limit len)
           lines-copy lines)
