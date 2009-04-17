@@ -246,9 +246,20 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (function :tag "custom function" nil))))
 
 (defvar company-safe-backends
-  '(company-abbrev company-css company-dabbrev-code company-dabbrev
-    company-elisp company-etags company-files company-gtags company-ispell
-    company-nxml company-oddmuse company-semantic company-tempo company-xcode))
+  '((company-abbrev . "Abbrev")
+    (company-css . "CSS")
+    (company-dabbrev . "dabbrev for plain text")
+    (company-dabbrev-code . "dabbrev for code")
+    (company-elisp . "Emacs Lisp")
+    (company-etags . "etags")
+    (company-files . "Files")
+    (company-gtags . "GNU Global")
+    (company-ispell . "ispell")
+    (company-nxml . "nxml")
+    (company-oddmuse . "Oddmuse")
+    (company-semantic . "CEDET Semantic")
+    (company-tempo . "Tempo templates")
+    (company-xcode . "Xcode")))
 (put 'company-safe-backends 'risky-local-variable t)
 
 (defun company-safe-backends-p (backends)
@@ -256,7 +267,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
        (not (dolist (backend backends)
               (unless (if (consp backend)
                           (company-safe-backends-p backend)
-                        (memq backend company-safe-backends))
+                        (assq backend company-safe-backends))
                 (return t))))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
@@ -312,9 +323,18 @@ The back-end should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
 `company-begin-backend' to start itself in that case."
   :group 'company
-  :type '(repeat (choice (symbol :tag "Back-end")
-                         (repeat :tag "Merge"
-                                 (symbol :tag "Back-end")))))
+  :type `(repeat
+          (choice
+           :tag "Back-end"
+           ,@(mapcar (lambda (b) `(const :tag ,(cdr b) ,(car b)))
+                     company-safe-backends)
+           (symbol :tag "User defined")
+           (repeat :tag "Merged Back-ends"
+                   (choice :tag "Back-end"
+                           ,@(mapcar (lambda (b)
+                                       `(const :tag ,(cdr b) ,(car b)))
+                                     company-safe-backends)
+                           (symbol :tag "User defined"))))))
 
 (put 'company-backends 'safe-local-variable 'company-safe-backend-p)
 
