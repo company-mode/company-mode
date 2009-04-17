@@ -18,6 +18,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'company)
+(require 'company-dabbrev)
 (eval-when-compile (require 'cl))
 
 (defcustom company-dabbrev-code-modes
@@ -51,63 +52,11 @@ See also `company-dabbrev-code-time-limit'."
   :type '(choice (const :tag "Off" nil)
                  (number :tag "Seconds")))
 
-(defmacro company-dabrev-code--time-limit-while (test start limit &rest body)
-  (declare (indent 3) (debug t))
-  `(let ((company-time-limit-while-counter 0))
-     (catch 'done
-       (while ,test
-         ,@body
-         (and ,limit
-              (eq (incf company-time-limit-while-counter) 25)
-              (setq company-time-limit-while-counter 0)
-              (> (float-time (time-since ,start)) ,limit)
-              (throw 'done 'company-time-out))))))
-
 (defsubst company-dabbrev-code--make-regexp (prefix)
   (concat "\\_<" (if (equal prefix "")
                      "\\([a-zA-Z]\\|\\s_\\)"
                    (regexp-quote prefix))
           "\\(\\sw\\|\\s_\\)*\\_>"))
-
-(defun company-dabbrev-code--buffer-symbols (regexp pos &optional symbols
-                                             start limit)
-  (save-excursion
-    (let (match)
-      (goto-char (if pos (1- pos) (point-min)))
-      ;; search before pos
-      (company-dabrev-code--time-limit-while (re-search-backward regexp nil t)
-          start limit
-        (setq match (match-string-no-properties 0))
-        (if (company-in-string-or-comment)
-            (re-search-backward "\\s<\\|\\s!\\|\\s\"\\|\\s|" nil t)
-          (push match symbols)))
-      (goto-char (or pos (point-min)))
-      ;; search after pos
-      (company-dabrev-code--time-limit-while (re-search-forward regexp nil t)
-          start limit
-        (setq match (match-string-no-properties 0))
-        (if (company-in-string-or-comment)
-            (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
-          (push match symbols)))
-      symbols)))
-
-(defun company-dabbrev-code--symbols (regexp)
-  (let* ((start (current-time))
-         (limit company-dabbrev-code-time-limit)
-         (symbols (company-dabbrev-code--buffer-symbols regexp (point) nil
-                                                        start limit)))
-    (when company-dabbrev-code-other-buffers
-      (dolist (buffer (delq (current-buffer) (buffer-list)))
-        (and (or (eq company-dabbrev-code-other-buffers 'all)
-                 (eq (buffer-local-value 'major-mode buffer) major-mode))
-             (with-current-buffer buffer
-               (setq symbols
-                     (company-dabbrev-code--buffer-symbols regexp nil symbols
-                                                           start limit))))
-        (and limit
-             (> (float-time (time-since start)) limit)
-             (return))))
-    symbols))
 
 ;;;###autoload
 (defun company-dabbrev-code (command &optional arg &rest ignored)
@@ -122,8 +71,10 @@ comments or strings."
                   (not (company-in-string-or-comment))
                   (or (company-grab-symbol) 'stop)))
     ('candidates (let ((case-fold-search nil))
-                   (company-dabbrev-code--symbols
-                    (company-dabbrev-code--make-regexp arg))))
+                   (company-dabbrev--search
+                    (company-dabbrev-code--make-regexp arg)
+                    company-dabbrev-code-time-limit
+                    company-dabbrev-code-other-buffers t)))
     ('duplicates t)))
 
 (provide 'company-dabbrev-code)

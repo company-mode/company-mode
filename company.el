@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added option `company-dabbrev-time-limit'.
 ;;    `company-backends' now supports merging back-ends.
 ;;    Added back-end `company-dabbrev-code' for generic code.
 ;;    Fixed `company-begin-with'.
