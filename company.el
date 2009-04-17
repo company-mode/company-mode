@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 0.3.1
+;; Version: 0.4
 ;; Keywords: abbrev, convenience, matchis
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2009-04-18 (0.4)
 ;;    Automatic completion is now aborted if the prefix gets too short.
 ;;    Added option `company-dabbrev-time-limit'.
 ;;    `company-backends' now supports merging back-ends.
