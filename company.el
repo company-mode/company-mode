@@ -872,36 +872,37 @@ keymap during active completions (`company-active-map'):
       c)
      (t (company--continue-failed new-prefix)))))
 
+(defun company--begin-new ()
+  (let (prefix c)
+    (dolist (backend (if company-backend
+                         ;; prefer manual override
+                         (list company-backend)
+                       company-backends))
+      (setq prefix
+            (if (or (symbolp backend)
+                    (functionp backend))
+                (when (or (not (symbolp backend))
+                          (get backend 'company-init))
+                  (funcall backend 'prefix))
+              (company--multi-backend-adapter backend 'prefix)))
+      (when prefix
+        (when (and (stringp prefix)
+                   (>= (length prefix) company-minimum-prefix-length))
+          (setq company-backend backend
+                company-prefix prefix
+                c (company-calculate-candidates prefix))
+          ;; t means complete/unique.  We don't start, so no hooks.
+          (when (consp c)
+            (company-update-candidates c)
+            (run-hook-with-args 'company-completion-started-hook
+                                (company-explicit-action-p))
+            (company-call-frontends 'show)))
+        (return c)))))
+
 (defun company-begin ()
-  (when company-candidates
-    (setq company-candidates (company--continue)))
-  (when (and (not company-candidates)
-             (company--should-complete))
-    (let (prefix)
-      (dolist (backend (if company-backend
-                           ;; prefer manual override
-                           (list company-backend)
-                         company-backends))
-        (setq prefix
-              (if (or (symbolp backend)
-                      (functionp backend))
-                  (when (or (not (symbolp backend))
-                            (get backend 'company-init))
-                    (funcall backend 'prefix))
-                (company--multi-backend-adapter backend 'prefix)))
-        (when prefix
-          (when (and (stringp prefix)
-                     (>= (length prefix) company-minimum-prefix-length))
-            (setq company-backend backend
-                  company-prefix prefix)
-            (let ((c (company-calculate-candidates prefix)))
-              ;; t means complete/unique.  We don't start, so no hooks.
-              (when (consp c)
-                (company-update-candidates c)
-                (run-hook-with-args 'company-completion-started-hook
-                                    (company-explicit-action-p))
-                (company-call-frontends 'show))))
-          (return prefix)))))
+  (setq company-candidates
+        (or (and company-candidates (company--continue))
+            (and (company--should-complete) (company--begin-new))))
   (if company-candidates
       (progn
         (when (and company-end-of-buffer-workaround (eobp))
