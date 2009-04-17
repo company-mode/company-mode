@@ -100,6 +100,7 @@ valid in most contexts."
   (case command
     ('interactive (company-begin-backend 'company-xcode))
     ('prefix (and company-xcode-xcodeindex-executable
+                  (company-xcode-tags)
                   (not (company-in-string-or-comment))
                   (or (company-grab-symbol) 'stop)))
     ('candidates (let ((completion-ignore-case nil))
