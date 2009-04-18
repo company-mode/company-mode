@@ -753,30 +753,32 @@ keymap during active completions (`company-active-map'):
     (setq company-candidates nil)))
 
 (defun company-calculate-candidates (prefix)
-  (let ((candidates
-         (or (cdr (assoc prefix company-candidates-cache))
-             (when company-candidates-cache
-               (let ((len (length prefix))
-                     (completion-ignore-case (company-call-backend
-                                              'ignore-case))
-                     prev)
-                 (dotimes (i (1+ len))
-                   (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
-                                                company-candidates-cache)))
-                     (return (all-completions prefix prev))))))
-             (let ((c (company-call-backend 'candidates prefix)))
-               (when company-candidates-predicate
-                 (setq c (company-apply-predicate
-                          c company-candidates-predicate)))
-               (unless (company-call-backend 'sorted)
-                 (setq c (sort c 'string<)))
-               (when (company-call-backend 'duplicates)
-                 ;; strip duplicates
-                 (let ((c2 c))
-                   (while c2
-                     (setcdr c2 (progn (while (equal (pop c2) (car c2)))
-                                       c2)))))
-               c))))
+  (let ((candidates (cdr (assoc prefix company-candidates-cache))))
+    (or candidates
+        (when company-candidates-cache
+          (let ((len (length prefix))
+                (completion-ignore-case (company-call-backend 'ignore-case))
+                prev)
+            (dotimes (i (1+ len))
+              (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
+                                           company-candidates-cache)))
+                (setq candidates (all-completions prefix prev))
+                (return t)))))
+        ;; no cache match, call back-end
+        (progn
+          (setq candidates (company-call-backend 'candidates prefix))
+          (when company-candidates-predicate
+            (setq candidates
+                  (company-apply-predicate candidates
+                                           company-candidates-predicate)))
+          (unless (company-call-backend 'sorted)
+            (setq candidates (sort candidates 'string<)))
+          (when (company-call-backend 'duplicates)
+            ;; strip duplicates
+            (let ((c2 candidates))
+              (while c2
+                (setcdr c2 (progn (while (equal (pop c2) (car c2)))
+                                  c2)))))))
     (if (or (cdr candidates)
             (not (equal (car candidates) prefix)))
         ;; Don't start when already completed and unique.
