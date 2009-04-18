@@ -836,6 +836,7 @@ keymap during active completions (`company-active-map'):
 (defun company--incremental-p ()
   (and (> (point) company-point)
        (> (point-max) company--point-max)
+       (not (eq this-command 'backward-delete-char-untabify))
        (equal (buffer-substring (- company-point (length company-prefix))
                                 company-point)
               company-prefix)))
