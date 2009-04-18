@@ -69,6 +69,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added safer workaround for Emacs `posn-col-row' bug.
+;;
 ;; 2009-04-18 (0.4)
 ;;    Automatic completion is now aborted if the prefix gets too short.
 ;;    Added option `company-dabbrev-time-limit'.
@@ -575,6 +577,18 @@ keymap during active completions (`company-active-map'):
 
 (defun company-input-noop ()
   (push 31415926 unread-command-events))
+
+;; Hack:
+;; posn-col-row is incorrect in older Emacsen when line-spacing is set
+(defun company--col-row (&optional pos)
+  (let ((posn (posn-at-point pos)))
+    (cons (car (posn-col-row posn)) (cdr (posn-actual-col-row posn)))))
+
+(defsubst company--column (&optional pos)
+  (car (posn-col-row (posn-at-point pos))))
+
+(defsubst company--row (&optional pos)
+  (cdr (posn-actual-col-row (posn-at-point pos))))
 
 ;;; backends ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1203,7 +1217,7 @@ followed by `company-search-kill-others' after each input."
   (interactive "e")
   (when (nth 4 (event-start event))
     (company-set-selection (- (cdr (posn-actual-col-row (event-start event)))
-                              (cdr (posn-actual-col-row (posn-at-point)))
+                              (company--row)
                               1))
     t))
 
@@ -1296,7 +1310,7 @@ To show the number next to the candidates in some back-ends, enable
   `(when (company-manual-begin)
      (save-window-excursion
        (let ((height (window-height))
-             (row (cdr (posn-actual-col-row (posn-at-point)))))
+             (row (company--row)))
          ,@body
          (and (< (window-height) height)
               (< (- (window-height) row 2) company-tooltip-limit)
@@ -1464,7 +1478,7 @@ Example:
 
 (defun company-buffer-lines (beg end)
   (goto-char beg)
-  (let ((row (cdr (posn-actual-col-row (posn-at-point))))
+  (let ((row (company--row))
         lines)
     (while (and (equal (move-to-window-line (incf row)) row)
                 (<= (point) end))
@@ -1589,7 +1603,7 @@ Example:
       (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
-  (let ((col-row (posn-actual-col-row (posn-at-point pos))))
+  (let ((col-row (company--col-row pos)))
     (when col-row
       (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
                                    company-selection))))
