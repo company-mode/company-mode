@@ -256,6 +256,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
     (company-files . "Files")
     (company-gtags . "GNU Global")
     (company-ispell . "ispell")
+    (company-keywords . "Programming language keywords")
     (company-nxml . "nxml")
     (company-oddmuse . "Oddmuse")
     (company-semantic . "CEDET Semantic")
@@ -273,7 +274,8 @@ The visualized data is stored in `company-prefix', `company-candidates',
 
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-semantic company-xcode
-                              (company-gtags company-etags company-dabbrev-code)
+                              (company-gtags company-etags company-dabbrev-code
+                               company-keywords)
                               company-oddmuse company-files company-dabbrev)
   "*The list of active back-ends (completion engines).
 Each list elements can itself be a list of back-ends.  In that case their
