@@ -493,8 +493,10 @@ The work-around consists of adding a newline.")
           (functionp backend))
       (if (ignore-errors (funcall backend 'init) t)
           (put backend 'company-init t)
+        (put backend 'company-init 'failed)
         (message "Company back-end '%s' could not be initialized"
-                 backend))
+                 backend)
+        nil)
     (mapc 'company-init-backend backend)))
 
 ;;;###autoload
@@ -901,7 +903,9 @@ keymap during active completions (`company-active-map'):
             (if (or (symbolp backend)
                     (functionp backend))
                 (when (or (not (symbolp backend))
-                          (get backend 'company-init))
+                          (eq t (get backend 'company-init))
+                          (unless (get backend 'company-init)
+                            (company-init-backend backend)))
                   (funcall backend 'prefix))
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
