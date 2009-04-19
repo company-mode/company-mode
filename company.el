@@ -802,18 +802,21 @@ keymap during active completions (`company-active-map'):
            (company-input-noop)
            (company-post-command)))))
 
-(defun company-manual-begin ()
-  (interactive)
+(defun company-auto-begin ()
   (company-assert-enabled)
   (and company-mode
        (not company-candidates)
        (let ((company-idle-delay t)
              (company-minimum-prefix-length 0)
              (company-begin-commands t))
-         (setq company--explicit-action t)
          (company-begin)))
   ;; Return non-nil if active.
   company-candidates)
+
+(defun company-manual-begin ()
+  (interactive)
+  (setq company--explicit-action t)
+  (company-auto-begin))
 
 (defun company-require-match-p ()
   (let ((backend-value (company-call-backend 'require-match)))
