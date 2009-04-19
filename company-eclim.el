@@ -106,7 +106,10 @@ eclim can only complete correctly when the buffer has been saved."
 
 (defun company-eclim (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for eclim.
-eclim provides access to Eclipse Java IDE features for other editors."
+eclim provides access to Eclipse Java IDE features for other editors.
+
+Completions only work correctly when the buffer has been saved.
+`company-eclim-auto-save' determines whether to do this automatically."
   (interactive (list 'interactive))
   (case command
     ('interactive (company-begin-backend 'company-eclim))
