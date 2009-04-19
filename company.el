@@ -488,6 +488,8 @@ The work-around consists of adding a newline.")
     keymap)
   "Keymap that is enabled during an active completion.")
 
+(defvar company--disabled-backends nil)
+
 (defun company-init-backend (backend)
   (and (symbolp backend)
        (not (fboundp backend))
@@ -498,8 +500,10 @@ The work-around consists of adding a newline.")
       (if (ignore-errors (funcall backend 'init) t)
           (put backend 'company-init t)
         (put backend 'company-init 'failed)
-        (message "Company back-end '%s' could not be initialized"
-                 backend)
+        (unless (memq backend company--disabled-backends)
+          (message "Company back-end '%s' could not be initialized"
+                   backend)
+          (push backend company--disabled-backends))
         nil)
     (mapc 'company-init-backend backend)))
 
