@@ -149,7 +149,7 @@
                   (not (company-in-string-or-comment))
                   (or (company-grab-symbol) 'stop)))
     ('candidates
-     (let ((case-fold-search nil)
+     (let ((completion-ignore-case nil)
            (symbols (cdr (assq major-mode company-keywords-alist))))
        (all-completions arg (if (consp symbols)
                                 symbols

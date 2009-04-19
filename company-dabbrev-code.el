@@ -70,7 +70,7 @@ comments or strings."
                       (apply 'derived-mode-p company-dabbrev-code-modes))
                   (not (company-in-string-or-comment))
                   (or (company-grab-symbol) 'stop)))
-    ('candidates (let ((case-fold-search nil))
+    ('candidates (let ((completion-ignore-case nil))
                    (company-dabbrev--search
                     (company-dabbrev-code--make-regexp arg)
                     company-dabbrev-code-time-limit
