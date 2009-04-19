@@ -998,7 +998,8 @@ keymap during active completions (`company-active-map'):
              (message "%s" (error-message-string err))
              (company-cancel))))
   (when company-timer
-    (cancel-timer company-timer))
+    (cancel-timer company-timer)
+    (setq company-timer nil))
   (company-uninstall-map))
 
 (defun company-post-command ()
@@ -1007,15 +1008,16 @@ keymap during active completions (`company-active-map'):
         (progn
           (unless (equal (point) company-point)
             (company-begin))
-          (when company-candidates
-            (company-call-frontends 'post-command))
-          (and (numberp company-idle-delay)
-               (or (eq t company-begin-commands)
-                   (memq this-command company-begin-commands))
-               (setq company-timer
-                     (run-with-timer company-idle-delay nil 'company-idle-begin
-                                     (current-buffer) (selected-window)
-                                     (buffer-chars-modified-tick) (point)))))
+          (if company-candidates
+              (company-call-frontends 'post-command)
+            (and (numberp company-idle-delay)
+                 (or (eq t company-begin-commands)
+                     (memq this-command company-begin-commands))
+                 (setq company-timer
+                       (run-with-timer company-idle-delay nil
+                                       'company-idle-begin
+                                       (current-buffer) (selected-window)
+                                       (buffer-chars-modified-tick) (point))))))
       (error (message "Company: An error occurred in post-command")
              (message "%s" (error-message-string err))
              (company-cancel))))
