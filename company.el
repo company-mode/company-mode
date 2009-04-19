@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Performance enhancements.
 ;;    Added `company-eclim' back-end.
 ;;    Added safer workaround for Emacs `posn-col-row' bug.
 ;;
@@ -884,17 +885,18 @@ keymap during active completions (`company-active-map'):
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
               (company-calculate-candidates new-prefix))))
-    (cond
-     ((eq c t)
-      ;; t means complete/unique.
-      (company-cancel new-prefix)
-      nil)
-     ((consp c)
-      ;; incremental match
-      (setq company-prefix new-prefix)
-      (company-update-candidates c)
-      c)
-     (t (company--continue-failed new-prefix)))))
+    (or (cond
+         ((eq c t)
+          ;; t means complete/unique.
+          (company-cancel new-prefix)
+          nil)
+         ((consp c)
+          ;; incremental match
+          (setq company-prefix new-prefix)
+          (company-update-candidates c)
+          c)
+         (t (company--continue-failed new-prefix)))
+        (company-cancel))))
 
 (defun company--begin-new ()
   (let (prefix c)
@@ -915,10 +917,10 @@ keymap during active completions (`company-active-map'):
         (when (and (stringp prefix)
                    (>= (length prefix) company-minimum-prefix-length))
           (setq company-backend backend
-                company-prefix prefix
                 c (company-calculate-candidates prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
           (when (consp c)
+            (setq company-prefix prefix)
             (company-update-candidates c)
             (run-hook-with-args 'company-completion-started-hook
                                 (company-explicit-action-p))
@@ -929,16 +931,14 @@ keymap during active completions (`company-active-map'):
   (setq company-candidates
         (or (and company-candidates (company--continue))
             (and (company--should-complete) (company--begin-new))))
-  (if company-candidates
-      (progn
-        (when (and company-end-of-buffer-workaround (eobp))
-          (save-excursion (insert "\n"))
-          (setq company-added-newline (buffer-chars-modified-tick)))
-        (setq company-point (point)
-              company--point-max (point-max))
-        (company-enable-overriding-keymap company-active-map)
-        (company-call-frontends 'update))
-    (company-cancel)))
+  (when company-candidates
+    (when (and company-end-of-buffer-workaround (eobp))
+      (save-excursion (insert "\n"))
+      (setq company-added-newline (buffer-chars-modified-tick)))
+    (setq company-point (point)
+          company--point-max (point-max))
+    (company-enable-overriding-keymap company-active-map)
+    (company-call-frontends 'update)))
 
 (defun company-cancel (&optional result)
   (and company-added-newline
