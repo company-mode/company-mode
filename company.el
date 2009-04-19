@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-eclim' back-end.
 ;;    Added safer workaround for Emacs `posn-col-row' bug.
 ;;
 ;; 2009-04-18 (0.4)
@@ -254,6 +255,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
     (company-css . "CSS")
     (company-dabbrev . "dabbrev for plain text")
     (company-dabbrev-code . "dabbrev for code")
+    (company-eclim . "eclim (an Eclipse interace)")
     (company-elisp . "Emacs Lisp")
     (company-etags . "etags")
     (company-files . "Files")
@@ -276,7 +278,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
                 (return t))))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-semantic company-xcode
+                              company-eclim company-semantic company-xcode
                               (company-gtags company-etags company-dabbrev-code
                                company-keywords)
                               company-oddmuse company-files company-dabbrev)
