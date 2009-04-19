@@ -677,8 +677,6 @@ keymap during active completions (`company-active-map'):
 (defvar company--point-max nil)
 (make-variable-buffer-local 'company--point-max)
 
-(defvar company--this-command nil)
-
 (defvar company-point nil)
 (make-variable-buffer-local 'company-point)
 
@@ -705,7 +703,7 @@ keymap during active completions (`company-active-map'):
                 overriding-local-map))
        (eq company-idle-delay t)
        (or (eq t company-begin-commands)
-           (memq company--this-command company-begin-commands)
+           (memq this-command company-begin-commands)
            (and (symbolp this-command) (get this-command 'company-begin)))
        (not (and transient-mark-mode mark-active))))
 
@@ -796,7 +794,8 @@ keymap during active completions (`company-active-map'):
        (eq pos (point))
        (not company-candidates)
        (not (equal (point) company-point))
-       (let ((company-idle-delay t))
+       (let ((company-idle-delay t)
+             (company-begin-commands t))
          (company-begin)
          (when company-candidates
            (company-input-noop)
@@ -1003,16 +1002,17 @@ keymap during active completions (`company-active-map'):
   (unless (company-keep this-command)
     (condition-case err
         (progn
-          (setq company--this-command this-command)
           (unless (equal (point) company-point)
             (company-begin))
           (when company-candidates
             (company-call-frontends 'post-command))
-          (when (numberp company-idle-delay)
-            (setq company-timer
-                  (run-with-timer company-idle-delay nil 'company-idle-begin
-                                  (current-buffer) (selected-window)
-                                  (buffer-chars-modified-tick) (point)))))
+          (and (numberp company-idle-delay)
+               (or (eq t company-begin-commands)
+                   (memq this-command company-begin-commands))
+               (setq company-timer
+                     (run-with-timer company-idle-delay nil 'company-idle-begin
+                                     (current-buffer) (selected-window)
+                                     (buffer-chars-modified-tick) (point)))))
       (error (message "Company: An error occurred in post-command")
              (message "%s" (error-message-string err))
              (company-cancel))))
