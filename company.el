@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `global-company-mode'.
 ;;    Performance enhancements.
 ;;    Added `company-eclim' back-end.
 ;;    Added safer workaround for Emacs `posn-col-row' bug.
@@ -537,6 +538,9 @@ keymap during active completions (`company-active-map'):
     (remove-hook 'post-command-hook 'company-post-command t)
     (company-cancel)
     (kill-local-variable 'company-point)))
+
+(define-globalized-minor-mode global-company-mode company-mode
+  (lambda () (company-mode 1)))
 
 (defsubst company-assert-enabled ()
   (unless company-mode
