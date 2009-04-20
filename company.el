@@ -1549,7 +1549,7 @@ Example:
       limit
     (length lst)))
 
-(defun company-replacement-string (old lines column nl &optional align-top)
+(defun company--replacement-string (lines old column nl &optional align-top)
   (let (new)
     (when align-top
       ;; untouched lines first
@@ -1667,8 +1667,8 @@ Returns a negative number if the tooltip should be displayed above point."
       (overlay-put company-pseudo-tooltip-overlay 'company-nl nl)
       (overlay-put company-pseudo-tooltip-overlay 'company-above above)
       (overlay-put company-pseudo-tooltip-overlay 'company-before
-                   (company-replacement-string old-string lines column nl
-                                               above))
+                   (company--replacement-string lines old-string column nl
+                                                above))
       (overlay-put company-pseudo-tooltip-overlay 'company-height (abs height))
 
       (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
@@ -1687,8 +1687,8 @@ Returns a negative number if the tooltip should be displayed above point."
          (above (overlay-get company-pseudo-tooltip-overlay 'company-above))
          (lines (company-create-lines column selection (abs height))))
     (overlay-put company-pseudo-tooltip-overlay 'company-before
-                 (company-replacement-string old-string lines column nl
-                                             above))))
+                 (company--replacement-string lines old-string column nl
+                                              above))))
 
 (defun company-pseudo-tooltip-hide ()
   (when company-pseudo-tooltip-overlay
