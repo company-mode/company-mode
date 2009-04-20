@@ -54,13 +54,9 @@
 ;;     ('meta (format "This value is named %s" arg))))
 ;;
 ;; Sometimes it is a good idea to mix two back-ends together, for example to
-;; enrich gtags with dabbrev text (to emulate local variables):
-;;
-;; (defun gtags-gtags-dabbrev-backend (command &optional arg &rest ignored)
-;;   (case command
-;;     (prefix (company-gtags 'prefix))
-;;     (candidates (append (company-gtags 'candidates arg)
-;;                         (company-dabbrev 'candidates arg)))))
+;; enrich gtags with dabbrev-code results (to emulate local variables):
+;; To do this, add a list with the merged back-ends as an element in
+;; company-backends.
 ;;
 ;; Known Issues:
 ;; When point is at the very end of the buffer, the pseudo-tooltip appears very
