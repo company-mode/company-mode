@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Reverted default front-end back to `company-preview-if-just-one-frontend'.
 ;;    The pseudo tooltip will no longer be clipped at the right window edge.
 ;;    Added `company-tooltip-minimum'.
 ;;    Windows compatibility fixes.
@@ -215,7 +216,7 @@
   (set variable value))
 
 (defcustom company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
-                               company-preview-frontend
+                               company-preview-if-just-one-frontend
                                company-echo-metadata-frontend)
   "*The list of active front-ends (visualizations).
 Each front-end is a function that takes one argument.  It is called with
