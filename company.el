@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-tooltip-minimum'.
 ;;    Windows compatibility fixes.
 ;;
 ;; 2009-04-19 (0.4.1)
@@ -252,6 +253,12 @@ The visualized data is stored in `company-prefix', `company-candidates',
 
 (defcustom company-tooltip-limit 10
   "*The maximum number of candidates in the tool tip"
+  :group 'company
+  :type 'integer)
+
+(defcustom company-tooltip-minimum 6
+  "*The minimum height of the tool tip.
+If this many lines are not available, prefer to display the tooltip above."
   :group 'company
   :type 'integer)
 
@@ -1537,9 +1544,18 @@ Example:
           new
           (company-safe-substring old (+ offset (length new)))))
 
-(defun company-replacement-string (old lines column nl)
+(defsubst company--length-limit (lst limit)
+  (if (nthcdr limit lst)
+      limit
+    (length lst)))
+
+(defun company-replacement-string (old lines column nl &optional align-top)
   (let (new)
-    ;; Inject into old lines.
+    (when align-top
+      ;; untouched lines first
+      (dotimes (i (- (length old) (length lines)))
+        (push (pop old) new)))
+    ;; length into old lines.
     (while old
       (push (company-modify-line (pop old) (pop lines) column) new))
     ;; Append whole new lines.
@@ -1612,11 +1628,15 @@ Example:
 
 ;; show
 
-(defsubst company-pseudo-tooltip-height ()
-  "Calculate the appropriate tooltip height."
-  (max 3 (min company-tooltip-limit
-              (- (window-height) 2
-                 (count-lines (window-start) (point-at-bol))))))
+(defsubst company--pseudo-tooltip-height ()
+  "Calculate the appropriate tooltip height.
+Returns a negative number if the tooltip should be displayed above point."
+  (let* ((lines (1- (count-lines (window-start) (point-at-bol))))
+         (below (- (window-height) 3 lines)))
+    (if (and (< below (min company-tooltip-minimum company-candidates-length))
+             (> lines below))
+        (- (max 3 (min company-tooltip-limit lines)))
+      (max 3 (min company-tooltip-limit below)))))
 
 (defun company-pseudo-tooltip-show (row column selection)
   (company-pseudo-tooltip-hide)
@@ -1624,25 +1644,32 @@ Example:
 
     (move-to-column 0)
 
-    (let* ((height (company-pseudo-tooltip-height))
-           (lines (company-create-lines column selection height))
-           (nl (< (move-to-window-line row) row))
-           (beg (point))
-           (end (save-excursion
-                  (move-to-window-line (+ row height))
-                  (point)))
-           (old-string
+    (let ((height (company--pseudo-tooltip-height))
+          above lines nl beg end old-string str)
+
+      (when (< height 0)
+        (setq row (+ row height -1)
+              above t))
+
+      (setq lines (company-create-lines column selection (abs height))
+            nl (< (move-to-window-line row) row)
+            beg (point)
+            end (save-excursion
+                  (move-to-window-line (+ row (abs height)))
+                  (point))
+            old-string
             (mapcar 'company-untabify (company-buffer-lines beg end)))
-           str)
 
       (setq company-pseudo-tooltip-overlay (make-overlay beg end))
 
       (overlay-put company-pseudo-tooltip-overlay 'company-old old-string)
       (overlay-put company-pseudo-tooltip-overlay 'company-column column)
       (overlay-put company-pseudo-tooltip-overlay 'company-nl nl)
+      (overlay-put company-pseudo-tooltip-overlay 'company-above above)
       (overlay-put company-pseudo-tooltip-overlay 'company-before
-                   (company-replacement-string old-string lines column nl))
-      (overlay-put company-pseudo-tooltip-overlay 'company-height height)
+                   (company-replacement-string old-string lines column nl
+                                               above))
+      (overlay-put company-pseudo-tooltip-overlay 'company-height (abs height))
 
       (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
 
@@ -1657,9 +1684,11 @@ Example:
          (column (overlay-get company-pseudo-tooltip-overlay 'company-column))
          (nl (overlay-get company-pseudo-tooltip-overlay 'company-nl))
          (height (overlay-get company-pseudo-tooltip-overlay 'company-height))
-         (lines (company-create-lines column selection height)))
+         (above (overlay-get company-pseudo-tooltip-overlay 'company-above))
+         (lines (company-create-lines column selection (abs height))))
     (overlay-put company-pseudo-tooltip-overlay 'company-before
-                 (company-replacement-string old-string lines column nl))))
+                 (company-replacement-string old-string lines column nl
+                                             above))))
 
 (defun company-pseudo-tooltip-hide ()
   (when company-pseudo-tooltip-overlay
@@ -1683,13 +1712,16 @@ Example:
   (case command
     ('pre-command (company-pseudo-tooltip-hide-temporarily))
     ('post-command
-     (unless (and (overlayp company-pseudo-tooltip-overlay)
-                  (equal (overlay-get company-pseudo-tooltip-overlay
-                                      'company-height)
-                         (company-pseudo-tooltip-height)))
-       ;; Redraw needed.
-       (company-pseudo-tooltip-show-at-point (- (point)
-                                                (length company-prefix))))
+     (let ((old-height (if (overlayp company-pseudo-tooltip-overlay)
+                           (overlay-get company-pseudo-tooltip-overlay
+                                        'company-height)
+                         0))
+           (new-height (company--pseudo-tooltip-height)))
+       (unless (and (>= (* old-height new-height) 0)
+                    (>= (abs old-height) (abs new-height)))
+         ;; Redraw needed.
+         (company-pseudo-tooltip-show-at-point (- (point)
+                                                  (length company-prefix)))))
      (company-pseudo-tooltip-unhide))
     ('hide (company-pseudo-tooltip-hide)
            (setq company-tooltip-offset 0))
