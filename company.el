@@ -1644,34 +1644,33 @@ Returns a negative number if the tooltip should be displayed above point."
 
     (move-to-column 0)
 
-    (let ((height (company--pseudo-tooltip-height))
-          above lines nl beg end old-string str)
+    (let* ((height (company--pseudo-tooltip-height))
+           above)
 
       (when (< height 0)
         (setq row (+ row height -1)
               above t))
 
-      (setq lines (company-create-lines column selection (abs height))
-            nl (< (move-to-window-line row) row)
-            beg (point)
-            end (save-excursion
-                  (move-to-window-line (+ row (abs height)))
-                  (point))
-            old-string
-            (mapcar 'company-untabify (company-buffer-lines beg end)))
+      (let* ((nl (< (move-to-window-line row) row))
+             (beg (point))
+             (end (save-excursion
+                    (move-to-window-line (+ row (abs height)))
+                    (point)))
+             (ov (make-overlay beg end))
+             (args (list (mapcar 'company-untabify
+                                 (company-buffer-lines beg end))
+                         column nl above)))
 
-      (setq company-pseudo-tooltip-overlay (make-overlay beg end))
+        (setq company-pseudo-tooltip-overlay ov)
+        (overlay-put ov 'company-replacement-args args)
+        (overlay-put ov 'company-before
+                     (apply 'company--replacement-string
+                            (company-create-lines column selection (abs height))
+                            args))
 
-      (overlay-put company-pseudo-tooltip-overlay 'company-old old-string)
-      (overlay-put company-pseudo-tooltip-overlay 'company-column column)
-      (overlay-put company-pseudo-tooltip-overlay 'company-nl nl)
-      (overlay-put company-pseudo-tooltip-overlay 'company-above above)
-      (overlay-put company-pseudo-tooltip-overlay 'company-before
-                   (company--replacement-string lines old-string column nl
-                                                above))
-      (overlay-put company-pseudo-tooltip-overlay 'company-height (abs height))
-
-      (overlay-put company-pseudo-tooltip-overlay 'window (selected-window)))))
+        (overlay-put ov 'company-column column)
+        (overlay-put ov 'company-height (abs height))
+        (overlay-put ov 'window (selected-window))))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
   (let ((col-row (company--col-row pos)))
@@ -1680,15 +1679,13 @@ Returns a negative number if the tooltip should be displayed above point."
                                    company-selection))))
 
 (defun company-pseudo-tooltip-edit (lines selection)
-  (let* ((old-string (overlay-get company-pseudo-tooltip-overlay 'company-old))
-         (column (overlay-get company-pseudo-tooltip-overlay 'company-column))
-         (nl (overlay-get company-pseudo-tooltip-overlay 'company-nl))
-         (height (overlay-get company-pseudo-tooltip-overlay 'company-height))
-         (above (overlay-get company-pseudo-tooltip-overlay 'company-above))
-         (lines (company-create-lines column selection (abs height))))
+  (let ((column (overlay-get company-pseudo-tooltip-overlay 'company-column))
+        (height (overlay-get company-pseudo-tooltip-overlay 'company-height)))
     (overlay-put company-pseudo-tooltip-overlay 'company-before
-                 (company--replacement-string lines old-string column nl
-                                              above))))
+                 (apply 'company--replacement-string
+                        (company-create-lines column selection height)
+                        (overlay-get company-pseudo-tooltip-overlay
+                                     'company-replacement-args)))))
 
 (defun company-pseudo-tooltip-hide ()
   (when company-pseudo-tooltip-overlay
