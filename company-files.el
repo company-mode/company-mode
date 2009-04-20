@@ -26,13 +26,20 @@
         (directory-files dir nil "\\`[^.]\\|\\`.[^.]")
       (file-name-all-completions prefix dir))))
 
+(defvar company-files-regexps
+  (let ((begin (if (eq system-type 'windows-nt)
+                   "[a-z][A-Z]\\"
+                 "~?/")))
+    (list (concat "\"\\(" begin "[^\"\n]*\\)")
+          (concat "\'\\(" begin "[^\'\n]*\\)")
+          (concat "\\(?:[ \t]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
+
 (defun company-files-grab-existing-name ()
   ;; Grab file names with spaces, only when they include quotes.
-  (let ((file (or (company-grab-line "\"\\(~?/[^\"\n]*\\)" 1)
-                  (company-grab-line "\'\\(~?/[^\'\n]*\\)" 1)
-                  (company-grab-line "[ \t\n]\\(~?/[^ \t\n]*\\)" 1)))
-        dir)
-    (and file
+  (let (file dir)
+    (and (dolist (regexp company-files-regexps)
+           (when (setq file (company-grab-line regexp 1))
+             (return file)))
          (setq dir (file-name-directory file))
          (file-exists-p dir)
          (file-name-all-completions (file-name-nondirectory file) dir)
