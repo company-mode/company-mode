@@ -79,9 +79,11 @@ valid in most contexts."
   (let ((dir (if buffer-file-name
                  (file-name-directory buffer-file-name)
                (expand-file-name default-directory)))
+        (prev-dir nil)
         file)
-    (while (not (or file (equal dir "/")))
+    (while (not (or file (equal dir prev-dir)))
       (setq file (car (directory-files dir t ".xcodeproj\\'" t))
+            prev-dir dir
             dir (file-name-directory (directory-file-name dir))))
     file))
 

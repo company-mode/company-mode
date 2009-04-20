@@ -74,23 +74,11 @@ eclim can only complete correctly when the buffer has been saved."
   (mapcar (lambda (line) (nreverse (split-string line " *- *" nil)))
           (company-eclim--call-process "project_list")))
 
-(defun company-eclim--locate-dominating-file (file name)
-  (catch 'root
-    (let ((dir (file-name-directory buffer-file-name)))
-      (while (not (equal dir "/"))
-        (when (file-exists-p (expand-file-name name dir))
-          (throw 'root dir))
-        (setq dir (file-name-directory (directory-file-name dir)))))))
-
 (defun company-eclim--project-dir ()
   (if (eq company-eclim--project-dir 'unknown)
       (setq company-eclim--project-dir
             (directory-file-name
-             (if (fboundp 'locate-dominating-file)
-                 (expand-file-name (locate-dominating-file buffer-file-name
-                                                           ".project"))
-               (company-eclim--locate-dominating-file buffer-file-name
-                                                     ".project"))))
+             (company-locate-dominating-file buffer-file-name ".project")))
     company-eclim--project-dir))
 
 (defun company-eclim--project-name ()

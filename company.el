@@ -69,6 +69,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Windows compatibility fixes.
+;;
 ;; 2009-04-19 (0.4.1)
 ;;    Added `global-company-mode'.
 ;;    Performance enhancements.
@@ -632,6 +634,18 @@ keymap during active completions (`company-active-map'):
     (or (car (setq ppss (nthcdr 3 ppss)))
         (car (setq ppss (cdr ppss)))
         (nth 3 ppss))))
+
+(if (fboundp 'locate-dominating-file)
+    (defalias 'company-locate-dominating-file 'locate-dominating-file)
+  (defun company-locate-dominating-file (file name)
+    (catch 'root
+      (let ((dir (file-name-directory file))
+            (prev-dir nil))
+        (while (not (equal dir prev-dir))
+          (when (file-exists-p (expand-file-name name dir))
+            (throw 'root dir))
+          (setq prev-dir dir
+                dir (file-name-directory (directory-file-name dir))))))))
 
 (defun company-call-backend (&rest args)
   (if (functionp company-backend)

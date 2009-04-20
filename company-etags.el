@@ -36,16 +36,11 @@ buffer automatically."
 (make-variable-buffer-local 'company-etags-buffer-table)
 
 (defun company-etags-find-table ()
-  (let ((dir (if buffer-file-name
-                 (file-name-directory buffer-file-name)
-               (expand-file-name default-directory)))
-        file)
-    (while (not (or file (equal dir "/")))
-      (unless (file-exists-p (setq file (expand-file-name "TAGS" dir)))
-        (setq file nil
-              dir (file-name-directory (directory-file-name dir)))))
+  (let ((file (company-locate-dominating-file (or buffer-file-name
+                                                  default-directory)
+                                              "TAGS")))
     (when file
-      (list file))))
+      (list (expand-file-name file)))))
 
 (defun company-etags-buffer-table ()
   (or (and company-etags-use-main-table-list tags-table-list)
