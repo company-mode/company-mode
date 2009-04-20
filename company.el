@@ -510,6 +510,11 @@ The work-around consists of adding a newline.")
         nil)
     (mapc 'company-init-backend backend)))
 
+(defvar company-default-lighter " company")
+
+(defvar company-lighter company-default-lighter)
+(make-variable-buffer-local 'company-lighter)
+
 ;;;###autoload
 (define-minor-mode company-mode
   "\"complete anything\"; in in-buffer completion framework.
@@ -535,7 +540,7 @@ regular keymap (`company-mode-map'):
 keymap during active completions (`company-active-map'):
 
 \\{company-active-map}"
-  nil " comp" company-mode-map
+  nil company-lighter company-mode-map
   (if company-mode
       (progn
         (add-hook 'pre-command-hook 'company-pre-command nil t)
@@ -946,7 +951,8 @@ keymap during active completions (`company-active-map'):
                 c (company-calculate-candidates prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
           (when (consp c)
-            (setq company-prefix prefix)
+            (setq company-prefix prefix
+                  company-lighter (concat " " (symbol-name backend)))
             (company-update-candidates c)
             (run-hook-with-args 'company-completion-started-hook
                                 (company-explicit-action-p))
@@ -989,6 +995,7 @@ keymap during active completions (`company-active-map'):
         company-selection 0
         company-selection-changed nil
         company--explicit-action nil
+        company-lighter company-default-lighter
         company--point-max nil
         company-point nil)
   (when company-timer
