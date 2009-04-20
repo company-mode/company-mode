@@ -165,11 +165,6 @@
   "*Face used for the selected common completion in the tool tip."
   :group 'company)
 
-(defcustom company-tooltip-limit 10
-  "*The maximum number of candidates in the tool tip"
-  :group 'company
-  :type 'integer)
-
 (defface company-preview
   '((t :background "blue4"
        :foreground "wheat"))
@@ -254,6 +249,11 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (const :tag "preview, unique only"
                                 company-preview-if-just-one-frontend)
                          (function :tag "custom function" nil))))
+
+(defcustom company-tooltip-limit 10
+  "*The maximum number of candidates in the tool tip"
+  :group 'company
+  :type 'integer)
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
