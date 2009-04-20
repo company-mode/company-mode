@@ -69,6 +69,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    The pseudo tooltip will no longer be clipped at the right window edge.
 ;;    Added `company-tooltip-minimum'.
 ;;    Windows compatibility fixes.
 ;;
@@ -1550,6 +1551,11 @@ Example:
     (length lst)))
 
 (defun company--replacement-string (lines old column nl &optional align-top)
+
+  (let ((width (length (car lines))))
+    (when (> width (- (window-width) column))
+      (setq column (max 0 (- (window-width) width)))))
+
   (let (new)
     (when align-top
       ;; untouched lines first
@@ -1565,7 +1571,7 @@ Example:
             (mapconcat 'identity (nreverse new) "\n")
             "\n")))
 
-(defun company-create-lines (column selection limit)
+(defun company--create-lines (selection limit)
 
   (let ((len company-candidates-length)
         (numbered 99999)
@@ -1594,7 +1600,7 @@ Example:
 
     (dotimes (i len)
       (setq width (max (length (pop lines-copy)) width)))
-    (setq width (min width (- (window-width) column)))
+    (setq width (min width (window-width)))
 
     (setq lines-copy lines)
 
@@ -1665,7 +1671,7 @@ Returns a negative number if the tooltip should be displayed above point."
         (overlay-put ov 'company-replacement-args args)
         (overlay-put ov 'company-before
                      (apply 'company--replacement-string
-                            (company-create-lines column selection (abs height))
+                            (company--create-lines selection (abs height))
                             args))
 
         (overlay-put ov 'company-column column)
@@ -1683,7 +1689,7 @@ Returns a negative number if the tooltip should be displayed above point."
         (height (overlay-get company-pseudo-tooltip-overlay 'company-height)))
     (overlay-put company-pseudo-tooltip-overlay 'company-before
                  (apply 'company--replacement-string
-                        (company-create-lines column selection height)
+                        (company--create-lines selection height)
                         (overlay-get company-pseudo-tooltip-overlay
                                      'company-replacement-args)))))
 
