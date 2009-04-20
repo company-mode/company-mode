@@ -354,7 +354,7 @@ does not know about.  It should also be callable interactively and use
                                      company-safe-backends)
                            (symbol :tag "User defined"))))))
 
-(put 'company-backends 'safe-local-variable 'company-safe-backend-p)
+(put 'company-backends 'safe-local-variable 'company-safe-backends-p)
 
 (defcustom company-completion-started-hook nil
   "*Hook run when company starts completing.
