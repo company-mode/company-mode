@@ -1635,11 +1635,15 @@ Example:
 
 ;; show
 
+(defsubst company--window-inner-height ()
+  (let ((edges (window-inside-edges (selected-window))))
+    (- (nth 3 edges) (nth 1 edges))))
+
 (defsubst company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
 Returns a negative number if the tooltip should be displayed above point."
-  (let* ((lines (1- (count-lines (window-start) (point-at-bol))))
-         (below (- (window-height) 3 lines)))
+  (let* ((lines (count-lines (window-start) (point-at-bol)))
+         (below (- (company--window-inner-height) 1 lines)))
     (if (and (< below (min company-tooltip-minimum company-candidates-length))
              (> lines below))
         (- (max 3 (min company-tooltip-limit lines)))
