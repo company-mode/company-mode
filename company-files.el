@@ -51,7 +51,6 @@
   (let* ((dir (file-name-directory prefix))
          (file (file-name-nondirectory prefix))
          candidates)
-    (setq company-files-completion-cache nil)
     (unless (equal dir (car company-files-completion-cache))
       (dolist (file (company-files-directory-files dir file))
         (setq file (concat dir file))
