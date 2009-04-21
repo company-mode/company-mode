@@ -909,15 +909,17 @@ keymap during active completions (`company-active-map'):
         (company-cancel company-prefix)
         nil)))))
 
+(defun company--good-prefix-p (prefix)
+  (and (stringp prefix)
+       (or (company-explicit-action-p)
+           (>= (length prefix) company-minimum-prefix-length))))
+
 (defun company--continue ()
   (when (company-call-backend 'no-cache company-prefix)
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
-         (c (when (and (stringp new-prefix)
-                       (or (company-explicit-action-p)
-                           (>= (length new-prefix)
-                               company-minimum-prefix-length))
+         (c (when (and (company--good-prefix-p new-prefix)
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
               (company-calculate-candidates new-prefix))))
@@ -950,8 +952,7 @@ keymap during active completions (`company-active-map'):
                   (funcall backend 'prefix))
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
-        (when (and (stringp prefix)
-                   (>= (length prefix) company-minimum-prefix-length))
+        (when (company--good-prefix-p prefix)
           (setq company-backend backend
                 c (company-calculate-candidates prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
