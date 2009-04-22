@@ -65,6 +65,23 @@
         (push (semantic-tag-name tag) candidates)))
     (delete "" candidates)))
 
+(defun company-semantic--pre-prefix-length (prefix-length)
+  "Sum up the length of all chained symbols before POS.
+Symbols are chained by \".\" or \"->\"."
+  (save-excursion
+    (let ((pos (point)))
+      (goto-char (- (point) prefix-length))
+      (while (looking-back "->\\|\\.")
+        (goto-char (match-beginning 0))
+        (skip-syntax-backward "w_"))
+      (- pos (point)))))
+
+(defun company-semantic--grab ()
+  "Grab the semantic prefix, but return everything before -> or . as length."
+  (let ((symbol (company-grab-symbol)))
+    (when symbol
+      (cons symbol (company-semantic--pre-prefix-length (length symbol))))))
+
 ;;;###autoload
 (defun company-semantic (command &optional arg &rest ignored)
   "A `company-mode' completion back-end using CEDET Semantic."
@@ -74,7 +91,7 @@
     ('prefix (and (memq major-mode '(c-mode c++-mode jde-mode java-mode))
                   (semantic-active-p)
                   (not (company-in-string-or-comment))
-                  (or (company-grab-symbol) 'stop)))
+                  (or (company-semantic--grab) 'stop)))
     ('candidates (or (company-semantic-completions arg)
                      (company-semantic-completions-raw arg)))
     ('meta (funcall company-semantic-metadata-function

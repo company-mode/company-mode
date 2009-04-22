@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    In C modes . and -> now count towards `company-minimum-prefix-length'.
 ;;    Reverted default front-end back to `company-preview-if-just-one-frontend'.
 ;;    The pseudo tooltip will no longer be clipped at the right window edge.
 ;;    Added `company-tooltip-minimum'.
@@ -304,7 +305,10 @@ of the following:
 'prefix: The back-end should return the text to be completed.  It must be
 text immediately before `point'.  Returning nil passes control to the next
 back-end.  The function should return 'stop if it should complete but cannot
-\(e.g. if it is in the middle of a string\).
+\(e.g. if it is in the middle of a string\).  If the returned value is only
+part of the prefix (e.g. the part after \"->\" in C), the back-end may return a
+cons of prefix and prefix length, which is then used in the
+`company-minimum-prefix-length' test.
 
 'candidates: The second argument is the prefix to be completed.  The
 return value should be a list of candidates that start with the prefix.
@@ -910,9 +914,10 @@ keymap during active completions (`company-active-map'):
         nil)))))
 
 (defun company--good-prefix-p (prefix)
-  (and (stringp prefix)
-       (or (company-explicit-action-p)
-           (>= (length prefix) company-minimum-prefix-length))))
+  (and (or (company-explicit-action-p)
+           (>= (or (cdr-safe prefix) (length prefix))
+               company-minimum-prefix-length))
+       (stringp (or (car-safe prefix) prefix))))
 
 (defun company--continue ()
   (when (company-call-backend 'no-cache company-prefix)
@@ -920,8 +925,10 @@ keymap during active completions (`company-active-map'):
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (c (when (and (company--good-prefix-p new-prefix)
+                       (setq new-prefix (or (car-safe new-prefix) new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
+              (setq new-prefix (or (car-safe new-prefix) new-prefix))
               (company-calculate-candidates new-prefix))))
     (or (cond
          ((eq c t)
@@ -953,7 +960,8 @@ keymap during active completions (`company-active-map'):
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
         (when (company--good-prefix-p prefix)
-          (setq company-backend backend
+          (setq prefix (or (car-safe prefix) prefix)
+                company-backend backend
                 c (company-calculate-candidates prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
           (when (consp c)
