@@ -1355,7 +1355,7 @@ To show the number next to the candidates in some back-ends, enable
     (erase-buffer)
     (current-buffer)))
 
-(defmacro company-electric (&rest body)
+(defmacro company--electric-do (&rest body)
   (declare (indent 0) (debug t))
   `(when (company-manual-begin)
      (save-window-excursion
@@ -1375,7 +1375,7 @@ To show the number next to the candidates in some back-ends, enable
 (defun company-show-doc-buffer ()
   "Temporarily show a buffer with the complete documentation for the selection."
   (interactive)
-  (company-electric
+  (company--electric-do
     (let ((selected (nth company-selection company-candidates)))
       (display-buffer (or (company-call-backend 'doc-buffer selected)
                           (error "No documentation available")) t))))
@@ -1384,7 +1384,7 @@ To show the number next to the candidates in some back-ends, enable
 (defun company-show-location ()
   "Temporarily display a buffer showing the selected candidate in context."
   (interactive)
-  (company-electric
+  (company--electric-do
     (let* ((selected (nth company-selection company-candidates))
            (location (company-call-backend 'location selected))
            (pos (or (cdr location) (error "No location available")))
