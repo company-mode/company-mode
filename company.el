@@ -1417,7 +1417,8 @@ To show the number next to the candidates in some back-ends, enable
   (remove-hook 'company-completion-finished-hook company-callback t)
   (remove-hook 'company-completion-cancelled-hook 'company-remove-callback t)
   (remove-hook 'company-completion-finished-hook 'company-remove-callback t)
-  (set-marker company-begin-with-marker nil))
+  (when company-begin-with-marker
+    (set-marker company-begin-with-marker nil)))
 
 (defun company-begin-backend (backend &optional callback)
   "Start a completion at point using BACKEND."
