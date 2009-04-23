@@ -92,8 +92,10 @@ Symbols are chained by \".\" or \"->\"."
                   (semantic-active-p)
                   (not (company-in-string-or-comment))
                   (or (company-semantic--grab) 'stop)))
-    ('candidates (or (company-semantic-completions arg)
-                     (company-semantic-completions-raw arg)))
+    ('candidates (if (and (equal arg "")
+                          (not (looking-back "->\\|\\.")))
+                     (company-semantic-completions-raw arg)
+                   (company-semantic-completions arg)))
     ('meta (funcall company-semantic-metadata-function
                     (semantic-analyze-find-tag arg)))
     ('doc-buffer (company-semantic-doc-buffer (semantic-analyze-find-tag arg)))
