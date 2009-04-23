@@ -45,7 +45,7 @@ Functions are offered for completion only after ' and \(."
 
 (defvar company-elisp-binding-regexp
   (concat "([ \t\n]*\\_<" (regexp-opt '("let" "defun" "defmacro" "defsubst"
-                                        "lambda" "lexical-let"))
+                                        "lambda" "lexical-let" "flet" "labels"))
           "\\*?")
   "Regular expression matching sexps containing variable bindings.")
 
