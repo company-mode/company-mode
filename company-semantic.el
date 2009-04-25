@@ -26,6 +26,8 @@
   :group 'company
   :type 'function)
 
+(defvar company-semantic-modes '(c-mode c++-mode jde-mode java-mode))
+
 (defun company-semantic-doc-or-summary (tag)
   (or (semantic-documentation-for-tag tag)
       (funcall semantic-idle-summary-function tag nil t)))
@@ -88,7 +90,7 @@ Symbols are chained by \".\" or \"->\"."
   (interactive (list 'interactive))
   (case command
     ('interactive (company-begin-backend 'company-semantic))
-    ('prefix (and (memq major-mode '(c-mode c++-mode jde-mode java-mode))
+    ('prefix (and (memq major-mode company-semantic-modes)
                   (semantic-active-p)
                   (not (company-in-string-or-comment))
                   (or (company-semantic--grab) 'stop)))
