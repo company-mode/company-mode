@@ -2,7 +2,7 @@
 ;;
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
-;; This file is part of company 0.4.1.
+;; This file is part of company 0.4.2.
 ;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
