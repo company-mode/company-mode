@@ -65,6 +65,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-pysmell' back-end.
+;;
 ;; 2009-04-25 (0.4.2)
 ;;    In C modes . and -> now count towards `company-minimum-prefix-length'.
 ;;    Reverted default front-end back to `company-preview-if-just-one-frontend'.
@@ -276,6 +278,7 @@ If this many lines are not available, prefer to display the tooltip above."
     (company-keywords . "Programming language keywords")
     (company-nxml . "nxml")
     (company-oddmuse . "Oddmuse")
+    (company-pysmell . "PySmell")
     (company-semantic . "CEDET Semantic")
     (company-tempo . "Tempo templates")
     (company-xcode . "Xcode")))
@@ -292,7 +295,7 @@ If this many lines are not available, prefer to display the tooltip above."
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-eclim company-semantic company-xcode
                               (company-gtags company-etags company-dabbrev-code
-                               company-keywords)
+                               company-pysmell company-keywords)
                               company-oddmuse company-files company-dabbrev)
   "*The list of active back-ends (completion engines).
 Each list elements can itself be a list of back-ends.  In that case their
