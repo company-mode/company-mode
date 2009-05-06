@@ -966,8 +966,9 @@ keymap during active completions (`company-active-map'):
                 c (company-calculate-candidates prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
           (when (consp c)
-            (setq company-prefix prefix
-                  company-lighter (concat " " (symbol-name backend)))
+            (setq company-prefix prefix)
+            (when (symbolp backend)
+              (setq company-lighter (concat " " (symbol-name backend))))
             (company-update-candidates c)
             (run-hook-with-args 'company-completion-started-hook
                                 (company-explicit-action-p))
