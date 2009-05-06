@@ -67,5 +67,3 @@
 
 (provide 'company-gtags)
 ;;; company-gtags.el ends here
-
-
