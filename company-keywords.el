@@ -20,9 +20,13 @@
 (require 'company)
 (eval-when-compile (require 'cl))
 
+(defun company-keywords-upper-lower (&rest lst)
+  ;; Upcase order is different for _.
+  (nconc (sort (mapcar 'upcase lst) 'string<) lst))
+
 (defvar company-keywords-alist
   ;; Please contribute corrections or additions.
-  '((c++-mode
+  `((c++-mode
      "asm" "auto" "bool" "break" "case" "catch" "char" "class" "const"
      "const_cast" "continue" "default" "delete" "do" "double" "dynamic_cast"
      "else" "enum" "explicit" "export" "extern" "false" "float" "for" "friend"
@@ -63,6 +67,69 @@
      "super" "switch" "synchronized" "template" "this" "throw" "true" "try"
      "typedef" "typeid" "typeof" "ubyte" "ucent" "uint" "ulong" "union"
      "unittest" "ushort" "version" "void" "volatile" "wchar" "while" "with")
+    (f90-mode .
+     ;; from f90.el
+     ;; ".AND." ".GE." ".GT." ".LT." ".LE." ".NE." ".OR." ".TRUE." ".FALSE."
+     ,(company-keywords-upper-lower
+      "abs" "abstract" "achar" "acos" "adjustl" "adjustr" "aimag" "aint"
+      "align" "all" "all_prefix" "all_scatter" "all_suffix" "allocatable"
+      "allocate" "allocated" "and" "anint" "any" "any_prefix" "any_scatter"
+      "any_suffix" "asin" "assign" "assignment" "associate" "associated"
+      "asynchronous" "atan" "atan2" "backspace" "bind" "bit_size" "block"
+      "btest" "c_alert" "c_associated" "c_backspace" "c_bool"
+      "c_carriage_return" "c_char" "c_double" "c_double_complex" "c_f_pointer"
+      "c_f_procpointer" "c_float" "c_float_complex" "c_form_feed" "c_funloc"
+      "c_funptr" "c_horizontal_tab" "c_int" "c_int16_t" "c_int32_t" "c_int64_t"
+      "c_int8_t" "c_int_fast16_t" "c_int_fast32_t" "c_int_fast64_t"
+      "c_int_fast8_t" "c_int_least16_t" "c_int_least32_t" "c_int_least64_t"
+      "c_int_least8_t" "c_intmax_t" "c_intptr_t" "c_loc" "c_long"
+      "c_long_double" "c_long_double_complex" "c_long_long" "c_new_line"
+      "c_null_char" "c_null_funptr" "c_null_ptr" "c_ptr" "c_short"
+      "c_signed_char" "c_size_t" "c_vertical_tab" "call" "case" "ceiling"
+      "char" "character" "character_storage_size" "class" "close" "cmplx"
+      "command_argument_count" "common" "complex" "conjg" "contains" "continue"
+      "copy_prefix" "copy_scatter" "copy_suffix" "cos" "cosh" "count"
+      "count_prefix" "count_scatter" "count_suffix" "cpu_time" "cshift"
+      "cycle" "cyclic" "data" "date_and_time" "dble" "deallocate" "deferred"
+      "digits" "dim" "dimension" "distribute" "do" "dot_product" "double"
+      "dprod" "dynamic" "elemental" "else" "elseif" "elsewhere" "end" "enddo"
+      "endfile" "endif" "entry" "enum" "enumerator" "eoshift" "epsilon" "eq"
+      "equivalence" "eqv" "error_unit" "exit" "exp" "exponent" "extends"
+      "extends_type_of" "external" "extrinsic" "false" "file_storage_size"
+      "final" "floor" "flush" "forall" "format" "fraction" "function" "ge"
+      "generic" "get_command" "get_command_argument" "get_environment_variable"
+      "goto" "grade_down" "grade_up" "gt" "hpf_alignment" "hpf_distribution"
+      "hpf_template" "huge" "iachar" "iall" "iall_prefix" "iall_scatter"
+      "iall_suffix" "iand" "iany" "iany_prefix" "iany_scatter" "iany_suffix"
+      "ibclr" "ibits" "ibset" "ichar" "ieee_arithmetic" "ieee_exceptions"
+      "ieee_features" "ieee_get_underflow_mode" "ieee_set_underflow_mode"
+      "ieee_support_underflow_control" "ieor" "if" "ilen" "implicit"
+      "import" "include" "independent" "index" "inherit" "input_unit"
+      "inquire" "int" "integer" "intent" "interface" "intrinsic" "ior"
+      "iostat_end" "iostat_eor" "iparity" "iparity_prefix" "iparity_scatter"
+      "iparity_suffix" "ishft" "ishftc" "iso_c_binding" "iso_fortran_env"
+      "kind" "lbound" "le" "leadz" "len" "len_trim" "lge" "lgt" "lle" "llt"
+      "log" "log10" "logical" "lt" "matmul" "max" "maxexponent" "maxloc"
+      "maxval" "maxval_prefix" "maxval_scatter" "maxval_suffix" "merge"
+      "min" "minexponent" "minloc" "minval" "minval_prefix" "minval_scatter"
+      "minval_suffix" "mod" "module" "modulo" "move_alloc" "mvbits" "namelist"
+      "ne" "nearest" "neqv" "new" "new_line" "nint" "non_intrinsic"
+      "non_overridable" "none" "nopass" "not" "null" "nullify"
+      "number_of_processors" "numeric_storage_size" "only" "onto" "open"
+      "operator" "optional" "or" "output_unit" "pack" "parameter" "parity"
+      "parity_prefix" "parity_scatter" "parity_suffix" "pass" "pause"
+      "pointer" "popcnt" "poppar" "precision" "present" "print" "private"
+      "procedure" "processors" "processors_shape" "product" "product_prefix"
+      "product_scatter" "product_suffix" "program" "protected" "public"
+      "pure" "radix" "random_number" "random_seed" "range" "read" "real"
+      "realign" "recursive" "redistribute" "repeat" "reshape" "result"
+      "return" "rewind" "rrspacing" "same_type_as" "save" "scale" "scan"
+      "select" "selected_char_kind" "selected_int_kind" "selected_real_kind"
+      "sequence" "set_exponent" "shape" "sign" "sin" "sinh" "size" "spacing"
+      "spread" "sqrt" "stop" "subroutine" "sum" "sum_prefix" "sum_scatter"
+      "sum_suffix" "system_clock" "tan" "tanh" "target" "template" "then"
+      "tiny" "transfer" "transpose" "trim" "true" "type" "ubound" "unpack"
+      "use" "value" "verify" "volatile" "wait" "where" "while" "with" "write"))
     (java-mode
      "abstract" "assert" "boolean" "break" "byte" "case" "catch" "char" "class"
      "continue" "default" "do" "double" "else" "enum" "extends" "final"
