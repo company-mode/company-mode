@@ -41,6 +41,7 @@
            (when (setq file (company-grab-line regexp 1))
              (return file)))
          (setq dir (file-name-directory file))
+         (not (string-match "//" dir))
          (file-exists-p dir)
          (file-name-all-completions (file-name-nondirectory file) dir)
          file)))
