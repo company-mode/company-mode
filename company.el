@@ -65,7 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
-;;    Added `company-pysmell' back-end.
+;;    Added `company-ropemacs' and `company-pysmell' back-ends.
 ;;
 ;; 2009-04-25 (0.4.2)
 ;;    In C modes . and -> now count towards `company-minimum-prefix-length'.
@@ -279,6 +279,7 @@ If this many lines are not available, prefer to display the tooltip above."
     (company-nxml . "nxml")
     (company-oddmuse . "Oddmuse")
     (company-pysmell . "PySmell")
+    (company-ropemacs . "ropemacs")
     (company-semantic . "CEDET Semantic")
     (company-tempo . "Tempo templates")
     (company-xcode . "Xcode")))
@@ -294,6 +295,7 @@ If this many lines are not available, prefer to display the tooltip above."
 
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-eclim company-semantic company-xcode
+                              company-ropemacs
                               (company-gtags company-etags company-dabbrev-code
                                company-pysmell company-keywords)
                               company-oddmuse company-files company-dabbrev)
