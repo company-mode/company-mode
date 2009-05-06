@@ -30,7 +30,16 @@
   'company-gtags-gnu-global-program-name
   'company-gtags-executable)
 
+(defvar company-gtags--tags-available-p 'unknown)
+(make-variable-buffer-local 'company-gtags--tags-available-p)
+
 (defvar company-gtags-modes '(c-mode c++-mode jde-mode java-mode php-mode))
+
+(defun company-gtags--tags-available-p ()
+  (if (eq company-gtags--tags-available-p 'unknown)
+      (setq company-gtags--tags-available-p
+            (company-locate-dominating-file buffer-file-name "GTAGS"))
+    company-gtags--tags-available-p))
 
 (defun company-gtags-fetch-tags (prefix)
   (with-temp-buffer
@@ -60,6 +69,7 @@
     ('prefix (and company-gtags-executable
                   (memq major-mode company-gtags-modes)
                   (not (company-in-string-or-comment))
+                  (company-gtags--tags-available-p)
                   (or (company-grab-symbol) 'stop)))
     ('candidates (company-gtags-fetch-tags arg))
     ('sorted t)
