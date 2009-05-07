@@ -62,12 +62,14 @@ eclim can only complete correctly when the buffer has been saved."
     lines))
 
 (defun company-eclim--call-process (&rest args)
-  (let ((coding-system-for-read 'utf-8))
+  (let ((coding-system-for-read 'utf-8)
+        res)
     (with-temp-buffer
-      (if (= 0 (apply 'call-process company-eclim-executable nil t nil
-                      "-command" args))
+      (if (= 0 (setq res (apply 'call-process company-eclim-executable nil t nil
+                                "-command" args)))
           (company-eclim--buffer-lines)
-        (message "Company-eclim command failed")
+        (message "Company-eclim command failed with error %d:\n%s" res
+                 (buffer-substring (point-min) (point-max)))
         nil))))
 
 (defun company-eclim--project-list ()
