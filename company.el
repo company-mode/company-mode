@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Idle completion no longer interrupts multi-key command input.
 ;;    Added `company-ropemacs' and `company-pysmell' back-ends.
 ;;
 ;; 2009-04-25 (0.4.2)
@@ -745,6 +746,9 @@ keymap during active completions (`company-active-map'):
 (defun company--should-complete ()
   (and (not (or buffer-read-only overriding-terminal-local-map
                 overriding-local-map))
+       ;; Check if in the middle of entering a key combination.
+       (or (equal (this-command-keys-vector) [])
+           (not (keymapp (key-binding (this-command-keys-vector)))))
        (eq company-idle-delay t)
        (or (eq t company-begin-commands)
            (memq this-command company-begin-commands)
