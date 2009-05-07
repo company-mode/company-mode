@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 0.4.2
+;; Version: 0.4.3
 ;; Keywords: abbrev, convenience, matchis
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2009-05-07 (0.4.3)
 ;;    Added `company-other-backend'.
 ;;    Idle completion no longer interrupts multi-key command input.
 ;;    Added `company-ropemacs' and `company-pysmell' back-ends.
