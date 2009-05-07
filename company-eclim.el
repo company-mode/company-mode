@@ -80,7 +80,8 @@ eclim can only complete correctly when the buffer has been saved."
   (if (eq company-eclim--project-dir 'unknown)
       (setq company-eclim--project-dir
             (directory-file-name
-             (company-locate-dominating-file buffer-file-name ".project")))
+             (expand-file-name
+              (company-locate-dominating-file buffer-file-name ".project"))))
     company-eclim--project-dir))
 
 (defun company-eclim--project-name ()
