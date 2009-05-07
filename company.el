@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-other-backend'.
 ;;    Idle completion no longer interrupts multi-key command input.
 ;;    Added `company-ropemacs' and `company-pysmell' back-ends.
 ;;
@@ -132,6 +133,7 @@
 (add-to-list 'debug-ignored-errors "^Company not ")
 (add-to-list 'debug-ignored-errors "^No candidate number ")
 (add-to-list 'debug-ignored-errors "^Cannot complete at point$")
+(add-to-list 'debug-ignored-errors "^No other back-end$")
 
 (defgroup company nil
   "Extensible inline text completion mechanism"
@@ -304,6 +306,9 @@ If this many lines are not available, prefer to display the tooltip above."
 Each list elements can itself be a list of back-ends.  In that case their
 completions are merged.  Otherwise only the first matching back-end returns
 results.
+
+`company-begin-backend' can be used to start a specific back-end,
+`company-other-backend' will skip to the next matching back-end in the list.
 
 Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
@@ -864,6 +869,23 @@ keymap during active completions (`company-active-map'):
   (interactive)
   (setq company--explicit-action t)
   (company-auto-begin))
+
+(defun company-other-backend (&optional backward)
+  (interactive (list current-prefix-arg))
+  (company-assert-enabled)
+  (if company-backend
+      (let* ((after (cdr (member company-backend company-backends)))
+             (before (cdr (member company-backend (reverse company-backends))))
+             (next (if backward
+                       (append before (reverse after))
+                     (append after (reverse before)))))
+        (company-cancel)
+        (dolist (backend next)
+          (when (ignore-errors (company-begin-backend backend))
+            (return t))))
+    (company-manual-begin))
+  (unless company-candidates
+    (error "No other back-end")))
 
 (defun company-require-match-p ()
   (let ((backend-value (company-call-backend 'require-match)))
