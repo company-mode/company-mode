@@ -60,7 +60,7 @@
 
 (defun company-nxml-tag (command &optional arg &rest ignored)
   (case command
-    ('prefix (and (eq major-mode 'nxml-mode)
+    ('prefix (and (derived-mode-p 'nxml-mode)
                   rng-validate-mode
                   (company-grab company-nxml-in-tag-name-regexp 1)))
     ('candidates (company-nxml-prepared
@@ -70,7 +70,7 @@
 
 (defun company-nxml-attribute (command &optional arg &rest ignored)
   (case command
-    ('prefix (and (eq major-mode 'nxml-mode)
+    ('prefix (and (derived-mode-p 'nxml-mode)
                   rng-validate-mode
                   (memq (char-after) '(?\  ?\t ?\n)) ;; outside word
                   (company-grab rng-in-attribute-regex 1)))
@@ -83,7 +83,7 @@
 
 (defun company-nxml-attribute-value (command &optional arg &rest ignored)
   (case command
-    ('prefix (and (eq major-mode 'nxml-mode)
+    ('prefix (and (derived-mode-p 'nxml-mode)
                   rng-validate-mode
                   (and (memq (char-after) '(?' ?\" ?\  ?\t ?\n)) ;; outside word
                        (looking-back company-nxml-in-attribute-value-regexp)
