@@ -65,6 +65,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added compatibility for CEDET in Emacs 23.2.
+;;
 ;; 2009-05-07 (0.4.3)
 ;;    Added `company-other-backend'.
 ;;    Idle completion no longer interrupts multi-key command input.
