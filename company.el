@@ -1843,7 +1843,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defvar company-echo-timer nil)
 
-(defvar company-echo-delay .1)
+(defvar company-echo-delay .01)
 
 (defun company-echo-show (&optional getter)
   (when getter
