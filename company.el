@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    The semantic back-end now shows meta information for local symbols.
 ;;    Added compatibility for CEDET in Emacs 23.2.
 ;;
 ;; 2009-05-07 (0.4.3)

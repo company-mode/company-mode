@@ -29,6 +29,9 @@
 
 (defvar company-semantic-modes '(c-mode c++-mode jde-mode java-mode))
 
+(defvar company-semantic--current-tags nil
+  "Tags for the current context")
+
 (defun company-semantic-doc-or-summary (tag)
   (or (semantic-documentation-for-tag tag)
       (funcall semantic-idle-summary-function tag nil t)))
@@ -59,14 +62,16 @@
   (ignore-errors
     (let ((completion-ignore-case nil)
           (context (semantic-analyze-current-context)))
-      (all-completions prefix (semantic-ia-get-completions context (point))))))
+      (setq company-semantic--current-tags
+            (semantic-ia-get-completions context (point)))
+      (all-completions prefix company-semantic--current-tags))))
 
 (defun company-semantic-completions-raw (prefix)
-  (let (candidates)
-    (dolist (tag (semantic-analyze-find-tags-by-prefix prefix))
-      (unless (eq (semantic-tag-class tag) 'include)
-        (push (semantic-tag-name tag) candidates)))
-    (delete "" candidates)))
+  (setq company-semantic--current-tags nil)
+  (dolist (tag (semantic-analyze-find-tags-by-prefix prefix))
+    (unless (eq (semantic-tag-class tag) 'include)
+      (push tag company-semantic--current-tags)))
+  (delete "" (mapcar 'semantic-tag-name company-semantic--current-tags)))
 
 (defun company-semantic--pre-prefix-length (prefix-length)
   "Sum up the length of all chained symbols before POS.
@@ -100,11 +105,12 @@ Symbols are chained by \".\" or \"->\"."
                      (company-semantic-completions-raw arg)
                    (company-semantic-completions arg)))
     ('meta (funcall company-semantic-metadata-function
-                    (semantic-analyze-find-tag arg)))
-    ('doc-buffer (company-semantic-doc-buffer (semantic-analyze-find-tag arg)))
+                    (assoc arg company-semantic--current-tags)))
+    ('doc-buffer (company-semantic-doc-buffer
+                  (assoc arg company-semantic--current-tags)))
     ;; because "" is an empty context and doesn't return local variables
     ('no-cache (equal arg ""))
-    ('location (let ((tag (semantic-analyze-find-tag arg)))
+    ('location (let ((tag (assoc arg company-semantic--current-tags)))
                  (when (buffer-live-p (semantic-tag-buffer tag))
                    (cons (semantic-tag-buffer tag)
                          (semantic-tag-start tag)))))))
