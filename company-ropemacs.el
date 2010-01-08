@@ -45,7 +45,7 @@
     ('interactive (company-begin-backend 'company-ropemacs))
     ('prefix (and (derived-mode-p 'python-mode)
                   (not (company-in-string-or-comment))
-                  (company-pysmell--grab-symbol)))
+                  (company-ropemacs--grab-symbol)))
     ('candidates (mapcar (lambda (element) (concat arg element))
                          (rope-completions)))))
 
