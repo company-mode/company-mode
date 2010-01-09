@@ -1038,7 +1038,10 @@ keymap during active completions (`company-active-map'):
        (set-buffer-modified-p nil))
   (when company-prefix
     (if (stringp result)
-        (run-hook-with-args 'company-completion-finished-hook result)
+        (progn
+          (company-call-backend 'pre-completion result)
+          (run-hook-with-args 'company-completion-finished-hook result)
+          (company-call-backend 'post-completion result))
       (run-hook-with-args 'company-completion-cancelled-hook result)))
   (setq company-added-newline nil
         company-backend nil
