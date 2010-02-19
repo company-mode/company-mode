@@ -164,6 +164,18 @@ Prefix files (-include ...) can be selected with
          prefix
          (company-clang--build-complete-args (- (point) (length prefix)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defconst company-clang-required-version "1.1")
+
+(defsubst company-clang-version ()
+  "Return the version of `company-clang-executable'."
+  (with-temp-buffer
+    (call-process company-clang-executable nil t nil "--version")
+    (goto-char (point-min))
+    (when (re-search-forward "\\`clang version \\([0-9.]+\\)" nil t)
+      (match-string-no-properties 1))))
+
 (defun company-clang (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for clang.
 Clang is a parser for C and ObjC.  The unreleased development version of
@@ -179,6 +191,11 @@ Completions only work correctly when the buffer has been saved.
   (interactive (list 'interactive))
   (case command
         ('interactive (company-begin-backend 'company-clang))
+        ('init (unless company-clang-executable
+                 (error "Company found no clang executable"))
+               (when (version< (company-clang-version)
+                               company-clang-required-version)
+                 (error "Company requires clang version 1.1")))
         ('prefix (and (memq major-mode company-clang-modes)
                       buffer-file-name
                       company-clang-executable
