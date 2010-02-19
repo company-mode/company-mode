@@ -527,14 +527,17 @@ The work-around consists of adding a newline.")
 
   (if (or (symbolp backend)
           (functionp backend))
-      (if (ignore-errors (funcall backend 'init) t)
-          (put backend 'company-init t)
-        (put backend 'company-init 'failed)
-        (unless (memq backend company--disabled-backends)
-          (message "Company back-end '%s' could not be initialized"
-                   backend)
-          (push backend company--disabled-backends))
-        nil)
+      (condition-case err
+          (progn
+            (funcall backend 'init)
+            (put backend 'company-init t))
+        (error
+         (put backend 'company-init 'failed)
+         (unless (memq backend company--disabled-backends)
+           (message "Company back-end '%s' could not be initialized:\n%s"
+                    backend (error-message-string err)))
+         (push backend company--disabled-backends)
+         nil))
     (mapc 'company-init-backend backend)))
 
 (defvar company-default-lighter " company")
