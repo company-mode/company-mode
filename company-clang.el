@@ -176,6 +176,19 @@ Prefix files (-include ...) can be selected with
     (when (re-search-forward "\\`clang version \\([0-9.]+\\)" nil t)
       (match-string-no-properties 1))))
 
+(defun company-clang-objc-templatify (selector)
+  (let* ((end (point))
+         (beg (- (point) (length selector)))
+         (templ (company-template-declare-template beg end)))
+    (save-excursion
+      (goto-char beg)
+      (while (search-forward ":" end t)
+        (replace-match ":  ")
+        (incf end 2)
+        (company-template-add-field templ (1- (match-end 0)) "<arg>"))
+      (delete-char -1))
+    (company-template-move-to-first templ)))
+
 (defun company-clang (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for clang.
 Clang is a parser for C and ObjC.  The unreleased development version of
@@ -201,7 +214,10 @@ Completions only work correctly when the buffer has been saved.
                       company-clang-executable
                       (not (company-in-string-or-comment))
                       (or (company-grab-symbol) 'stop)))
-        ('candidates (company-clang--candidates arg))))
+        ('candidates (company-clang--candidates arg))
+        ('post-completion (and (derived-mode-p 'objc-mode)
+                               (string-match ":" arg)
+                               (company-clang-objc-templatify arg)))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here

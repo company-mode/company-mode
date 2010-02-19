@@ -68,6 +68,8 @@
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
 ;;    Added `company-with-candidate-inserted' macro.
 ;;    Added `company-clang' back-end.
+;;    Added new mechanism for non-consecutive insertion.
+;;      (So far only used by clang for ObjC.)
 ;;    The semantic back-end now shows meta information for local symbols.
 ;;    Added compatibility for CEDET in Emacs 23.2.
 ;;
@@ -1977,6 +1979,10 @@ Returns a negative number if the tooltip should be displayed above point."
     ('pre-command (company-echo-show-soon))
     ('post-command (company-echo-show-soon 'company-fetch-metadata))
     ('hide (company-echo-hide))))
+
+;; templates ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(autoload 'company-template-declare-template "company-template")
 
 (provide 'company)
 ;;; company.el ends here
