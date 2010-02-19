@@ -1950,5 +1950,9 @@ Returns a negative number if the tooltip should be displayed above point."
     ('post-command (company-echo-show-soon 'company-fetch-metadata))
     ('hide (company-echo-hide))))
 
+;; templates ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(autoload 'company-template-declare-template "company-template")
+
 (provide 'company)
 ;;; company.el ends here
