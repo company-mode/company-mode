@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-clang' back-end.
 ;;    The semantic back-end now shows meta information for local symbols.
 ;;    Added compatibility for CEDET in Emacs 23.2.
 ;;
@@ -273,6 +274,7 @@ If this many lines are not available, prefer to display the tooltip above."
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
+    (company-clang . "clang")
     (company-css . "CSS")
     (company-dabbrev . "dabbrev for plain text")
     (company-dabbrev-code . "dabbrev for code")
@@ -301,8 +303,8 @@ If this many lines are not available, prefer to display the tooltip above."
                 (return t))))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-eclim company-semantic company-xcode
-                              company-ropemacs
+                              company-eclim company-semantic company-clang
+                              company-xcode company-ropemacs
                               (company-gtags company-etags company-dabbrev-code
                                company-pysmell company-keywords)
                               company-oddmuse company-files company-dabbrev)
@@ -525,14 +527,17 @@ The work-around consists of adding a newline.")
 
   (if (or (symbolp backend)
           (functionp backend))
-      (if (ignore-errors (funcall backend 'init) t)
-          (put backend 'company-init t)
-        (put backend 'company-init 'failed)
-        (unless (memq backend company--disabled-backends)
-          (message "Company back-end '%s' could not be initialized"
-                   backend)
-          (push backend company--disabled-backends))
-        nil)
+      (condition-case err
+          (progn
+            (funcall backend 'init)
+            (put backend 'company-init t))
+        (error
+         (put backend 'company-init 'failed)
+         (unless (memq backend company--disabled-backends)
+           (message "Company back-end '%s' could not be initialized:\n%s"
+                    backend (error-message-string err)))
+         (push backend company--disabled-backends)
+         nil))
     (mapc 'company-init-backend backend)))
 
 (defvar company-default-lighter " company")
