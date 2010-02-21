@@ -1005,7 +1005,9 @@ keymap during active completions (`company-active-map'):
                 company-backend backend
                 c (company-calculate-candidates prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
-          (when (consp c)
+          (if (not (consp c))
+              (when company--explicit-action
+                (message "No completion found"))
             (setq company-prefix prefix)
             (when (symbolp backend)
               (setq company-lighter (concat " " (symbol-name backend))))
