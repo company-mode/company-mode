@@ -156,7 +156,7 @@ Prefix files (-include ...) can be selected with
 (defun company-clang--candidates (prefix)
   (and company-clang-auto-save
        (buffer-modified-p)
-       (save-buffer))
+       (basic-save-buffer))
   (when (null company-clang--prefix)
     (company-clang-set-prefix (or (funcall company-clang-prefix-guesser)
                                   'none)))
