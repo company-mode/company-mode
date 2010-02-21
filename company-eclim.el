@@ -98,7 +98,7 @@ eclim can only complete correctly when the buffer has been saved."
         (project-name (company-eclim--project-name)))
     (when company-eclim-auto-save
       (when (buffer-modified-p)
-        (save-buffer))
+        (basic-save-buffer))
       ;; FIXME: Sometimes this isn't finished when we complete.
       (company-eclim--call-process "java_src_update"
                                   "-p" (company-eclim--project-name)
