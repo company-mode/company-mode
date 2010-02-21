@@ -67,8 +67,9 @@ buffer automatically."
                         (all-completions arg (tags-completion-table)))))
     ('location (let ((tags-table-list (company-etags-buffer-table)))
                  (when (fboundp 'find-tag-noselect)
-                   (let ((buffer (find-tag-noselect arg)))
-                     (cons buffer (with-current-buffer buffer (point)))))))
+                   (save-excursion
+                     (let ((buffer (find-tag-noselect arg)))
+                       (cons buffer (with-current-buffer buffer (point))))))))
     ('sorted t)))
 
 (provide 'company-etags)
