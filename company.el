@@ -4,7 +4,7 @@
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
 ;; Version: 0.4.3
-;; Keywords: abbrev, convenience, matchis
+;; Keywords: abbrev, convenience, matching
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
 ;;
@@ -148,7 +148,7 @@
   "Extensible inline text completion mechanism"
   :group 'abbrev
   :group 'convenience
-  :group 'maching)
+  :group 'matching)
 
 (defface company-tooltip
   '((t :background "yellow"
