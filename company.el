@@ -3,7 +3,7 @@
 ;; Copyright (C) 2009-2010 Nikolaj Schumacher
 ;;
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
-;; Version: 0.4.3
+;; Version: 0.5
 ;; Keywords: abbrev, convenience, matching
 ;; URL: http://nschum.de/src/emacs/company/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
 ;;    Added `company-with-candidate-inserted' macro.
 ;;    Added `company-clang' back-end.
