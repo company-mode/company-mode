@@ -35,7 +35,7 @@
   :group 'company
   :type 'file)
 
-(defcustom company-eclim-auto-save nil
+(defcustom company-eclim-auto-save t
   "*Determines whether to save the buffer when retrieving completions.
 eclim can only complete correctly when the buffer has been saved."
   :group 'company
