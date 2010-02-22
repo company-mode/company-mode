@@ -1448,9 +1448,12 @@ To show the number next to the candidates in some back-ends, enable
   "Temporarily show a buffer with the complete documentation for the selection."
   (interactive)
   (company--electric-do
-    (let ((selected (nth company-selection company-candidates)))
-      (display-buffer (or (company-call-backend 'doc-buffer selected)
-                          (error "No documentation available")) t))))
+    (let* ((selected (nth company-selection company-candidates))
+           (doc-buffer (or (company-call-backend 'doc-buffer selected)
+                           (error "No documentation available"))))
+      (with-current-buffer doc-buffer
+        (goto-char (point-min)))
+      (display-buffer doc-buffer t))))
 (put 'company-show-doc-buffer 'company-keep t)
 
 (defun company-show-location ()
