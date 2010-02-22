@@ -1466,9 +1466,12 @@ To show the number next to the candidates in some back-ends, enable
            (buffer (or (and (bufferp (car location)) (car location))
                        (find-file-noselect (car location) t))))
       (with-selected-window (display-buffer buffer t)
-        (if (bufferp (car location))
-            (goto-char pos)
-          (goto-line pos))
+        (save-restriction
+          (widen)
+          (if (bufferp (car location))
+              (goto-char pos)
+            (goto-char (point-min))
+            (forward-line (1- pos))))
         (set-window-start nil (point))))))
 (put 'company-show-location 'company-keep t)
 
