@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-with-candidate-inserted' macro.
 ;;    Added `company-clang' back-end.
 ;;    The semantic back-end now shows meta information for local symbols.
 ;;    Added compatibility for CEDET in Emacs 23.2.
@@ -747,6 +748,19 @@ keymap during active completions (`company-active-map'):
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
 
+(defmacro company-with-candidate-inserted (candidate &rest body)
+  "Evaluate BODY with CANDIDATE temporarily inserted.
+This is a tool for back-ends that need candidates inserted before they
+can retrieve meta-data for them."
+  (declare (indent 1))
+  `(let ((inhibit-modification-hooks t)
+         (inhibit-point-motion-hooks t)
+         (modified-p (buffer-modified-p)))
+     (insert (company-strip-prefix ,candidate))
+     (unwind-protect
+         (progn ,@body)
+       (delete-region company-point (point)))))
+
 (defun company-explicit-action-p ()
   "Return whether explicit completion action was taken by the user."
   (or company--explicit-action
@@ -1407,19 +1421,24 @@ To show the number next to the candidates in some back-ends, enable
     (erase-buffer)
     (current-buffer)))
 
+(defvar company--electric-commands
+  '(scroll-other-window scroll-other-window-down)
+  "List of Commands that won't break out of electric commands.")
+
 (defmacro company--electric-do (&rest body)
   (declare (indent 0) (debug t))
   `(when (company-manual-begin)
      (save-window-excursion
        (let ((height (window-height))
-             (row (company--row)))
+             (row (company--row))
+             cmd)
          ,@body
          (and (< (window-height) height)
               (< (- (window-height) row 2) company-tooltip-limit)
               (recenter (- (window-height) row 2)))
-         (while (eq 'scroll-other-window
-                    (key-binding (vector (list (read-event)))))
-           (call-interactively 'scroll-other-window))
+         (while (memq (setq cmd (key-binding (vector (list (read-event)))))
+                      company--electric-commands)
+           (call-interactively cmd))
          (when last-input-event
            (clear-this-command-keys t)
            (setq unread-command-events (list last-input-event)))))))
