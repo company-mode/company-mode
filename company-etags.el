@@ -1,6 +1,6 @@
 ;;; company-etags.el --- a company-mode completion back-end for etags
 ;;
-;; Copyright (C) 2009 Nikolaj Schumacher
+;; Copyright (C) 2009-2010 Nikolaj Schumacher
 ;;
 ;; This file is part of company 0.4.3.
 ;;
