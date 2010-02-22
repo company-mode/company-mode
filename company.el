@@ -65,6 +65,7 @@
 ;;
 ;;; Change Log:
 ;;
+;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
 ;;    Added `company-with-candidate-inserted' macro.
 ;;    Added `company-clang' back-end.
 ;;    The semantic back-end now shows meta information for local symbols.
