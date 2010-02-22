@@ -38,6 +38,21 @@
                   (skip-syntax-backward "w_"))
                 (- pos (point))))))))
 
+(defun company-ropemacs-doc-buffer (candidate)
+  "Return buffer with docstring of CANDIDATE if it is available."
+  (let ((doc (company-with-candidate-inserted candidate (rope-get-doc))))
+    (when doc
+      (with-current-buffer (company-doc-buffer)
+        (insert doc)
+        (current-buffer)))))
+
+(defun company-ropemacs-location (candidate)
+  "Return location of CANDIDATE in cons form (FILE . LINE) if it is available."
+  (let ((location (company-with-candidate-inserted candidate
+                    (rope-definition-location))))
+    (when location
+      (cons (elt location 0) (elt location 1)))))
+
 (defun company-ropemacs (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for ropemacs."
   (interactive (list 'interactive))
@@ -47,7 +62,9 @@
                   (not (company-in-string-or-comment))
                   (company-ropemacs--grab-symbol)))
     ('candidates (mapcar (lambda (element) (concat arg element))
-                         (rope-completions)))))
+                         (rope-completions)))
+    ('doc-buffer (company-ropemacs-doc-buffer arg))
+    ('location (company-ropemacs-location arg))))
 
 (provide 'company-ropemacs)
 ;;; company-ropemacs.el ends here
