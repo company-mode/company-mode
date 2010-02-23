@@ -18,8 +18,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'company)
-(or (require 'semantic-ia nil t)
-    (require 'semantic/ia))
+(or (require 'semantic-analyze nil t)
+    (require 'semantic/analyze))
 (eval-when-compile (require 'cl))
 
 (defcustom company-semantic-metadata-function 'company-semantic-summary-and-doc
@@ -34,7 +34,9 @@
 
 (defun company-semantic-doc-or-summary (tag)
   (or (semantic-documentation-for-tag tag)
-      (funcall semantic-idle-summary-function tag nil t)))
+      (and (require 'semantic-idle nil t)
+           (require 'semantic/idle nil t)
+           (funcall semantic-idle-summary-function tag nil t))))
 
 (defun company-semantic-summary-and-doc (tag)
   (let ((doc (semantic-documentation-for-tag tag))
@@ -63,7 +65,7 @@
     (let ((completion-ignore-case nil)
           (context (semantic-analyze-current-context)))
       (setq company-semantic--current-tags
-            (semantic-ia-get-completions context (point)))
+            (semantic-analyze-possible-completions context))
       (all-completions prefix company-semantic--current-tags))))
 
 (defun company-semantic-completions-raw (prefix)
