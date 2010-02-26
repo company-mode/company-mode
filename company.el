@@ -1882,10 +1882,6 @@ Returns a negative number if the tooltip should be displayed above point."
 (defvar company-echo-last-msg nil)
 (make-variable-buffer-local 'company-echo-last-msg)
 
-(defvar company-echo-timer nil)
-
-(defvar company-echo-delay .01)
-
 (defun company-echo-show (&optional getter)
   (when getter
     (setq company-echo-last-msg (funcall getter)))
@@ -1897,8 +1893,16 @@ Returns a negative number if the tooltip should be displayed above point."
 (defsubst company-echo-show-soon (&optional getter)
   (when company-echo-timer
     (cancel-timer company-echo-timer))
-  (setq company-echo-timer (run-with-timer company-echo-delay nil
-                                           'company-echo-show getter)))
+  (setq company-echo-timer (run-with-timer 0 nil 'company-echo-show getter)))
+
+(defsubst company-echo-show-when-idle (&optional getter)
+  (when (sit-for .01)
+    (company-echo-show getter)))
+
+(defsubst company-echo-show-when-not-busy (&optional getter)
+  "Run `company-echo-show' with arg GETTER once Emacs isn't busy."
+  (when (sit-for company-echo-delay)
+    (company-echo-show getter)))
 
 (defun company-echo-format ()
 
@@ -1956,8 +1960,6 @@ Returns a negative number if the tooltip should be displayed above point."
             "}")))
 
 (defun company-echo-hide ()
-  (when company-echo-timer
-    (cancel-timer company-echo-timer))
   (unless (equal company-echo-last-msg "")
     (setq company-echo-last-msg "")
     (company-echo-show)))
@@ -1965,22 +1967,19 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-echo-frontend (command)
   "A `company-mode' front-end showing the candidates in the echo area."
   (case command
-    ('pre-command (company-echo-show-soon))
     ('post-command (company-echo-show-soon 'company-echo-format))
     ('hide (company-echo-hide))))
 
 (defun company-echo-strip-common-frontend (command)
   "A `company-mode' front-end showing the candidates in the echo area."
   (case command
-    ('pre-command (company-echo-show-soon))
     ('post-command (company-echo-show-soon 'company-echo-strip-common-format))
     ('hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
   "A `company-mode' front-end showing the documentation in the echo area."
   (case command
-    ('pre-command (company-echo-show-soon))
-    ('post-command (company-echo-show-soon 'company-fetch-metadata))
+    ('post-command (company-echo-show-when-idle 'company-fetch-metadata))
     ('hide (company-echo-hide))))
 
 ;; templates ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
