@@ -18,8 +18,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'company)
-(eval-when-compile (require 'etags))
-(eval-when-compile (require 'cl))
+(require 'etags)
 
 (defcustom company-etags-use-main-table-list t
   "*Always search `tags-table-list' if set.
@@ -48,6 +47,15 @@ buffer automatically."
           (setq company-etags-buffer-table (company-etags-find-table))
         company-etags-buffer-table)))
 
+(defun company-etags--candidates (prefix)
+  (let ((tags-table-list (company-etags-buffer-table))
+        (completion-ignore-case nil))
+    (and (or tags-file-name tags-table-list)
+         (fboundp 'tags-completion-table)
+         (save-excursion
+           (visit-tags-table-buffer)
+           (all-completions prefix (tags-completion-table))))))
+
 ;;;###autoload
 (defun company-etags (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for etags."
@@ -56,17 +64,9 @@ buffer automatically."
     ('interactive (company-begin-backend 'company-etags))
     ('prefix (and (memq major-mode company-etags-modes)
                   (not (company-in-string-or-comment))
-                  (require 'etags nil t)
                   (company-etags-buffer-table)
                   (or (company-grab-symbol) 'stop)))
-    ('candidates (let ((tags-table-list (company-etags-buffer-table))
-                       (completion-ignore-case nil))
-                   (and (or tags-file-name tags-table-list)
-                        (fboundp 'tags-completion-table)
-                        tags-table-list
-                        (save-excursion
-                          (visit-tags-table-buffer)
-                          (all-completions arg (tags-completion-table))))))
+    ('candidates (company-etags--candidates arg))
     ('location (let ((tags-table-list (company-etags-buffer-table)))
                  (when (fboundp 'find-tag-noselect)
                    (save-excursion
