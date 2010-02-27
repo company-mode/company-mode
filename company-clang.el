@@ -145,7 +145,7 @@ Prefix files (-include ...) can be selected with
             (1+ (current-column)))))
 
 (defsubst company-clang--build-complete-args (pos)
-  (append '("-cc1" "-fsyntax-only")
+  (append '("-cc1" "-fsyntax-only" "-code-completion-macros")
           company-clang-arguments
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
