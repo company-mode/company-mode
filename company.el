@@ -65,6 +65,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Switching tags now works correctly in `company-etags'.
+;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
 ;;    Added `company-with-candidate-inserted' macro.

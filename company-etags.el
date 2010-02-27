@@ -64,7 +64,9 @@ buffer automatically."
                    (and (or tags-file-name tags-table-list)
                         (fboundp 'tags-completion-table)
                         tags-table-list
-                        (all-completions arg (tags-completion-table)))))
+                        (save-excursion
+                          (visit-tags-table-buffer)
+                          (all-completions arg (tags-completion-table))))))
     ('location (let ((tags-table-list (company-etags-buffer-table)))
                  (when (fboundp 'find-tag-noselect)
                    (save-excursion
