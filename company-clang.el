@@ -101,6 +101,7 @@ Prefix files (-include ...) can be selected with
   (goto-char (point-min))
   (let ((pattern (format company-clang--completion-pattern
                          (regexp-quote prefix)))
+        (case-fold-search nil)
         lines match)
     (while (re-search-forward pattern nil t)
       (setq match (match-string-no-properties 1))
