@@ -1038,9 +1038,8 @@ can retrieve meta-data for them."
         (return c)))))
 
 (defun company-begin ()
-  (setq company-candidates
-        (or (and company-candidates (company--continue))
-            (and (company--should-complete) (company--begin-new))))
+  (or (and company-candidates (company--continue))
+      (and (company--should-complete) (company--begin-new)))
   (when company-candidates
     (when (and company-end-of-buffer-workaround (eobp))
       (save-excursion (insert "\n"))
