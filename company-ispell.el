@@ -46,13 +46,13 @@ If nil, use `ispell-complete-word-dict'."
   "A `company-mode' completion back-end using ispell."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-ispell))
-    ('prefix (when (company-ispell-available)
-               (company-grab-word)))
-    ('candidates (lookup-words arg (or company-ispell-dictionary
-                                       ispell-complete-word-dict)))
-    ('sorted t)
-    ('ignore-case t)))
+    (interactive (company-begin-backend 'company-ispell))
+    (prefix (when (company-ispell-available)
+              (company-grab-word)))
+    (candidates (lookup-words arg (or company-ispell-dictionary
+                                      ispell-complete-word-dict)))
+    (sorted t)
+    (ignore-case t)))
 
 (provide 'company-ispell)
 ;;; company-ispell.el ends here

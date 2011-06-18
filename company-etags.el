@@ -61,18 +61,18 @@ buffer automatically."
   "A `company-mode' completion back-end for etags."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-etags))
-    ('prefix (and (memq major-mode company-etags-modes)
-                  (not (company-in-string-or-comment))
-                  (company-etags-buffer-table)
-                  (or (company-grab-symbol) 'stop)))
-    ('candidates (company-etags--candidates arg))
-    ('location (let ((tags-table-list (company-etags-buffer-table)))
-                 (when (fboundp 'find-tag-noselect)
-                   (save-excursion
-                     (let ((buffer (find-tag-noselect arg)))
-                       (cons buffer (with-current-buffer buffer (point))))))))
-    ('sorted t)))
+    (interactive (company-begin-backend 'company-etags))
+    (prefix (and (memq major-mode company-etags-modes)
+                 (not (company-in-string-or-comment))
+                 (company-etags-buffer-table)
+                 (or (company-grab-symbol) 'stop)))
+    (candidates (company-etags--candidates arg))
+    (location (let ((tags-table-list (company-etags-buffer-table)))
+                (when (fboundp 'find-tag-noselect)
+                  (save-excursion
+                    (let ((buffer (find-tag-noselect arg)))
+                      (cons buffer (with-current-buffer buffer (point))))))))
+    (sorted t)))
 
 (provide 'company-etags)
 ;;; company-etags.el ends here

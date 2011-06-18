@@ -47,13 +47,13 @@
 This requires pysmell.el and pymacs.el."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-pysmell))
-    ('prefix (and (derived-mode-p 'python-mode)
-                  buffer-file-name
-                  (not (company-in-string-or-comment))
-                  (company-pysmell--available-p)
-                  (company-pysmell--grab-symbol)))
-    ('candidates (delete "" (pysmell-get-all-completions)))))
+    (interactive (company-begin-backend 'company-pysmell))
+    (prefix (and (derived-mode-p 'python-mode)
+                 buffer-file-name
+                 (not (company-in-string-or-comment))
+                 (company-pysmell--available-p)
+                 (company-pysmell--grab-symbol)))
+    (candidates (delete "" (pysmell-get-all-completions)))))
 
 (provide 'company-pysmell)
 ;;; company-pysmell.el ends here

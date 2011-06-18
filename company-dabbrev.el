@@ -104,15 +104,15 @@ See also `company-dabbrev-time-limit'."
   "A dabbrev-like `company-mode' completion back-end."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-dabbrev))
-    ('prefix (company-grab-word))
-    ('candidates
+    (interactive (company-begin-backend 'company-dabbrev))
+    (prefix (company-grab-word))
+    (candidates
      (mapcar 'downcase
              (company-dabbrev--search (company-dabbrev--make-regexp arg)
                                       company-dabbrev-time-limit
                                       company-dabbrev-other-buffers)))
-    ('ignore-case t)
-    ('duplicates t)))
+    (ignore-case t)
+    (duplicates t)))
 
 (provide 'company-dabbrev)
 ;;; company-dabbrev.el ends here

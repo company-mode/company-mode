@@ -204,21 +204,21 @@ Completions only work correctly when the buffer has been saved.
 `company-clang-auto-save' determines whether to do this automatically."
   (interactive (list 'interactive))
   (case command
-        ('interactive (company-begin-backend 'company-clang))
-        ('init (unless company-clang-executable
-                 (error "Company found no clang executable"))
-               (when (version< (company-clang-version)
-                               company-clang-required-version)
-                 (error "Company requires clang version 1.1")))
-        ('prefix (and (memq major-mode company-clang-modes)
-                      buffer-file-name
-                      company-clang-executable
-                      (not (company-in-string-or-comment))
-                      (or (company-grab-symbol) 'stop)))
-        ('candidates (company-clang--candidates arg))
-        ('post-completion (and (derived-mode-p 'objc-mode)
-                               (string-match ":" arg)
-                               (company-clang-objc-templatify arg)))))
+    (interactive (company-begin-backend 'company-clang))
+    (init (unless company-clang-executable
+            (error "Company found no clang executable"))
+          (when (version< (company-clang-version)
+                          company-clang-required-version)
+            (error "Company requires clang version 1.1")))
+    (prefix (and (memq major-mode company-clang-modes)
+                 buffer-file-name
+                 company-clang-executable
+                 (not (company-in-string-or-comment))
+                 (or (company-grab-symbol) 'stop)))
+    (candidates (company-clang--candidates arg))
+    (post-completion (and (derived-mode-p 'objc-mode)
+                          (string-match ":" arg)
+                          (company-clang-objc-templatify arg)))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here

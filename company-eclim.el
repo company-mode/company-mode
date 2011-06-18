@@ -123,17 +123,17 @@ Completions only work correctly when the buffer has been saved.
 `company-eclim-auto-save' determines whether to do this automatically."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-eclim))
-    ('prefix (and (derived-mode-p 'java-mode 'jde-mode)
-                  buffer-file-name
-                  company-eclim-executable
-                  (company-eclim--project-name)
-                  (not (company-in-string-or-comment))
-                  (or (company-grab-symbol) 'stop)))
-    ('candidates (company-eclim--candidates arg))
-    ('meta (cadr (assoc arg company-eclim--doc)))
+    (interactive (company-begin-backend 'company-eclim))
+    (prefix (and (derived-mode-p 'java-mode 'jde-mode)
+                 buffer-file-name
+                 company-eclim-executable
+                 (company-eclim--project-name)
+                 (not (company-in-string-or-comment))
+                 (or (company-grab-symbol) 'stop)))
+    (candidates (company-eclim--candidates arg))
+    (meta (cadr (assoc arg company-eclim--doc)))
     ;; because "" doesn't return everything
-    ('no-cache (equal arg ""))))
+    (no-cache (equal arg ""))))
 
 (provide 'company-eclim)
 ;;; company-eclim.el ends here

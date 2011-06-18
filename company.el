@@ -48,10 +48,10 @@
 ;;
 ;; (defun company-my-backend (command &optional arg &rest ignored)
 ;;   (case command
-;;     ('prefix (when (looking-back "foo\\>")
-;;                (match-string 0)))
-;;     ('candidates (list "foobar" "foobaz" "foobarbaz"))
-;;     ('meta (format "This value is named %s" arg))))
+;;     (prefix (when (looking-back "foo\\>")
+;;               (match-string 0)))
+;;     (candidates (list "foobar" "foobaz" "foobarbaz"))
+;;     (meta (format "This value is named %s" arg))))
 ;;
 ;; Sometimes it is a good idea to mix two back-ends together, for example to
 ;; enrich gtags with dabbrev-code results (to emulate local variables):
@@ -696,11 +696,11 @@ keymap during active completions (`company-active-map'):
 
 (defun company--multi-backend-adapter (backends command &rest args)
   (case command
-    ('candidates
+    (candidates
      (apply 'append (mapcar (lambda (backend) (apply backend command args))
                             backends)))
-    ('sorted nil)
-    ('duplicates t)
+    (sorted nil)
+    (duplicates t)
     (otherwise
      (let (value)
        (dolist (backend backends)
@@ -1801,8 +1801,8 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-frontend (command)
   "A `company-mode' front-end similar to a tool-tip but based on overlays."
   (case command
-    ('pre-command (company-pseudo-tooltip-hide-temporarily))
-    ('post-command
+    (pre-command (company-pseudo-tooltip-hide-temporarily))
+    (post-command
      (let ((old-height (if (overlayp company-pseudo-tooltip-overlay)
                            (overlay-get company-pseudo-tooltip-overlay
                                         'company-height)
@@ -1814,11 +1814,11 @@ Returns a negative number if the tooltip should be displayed above point."
          (company-pseudo-tooltip-show-at-point (- (point)
                                                   (length company-prefix)))))
      (company-pseudo-tooltip-unhide))
-    ('hide (company-pseudo-tooltip-hide)
-           (setq company-tooltip-offset 0))
-    ('update (when (overlayp company-pseudo-tooltip-overlay)
-               (company-pseudo-tooltip-edit company-candidates
-                                            company-selection)))))
+    (hide (company-pseudo-tooltip-hide)
+          (setq company-tooltip-offset 0))
+    (update (when (overlayp company-pseudo-tooltip-overlay)
+              (company-pseudo-tooltip-edit company-candidates
+                                           company-selection)))))
 
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
   "`company-pseudo-tooltip-frontend', but not shown for single candidates."
@@ -1866,9 +1866,9 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-preview-frontend (command)
   "A `company-mode' front-end showing the selection as if it had been inserted."
   (case command
-    ('pre-command (company-preview-hide))
-    ('post-command (company-preview-show-at-point (point)))
-    ('hide (company-preview-hide))))
+    (pre-command (company-preview-hide))
+    (post-command (company-preview-show-at-point (point)))
+    (hide (company-preview-hide))))
 
 (defun company-preview-if-just-one-frontend (command)
   "`company-preview-frontend', but only shown for single candidates."
@@ -1966,20 +1966,20 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-echo-frontend (command)
   "A `company-mode' front-end showing the candidates in the echo area."
   (case command
-    ('post-command (company-echo-show-soon 'company-echo-format))
-    ('hide (company-echo-hide))))
+    (post-command (company-echo-show-soon 'company-echo-format))
+    (hide (company-echo-hide))))
 
 (defun company-echo-strip-common-frontend (command)
   "A `company-mode' front-end showing the candidates in the echo area."
   (case command
-    ('post-command (company-echo-show-soon 'company-echo-strip-common-format))
-    ('hide (company-echo-hide))))
+    (post-command (company-echo-show-soon 'company-echo-strip-common-format))
+    (hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
   "A `company-mode' front-end showing the documentation in the echo area."
   (case command
-    ('post-command (company-echo-show-when-idle 'company-fetch-metadata))
-    ('hide (company-echo-hide))))
+    (post-command (company-echo-show-when-idle 'company-fetch-metadata))
+    (hide (company-echo-hide))))
 
 ;; templates ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

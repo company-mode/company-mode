@@ -97,25 +97,25 @@ Symbols are chained by \".\" or \"->\"."
   "A `company-mode' completion back-end using CEDET Semantic."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-semantic))
-    ('prefix (and (memq major-mode company-semantic-modes)
-                  (semantic-active-p)
-                  (not (company-in-string-or-comment))
-                  (or (company-semantic--grab) 'stop)))
-    ('candidates (if (and (equal arg "")
-                          (not (looking-back "->\\|\\.")))
-                     (company-semantic-completions-raw arg)
-                   (company-semantic-completions arg)))
-    ('meta (funcall company-semantic-metadata-function
-                    (assoc arg company-semantic--current-tags)))
-    ('doc-buffer (company-semantic-doc-buffer
-                  (assoc arg company-semantic--current-tags)))
+    (interactive (company-begin-backend 'company-semantic))
+    (prefix (and (memq major-mode company-semantic-modes)
+                 (semantic-active-p)
+                 (not (company-in-string-or-comment))
+                 (or (company-semantic--grab) 'stop)))
+    (candidates (if (and (equal arg "")
+                         (not (looking-back "->\\|\\.")))
+                    (company-semantic-completions-raw arg)
+                  (company-semantic-completions arg)))
+    (meta (funcall company-semantic-metadata-function
+                   (assoc arg company-semantic--current-tags)))
+    (doc-buffer (company-semantic-doc-buffer
+                 (assoc arg company-semantic--current-tags)))
     ;; because "" is an empty context and doesn't return local variables
-    ('no-cache (equal arg ""))
-    ('location (let ((tag (assoc arg company-semantic--current-tags)))
-                 (when (buffer-live-p (semantic-tag-buffer tag))
-                   (cons (semantic-tag-buffer tag)
-                         (semantic-tag-start tag)))))))
+    (no-cache (equal arg ""))
+    (location (let ((tag (assoc arg company-semantic--current-tags)))
+                (when (buffer-live-p (semantic-tag-buffer tag))
+                  (cons (semantic-tag-buffer tag)
+                        (semantic-tag-start tag)))))))
 
 (provide 'company-semantic)
 ;;; company-semantic.el ends here

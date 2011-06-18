@@ -100,14 +100,14 @@ valid in most contexts."
   "A `company-mode' completion back-end for Xcode projects."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-xcode))
-    ('prefix (and company-xcode-xcodeindex-executable
+    (interactive (company-begin-backend 'company-xcode))
+    (prefix (and company-xcode-xcodeindex-executable
+                 (company-xcode-tags)
+                 (not (company-in-string-or-comment))
+                 (or (company-grab-symbol) 'stop)))
+    (candidates (let ((completion-ignore-case nil))
                   (company-xcode-tags)
-                  (not (company-in-string-or-comment))
-                  (or (company-grab-symbol) 'stop)))
-    ('candidates (let ((completion-ignore-case nil))
-                   (company-xcode-tags)
-                   (all-completions arg (company-xcode-tags))))))
+                  (all-completions arg (company-xcode-tags))))))
 
 
 (provide 'company-xcode)

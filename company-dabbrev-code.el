@@ -65,17 +65,17 @@ The back-end looks for all symbols in the current buffer that aren't in
 comments or strings."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-dabbrev-code))
-    ('prefix (and (or (eq t company-dabbrev-code-modes)
-                      (apply 'derived-mode-p company-dabbrev-code-modes))
-                  (not (company-in-string-or-comment))
-                  (or (company-grab-symbol) 'stop)))
-    ('candidates (let ((completion-ignore-case nil))
-                   (company-dabbrev--search
-                    (company-dabbrev-code--make-regexp arg)
-                    company-dabbrev-code-time-limit
-                    company-dabbrev-code-other-buffers t)))
-    ('duplicates t)))
+    (interactive (company-begin-backend 'company-dabbrev-code))
+    (prefix (and (or (eq t company-dabbrev-code-modes)
+                     (apply 'derived-mode-p company-dabbrev-code-modes))
+                 (not (company-in-string-or-comment))
+                 (or (company-grab-symbol) 'stop)))
+    (candidates (let ((completion-ignore-case nil))
+                  (company-dabbrev--search
+                   (company-dabbrev-code--make-regexp arg)
+                   company-dabbrev-code-time-limit
+                   company-dabbrev-code-other-buffers t)))
+    (duplicates t)))
 
 (provide 'company-dabbrev-code)
 ;;; company-dabbrev-code.el ends here

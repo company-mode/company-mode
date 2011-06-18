@@ -60,66 +60,66 @@
 
 (defun company-nxml-tag (command &optional arg &rest ignored)
   (case command
-    ('prefix (and (derived-mode-p 'nxml-mode)
-                  rng-validate-mode
-                  (company-grab company-nxml-in-tag-name-regexp 1)))
-    ('candidates (company-nxml-prepared
-                   (company-nxml-all-completions arg
-                    (rng-match-possible-start-tag-names))))
-    ('sorted t)))
+    (prefix (and (derived-mode-p 'nxml-mode)
+                 rng-validate-mode
+                 (company-grab company-nxml-in-tag-name-regexp 1)))
+    (candidates (company-nxml-prepared
+                 (company-nxml-all-completions
+                  arg (rng-match-possible-start-tag-names))))
+    (sorted t)))
 
 (defun company-nxml-attribute (command &optional arg &rest ignored)
   (case command
-    ('prefix (and (derived-mode-p 'nxml-mode)
-                  rng-validate-mode
-                  (memq (char-after) '(?\  ?\t ?\n)) ;; outside word
-                  (company-grab rng-in-attribute-regex 1)))
-    ('candidates (company-nxml-prepared
-                   (and (rng-adjust-state-for-attribute
-                         lt-pos (- (point) (length arg)))
-                        (company-nxml-all-completions arg
-                         (rng-match-possible-attribute-names)))))
-    ('sorted t)))
+    (prefix (and (derived-mode-p 'nxml-mode)
+                 rng-validate-mode
+                 (memq (char-after) '(?\  ?\t ?\n)) ;; outside word
+                 (company-grab rng-in-attribute-regex 1)))
+    (candidates (company-nxml-prepared
+                 (and (rng-adjust-state-for-attribute
+                       lt-pos (- (point) (length arg)))
+                      (company-nxml-all-completions
+                       arg (rng-match-possible-attribute-names)))))
+    (sorted t)))
 
 (defun company-nxml-attribute-value (command &optional arg &rest ignored)
   (case command
-    ('prefix (and (derived-mode-p 'nxml-mode)
-                  rng-validate-mode
-                  (and (memq (char-after) '(?' ?\" ?\  ?\t ?\n)) ;; outside word
-                       (looking-back company-nxml-in-attribute-value-regexp)
-                       (or (match-string-no-properties 4)
-                           (match-string-no-properties 5)
-                           ""))))
-    ('candidates (company-nxml-prepared
-                   (let (attr-start attr-end colon)
-                     (and (looking-back rng-in-attribute-value-regex lt-pos)
-                          (setq colon (match-beginning 2)
-                                attr-start (match-beginning 1)
-                                attr-end (match-end 1))
-                          (rng-adjust-state-for-attribute lt-pos attr-start)
-                          (rng-adjust-state-for-attribute-value
-                           attr-start colon attr-end)
-                          (all-completions arg
-                           (rng-match-possible-value-strings))))))))
+    (prefix (and (derived-mode-p 'nxml-mode)
+                 rng-validate-mode
+                 (and (memq (char-after) '(?' ?\" ?\  ?\t ?\n)) ;; outside word
+                      (looking-back company-nxml-in-attribute-value-regexp)
+                      (or (match-string-no-properties 4)
+                          (match-string-no-properties 5)
+                          ""))))
+    (candidates (company-nxml-prepared
+                 (let (attr-start attr-end colon)
+                   (and (looking-back rng-in-attribute-value-regex lt-pos)
+                        (setq colon (match-beginning 2)
+                              attr-start (match-beginning 1)
+                              attr-end (match-end 1))
+                        (rng-adjust-state-for-attribute lt-pos attr-start)
+                        (rng-adjust-state-for-attribute-value
+                         attr-start colon attr-end)
+                        (all-completions
+                         arg (rng-match-possible-value-strings))))))))
 
 ;;;###autoload
 (defun company-nxml (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `nxml-mode'."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-nxml))
-    ('prefix (or (company-nxml-tag 'prefix)
-                 (company-nxml-attribute 'prefix)
-                 (company-nxml-attribute-value 'prefix)))
-    ('candidates (cond
-                  ((company-nxml-tag 'prefix)
-                   (company-nxml-tag 'candidates arg))
-                  ((company-nxml-attribute 'prefix)
-                   (company-nxml-attribute 'candidates arg))
-                  ((company-nxml-attribute-value 'prefix)
-                   (sort (company-nxml-attribute-value 'candidates arg)
-                         'string<))))
-    ('sorted t)))
+    (interactive (company-begin-backend 'company-nxml))
+    (prefix (or (company-nxml-tag 'prefix)
+                (company-nxml-attribute 'prefix)
+                (company-nxml-attribute-value 'prefix)))
+    (candidates (cond
+                 ((company-nxml-tag 'prefix)
+                  (company-nxml-tag 'candidates arg))
+                 ((company-nxml-attribute 'prefix)
+                  (company-nxml-attribute 'candidates arg))
+                 ((company-nxml-attribute-value 'prefix)
+                  (sort (company-nxml-attribute-value 'candidates arg)
+                        'string<))))
+    (sorted t)))
 
 (provide 'company-nxml)
 ;;; company-nxml.el ends here

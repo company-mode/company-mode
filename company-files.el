@@ -68,13 +68,13 @@
   "a `company-mode' completion back-end existing file names."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-files))
-    ('prefix (company-files-grab-existing-name))
-    ('candidates (company-files-complete arg))
-    ('location (cons (dired-noselect
-                      (file-name-directory (directory-file-name arg))) 1))
-    ('sorted t)
-    ('no-cache t)))
+    (interactive (company-begin-backend 'company-files))
+    (prefix (company-files-grab-existing-name))
+    (candidates (company-files-complete arg))
+    (location (cons (dired-noselect
+                     (file-name-directory (directory-file-name arg))) 1))
+    (sorted t)
+    (no-cache t)))
 
 (provide 'company-files)
 ;;; company-files.el ends here

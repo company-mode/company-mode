@@ -27,23 +27,23 @@
 
 (defun company-oddmuse-get-page-table ()
   (case major-mode
-    ('yaoddmuse-mode (with-no-warnings
-                       (yaoddmuse-get-pagename-table yaoddmuse-wikiname)))
-    ('oddmuse-mode (with-no-warnings
-                     (oddmuse-make-completion-table oddmuse-wiki)))))
+    (yaoddmuse-mode (with-no-warnings
+                      (yaoddmuse-get-pagename-table yaoddmuse-wikiname)))
+    (oddmuse-mode (with-no-warnings
+                    (oddmuse-make-completion-table oddmuse-wiki)))))
 
 ;;;###autoload
 (defun company-oddmuse (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for `oddmuse-mode'."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-oddmuse))
-    ('prefix (let ((case-fold-search nil))
-               (and (memq major-mode '(oddmuse-mode yaoddmuse-mode))
-                    (looking-back company-oddmuse-link-regexp (point-at-bol))
-                    (or (match-string 1)
-                        (match-string 2)))))
-    ('candidates (all-completions arg (company-oddmuse-get-page-table)))))
+    (interactive (company-begin-backend 'company-oddmuse))
+    (prefix (let ((case-fold-search nil))
+              (and (memq major-mode '(oddmuse-mode yaoddmuse-mode))
+                   (looking-back company-oddmuse-link-regexp (point-at-bol))
+                   (or (match-string 1)
+                       (match-string 2)))))
+    (candidates (all-completions arg (company-oddmuse-get-page-table)))))
 
 (provide 'company-oddmuse)
 ;;; company-oddmuse.el ends here

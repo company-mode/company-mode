@@ -211,17 +211,17 @@
   "A `company-mode' back-end for programming language keywords."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-))
-    ('prefix (and (assq major-mode company-keywords-alist)
-                  (not (company-in-string-or-comment))
-                  (or (company-grab-symbol) 'stop)))
-    ('candidates
+    (interactive (company-begin-backend 'company-))
+    (prefix (and (assq major-mode company-keywords-alist)
+                 (not (company-in-string-or-comment))
+                 (or (company-grab-symbol) 'stop)))
+    (candidates
      (let ((completion-ignore-case nil)
            (symbols (cdr (assq major-mode company-keywords-alist))))
        (all-completions arg (if (consp symbols)
                                 symbols
                               (cdr (assq symbols company-keywords-alist))))))
-    ('sorted t)))
+    (sorted t)))
 
 (provide 'company-keywords)
 ;;; company-keywords.el ends here

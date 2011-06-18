@@ -57,14 +57,14 @@
   "A `company-mode' completion back-end for ropemacs."
   (interactive (list 'interactive))
   (case command
-    ('interactive (company-begin-backend 'company-ropemacs))
-    ('prefix (and (derived-mode-p 'python-mode)
-                  (not (company-in-string-or-comment))
-                  (company-ropemacs--grab-symbol)))
-    ('candidates (mapcar (lambda (element) (concat arg element))
-                         (rope-completions)))
-    ('doc-buffer (company-ropemacs-doc-buffer arg))
-    ('location (company-ropemacs-location arg))))
+    (interactive (company-begin-backend 'company-ropemacs))
+    (prefix (and (derived-mode-p 'python-mode)
+                 (not (company-in-string-or-comment))
+                 (company-ropemacs--grab-symbol)))
+    (candidates (mapcar (lambda (element) (concat arg element))
+                        (rope-completions)))
+    (doc-buffer (company-ropemacs-doc-buffer arg))
+    (location (company-ropemacs-location arg))))
 
 (provide 'company-ropemacs)
 ;;; company-ropemacs.el ends here
