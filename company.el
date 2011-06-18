@@ -6,7 +6,7 @@
 ;; Version: 0.5
 ;; Keywords: abbrev, convenience, matching
 ;; URL: http://nschum.de/src/emacs/company/
-;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
+;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x, GNU Emacs 24.x
 ;;
 ;; This file is NOT part of GNU Emacs.
 ;;
