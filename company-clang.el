@@ -172,10 +172,12 @@ Prefix files (-include ...) can be selected with
 (defsubst company-clang-version ()
   "Return the version of `company-clang-executable'."
   (with-temp-buffer
+    (switch-to-buffer (current-buffer))
     (call-process company-clang-executable nil t nil "--version")
     (goto-char (point-min))
-    (when (re-search-forward "\\`clang version \\([0-9.]+\\)" nil t)
-      (match-string-no-properties 1))))
+    (if (re-search-forward "\\clang version \\([0-9.]+\\)" nil t)
+        (match-string-no-properties 1)
+      "0")))
 
 (defun company-clang-objc-templatify (selector)
   (let* ((end (point))
