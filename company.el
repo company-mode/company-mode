@@ -512,8 +512,8 @@ The work-around consists of adding a newline.")
     (define-key keymap [mouse-3] 'company-select-mouse)
     (define-key keymap [up-mouse-1] 'ignore)
     (define-key keymap [up-mouse-3] 'ignore)
-    (define-key keymap "\C-m" 'company-complete-selection)
-    (define-key keymap "\t" 'company-complete-common)
+    (define-key keymap [return] 'company-complete-selection)
+    (define-key keymap [tab] 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     (define-key keymap "\C-w" 'company-show-location)
     (define-key keymap "\C-s" 'company-search-candidates)
@@ -598,31 +598,28 @@ keymap during active completions (`company-active-map'):
 
 ;;; keymaps ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-overriding-keymap-bound nil)
-(make-variable-buffer-local 'company-overriding-keymap-bound)
-
-(defvar company-old-keymap nil)
-(make-variable-buffer-local 'company-old-keymap)
-
 (defvar company-my-keymap nil)
 (make-variable-buffer-local 'company-my-keymap)
 
+(defvar company-emulation-alist '((t . nil)))
+
 (defsubst company-enable-overriding-keymap (keymap)
-  (setq company-my-keymap keymap)
-  (when company-overriding-keymap-bound
-    (company-uninstall-map)))
+  (company-uninstall-map)
+  (setq company-my-keymap keymap))
+
+(defun company-ensure-emulation-alist ()
+  (unless (eq 'company-emulation-alist (car emulation-mode-map-alists))
+    (setq emulation-mode-map-alists
+          (cons 'company-emulation-alist
+                (delq 'company-emulation-alist emulation-mode-map-alists)))))
 
 (defun company-install-map ()
-  (unless (or company-overriding-keymap-bound
+  (unless (or (cdar company-emulation-alist)
               (null company-my-keymap))
-    (setq company-old-keymap overriding-terminal-local-map
-          overriding-terminal-local-map company-my-keymap
-          company-overriding-keymap-bound t)))
+    (setf (cdar company-emulation-alist) company-my-keymap)))
 
 (defun company-uninstall-map ()
-  (when (eq overriding-terminal-local-map company-my-keymap)
-    (setq overriding-terminal-local-map company-old-keymap
-          company-overriding-keymap-bound nil)))
+  (setf (cdar company-emulation-alist) nil))
 
 ;; Hack:
 ;; Emacs calculates the active keymaps before reading the event.  That means we
@@ -1046,6 +1043,7 @@ can retrieve meta-data for them."
       (setq company-added-newline (buffer-chars-modified-tick)))
     (setq company-point (point)
           company--point-max (point-max))
+    (company-ensure-emulation-alist)
     (company-enable-overriding-keymap company-active-map)
     (company-call-frontends 'update)))
 
