@@ -1,34 +1,42 @@
-;;; company-gtags.el --- a company-mode completion back-end for GNU Global
-;;
-;; Copyright (C) 2009 Nikolaj Schumacher
-;;
-;; This file is part of company 0.5.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License
-;; as published by the Free Software Foundation; either version 2
-;; of the License, or (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
+;;; company-gtags.el --- A company-mode completion back-end for GNU Global
+
+;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+
+;; Author: Nikolaj Schumacher
+
+;; This file is part of GNU Emacs.
+
+;; GNU Emacs is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; GNU Emacs is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-;;
+
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+
+
+;;; Commentary:
+;;
+
+;;; Code:
 
 (require 'company)
 (eval-when-compile (require 'cl))
 
 (defcustom company-gtags-executable
   (executable-find "global")
-  "*Location of GNU global executable"
+  "*Location of GNU global executable."
   :type 'string
   :group 'company)
 
 (define-obsolete-variable-alias
   'company-gtags-gnu-global-program-name
-  'company-gtags-executable)
+  'company-gtags-executable "earlier")
 
 (defvar company-gtags--tags-available-p 'unknown)
 (make-variable-buffer-local 'company-gtags--tags-available-p)

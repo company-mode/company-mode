@@ -1,28 +1,28 @@
-;;; company.el --- extensible inline text completion mechanism
-;;
-;; Copyright (C) 2009-2010 Nikolaj Schumacher
-;;
-;; Author: Nikolaj Schumacher <bugs * nschum de>
+;;; company.el --- Extensible inline text completion mechanism
+
+;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+
+;; Author: Nikolaj Schumacher
 ;; Version: 0.5
 ;; Keywords: abbrev, convenience, matching
-;; URL: http://nschum.de/src/emacs/company/
+;; URL: http://nschum.de/src/emacs/company-mode/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x, GNU Emacs 24.x
-;;
-;; This file is NOT part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License
-;; as published by the Free Software Foundation; either version 2
-;; of the License, or (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
+
+;; This file is part of GNU Emacs.
+
+;; GNU Emacs is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; GNU Emacs is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-;;
+
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-;;
+;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+
 ;;; Commentary:
 ;;
 ;; Company is a modular completion mechanism.  Modules for retrieving completion
@@ -65,6 +65,8 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Added `company-capf': completion adapter using
+;;    `completion-at-point-functions'.  (Stefan Monnier)
 ;;    Switching tags now works correctly in `company-etags'.
 ;;
 ;; 2010-02-24 (0.5)
@@ -134,7 +136,7 @@
 ;;
 ;; 2009-03-20 (0.1)
 ;;    Initial release.
-;;
+
 ;;; Code:
 
 (eval-when-compile (require 'cl))
@@ -309,7 +311,29 @@ If this many lines are not available, prefer to display the tooltip above."
                         (assq backend company-safe-backends))
                 (return t))))))
 
-(defcustom company-backends '(company-elisp company-nxml company-css
+(defun company-capf (command &optional arg &rest args)
+  "Adapter for Company completion to use `completion-at-point-functions'."
+  (interactive (list 'interactive))
+  (case command
+    (interactive (company-begin-backend 'company-capf))
+    (prefix
+     (let ((res (run-hook-wrapped 'completion-at-point-functions
+                                  ;; Ignore misbehaving functions.
+                                  #'completion--capf-wrapper 'optimist)))
+       (when (consp res)
+         (if (> (nth 1 res) (point))
+             'stop
+           (buffer-substring-no-properties (nth 0 res) (point))))))
+    (candidates
+     (let ((res (run-hook-wrapped 'completion-at-point-functions
+                                  ;; Ignore misbehaving functions.
+                                  #'completion--capf-wrapper 'optimist)))
+       (when (consp res)
+         (all-completions arg (nth 2 res)
+                          (plist-get (nthcdr 3 res) :predicate)))))))
+
+(defcustom company-backends '(;; company-capf ;FIXME: Untested!
+                              company-elisp company-nxml company-css
                               company-eclim company-semantic company-clang
                               company-xcode company-ropemacs
                               (company-gtags company-etags company-dabbrev-code
@@ -327,7 +351,7 @@ Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
 of the following:
 
-'prefix: The back-end should return the text to be completed.  It must be
+`prefix': The back-end should return the text to be completed.  It must be
 text immediately before `point'.  Returning nil passes control to the next
 back-end.  The function should return 'stop if it should complete but cannot
 \(e.g. if it is in the middle of a string\).  If the returned value is only
@@ -335,33 +359,33 @@ part of the prefix (e.g. the part after \"->\" in C), the back-end may return a
 cons of prefix and prefix length, which is then used in the
 `company-minimum-prefix-length' test.
 
-'candidates: The second argument is the prefix to be completed.  The
+`candidates': The second argument is the prefix to be completed.  The
 return value should be a list of candidates that start with the prefix.
 
 Optional commands:
 
-'sorted: The back-end may return t here to indicate that the candidates
+`sorted': The back-end may return t here to indicate that the candidates
 are sorted and will not need to be sorted again.
 
-'duplicates: If non-nil, company will take care of removing duplicates
+`duplicates': If non-nil, company will take care of removing duplicates
 from the list.
 
-'no-cache: Usually company doesn't ask for candidates again as completion
+`no-cache': Usually company doesn't ask for candidates again as completion
 progresses, unless the back-end returns t for this command.  The second
 argument is the latest prefix.
 
-'meta: The second argument is a completion candidate.  The back-end should
+`meta': The second argument is a completion candidate.  The back-end should
 return a (short) documentation string for it.
 
-'doc-buffer: The second argument is a completion candidate.  The back-end should
-create a buffer (preferably with `company-doc-buffer'), fill it with
-documentation and return it.
+`doc-buffer': The second argument is a completion candidate.
+The back-end should create a buffer (preferably with `company-doc-buffer'),
+fill it with documentation and return it.
 
-'location: The second argument is a completion candidate.  The back-end can
+`location': The second argument is a completion candidate.  The back-end can
 return the cons of buffer and buffer location, or of file and line
 number where the completion candidate was defined.
 
-'require-match: If this value is t, the user is not allowed to enter anything
+`require-match': If this value is t, the user is not allowed to enter anything
 not offering as a candidate.  Use with care!  The default value nil gives the
 user that choice with `company-require-match'.  Return value 'never overrides
 that option the other way around.
