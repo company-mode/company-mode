@@ -5,8 +5,9 @@ About
 ----
 
 Company is an Emacs extension for performing text completion.
-Completion candidates are retrieved from a variety of modular
-back-ends, such as `abbrev`, `Semantic`, `Eclim`, `etags`, etc.
+
+Completion candidates are retrieved from a variety of back-ends, such as
+`abbrev`, `Semantic`, `Eclim`, `etags`, etc.
 
 Screenshots
 ----
@@ -30,7 +31,7 @@ Completion will start automatically after you type a few letters. Use
 complete. Search through the completions with <kbd>C-s</kbd>, <kbd>C-r</kbd> and
 <kbd>C-o</kbd>.
 
-To use `company-mode` is all buffers, add the following to your init file:
+To use `company-mode` in all buffers, add the following to your init file:
 
     (global-company-mode)
 
