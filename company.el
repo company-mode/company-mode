@@ -1,6 +1,6 @@
 ;;; company.el --- Extensible inline text completion mechanism
 
-;; Copyright (C) 2009-2012  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Version: 0.5
@@ -807,7 +807,8 @@ can retrieve meta-data for them."
 
 (defun company--should-complete ()
   (and (not (or buffer-read-only overriding-terminal-local-map
-                overriding-local-map))
+                overriding-local-map
+                (minibufferp)))
        ;; Check if in the middle of entering a key combination.
        (or (equal (this-command-keys-vector) [])
            (not (keymapp (key-binding (this-command-keys-vector)))))
