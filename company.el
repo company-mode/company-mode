@@ -1,6 +1,6 @@
 ;;; company.el --- Extensible inline text completion mechanism
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2012  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Version: 0.5
@@ -65,9 +65,16 @@
 ;;
 ;;; Change Log:
 ;;
+;;    Switching tags now works correctly in `company-etags'.
+;;    Clang completions now include macros and are case-sensitive.
 ;;    Added `company-capf': completion adapter using
 ;;    `completion-at-point-functions'.  (Stefan Monnier)
-;;    Switching tags now works correctly in `company-etags'.
+;;    `company-elisp' has some improvements.
+;;    Instead of `overrriding-terminal-local-map', we're now using
+;;    `emulation-mode-map-alists' (experimental).  This largely means that when
+;;    the completion keymap is active, other minor modes' keymaps are still
+;;    used, so, for example, it's not as easy to circumvent `paredit-mode'
+;;    accidentally when it's enabled.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
