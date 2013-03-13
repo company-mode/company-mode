@@ -44,5 +44,5 @@ For more information, see the docstring for `company-mode`.
 Feedback
 ----
 
-If you experience any problems or have a feature request, use the
-[Issue Tracker](https://github.com/dgutov/company/issues).
+If you experience any problems or have a feature request, please use the
+[issue tracker](https://github.com/dgutov/company/issues).
