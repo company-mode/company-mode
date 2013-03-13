@@ -24,7 +24,7 @@ list-packages</kbd>).
 Usage
 ----
 
-Once installed, enable company-mode with <kbd>M-x company-mode</kbd>.
+Once installed, enable `company-mode` with <kbd>M-x company-mode</kbd>.
 
 Completion will start automatically after you type a few letters. Use
 <kbd>M-n</kbd>, <kbd>M-p</kbd>, <kbd>\<tab\></kbd> and <kbd>\<return\></kbd> to
