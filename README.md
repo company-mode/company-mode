@@ -11,7 +11,7 @@ back-ends, such as `abbrev`, `Semantic`, `Eclim`, `etags`, etc.
 Screenshots
 ----
 
-[<img src="screenshots/company-elisp.png" alt="company-elisp" width="256/>](screenshots/company-elisp.png)
+[<img src="screenshots/company-elisp.png" alt="company-elisp" width="256"/>](screenshots/company-elisp.png)
 [<img src="screenshots/company-cpp.png" alt="company-cpp" width="256"/>](screenshots/company-cpp.png)
 
 Installation
