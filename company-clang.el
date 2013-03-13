@@ -30,19 +30,19 @@
 
 (defcustom company-clang-executable
   (executable-find "clang")
-  "*Location of clang executable."
+  "Location of clang executable."
   :group 'company-clang
   :type 'file)
 
 (defcustom company-clang-auto-save t
-  "*Determines whether to save the buffer when retrieving completions.
+  "Determines whether to save the buffer when retrieving completions.
 clang can only complete correctly when the buffer has been saved."
   :group 'company-clang
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
 (defcustom company-clang-arguments nil
-  "*Additional arguments to pass to clang when completing.
+  "Additional arguments to pass to clang when completing.
 Prefix files (-include ...) can be selected with
 `company-clang-set-prefix' or automatically through a custom
 `company-clang-prefix-guesser'."
@@ -50,7 +50,7 @@ Prefix files (-include ...) can be selected with
   :type '(repeat (string :tag "Argument" nil)))
 
 (defcustom company-clang-prefix-guesser 'company-clang-guess-prefix
-  "*A function to determine the prefix file for the current buffer."
+  "A function to determine the prefix file for the current buffer."
   :group 'company-clang
   :type '(function :tag "Guesser function" nil))
 

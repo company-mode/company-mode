@@ -212,7 +212,7 @@
     (espresso-mode . javascript-mode)
     (cperl-mode . perl-mode)
     (jde-mode . java-mode))
-  "*Alist mapping major-modes to sorted keywords for `company-keywords'.")
+  "Alist mapping major-modes to sorted keywords for `company-keywords'.")
 
 ;;;###autoload
 (defun company-keywords (command &optional arg &rest ignored)

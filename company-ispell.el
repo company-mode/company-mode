@@ -30,7 +30,7 @@
 (eval-when-compile (require 'cl))
 
 (defcustom company-ispell-dictionary nil
-  "*Dictionary to use for `company-ispell'.
+  "Dictionary to use for `company-ispell'.
 If nil, use `ispell-complete-word-dict'."
   :group 'company
   :type '(choice (const :tag "default (nil)" nil)

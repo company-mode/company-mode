@@ -30,7 +30,7 @@
 
 (defcustom company-gtags-executable
   (executable-find "global")
-  "*Location of GNU global executable."
+  "Location of GNU global executable."
   :type 'string
   :group 'company)
 

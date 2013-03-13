@@ -29,7 +29,7 @@
 (require 'etags)
 
 (defcustom company-etags-use-main-table-list t
-  "*Always search `tags-table-list' if set.
+  "Always search `tags-table-list' if set.
 If this is disabled, `company-etags' will try to find the one table for each
 buffer automatically."
   :group 'company-mode

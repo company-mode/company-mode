@@ -35,7 +35,7 @@
     haskell-mode java-mode javascript-mode jde-mode js2-mode lisp-mode
     lua-mode objc-mode perl-mode php-mode python-mode ruby-mode scheme-mode
     shell-script-mode)
-  "*Modes that use `company-dabbrev-code'.
+  "Modes that use `company-dabbrev-code'.
 In all these modes `company-dabbrev-code' will complete only symbols, not text
 in comments or strings.  In other modes `company-dabbrev-code' will pass control
 to other back-ends \(e.g. `company-dabbrev'\).
@@ -45,7 +45,7 @@ Value t means complete in all modes."
                  (const tag "All modes" t)))
 
 (defcustom company-dabbrev-code-other-buffers t
-  "*Determines whether `company-dabbrev-code' should search other buffers.
+  "Determines whether `company-dabbrev-code' should search other buffers.
 If `all', search all other buffers.  If t, search buffers with the same
 major mode.
 See also `company-dabbrev-code-time-limit'."
@@ -55,7 +55,7 @@ See also `company-dabbrev-code-time-limit'."
                  (const :tag "All" all)))
 
 (defcustom company-dabbrev-code-time-limit .5
-  "*Determines how long `company-dabbrev-code' should look for matches."
+  "Determines how long `company-dabbrev-code' should look for matches."
   :group 'company
   :type '(choice (const :tag "Off" nil)
                  (number :tag "Seconds")))

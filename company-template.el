@@ -26,7 +26,7 @@
 (defface company-template-field
   '((((background dark)) (:background "yellow" :foreground "black"))
     (((background light)) (:background "orange" :foreground "black")))
-  "*Face used for editable text in template fields."
+  "Face used for editable text in template fields."
   :group 'company)
 
 (defvar company-template-nav-map

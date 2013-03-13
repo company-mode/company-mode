@@ -158,59 +158,59 @@
 (defface company-tooltip
   '((t :background "yellow"
        :foreground "black"))
-  "*Face used for the tool tip."
+  "Face used for the tool tip."
   :group 'company)
 
 (defface company-tooltip-selection
   '((default :inherit company-tooltip)
     (((class color) (min-colors 88)) (:background "orange1"))
     (t (:background "green")))
-  "*Face used for the selection in the tool tip."
+  "Face used for the selection in the tool tip."
   :group 'company)
 
 (defface company-tooltip-mouse
   '((default :inherit highlight))
-  "*Face used for the tool tip item under the mouse."
+  "Face used for the tool tip item under the mouse."
   :group 'company)
 
 (defface company-tooltip-common
   '((t :inherit company-tooltip
        :foreground "red"))
-  "*Face used for the common completion in the tool tip."
+  "Face used for the common completion in the tool tip."
   :group 'company)
 
 (defface company-tooltip-common-selection
   '((t :inherit company-tooltip-selection
        :foreground "red"))
-  "*Face used for the selected common completion in the tool tip."
+  "Face used for the selected common completion in the tool tip."
   :group 'company)
 
 (defface company-preview
   '((t :background "blue4"
        :foreground "wheat"))
-  "*Face used for the completion preview."
+  "Face used for the completion preview."
   :group 'company)
 
 (defface company-preview-common
   '((t :inherit company-preview
        :foreground "red"))
-  "*Face used for the common part of the completion preview."
+  "Face used for the common part of the completion preview."
   :group 'company)
 
 (defface company-preview-search
   '((t :inherit company-preview
        :background "blue1"))
-  "*Face used for the search string in the completion preview."
+  "Face used for the search string in the completion preview."
   :group 'company)
 
 (defface company-echo nil
-  "*Face used for completions in the echo area."
+  "Face used for completions in the echo area."
   :group 'company)
 
 (defface company-echo-common
   '((((background dark)) (:foreground "firebrick1"))
     (((background light)) (:background "firebrick4")))
-  "*Face used for the common part of completions in the echo area."
+  "Face used for the common part of completions in the echo area."
   :group 'company)
 
 (defun company-frontends-set (variable value)
@@ -235,7 +235,7 @@
 (defcustom company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
                                company-preview-if-just-one-frontend
                                company-echo-metadata-frontend)
-  "*The list of active front-ends (visualizations).
+  "The list of active front-ends (visualizations).
 Each front-end is a function that takes one argument.  It is called with
 one of the following arguments:
 
@@ -271,12 +271,12 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (function :tag "custom function" nil))))
 
 (defcustom company-tooltip-limit 10
-  "*The maximum number of candidates in the tool tip"
+  "The maximum number of candidates in the tool tip"
   :group 'company
   :type 'integer)
 
 (defcustom company-tooltip-minimum 6
-  "*The minimum height of the tool tip.
+  "The minimum height of the tool tip.
 If this many lines are not available, prefer to display the tooltip above."
   :group 'company
   :type 'integer)
@@ -339,7 +339,7 @@ If this many lines are not available, prefer to display the tooltip above."
                               (company-gtags company-etags company-dabbrev-code
                                company-pysmell company-keywords)
                               company-oddmuse company-files company-dabbrev)
-  "*The list of active back-ends (completion engines).
+  "The list of active back-ends (completion engines).
 Each list elements can itself be a list of back-ends.  In that case their
 completions are merged.  Otherwise only the first matching back-end returns
 results.
@@ -410,32 +410,32 @@ does not know about.  It should also be callable interactively and use
 (put 'company-backends 'safe-local-variable 'company-safe-backends-p)
 
 (defcustom company-completion-started-hook nil
-  "*Hook run when company starts completing.
+  "Hook run when company starts completing.
 The hook is called with one argument that is non-nil if the completion was
 started manually."
   :group 'company
   :type 'hook)
 
 (defcustom company-completion-cancelled-hook nil
-  "*Hook run when company cancels completing.
+  "Hook run when company cancels completing.
 The hook is called with one argument that is non-nil if the completion was
 aborted manually."
   :group 'company
   :type 'hook)
 
 (defcustom company-completion-finished-hook nil
-  "*Hook run when company successfully completes.
+  "Hook run when company successfully completes.
 The hook is called with the selected candidate as an argument."
   :group 'company
   :type 'hook)
 
 (defcustom company-minimum-prefix-length 3
-  "*The minimum prefix length for automatic completion."
+  "The minimum prefix length for automatic completion."
   :group 'company
   :type '(integer :tag "prefix length"))
 
 (defcustom company-require-match 'company-explicit-action-p
-  "*If enabled, disallow non-matching input.
+  "If enabled, disallow non-matching input.
 This can be a function do determine if a match is required.
 
 This can be overridden by the back-end, if it returns t or 'never to
@@ -488,7 +488,7 @@ A character that is part of a valid candidate never starts auto-completion."
                  (function :tag "Predicate function")))
 
 (defcustom company-idle-delay .7
-  "*The idle delay in seconds until automatic completions starts.
+  "The idle delay in seconds until automatic completions starts.
 A value of nil means never complete automatically, t means complete
 immediately when a prefix of `company-minimum-prefix-length' is reached."
   :group 'company
@@ -497,7 +497,7 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
                  (number :tag "seconds")))
 
 (defcustom company-begin-commands t
-  "*A list of commands following which company will start completing.
+  "A list of commands following which company will start completing.
 If this is t, it will complete after any command.  See `company-idle-delay'.
 
 Alternatively any command with a non-nil 'company-begin property is treated as
@@ -508,13 +508,13 @@ if it was on this list."
                  (repeat :tag "Commands" function)))
 
 (defcustom company-show-numbers nil
-  "*If enabled, show quick-access numbers for the first ten candidates."
+  "If enabled, show quick-access numbers for the first ten candidates."
   :group 'company
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
 (defvar company-end-of-buffer-workaround t
-  "*Work around a visualization bug when completing at the end of the buffer.
+  "Work around a visualization bug when completing at the end of the buffer.
 The work-around consists of adding a newline.")
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -578,7 +578,7 @@ The work-around consists of adding a newline.")
 
 ;;;###autoload
 (define-minor-mode company-mode
-  "\"complete anything\"; in in-buffer completion framework.
+  "\"complete anything\"; is an in-buffer completion framework.
 Completion starts automatically, depending on the values
 `company-idle-delay' and `company-minimum-prefix-length'.
 

@@ -39,12 +39,12 @@
 
 (defcustom company-eclim-executable
   (or (executable-find "eclim") (company-eclim-executable-find))
-  "*Location of eclim executable."
+  "Location of eclim executable."
   :group 'company
   :type 'file)
 
 (defcustom company-eclim-auto-save t
-  "*Determines whether to save the buffer when retrieving completions.
+  "Determines whether to save the buffer when retrieving completions.
 eclim can only complete correctly when the buffer has been saved."
   :group 'company
   :type '(choice (const :tag "Off" nil)

@@ -29,7 +29,7 @@
 (eval-when-compile (require 'cl))
 
 (defcustom company-xcode-xcodeindex-executable (executable-find "xcodeindex")
-  "*Location of xcodeindex executable."
+  "Location of xcodeindex executable."
   :group 'company-xcode
   :type 'file)
 
@@ -43,7 +43,7 @@
 (defcustom company-xcode-types
   '("Class" "Constant" "Enum" "Macro" "Modeled Class" "Structure"
     "Type" "Union" "Function")
-  "*The types of symbols offered by `company-xcode'.
+  "The types of symbols offered by `company-xcode'.
 No context-enabled completion is available.  Types like methods will be
 offered regardless of whether the class supports them.  The defaults should be
 valid in most contexts."

@@ -31,7 +31,7 @@
 (eval-when-compile (require 'cl))
 
 (defcustom company-semantic-metadata-function 'company-semantic-summary-and-doc
-  "*The function turning a semantic tag into doc information."
+  "The function turning a semantic tag into doc information."
   :group 'company
   :type 'function)
 

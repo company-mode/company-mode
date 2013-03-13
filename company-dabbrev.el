@@ -29,7 +29,7 @@
 (eval-when-compile (require 'cl))
 
 (defcustom company-dabbrev-other-buffers 'all
-  "*Determines whether `company-dabbrev' should search other buffers.
+  "Determines whether `company-dabbrev' should search other buffers.
 If `all', search all other buffers.  If t, search buffers with the same
 major mode.
 See also `company-dabbrev-time-limit'."
@@ -39,13 +39,13 @@ See also `company-dabbrev-time-limit'."
                  (const :tag "All" all)))
 
 (defcustom company-dabbrev-time-limit .5
-  "*Determines how many seconds `company-dabbrev' should look for matches."
+  "Determines how many seconds `company-dabbrev' should look for matches."
   :group 'company
   :type '(choice (const :tag "Off" nil)
                  (number :tag "Seconds")))
 
 (defcustom company-dabbrev-char-regexp "\\sw"
-  "*A regular expression matching the characters `company-dabbrev' looks for."
+  "A regular expression matching the characters `company-dabbrev' looks for."
   :group 'company
   :type 'regexp)
 
