@@ -319,7 +319,8 @@ If this many lines are not available, prefer to display the tooltip above."
                 (return t))))))
 
 (defun company-capf (command &optional arg &rest args)
-  "Adapter for Company completion to use `completion-at-point-functions'."
+  "`company-mode' back-end using `completion-at-point-functions'.
+Requires Emacs 24.1 or newer."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-capf))
@@ -328,19 +329,18 @@ If this many lines are not available, prefer to display the tooltip above."
                                   ;; Ignore misbehaving functions.
                                   #'completion--capf-wrapper 'optimist)))
        (when (consp res)
-         (if (> (nth 1 res) (point))
+         (if (> (nth 2 res) (point))
              'stop
-           (buffer-substring-no-properties (nth 0 res) (point))))))
+           (buffer-substring-no-properties (nth 1 res) (point))))))
     (candidates
      (let ((res (run-hook-wrapped 'completion-at-point-functions
                                   ;; Ignore misbehaving functions.
                                   #'completion--capf-wrapper 'optimist)))
        (when (consp res)
-         (all-completions arg (nth 2 res)
-                          (plist-get (nthcdr 3 res) :predicate)))))))
+         (all-completions arg (nth 3 res)
+                          (plist-get (nthcdr 4 res) :predicate)))))))
 
-(defcustom company-backends '(;; company-capf ;FIXME: Untested!
-                              company-elisp company-nxml company-css
+(defcustom company-backends '(company-elisp company-nxml company-css
                               company-eclim company-semantic company-clang
                               company-xcode company-ropemacs
                               (company-gtags company-etags company-dabbrev-code
