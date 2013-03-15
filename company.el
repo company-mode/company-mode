@@ -76,6 +76,7 @@
 ;;    used, so, for example, it's not as easy to circumvent `paredit-mode'
 ;;    accidentally when it's enabled.
 ;;    Fixed two old tooltip annoyances.
+;;    Improved tooltip performance.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
@@ -1652,9 +1653,8 @@ Example:
 
 (defun company-buffer-lines (beg end)
   (goto-char beg)
-  (let ((row (company--row))
-        lines)
-    (while (and (equal (move-to-window-line (incf row)) row)
+  (let (lines)
+    (while (and (zerop (forward-line 1))
                 (<= (point) end))
       (push (buffer-substring beg (min end (1- (point)))) lines)
       (setq beg (point)))
