@@ -1435,13 +1435,17 @@ To show the number next to the candidates in some back-ends, enable
     (make-string len ?\ )))
 
 (defsubst company-safe-substring (str from &optional to)
-  (let ((len (string-width str)))
-    (if (> from len)
-        ""
-      (if (and to (> to len))
-          (concat (substring str from)
-                  (company-space-string (- to len)))
-        (substring str from to)))))
+  (if (> from (string-width str))
+      ""
+    (if to
+        (let* ((res (substring str from (min to (length str))))
+               (padding (- to from (string-width res)))
+               (cutting-comp (and (> (length str) to)
+                                  (get-text-property to 'composition str))))
+          (concat res
+                  (when (and (> padding 0) (not cutting-comp))
+                    (company-space-string padding))))
+      (substring str from))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
