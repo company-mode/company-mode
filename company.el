@@ -75,6 +75,7 @@
 ;;    the completion keymap is active, other minor modes' keymaps are still
 ;;    used, so, for example, it's not as easy to circumvent `paredit-mode'
 ;;    accidentally when it's enabled.
+;;    Fixed two old tooltip annoyances.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
@@ -1434,7 +1435,7 @@ To show the number next to the candidates in some back-ends, enable
     (make-string len ?\ )))
 
 (defsubst company-safe-substring (str from &optional to)
-  (let ((len (length str)))
+  (let ((len (string-width str)))
     (if (> from len)
         ""
       (if (and to (> to len))
@@ -1681,9 +1682,12 @@ Example:
     ;; Append whole new lines.
     (while lines
       (push (concat (company-space-string column) (pop lines)) new))
-    (concat (when nl "\n")
-            (mapconcat 'identity (nreverse new) "\n")
-            "\n")))
+
+    (let ((str (concat (when nl "\n")
+                       (mapconcat 'identity (nreverse new) "\n")
+                       "\n")))
+      (font-lock-append-text-property 0 (length str) 'face 'default str)
+      str)))
 
 (defun company--create-lines (selection limit)
 
