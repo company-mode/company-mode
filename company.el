@@ -1437,15 +1437,18 @@ To show the number next to the candidates in some back-ends, enable
 (defsubst company-safe-substring (str from &optional to)
   (if (> from (string-width str))
       ""
-    (if to
-        (let* ((res (substring str from (min to (length str))))
-               (padding (- to from (string-width res)))
-               (cutting-comp (and (> (length str) to)
-                                  (get-text-property to 'composition str))))
-          (concat res
-                  (when (and (> padding 0) (not cutting-comp))
-                    (company-space-string padding))))
-      (substring str from))))
+    (with-temp-buffer
+      (insert str)
+      (move-to-column from)
+      (let ((beg (point)))
+        (if to
+            (progn
+              (move-to-column to)
+              (concat (buffer-substring beg (point))
+                      (let ((padding (- to (current-column))))
+                        (when (> padding 0)
+                          (company-space-string padding)))))
+          (buffer-substring beg (point-max)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
