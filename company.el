@@ -1657,7 +1657,7 @@ Example:
 (defun company-buffer-lines (beg end)
   (goto-char beg)
   (let (lines)
-    (while (and (zerop (forward-line 1))
+    (while (and (= 1 (vertical-motion 1))
                 (<= (point) end))
       (push (buffer-substring beg (min end (1- (point)))) lines)
       (setq beg (point)))
