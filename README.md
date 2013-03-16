@@ -1,1 +1,1 @@
-See <http://company-mode.github.com/> for more information.
+See the [homepage](http://company-mode.github.com/).
