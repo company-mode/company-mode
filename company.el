@@ -866,11 +866,12 @@ can retrieve meta-data for them."
     (setq company-candidates nil)))
 
 (defun company-calculate-candidates (prefix)
-  (let ((candidates (cdr (assoc prefix company-candidates-cache))))
+  (let ((candidates (cdr (assoc prefix company-candidates-cache)))
+        (ignore-case (company-call-backend 'ignore-case)))
     (or candidates
         (when company-candidates-cache
           (let ((len (length prefix))
-                (completion-ignore-case (company-call-backend 'ignore-case))
+                (completion-ignore-case ignore-case)
                 prev)
             (dotimes (i (1+ len))
               (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
@@ -892,8 +893,10 @@ can retrieve meta-data for them."
               (while c2
                 (setcdr c2 (progn (while (equal (pop c2) (car c2)))
                                   c2)))))))
-    (if (or (cdr candidates)
-            (not (equal (car candidates) prefix)))
+    (if (and candidates
+             (or (cdr candidates)
+                 (not (eq t (compare-strings (car candidates) nil nil
+                                             prefix nil nil ignore-case)))))
         ;; Don't start when already completed and unique.
         candidates
       ;; Not the right place? maybe when setting?
