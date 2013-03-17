@@ -76,7 +76,7 @@
 ;;    used, so, for example, it's not as easy to circumvent `paredit-mode'
 ;;    accidentally when it's enabled.
 ;;    Fixed two old tooltip annoyances.
-;;    Improved tooltip performance.
+;;    Some performance improvements.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
@@ -622,7 +622,8 @@ keymap during active completions (`company-active-map'):
     (kill-local-variable 'company-point)))
 
 (define-globalized-minor-mode global-company-mode company-mode
-  (lambda () (company-mode 1)))
+  (lambda () (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
+          (company-mode 1))))
 
 (defsubst company-assert-enabled ()
   (unless company-mode
