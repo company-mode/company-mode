@@ -1,6 +1,6 @@
 ;;; company-clang.el --- A company-mode completion back-end for clang
 
-;; Copyright (C) 2009, 2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -77,7 +77,7 @@ Prefix files (-include ...) can be selected with
   ;; Prefixes seem to be called .pch.  Pre-compiled headers do, too.
   ;; So we look at the magic number to rule them out.
   (let* ((file (company-clang--guess-pch-file buffer-file-name))
-         (magic-number (company-clang--file-substring file 0 4)))
+         (magic-number (and file (company-clang--file-substring file 0 4))))
     (unless (member magic-number '("CPCH" "gpch"))
       file)))
 
