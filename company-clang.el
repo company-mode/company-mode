@@ -101,9 +101,11 @@ Prefix files (-include ...) can be selected with
 
 ;; TODO: How to handle OVERLOAD and Pattern?
 (defconst company-clang--completion-pattern
-  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:]*\\)")
+  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:]*\\)\\(?: : \\(.*\\)$\\)?")
 
 (defconst company-clang--error-buffer-name "*clang error*")
+
+(defvar company-clang--meta-cache nil)
 
 (defun company-clang--parse-output (prefix)
   (goto-char (point-min))
@@ -111,8 +113,12 @@ Prefix files (-include ...) can be selected with
                          (regexp-quote prefix)))
         (case-fold-search nil)
         lines match)
+    (setq company-clang--meta-cache (make-hash-table :test 'equal))
     (while (re-search-forward pattern nil t)
       (setq match (match-string-no-properties 1))
+      (let ((meta (match-string-no-properties 2)))
+        (when (and meta (not (string= match meta)))
+          (puthash match meta company-clang--meta-cache)))
       (unless (equal match "Pattern")
         (push match lines)))
     lines))
@@ -225,6 +231,12 @@ Completions only work correctly when the buffer has been saved.
                  (not (company-in-string-or-comment))
                  (or (company-grab-symbol) 'stop)))
     (candidates (company-clang--candidates arg))
+    (meta (let ((meta (gethash arg company-clang--meta-cache)))
+            (when meta
+              (replace-regexp-in-string
+               "#]" " "
+               (replace-regexp-in-string "[<{[]#\\|#[>}]" "" meta t)
+               t))))
     (post-completion (and (derived-mode-p 'objc-mode)
                           (string-match ":" arg)
                           (company-clang-objc-templatify arg)))))

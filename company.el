@@ -77,6 +77,7 @@
 ;;    accidentally when it's enabled.
 ;;    Fixed two old tooltip annoyances.
 ;;    Some performance improvements.
+;;    `company-clang' now shows meta information, too.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
