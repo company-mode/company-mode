@@ -576,7 +576,7 @@ The work-around consists of adding a newline.")
          (unless (memq backend company--disabled-backends)
            (message "Company back-end '%s' could not be initialized:\n%s"
                     backend (error-message-string err)))
-         (push backend company--disabled-backends)
+         (pushnew backend company--disabled-backends)
          nil))
     (mapc 'company-init-backend backend)))
 
