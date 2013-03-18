@@ -344,7 +344,7 @@ Requires Emacs 24.1 or newer."
                           (plist-get (nthcdr 4 res) :predicate)))))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-eclim company-semantic company-clang
+                              company-clang company-semantic company-eclim
                               company-xcode company-ropemacs
                               (company-gtags company-etags company-dabbrev-code
                                company-pysmell company-keywords)

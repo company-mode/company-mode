@@ -1,6 +1,6 @@
 ;;; company-eclim.el --- A company-mode completion back-end for eclim.
 
-;; Copyright (C) 2009, 2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -19,9 +19,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
-
 ;;; Commentary:
 ;;
+;; This completion backend is pretty barebone.
+;;
+;; `emacs-eclim' provides an alternative backend, and it also allows you to
+;; actually control Eclim from Emacs. Check it out.
+;;
+;; Eclim version 1.7.13 or newer (?) is required.
 
 ;;; Code:
 
@@ -61,28 +66,23 @@ eclim can only complete correctly when the buffer has been saved."
 (defvar company-eclim--doc nil)
 (make-variable-buffer-local 'company-eclim--doc)
 
-(defun company-eclim--buffer-lines ()
-  (goto-char (point-max))
-  (let (lines)
-    (while (= 0 (forward-line -1))
-      (push (buffer-substring-no-properties (point-at-bol) (point-at-eol))
-            lines))
-    lines))
-
 (defun company-eclim--call-process (&rest args)
   (let ((coding-system-for-read 'utf-8)
         res)
+    (require 'json)
     (with-temp-buffer
       (if (= 0 (setq res (apply 'call-process company-eclim-executable nil t nil
                                 "-command" args)))
-          (company-eclim--buffer-lines)
+          (let ((json-array-type 'list))
+            (goto-char (point-min))
+            (unless (eobp)
+              (json-read)))
         (message "Company-eclim command failed with error %d:\n%s" res
                  (buffer-substring (point-min) (point-max)))
         nil))))
 
 (defun company-eclim--project-list ()
-  (mapcar (lambda (line) (nreverse (split-string line " *- *" nil)))
-          (company-eclim--call-process "project_list")))
+  (company-eclim--call-process "project_list"))
 
 (defun company-eclim--project-dir ()
   (if (eq company-eclim--project-dir 'unknown)
@@ -95,8 +95,12 @@ eclim can only complete correctly when the buffer has been saved."
 (defun company-eclim--project-name ()
   (if (eq company-eclim--project-name 'unknown)
       (setq company-eclim--project-name
-            (car (cddr (assoc (company-eclim--project-dir)
-                              (company-eclim--project-list)))))
+            (let ((project (find-if (lambda (project)
+                                      (equal (cdr (assoc 'path project))
+                                             (company-eclim--project-dir)))
+                                    (company-eclim--project-list))))
+              (when project
+                (cdr (assoc 'name project)))))
     company-eclim--project-name))
 
 (defun company-eclim--candidates (prefix)
@@ -109,19 +113,28 @@ eclim can only complete correctly when the buffer has been saved."
         (basic-save-buffer))
       ;; FIXME: Sometimes this isn't finished when we complete.
       (company-eclim--call-process "java_src_update"
-                                  "-p" (company-eclim--project-name)
-                                  "-f" project-file))
+                                   "-p" (company-eclim--project-name)
+                                   "-f" project-file))
     (setq company-eclim--doc
-          (mapcar (lambda (line)
-                    (cdr (split-string line "|" nil)))
-                  (company-eclim--call-process
-                   "java_complete" "-p" (company-eclim--project-name)
-                   "-f" project-file
-                   "-o" (number-to-string (1- (point)))
-                   "-e" "utf-8"
-                   "-l" "standard"))))
+          (cdr (assoc 'completions
+                      (company-eclim--call-process
+                       "java_complete" "-p" (company-eclim--project-name)
+                       "-f" project-file
+                       "-o" (number-to-string (1- (point)))
+                       "-e" "utf-8"
+                       "-l" "standard")))))
   (let ((completion-ignore-case nil))
-    (all-completions prefix (mapcar 'car company-eclim--doc))))
+    ;; TODO: Handle overloaded methods somehow. Show one candidate per overload?
+    ;; That would look nice, but kinda useless: a bunch of candidates for the
+    ;; same completion. Maybe do expansion like `company-clang-objc-templatify'.
+    (all-completions prefix (mapcar (lambda (item) (cdr (assoc 'completion item)))
+                                    company-eclim--doc))))
+
+(defun company-eclim--meta (candidate)
+  (cdr (assoc 'info (find-if
+                     (lambda (item) (equal (cdr (assoc 'completion item))
+                                      arg))
+                     company-eclim--doc))))
 
 (defun company-eclim (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for eclim.
@@ -139,7 +152,8 @@ Completions only work correctly when the buffer has been saved.
                  (not (company-in-string-or-comment))
                  (or (company-grab-symbol) 'stop)))
     (candidates (company-eclim--candidates arg))
-    (meta (cadr (assoc arg company-eclim--doc)))
+    (meta (company-eclim--meta arg))
+    (duplicates t)
     ;; because "" doesn't return everything
     (no-cache (equal arg ""))))
 
