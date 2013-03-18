@@ -1,6 +1,6 @@
 ;;; company-files.el --- A company-mode completion back-end for file names
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -67,7 +67,9 @@
         (when (file-directory-p file)
           ;; Add one level of children.
           (dolist (child (company-files-directory-files file ""))
-            (push (concat file child) candidates))))
+            (push (concat file
+                          (unless (eq (aref file (1- (length file))) ?/) "/")
+                          child) candidates))))
       (setq company-files-completion-cache (cons dir (nreverse candidates))))
     (cdr company-files-completion-cache)))
 
