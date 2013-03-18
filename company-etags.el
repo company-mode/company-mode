@@ -79,8 +79,7 @@ buffer automatically."
                 (when (fboundp 'find-tag-noselect)
                   (save-excursion
                     (let ((buffer (find-tag-noselect arg)))
-                      (cons buffer (with-current-buffer buffer (point))))))))
-    (sorted t)))
+                      (cons buffer (with-current-buffer buffer (point))))))))))
 
 (provide 'company-etags)
 ;;; company-etags.el ends here
