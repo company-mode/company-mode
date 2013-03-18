@@ -219,7 +219,7 @@
   "A `company-mode' back-end for programming language keywords."
   (interactive (list 'interactive))
   (case command
-    (interactive (company-begin-backend 'company-))
+    (interactive (company-begin-backend 'company-keywords))
     (prefix (and (assq major-mode company-keywords-alist)
                  (not (company-in-string-or-comment))
                  (or (company-grab-symbol) 'stop)))
