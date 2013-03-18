@@ -21,12 +21,12 @@
 
 ;;; Commentary:
 ;;
+;; Eclim version 1.7.13 or newer (?) is required.
+;;
 ;; This completion backend is pretty barebone.
 ;;
 ;; `emacs-eclim' provides an alternative backend, and it also allows you to
-;; actually control Eclim from Emacs. Check it out.
-;;
-;; Eclim version 1.7.13 or newer (?) is required.
+;; actually control Eclim from Emacs.
 
 ;;; Code:
 
