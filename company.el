@@ -733,11 +733,10 @@ keymap during active completions (`company-active-map'):
                              backends)))
     (case command
       (candidates
-       (apply 'append (mapcar (lambda (backend)
-                                (when (equal (funcall backend 'prefix)
-                                             (car args))
-                                  (apply backend 'candidates args)))
-                              backends)))
+       (loop for backend in backends
+             when (equal (funcall backend 'prefix)
+                         (car args))
+             nconc (apply backend 'candidates args)))
       (sorted nil)
       (duplicates t)
       (otherwise
