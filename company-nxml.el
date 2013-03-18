@@ -1,6 +1,6 @@
 ;;; company-nxml.el --- A company-mode completion back-end for nxml-mode
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -26,9 +26,18 @@
 ;;; Code:
 
 (require 'company)
-(require 'nxml-mode)
-(require 'rng-nxml)
 (eval-when-compile (require 'cl))
+
+(defvar rng-open-elements)
+(defvar rng-validate-mode)
+(defvar rng-in-attribute-regex)
+(defvar rng-in-attribute-value-regex)
+(declare-function rng-set-state-after "rng-nxml")
+(declare-function rng-match-possible-start-tag-names "rng-match")
+(declare-function rng-adjust-state-for-attribute "rng-nxml")
+(declare-function rng-match-possible-attribute-names "rng-match")
+(declare-function rng-adjust-state-for-attribute-value "rng-nxml")
+(declare-function rng-match-possible-value-strings "rng-match")
 
 (defconst company-nxml-token-regexp
   "\\(?:[_[:alpha:]][-._[:alnum:]]*\\_>\\)")
