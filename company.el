@@ -78,6 +78,8 @@
 ;;    Fixed two old tooltip annoyances.
 ;;    Some performance improvements.
 ;;    `company-clang' now shows meta information, too.
+;;    Candidates from grouped back-ends are merged more conservatively: only
+;;    back-ends that return the same prefix at point are used.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
@@ -731,7 +733,10 @@ keymap during active completions (`company-active-map'):
                              backends)))
     (case command
       (candidates
-       (apply 'append (mapcar (lambda (backend) (apply backend command args))
+       (apply 'append (mapcar (lambda (backend)
+                                (when (equal (funcall backend 'prefix)
+                                             (car args))
+                                  (apply backend 'candidates args)))
                               backends)))
       (sorted nil)
       (duplicates t)
