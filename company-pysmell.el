@@ -22,6 +22,7 @@
 
 ;;; Commentary:
 ;;
+;; Someone who can actually install Pysmell should tell us if this still works.
 
 ;;; Code:
 
