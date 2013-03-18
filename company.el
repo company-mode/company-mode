@@ -727,17 +727,19 @@ keymap during active completions (`company-active-map'):
     (apply 'company--multi-backend-adapter company-backend args)))
 
 (defun company--multi-backend-adapter (backends command &rest args)
-  (case command
-    (candidates
-     (apply 'append (mapcar (lambda (backend) (apply backend command args))
-                            backends)))
-    (sorted nil)
-    (duplicates t)
-    (otherwise
-     (let (value)
-       (dolist (backend backends)
-         (when (setq value (apply backend command args))
-           (return value)))))))
+  (let ((backends (remove-if (lambda (b) (eq 'failed (get b 'company-init)))
+                             backends)))
+    (case command
+      (candidates
+       (apply 'append (mapcar (lambda (backend) (apply backend command args))
+                              backends)))
+      (sorted nil)
+      (duplicates t)
+      (otherwise
+       (let (value)
+         (dolist (backend backends)
+           (when (setq value (apply backend command args))
+             (return value))))))))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
