@@ -22,7 +22,8 @@
 
 ;;; Commentary:
 ;;
-;; Someone who can actually install Pysmell should tell us if this still works.
+;; The main problem with using this backend is installing Pysmell.
+;; I couldn't manage to do that. --Dmitry
 
 ;;; Code:
 
