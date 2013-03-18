@@ -1,6 +1,6 @@
 ;;; company-semantic.el --- A company-mode back-end using CEDET Semantic
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -26,9 +26,18 @@
 ;;; Code:
 
 (require 'company)
-(or (require 'semantic-analyze nil t)
-    (require 'semantic/analyze))
 (eval-when-compile (require 'cl))
+
+(defvar semantic-idle-summary-function)
+(declare-function semantic-documentation-for-tag "semantic/doc" )
+(declare-function semantic-analyze-current-context "semantic/analyze")
+(declare-function semantic-analyze-possible-completions "semantic/complete")
+(declare-function semantic-analyze-find-tags-by-prefix "semantic/analyze/fcn")
+(declare-function semantic-tag-class "semantic/tag")
+(declare-function semantic-tag-name "semantic/tag")
+(declare-function semantic-tag-start "semantic/tag")
+(declare-function semantic-tag-buffer "semantic/tag")
+(declare-function semantic-active-p "semantic")
 
 (defcustom company-semantic-metadata-function 'company-semantic-summary-and-doc
   "The function turning a semantic tag into doc information."
@@ -106,8 +115,9 @@ Symbols are chained by \".\" or \"->\"."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-semantic))
-    (prefix (and (memq major-mode company-semantic-modes)
+    (prefix (and (featurep 'semantic)
                  (semantic-active-p)
+                 (memq major-mode company-semantic-modes)
                  (not (company-in-string-or-comment))
                  (or (company-semantic--grab) 'stop)))
     (candidates (if (and (equal arg "")
