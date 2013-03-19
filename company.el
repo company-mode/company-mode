@@ -53,10 +53,9 @@
 ;;     (candidates (list "foobar" "foobaz" "foobarbaz"))
 ;;     (meta (format "This value is named %s" arg))))
 ;;
-;; Sometimes it is a good idea to mix two back-ends together, for example to
-;; enrich gtags with dabbrev-code results (to emulate local variables):
-;; To do this, add a list with the merged back-ends as an element in
-;; company-backends.
+;; Sometimes it is a good idea to mix several back-ends together, for example to
+;; enrich gtags with dabbrev-code results (to emulate local variables).
+;; To do this, add a list with both back-ends as an element in company-backends.
 ;;
 ;; Known Issues:
 ;; When point is at the very end of the buffer, the pseudo-tooltip appears very
