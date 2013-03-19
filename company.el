@@ -29,7 +29,7 @@
 ;; candidates are called back-ends, modules for displaying them are front-ends.
 ;;
 ;; Company comes with many back-ends, e.g. `company-elisp'.  These are
-;; distributed in individual files and can be used individually.
+;; distributed in separate files and can be used individually.
 ;;
 ;; Place company.el and the back-ends you want to use in a directory and add the
 ;; following to your .emacs:
