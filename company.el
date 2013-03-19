@@ -1,4 +1,4 @@
-;;; company.el --- Extensible inline text completion mechanism
+;;; company.el --- Modular in-buffer completion framework
 
 ;; Copyright (C) 2009-2013  Free Software Foundation, Inc.
 
