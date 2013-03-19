@@ -1776,7 +1776,7 @@ Example:
 (defsubst company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
 Returns a negative number if the tooltip should be displayed above point."
-  (let* ((lines (count-lines (window-start) (point-at-bol)))
+  (let* ((lines (company--row))
          (below (- (company--window-inner-height) 1 lines)))
     (if (and (< below (min company-tooltip-minimum company-candidates-length))
              (> lines below))
