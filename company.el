@@ -1934,6 +1934,10 @@ Returns a negative number if the tooltip should be displayed above point."
 (defvar company-echo-last-msg nil)
 (make-variable-buffer-local 'company-echo-last-msg)
 
+(defvar company-echo-timer nil)
+
+(defvar company-echo-delay .01)
+
 (defun company-echo-show (&optional getter)
   (when getter
     (setq company-echo-last-msg (funcall getter)))
