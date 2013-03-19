@@ -3,9 +3,10 @@
 ;; Copyright (C) 2009-2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
-;; Version: 0.5
+;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
+;; Version: 0.6
 ;; Keywords: abbrev, convenience, matching
-;; URL: http://nschum.de/src/emacs/company-mode/
+;; URL: http://company-mode.github.com/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x, GNU Emacs 24.x
 
 ;; This file is part of GNU Emacs.
@@ -64,7 +65,8 @@
 ;;
 ;;; Change Log:
 ;;
-;;    Switching tags now works correctly in `company-etags'.
+;; 2013-03-19 (0.6)
+;;    Switching between tag files now works correctly with `company-etags'.
 ;;    Clang completions now include macros and are case-sensitive.
 ;;    Added `company-capf': completion adapter using
 ;;    `completion-at-point-functions'.  (Stefan Monnier)
@@ -81,6 +83,7 @@
 ;;    back-ends that return the same prefix at point are used.
 ;;    Loading of `nxml', `semantic', `pymacs' and `ropemacs' is now deferred.
 ;;    `company-pysmell' is not used by default anymore.
+;;    Across-the-board bugfixing.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
