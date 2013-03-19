@@ -79,6 +79,8 @@
 ;;    `company-clang' now shows meta information, too.
 ;;    Candidates from grouped back-ends are merged more conservatively: only
 ;;    back-ends that return the same prefix at point are used.
+;;    Loading of `nxml', `semantic', `pysmell' and `ropemacs' is now deferred.
+;;    `company-pysmell' is not used by default anymore.
 ;;
 ;; 2010-02-24 (0.5)
 ;;    `company-ropemacs' now provides location and docs.  (Fernando H. Silva)
@@ -348,7 +350,7 @@ Requires Emacs 24.1 or newer."
                               company-clang company-semantic company-eclim
                               company-xcode company-ropemacs
                               (company-gtags company-etags company-dabbrev-code
-                               company-pysmell company-keywords)
+                               company-keywords)
                               company-oddmuse company-files company-dabbrev)
   "The list of active back-ends (completion engines).
 Each list elements can itself be a list of back-ends.  In that case their
