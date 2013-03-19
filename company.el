@@ -79,7 +79,7 @@
 ;;    `company-clang' now shows meta information, too.
 ;;    Candidates from grouped back-ends are merged more conservatively: only
 ;;    back-ends that return the same prefix at point are used.
-;;    Loading of `nxml', `semantic', `pysmell' and `ropemacs' is now deferred.
+;;    Loading of `nxml', `semantic', `pymacs' and `ropemacs' is now deferred.
 ;;    `company-pysmell' is not used by default anymore.
 ;;
 ;; 2010-02-24 (0.5)
