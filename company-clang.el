@@ -181,16 +181,19 @@ Prefix files (-include ...) can be selected with
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconst company-clang-required-version "1.1")
+(defconst company-clang-required-version 1.1)
 
 (defsubst company-clang-version ()
   "Return the version of `company-clang-executable'."
   (with-temp-buffer
     (call-process company-clang-executable nil t nil "--version")
     (goto-char (point-min))
-    (if (re-search-forward "clang version \\([0-9.]+\\)" nil t)
-        (match-string-no-properties 1)
-      "0")))
+    (if (re-search-forward "clang\\(?: version \\|-\\)\\([0-9.]+\\)" nil t)
+        (let ((ver (string-to-number (match-string-no-properties 1))))
+          (if (> ver 100)
+              (/ ver 100)
+            ver))
+      0)))
 
 (defun company-clang-objc-templatify (selector)
   (let* ((end (point))
@@ -222,8 +225,7 @@ Completions only work correctly when the buffer has been saved.
     (interactive (company-begin-backend 'company-clang))
     (init (unless company-clang-executable
             (error "Company found no clang executable"))
-          (when (version< (company-clang-version)
-                          company-clang-required-version)
+          (when (< (company-clang-version) company-clang-required-version)
             (error "Company requires clang version 1.1")))
     (prefix (and (memq major-mode company-clang-modes)
                  buffer-file-name
