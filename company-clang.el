@@ -222,10 +222,11 @@ Completions only work correctly when the buffer has been saved.
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-clang))
-    (init (unless company-clang-executable
-            (error "Company found no clang executable"))
-          (when (< (company-clang-version) company-clang-required-version)
-            (error "Company requires clang version 1.1")))
+    (init (when (memq major-mode company-clang-modes)
+            (unless company-clang-executable
+              (error "Company found no clang executable"))
+            (when (< (company-clang-version) company-clang-required-version)
+              (error "Company requires clang version 1.1"))))
     (prefix (and (memq major-mode company-clang-modes)
                  buffer-file-name
                  company-clang-executable

@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-clang` is now only initialized in supported buffers.
+  So, no error messages if you don't have Clang until you open a C file.
 * `company-clang` recognizes Clang included with recent Xcode.
 * New commands `company-select-previous-or-abort` and
   `company-select-next-or-abort`, bound to `<up>` and `<down>`.
