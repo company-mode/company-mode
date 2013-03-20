@@ -458,8 +458,8 @@ The work-around consists of adding a newline.")
     (define-key keymap "\C-g" 'company-abort)
     (define-key keymap (kbd "M-n") 'company-select-next)
     (define-key keymap (kbd "M-p") 'company-select-previous)
-    (define-key keymap (kbd "<down>") 'company-select-next)
-    (define-key keymap (kbd "<up>") 'company-select-previous)
+    (define-key keymap (kbd "<down>") 'company-select-next-or-abort)
+    (define-key keymap (kbd "<up>") 'company-select-previous-or-abort)
     (define-key keymap [down-mouse-1] 'ignore)
     (define-key keymap [down-mouse-3] 'ignore)
     (define-key keymap [mouse-1] 'company-complete-mouse)
@@ -1191,9 +1191,7 @@ can retrieve meta-data for them."
   (interactive)
   (company-search-assert-enabled)
   (company-search-mode 0)
-  (when last-input-event
-    (clear-this-command-keys t)
-    (setq unread-command-events (list last-input-event))))
+  (company--unread-last-input))
 
 (defvar company-search-map
   (let ((i 0)
@@ -1202,7 +1200,7 @@ can retrieve meta-data for them."
         (set-char-table-range (nth 1 keymap) (cons #x100 (max-char))
                               'company-search-printing-char)
       (with-no-warnings
-        ;; obselete in Emacs 23
+        ;; obsolete in Emacs 23
         (let ((l (generic-character-list))
               (table (nth 1 keymap)))
           (while l
@@ -1296,6 +1294,24 @@ followed by `company-search-kill-others' after each input."
   (interactive)
   (when (company-manual-begin)
     (company-set-selection (1- company-selection))))
+
+(defun company-select-next-or-abort ()
+  "Select the next candidate if more than one, else abort
+and invoke the normal binding."
+  (interactive)
+  (if (> company-candidates-length 1)
+      (company-select-next)
+    (company-abort)
+    (company--unread-last-input)))
+
+(defun company-select-previous-or-abort ()
+  "Select the previous candidate if more than one, else abort
+and invoke the normal binding."
+  (interactive)
+  (if (> company-candidates-length 1)
+      (company-select-previous)
+    (company-abort)
+    (company--unread-last-input)))
 
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
@@ -1415,9 +1431,12 @@ To show the number next to the candidates in some back-ends, enable
          (while (memq (setq cmd (key-binding (vector (list (read-event)))))
                       company--electric-commands)
            (call-interactively cmd))
-         (when last-input-event
-           (clear-this-command-keys t)
-           (setq unread-command-events (list last-input-event)))))))
+         (company--unread-last-input)))))
+
+(defun company--unread-last-input ()
+  (when last-input-event
+    (clear-this-command-keys t)
+    (setq unread-command-events (list last-input-event))))
 
 (defun company-show-doc-buffer ()
   "Temporarily show a buffer with the complete documentation for the selection."

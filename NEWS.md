@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* New commands `company-select-previous-or-abort` and
+  `company-select-next-or-abort`, bound to `<up>` and `<down>`.
+
 ## 2013-03-19 (0.6)
 
 * Across-the-board bugfixing.
