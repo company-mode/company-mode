@@ -1752,8 +1752,7 @@ Returns a negative number if the tooltip should be displayed above point."
                             args))
 
         (overlay-put ov 'company-column column)
-        (overlay-put ov 'company-height (abs height))
-        (overlay-put ov 'window (selected-window))))))
+        (overlay-put ov 'company-height (abs height))))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
   (let ((col-row (company--col-row pos)))
