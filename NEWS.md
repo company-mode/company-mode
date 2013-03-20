@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-clang` recognizes Clang included with recent Xcode.
 * New commands `company-select-previous-or-abort` and
   `company-select-next-or-abort`, bound to `<up>` and `<down>`.
 
