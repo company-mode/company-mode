@@ -202,8 +202,8 @@ Prefix files (-include ...) can be selected with
     (save-excursion
       (goto-char beg)
       (while (search-forward ":" end t)
-        (replace-match ":  ")
-        (incf end 2)
+        (replace-match ": ")
+        (incf end)
         (company-template-add-field templ (1- (match-end 0)) "<arg>"))
       (delete-char -1))
     (company-template-move-to-first templ)))
