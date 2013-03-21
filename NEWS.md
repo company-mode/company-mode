@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-eclim` shows method overloads and inserts call templates with placeholders.
 * `company-clang` ObjC arguments template insertion now requires explicit user action.
 * `company-clang-objc-templatify` does not insert spaces after colons anymore.
 * `company-clang` is now only initialized in supported buffers.

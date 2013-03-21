@@ -116,25 +116,38 @@ eclim can only complete correctly when the buffer has been saved."
                                    "-p" (company-eclim--project-name)
                                    "-f" project-file))
     (setq company-eclim--doc
-          (cdr (assoc 'completions
-                      (company-eclim--call-process
-                       "java_complete" "-p" (company-eclim--project-name)
-                       "-f" project-file
-                       "-o" (number-to-string (1- (point)))
-                       "-e" "utf-8"
-                       "-l" "standard")))))
+          (make-hash-table :test 'equal))
+    (dolist (item (cdr (assoc 'completions
+                              (company-eclim--call-process
+                               "java_complete" "-p" (company-eclim--project-name)
+                               "-f" project-file
+                               "-o" (number-to-string (1- (point)))
+                               "-e" "utf-8"
+                               "-l" "standard"))))
+      (let* ((meta (cdr (assoc 'info item)))
+             (completion meta))
+        (when (string-match " [:-]" completion)
+          (setq completion (substring completion 0 (match-beginning 0))))
+        (puthash completion meta company-eclim--doc))))
   (let ((completion-ignore-case nil))
-    ;; TODO: Handle overloaded methods somehow. Show one candidate per overload?
-    ;; That would look nice, but kinda useless: a bunch of candidates for the
-    ;; same completion. Maybe do expansion like `company-clang-objc-templatify'.
-    (all-completions prefix (mapcar (lambda (item) (cdr (assoc 'completion item)))
-                                    company-eclim--doc))))
+    (all-completions prefix company-eclim--doc)))
 
 (defun company-eclim--meta (candidate)
-  (cdr (assoc 'info (find-if
-                     (lambda (item) (equal (cdr (assoc 'completion item))
-                                      arg))
-                     company-eclim--doc))))
+  (gethash candidate company-eclim--doc))
+
+(defun company-eclim--templatify (call)
+  (let* ((end (point))
+         (beg (- (point) (length call)))
+         (templ (company-template-declare-template beg end)))
+    (save-excursion
+      (goto-char beg)
+      (while (re-search-forward "\\([(,] ?\\)\\(?:[^ ]+ \\)\\([^ ,)]*\\)" end t)
+        (let ((name (match-string 2)))
+          (replace-match "\\1" t)
+          (decf end (- (length (match-string 0))
+                       (length (match-string 1))))
+          (company-template-add-field templ (point) (format "<%s>" name)))))
+    (company-template-move-to-first templ)))
 
 (defun company-eclim (command &optional arg &rest ignored)
   "A `company-mode' completion back-end for eclim.
@@ -153,9 +166,10 @@ Completions only work correctly when the buffer has been saved.
                  (or (company-grab-symbol) 'stop)))
     (candidates (company-eclim--candidates arg))
     (meta (company-eclim--meta arg))
-    (duplicates t)
     ;; because "" doesn't return everything
-    (no-cache (equal arg ""))))
+    (no-cache (equal arg ""))
+    (post-completion (when (string-match "([^)]" arg)
+                       (company-eclim--templatify arg)))))
 
 (provide 'company-eclim)
 ;;; company-eclim.el ends here
