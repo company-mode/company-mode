@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-clang` ObjC arguments template insertion now requires explicit user action.
 * `company-clang-objc-templatify` does not insert spaces after colons anymore.
 * `company-clang` is now only initialized in supported buffers.
   So, no error messages if you don't have Clang until you open a C file.

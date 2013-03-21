@@ -787,7 +787,9 @@ can retrieve meta-data for them."
   (push (cons company-prefix company-candidates) company-candidates-cache)
   ;; Calculate common.
   (let ((completion-ignore-case (company-call-backend 'ignore-case)))
-    (setq company-common (try-completion company-prefix company-candidates)))
+    (let ((common (try-completion company-prefix company-candidates)))
+      (setq company-common (or (company-call-backend 'common common)
+                               common))))
   (when (eq company-common t)
     (setq company-candidates nil)))
 
@@ -823,9 +825,9 @@ can retrieve meta-data for them."
              (or (cdr candidates)
                  (not (eq t (compare-strings (car candidates) nil nil
                                              prefix nil nil ignore-case)))))
-        ;; Don't start when already completed and unique.
         candidates
-      ;; Not the right place? maybe when setting?
+      ;; Already completed and unique; don't start.
+      ;; FIXME: Not the right place? maybe when setting?
       (and company-candidates t))))
 
 (defun company-idle-begin (buf win tick pos)
