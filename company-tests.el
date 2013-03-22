@@ -29,7 +29,7 @@
 (require 'company)
 (require 'company-keywords)
 
-(ert-deftest sorted-keywords ()
+(ert-deftest company-sorted-keywords ()
   "Test that keywords in `company-keywords-alist' are in alphabetical order."
   (dolist (pair company-keywords-alist)
     (when (consp (cdr pair))
@@ -38,3 +38,12 @@
           (should (not (equal prev next)))
           (should (string< prev next))
           (setq prev next))))))
+
+(ert-deftest company-good-prefix ()
+  (let ((company-minimum-prefix-length 5)
+        company--explicit-action)
+    (should (eq t (company--good-prefix-p "!@#$%")))
+    (should (eq nil (company--good-prefix-p "abcd")))
+    (should (eq nil (company--good-prefix-p 'stop)))
+    (should (eq t (company--good-prefix-p '("foo" . 5))))
+    (should (eq nil (company--good-prefix-p '("foo" . 4))))))

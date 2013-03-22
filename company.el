@@ -954,8 +954,9 @@ can retrieve meta-data for them."
 
 (defun company--good-prefix-p (prefix)
   (and (or (company-explicit-action-p)
-           (>= (or (cdr-safe prefix) (length prefix))
-               company-minimum-prefix-length))
+           (unless (eq prefix 'stop)
+             (>= (or (cdr-safe prefix) (length prefix))
+                 company-minimum-prefix-length)))
        (stringp (or (car-safe prefix) prefix))))
 
 (defun company--continue ()
