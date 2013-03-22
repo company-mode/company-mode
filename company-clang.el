@@ -245,9 +245,9 @@ Completions only work correctly when the buffer has been saved.
                "#]" " "
                (replace-regexp-in-string "[<{[]#\\|#[>}]" "" meta t)
                t))))
-    (common (and (derived-mode-p 'objc-mode)
-                 (string-match ":" arg)
-                 (substring arg 0 (match-beginning 0))))
+    (safe (and (derived-mode-p 'objc-mode)
+               (string-match ":" arg)
+               (substring arg 0 (match-beginning 0))))
     (post-completion (and (derived-mode-p 'objc-mode)
                           (string-match ":" arg)
                           (company-clang-objc-templatify arg)))))

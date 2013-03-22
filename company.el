@@ -696,6 +696,10 @@ keymap during active completions (`company-active-map'):
   "Non-nil, if explicit completion took place.")
 (make-variable-buffer-local 'company--explicit-action)
 
+(defvar company--auto-completion nil
+  "Non-nil when current candidate is being completed automatically.
+Controlled by `company-auto-complete'.")
+
 (defvar company--point-max nil)
 (make-variable-buffer-local 'company--point-max)
 
@@ -787,11 +791,14 @@ can retrieve meta-data for them."
   (push (cons company-prefix company-candidates) company-candidates-cache)
   ;; Calculate common.
   (let ((completion-ignore-case (company-call-backend 'ignore-case)))
-    (let ((common (try-completion company-prefix company-candidates)))
-      (setq company-common (or (company-call-backend 'common common)
-                               common))))
+    (setq company-common (company--safe-candidate
+                          (try-completion company-prefix company-candidates))))
   (when (eq company-common t)
     (setq company-candidates nil)))
+
+(defun company--safe-candidate (str)
+  (or (company-call-backend 'safe str)
+      str))
 
 (defun company-calculate-candidates (prefix)
   (let ((candidates (cdr (assoc prefix company-candidates-cache)))
@@ -922,7 +929,8 @@ can retrieve meta-data for them."
         ;; auto-complete
         (save-excursion
           (goto-char company-point)
-          (company-complete-selection)
+          (let ((company--auto-completion t))
+            (company-complete-selection))
           nil))
        ((and (company--string-incremental-p company-prefix new-prefix)
              (company-require-match-p))
@@ -1334,7 +1342,10 @@ and invoke the normal binding."
   "Complete the selected candidate."
   (interactive)
   (when (company-manual-begin)
-    (company-finish (nth company-selection company-candidates))))
+    (let ((result (nth company-selection company-candidates)))
+      (when company--auto-completion
+        (setq result (company--safe-candidate result)))
+      (company-finish result))))
 
 (defun company-complete-common ()
   "Complete the common part of all candidates."

@@ -2,13 +2,14 @@
 
 ## Next
 
+* `company-eclim` and `company-clang` only expand the template on explicit user
+  action (such as `company-complete-{selection,number,mouse}`).
 * `company-template` has some breaking changes.  When point is at one of the
   fields, it's displayed at the beginning, not right after it; `<tab>` jumps to
   the next field, `forward-word` and `subword-forward` remappings are removed;
   when you jump to the next field, if the current one hasn't been edited, the
   overlay gets removed but the text remains.
-* `company-eclim` shows method overloads and inserts templates for calls.
-* `company-clang` ObjC arguments template insertion now requires explicit user action.
+* `company-eclim` shows method overloads and expands templates for calls.
 * `company-clang-objc-templatify` does not insert spaces after colons anymore.
 * `company-clang` is now only initialized in supported buffers.
   So, no error messages if you don't have Clang until you open a C file.
