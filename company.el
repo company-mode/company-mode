@@ -797,7 +797,7 @@ can retrieve meta-data for them."
     (setq company-candidates nil)))
 
 (defun company--safe-candidate (str)
-  (or (company-call-backend 'safe str)
+  (or (company-call-backend 'crop str)
       str))
 
 (defun company-calculate-candidates (prefix)

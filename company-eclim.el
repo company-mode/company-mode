@@ -167,7 +167,7 @@ Completions only work correctly when the buffer has been saved.
     (meta (company-eclim--meta arg))
     ;; because "" doesn't return everything
     (no-cache (equal arg ""))
-    (safe (when (string-match "(" arg)
+    (crop (when (string-match "(" arg)
             (substring arg 0 (match-beginning 0))))
     (post-completion (when (string-match "([^)]" arg)
                        (company-eclim--templatify arg)))))
