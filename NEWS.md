@@ -2,12 +2,17 @@
 
 ## Next
 
-* `company-eclim` shows method overloads and inserts call templates with placeholders.
+* `company-template` has some breaking changes.  When point is at one of the
+  fields, it's displayed at the beginning, not right after it; `<tab>` jumps to
+  the next field, `forward-word` and `subword-forward` remappings are removed;
+  when you jump to the next field, if the current one hasn't been edited, the
+  overlay gets removed but the text remains.
+* `company-eclim` shows method overloads and inserts templates for calls.
 * `company-clang` ObjC arguments template insertion now requires explicit user action.
 * `company-clang-objc-templatify` does not insert spaces after colons anymore.
 * `company-clang` is now only initialized in supported buffers.
   So, no error messages if you don't have Clang until you open a C file.
-* `company-clang` recognizes Clang included with recent Xcode.
+* `company-clang` recognizes Clang included in recent Xcode.
 * New commands `company-select-previous-or-abort` and
   `company-select-next-or-abort`, bound to `<up>` and `<down>`.
 

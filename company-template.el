@@ -31,14 +31,12 @@
 
 (defvar company-template-nav-map
   (let ((keymap (make-sparse-keymap)))
-    (define-key keymap [remap forward-word] 'company-template-forward-field)
-    (define-key keymap [remap subword-forward] 'company-template-forward-field)
-    ;; M-n
+    (define-key keymap [tab] 'company-template-forward-field)
     keymap))
 
 ;; interactive ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsubst company-template-templates-at (pos)
+(defun company-template-templates-at (pos)
   (let (os)
     (dolist (o (overlays-at pos))
       (when (overlay-get o 'company-template-fields)
@@ -53,19 +51,22 @@
 
 (defun company-template-forward-field ()
   (interactive)
-  (let* ((templates (company-template-templates-at (point)))
+  (let* ((start (point))
+         (templates (company-template-templates-at (point)))
          (minimum (apply 'max (mapcar 'overlay-end templates)))
-         (fields (apply 'append
-                        (mapcar (lambda (templ)
-                                  (overlay-get templ 'company-template-fields))
-                                templates))))
+         (fields (loop for templ in templates
+                       append (overlay-get templ 'company-template-fields))))
     (dolist (pos (mapcar 'overlay-start fields))
       (and pos
            (> pos (point))
            (< pos minimum)
            (setq minimum pos)))
     (push-mark)
-    (goto-char minimum)))
+    (goto-char minimum)
+    (let ((field (loop for ovl in (overlays-at start)
+                       when (overlay-get ovl 'company-template-parent)
+                       return ovl)))
+      (company-template-remove-field field))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -76,6 +77,7 @@
   (let ((ov (make-overlay beg end)))
     ;; (overlay-put ov 'face 'highlight)
     (overlay-put ov 'keymap company-template-nav-map)
+    (overlay-put ov 'priority 101)
     (overlay-put ov 'evaporate t)
     (push ov company-template--buffer-templates)
     (add-hook 'post-command-hook 'company-template-post-command nil t)
@@ -91,42 +93,47 @@
 (defun company-template-add-field (templ pos text)
   (assert templ)
   (save-excursion
-    ;; (goto-char pos)
-    (let ((ov (make-overlay pos pos))
-          (siblings (overlay-get templ 'company-template-fields))
-          (label (propertize text 'face 'company-template-field
-                             'company-template-parent templ)))
-      (overlay-put ov 'face 'highlight)
-      (add-text-properties 0 1 '(cursor t) label)
-      (overlay-put ov 'after-string label)
+    (save-excursion
+      (goto-char pos)
+      (insert text)
+      (when (> (point) (overlay-end templ))
+        (move-overlay templ (overlay-start templ) (point))))
+    (let ((ov (make-overlay pos (+ pos (length text))))
+          (siblings (overlay-get templ 'company-template-fields)))
       ;; (overlay-put ov 'evaporate t)
       (overlay-put ov 'intangible t)
+      (overlay-put ov 'face 'company-template-field)
       (overlay-put ov 'company-template-parent templ)
-      (overlay-put ov 'insert-in-front-hooks '(company-template-remove))
+      (overlay-put ov 'insert-in-front-hooks '(company-template-insert-hook))
       (push ov siblings)
       (overlay-put templ 'company-template-fields siblings))))
 
-(defun company-template-remove-field (field)
-  (when (overlayp field)
-    ;; (delete-region (overlay-start field) (overlay-end field))
-    (delete-overlay field))
-  ;; TODO: unlink
-  )
+(defun company-template-remove-field (ovl &optional clear)
+  (when (overlayp ovl)
+    (when (overlay-buffer ovl)
+      (when clear
+        (delete-region (overlay-start ovl) (overlay-end ovl)))
+      (delete-overlay ovl))
+    (let* ((templ (overlay-get ovl 'company-template-parent))
+           (siblings (overlay-get templ 'company-template-fields)))
+      (setq siblings (delq ovl siblings))
+      (overlay-put templ 'company-template-fields siblings))))
 
 (defun company-template-clean-up (&optional pos)
   "Clean up all templates that don't contain POS."
   (unless pos (setq pos (point)))
   (let ((local-ovs (overlays-in (- pos 2) pos)))
     (dolist (templ company-template--buffer-templates)
-      (unless (memq templ local-ovs)
+      (unless (and (memq templ local-ovs)
+                   (overlay-get templ 'company-template-fields))
         (company-template-remove-template templ)))))
 
 ;; hooks ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun company-template-remove (overlay after-p beg end &optional r)
+(defun company-template-insert-hook (ovl after-p &rest ignore)
   "Called when a snippet input prompt is modified."
-  (when after-p
-    (delete-overlay overlay)))
+  (unless after-p
+    (company-template-remove-field ovl t)))
 
 (defun company-template-post-command ()
   (company-template-clean-up)

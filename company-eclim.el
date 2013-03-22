@@ -141,12 +141,11 @@ eclim can only complete correctly when the buffer has been saved."
          (templ (company-template-declare-template beg end)))
     (save-excursion
       (goto-char beg)
-      (while (re-search-forward "\\([(,] ?\\)\\(?:[^ ]+ \\)\\([^ ,)]*\\)" end t)
-        (let ((name (match-string 2)))
+      (while (re-search-forward "\\([(,] ?\\)\\([^ ]+ \\)\\([^ ,)]*\\)" end t)
+        (let ((name (match-string 3)))
           (replace-match "\\1" t)
-          (decf end (- (length (match-string 0))
-                       (length (match-string 1))))
-          (company-template-add-field templ (point) (format "<%s>" name)))))
+          (decf end (length (match-string 2)))
+          (company-template-add-field templ (point) name))))
     (company-template-move-to-first templ)))
 
 (defun company-eclim (command &optional arg &rest ignored)
