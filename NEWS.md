@@ -2,6 +2,7 @@
 
 ## Next
 
+* Documented `init` and `post-completion` back-end commands.
 * `company-eclim` and `company-clang` only expand the template on explicit user
   action (such as `company-complete-{selection,number,mouse}`).
 * `company-template` has some breaking changes.  When point is at one of the

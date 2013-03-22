@@ -320,6 +320,14 @@ not offering as a candidate.  Use with care!  The default value nil gives the
 user that choice with `company-require-match'.  Return value 'never overrides
 that option the other way around.
 
+`init': Called once for each buffer, the back-end can check for external
+programs and files and load any required libraries.  Raising an error here will
+show up in message log once, and the backend will not be used for completion.
+
+`post-completion': Called after a completion candidate has been inserted into
+the buffer.  The second argument is the candidate.  Can be used to modify it,
+e.g. to expand a snippet.
+
 The back-end should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
 `company-begin-backend' to start itself in that case."
