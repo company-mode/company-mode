@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## 2013-03-24 (0.6.2)
+
+* `global-company-mode` is now autoloaded.
+
 ## 2013-03-23 (0.6.1)
 
 * Documented `init` and `post-completion` back-end commands.

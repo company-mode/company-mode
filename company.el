@@ -4,7 +4,7 @@
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
-;; Version: 0.6.1
+;; Version: 0.6.2
 ;; Keywords: abbrev, convenience, matching
 ;; URL: http://company-mode.github.com/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x, GNU Emacs 24.x
@@ -551,9 +551,11 @@ keymap during active completions (`company-active-map'):
     (kill-local-variable 'company-point)))
 
 ;;;###autoload
-(define-globalized-minor-mode global-company-mode company-mode
-  (lambda () (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
-          (company-mode 1))))
+(define-globalized-minor-mode global-company-mode company-mode company-mode-on)
+
+(defun company-mode-on ()
+  (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
+    (company-mode 1)))
 
 (defsubst company-assert-enabled ()
   (unless company-mode
