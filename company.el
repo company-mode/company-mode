@@ -550,6 +550,7 @@ keymap during active completions (`company-active-map'):
     (company-cancel)
     (kill-local-variable 'company-point)))
 
+;;;###autoload
 (define-globalized-minor-mode global-company-mode company-mode
   (lambda () (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
           (company-mode 1))))
