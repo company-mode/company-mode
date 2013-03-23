@@ -656,10 +656,10 @@ keymap during active completions (`company-active-map'):
     (apply 'company--multi-backend-adapter company-backend args)))
 
 (defun company--multi-backend-adapter (backends command &rest args)
-  (let ((backends (remove-if (lambda (b)
-                               (and (symbolp b)
-                                    (eq 'failed (get b 'company-init))))
-                             backends)))
+  (let ((backends (loop for b in backends
+                        when (not (and (symbolp b)
+                                       (eq 'failed (get b 'company-init))))
+                        collect b)))
     (case command
       (candidates
        (loop for backend in backends
@@ -1999,10 +1999,6 @@ Returns a negative number if the tooltip should be displayed above point."
   (case command
     (post-command (company-echo-show-when-idle 'company-fetch-metadata))
     (hide (company-echo-hide))))
-
-;; templates ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(autoload 'company-template-declare-template "company-template")
 
 (provide 'company)
 ;;; company.el ends here

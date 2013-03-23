@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 'company)
+(require 'company-template)
 (eval-when-compile (require 'cl))
 
 (defcustom company-clang-executable

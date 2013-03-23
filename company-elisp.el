@@ -28,6 +28,7 @@
 (require 'company)
 (eval-when-compile (require 'cl))
 (require 'help-mode)
+(require 'find-func)
 
 (defcustom company-elisp-detect-function-context t
   "If enabled, offer Lisp functions only in appropriate contexts.
