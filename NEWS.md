@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2013-03-23 (0.6.1)
 
 * Documented `init` and `post-completion` back-end commands.
 * `company-eclim` and `company-clang` only expand the template on explicit user
