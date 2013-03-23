@@ -98,11 +98,9 @@ eclim can only complete correctly when the buffer has been saved."
       (let ((dir (company-eclim--project-dir)))
         (when dir
           (setq company-eclim--project-name
-                (let ((project (loop for project in (company-eclim--project-list)
-                                     when (equal (cdr (assoc 'path project)) dir)
-                                     return project)))
-                  (when project
-                    (cdr (assoc 'name project)))))))))
+                (loop for project in (company-eclim--project-list)
+                      when (equal (cdr (assoc 'path project)) dir)
+                      return (cdr (assoc 'name project))))))))
 
 (defun company-eclim--candidates (prefix)
   (interactive "d")
