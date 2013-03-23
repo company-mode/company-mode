@@ -664,7 +664,7 @@ keymap during active completions (`company-active-map'):
        (loop for backend in backends
              when (equal (funcall backend 'prefix)
                          (car args))
-             nconc (apply backend 'candidates args)))
+             append (apply backend 'candidates args)))
       (sorted nil)
       (duplicates t)
       (otherwise
