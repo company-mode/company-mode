@@ -1,6 +1,6 @@
 ;;; company-tests.el --- company-mode tests
 
-;; Copyright (C) 2011  Free Software Foundation, Inc.
+;; Copyright (C) 2011, 2013  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -59,3 +59,18 @@
                    (prefix "z")
                    (candidates '("c" "d")))))))
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
+
+(ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
+  (with-temp-buffer
+    (insert "a")
+    (company-mode)
+    (should-error
+     (company-begin-backend (lambda (command &rest ignore))))
+    (let ((company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix "a")
+                     (candidates '("a" "ab" "ac")))))))
+      (company-complete)
+      (setq this-command 'company-complete)
+      (should (eq 3 company-candidates-length)))))

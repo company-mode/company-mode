@@ -1522,7 +1522,9 @@ To show the number next to the candidates in some back-ends, enable
   (setq company-backend backend)
   ;; Return non-nil if active.
   (or (company-manual-begin)
-      (error "Cannot complete at point")))
+      (progn
+        (setq company-backend nil)
+        (error "Cannot complete at point"))))
 
 (defun company-begin-with (candidates
                            &optional prefix-length require-match callback)
