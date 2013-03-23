@@ -60,7 +60,7 @@ eclim can only complete correctly when the buffer has been saved."
 (defvar company-eclim--project-dir 'unknown)
 (make-variable-buffer-local 'company-eclim--project-dir)
 
-(defvar company-eclim--project-name 'unknown)
+(defvar company-eclim--project-name nil)
 (make-variable-buffer-local 'company-eclim--project-name)
 
 (defvar company-eclim--doc nil)
@@ -93,15 +93,16 @@ eclim can only complete correctly when the buffer has been saved."
     company-eclim--project-dir))
 
 (defun company-eclim--project-name ()
-  (if (eq company-eclim--project-name 'unknown)
-      (setq company-eclim--project-name
-            (let ((project (find-if (lambda (project)
-                                      (equal (cdr (assoc 'path project))
-                                             (company-eclim--project-dir)))
-                                    (company-eclim--project-list))))
-              (when project
-                (cdr (assoc 'name project)))))
-    company-eclim--project-name))
+  (or company-eclim--project-name
+      (let ((dir (company-eclim--project-dir)))
+        (when dir
+          (setq company-eclim--project-name
+                (let ((project (find-if (lambda (project)
+                                          (equal (cdr (assoc 'path project))
+                                                 dir))
+                                        (company-eclim--project-list))))
+                  (when project
+                    (cdr (assoc 'name project)))))))))
 
 (defun company-eclim--candidates (prefix)
   (interactive "d")
