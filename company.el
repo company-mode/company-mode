@@ -655,7 +655,9 @@ keymap during active completions (`company-active-map'):
     (apply 'company--multi-backend-adapter company-backend args)))
 
 (defun company--multi-backend-adapter (backends command &rest args)
-  (let ((backends (remove-if (lambda (b) (eq 'failed (get b 'company-init)))
+  (let ((backends (remove-if (lambda (b)
+                               (and (symbolp b)
+                                    (eq 'failed (get b 'company-init))))
                              backends)))
     (case command
       (candidates

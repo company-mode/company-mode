@@ -47,3 +47,15 @@
     (should (eq nil (company--good-prefix-p 'stop)))
     (should (eq t (company--good-prefix-p '("foo" . 5))))
     (should (eq nil (company--good-prefix-p '("foo" . 4))))))
+
+(ert-deftest company-multi-backend-with-lambdas ()
+  (let ((company-backend
+         (list (lambda (command &optional arg &rest ignore)
+                 (case command
+                   (prefix "z")
+                   (candidates '("a" "b"))))
+               (lambda (command &optional arg &rest ignore)
+                 (case command
+                   (prefix "z")
+                   (candidates '("c" "d")))))))
+    (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
