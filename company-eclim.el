@@ -21,12 +21,12 @@
 
 ;;; Commentary:
 ;;
-;; Eclim version 1.7.13 or newer (?) is required.
+;; Using `emacs-eclim' together with (or instead of) this back-end is
+;; recommended, as it allows you to use other Eclim features.
 ;;
-;; This completion backend is pretty barebone.
-;;
-;; `emacs-eclim' provides an alternative backend, and it also allows you to
-;; actually control Eclim from Emacs.
+;; The alternative back-end provided by `emacs-eclim' uses `yasnippet'
+;; instead of `company-template' to expand function calls, and it supports
+;; some languages other than Java.
 
 ;;; Code:
 
@@ -148,8 +148,10 @@ eclim can only complete correctly when the buffer has been saved."
     (company-template-move-to-first templ)))
 
 (defun company-eclim (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for eclim.
-eclim provides access to Eclipse Java IDE features for other editors.
+  "A `company-mode' completion back-end for Eclim.
+Eclim provides access to Eclipse Java IDE features for other editors.
+
+Eclim version 1.7.13 or newer (?) is required.
 
 Completions only work correctly when the buffer has been saved.
 `company-eclim-auto-save' determines whether to do this automatically."
