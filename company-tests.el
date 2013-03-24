@@ -96,7 +96,7 @@
       (should (eq 2 company-candidates-length))
       (should (eq 3 (point))))))
 
-(ert-deftest company-dont-require-match-idle ()
+(ert-deftest company-dont-require-match-when-idle ()
   (with-temp-buffer
     (insert "ab")
     (company-mode)
@@ -114,3 +114,41 @@
       (company-post-command)
       (should (eq nil company-candidates-length))
       (should (eq 4 (point))))))
+
+(ert-deftest company-auto-complete-explicit ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          (company-auto-complete 'company-explicit-action-p)
+          (company-auto-complete-chars '(? ))
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abcd" "abef")))))))
+      (let (this-command)
+        (company-complete))
+      (let ((last-command-event ? ))
+        (self-insert-command 1))
+      (company-post-command)
+      (should (string= "abcd " (buffer-string))))))
+
+(ert-deftest company-no-auto-complete-when-idle ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          (company-auto-complete 'company-explicit-action-p)
+          (company-auto-complete-chars '(? ))
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abcd" "abef")))))))
+      (company-idle-begin (current-buffer) (selected-window)
+                          (buffer-chars-modified-tick) (point))
+      (let ((last-command-event ? ))
+        (self-insert-command 1))
+      (company-post-command)
+      (should (string= "ab " (buffer-string))))))
