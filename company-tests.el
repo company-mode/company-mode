@@ -66,11 +66,51 @@
     (company-mode)
     (should-error
      (company-begin-backend (lambda (command &rest ignore))))
-    (let ((company-backends
+    (let (company-frontends
+          (company-backends
            (list (lambda (command &optional arg)
                    (case command
                      (prefix "a")
                      (candidates '("a" "ab" "ac")))))))
-      (company-complete)
-      (setq this-command 'company-complete)
+      (let (this-command)
+        (company-complete))
+      (company-post-command)
       (should (eq 3 company-candidates-length)))))
+
+(ert-deftest company-require-match-explicit ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          (company-require-match 'company-explicit-action-p)
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc" "abd")))))))
+      (let (this-command)
+        (company-complete))
+      (let ((last-command-event ?e))
+        (self-insert-command 1))
+      (company-post-command)
+      (should (eq 2 company-candidates-length))
+      (should (eq 3 (point))))))
+
+(ert-deftest company-dont-require-match-idle ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          (company-require-match 'company-explicit-action-p)
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc" "abd")))))))
+      (company-idle-begin (current-buffer) (selected-window)
+                          (buffer-chars-modified-tick) (point))
+      (let ((last-command-event ?e))
+        (self-insert-command 1))
+      (company-post-command)
+      (should (eq nil company-candidates-length))
+      (should (eq 4 (point))))))

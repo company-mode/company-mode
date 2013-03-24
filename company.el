@@ -316,7 +316,7 @@ return the cons of buffer and buffer location, or of file and line
 number where the completion candidate was defined.
 
 `require-match': If this value is t, the user is not allowed to enter anything
-not offering as a candidate.  Use with care!  The default value nil gives the
+not offered as a candidate.  Use with care!  The default value nil gives the
 user that choice with `company-require-match'.  Return value 'never overrides
 that option the other way around.
 
@@ -841,14 +841,13 @@ can retrieve meta-data for them."
               (while c2
                 (setcdr c2 (progn (while (equal (pop c2) (car c2)))
                                   c2)))))))
-    (if (and candidates
-             (or (cdr candidates)
-                 (not (eq t (compare-strings (car candidates) nil nil
-                                             prefix nil nil ignore-case)))))
-        candidates
-      ;; Already completed and unique; don't start.
-      ;; FIXME: Not the right place? maybe when setting?
-      (and company-candidates t))))
+    (when candidates
+      (if (or (cdr candidates)
+              (not (eq t (compare-strings (car candidates) nil nil
+                                          prefix nil nil ignore-case))))
+          candidates
+        ;; Already completed and unique; don't start.
+        t))))
 
 (defun company-idle-begin (buf win tick pos)
   (and company-mode

@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* Fixed `company-require-match` mechanics.
+
 ## 2013-03-24 (0.6.2)
 
 * `global-company-mode` is now autoloaded.
