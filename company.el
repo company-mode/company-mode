@@ -4,7 +4,7 @@
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
-;; Version: 0.6.2
+;; Version: 0.6.3
 ;; Keywords: abbrev, convenience, matching
 ;; URL: http://company-mode.github.com/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x, GNU Emacs 24.x
@@ -86,14 +86,20 @@
   :group 'matching)
 
 (defface company-tooltip
-  '((t :background "yellow"
-       :foreground "black"))
+  '((default :foreground "black")
+    (((class color) (min-colors 88) (background light))
+     (:background "cornsilk"))
+    (((class color) (min-colors 88) (background dark))
+     (:background "yellow")))
   "Face used for the tool tip."
   :group 'company)
 
 (defface company-tooltip-selection
   '((default :inherit company-tooltip)
-    (((class color) (min-colors 88)) (:background "orange1"))
+    (((class color) (min-colors 88) (background light))
+     (:background "light blue"))
+    (((class color) (min-colors 88) (background dark))
+     (:background "orange1"))
     (t (:background "green")))
   "Face used for the selection in the tool tip."
   :group 'company)
@@ -104,14 +110,20 @@
   :group 'company)
 
 (defface company-tooltip-common
-  '((t :inherit company-tooltip
-       :foreground "red"))
+  '((default :inherit company-tooltip)
+    (((background light))
+     :foreground "darkred")
+    (((background dark))
+     :foreground "red"))
   "Face used for the common completion in the tool tip."
   :group 'company)
 
 (defface company-tooltip-common-selection
-  '((t :inherit company-tooltip-selection
-       :foreground "red"))
+  '((default :inherit company-tooltip-selection)
+    (((background light))
+     :foreground "darkred")
+    (((background dark))
+     :foreground "red"))
   "Face used for the selected common completion in the tool tip."
   :group 'company)
 

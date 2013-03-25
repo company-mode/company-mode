@@ -1,7 +1,8 @@
 # History of user-visible changes
 
-## Next
+## 2013-03-25 (0.6.3)
 
+* New tooltip face colors used on themes with light background.
 * Pseudo-tooltip stays up-to-date when text is inserted after the point.
 * Fixed `company-require-match` mechanics.
 
