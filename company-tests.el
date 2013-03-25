@@ -152,3 +152,21 @@
         (self-insert-command 1))
       (company-post-command)
       (should (string= "ab " (buffer-string))))))
+
+(ert-deftest company-pseudo-tooltip-does-not-get-displaced ()
+  (with-temp-buffer
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (save-excursion (insert " ff"))
+      (company-mode)
+      (let ((company-frontends '(company-pseudo-tooltip-frontend))
+            (company-begin-commands '(self-insert-command))
+            (company-backends
+             (list (lambda (c &optional arg)
+                     (case c (prefix "") (candidates '("a" "b" "c")))))))
+        (let (this-command)
+          (company-complete))
+        (company-post-command)
+        (open-line 1)
+        (company-post-command)
+        (should (eq 2 (overlay-start company-pseudo-tooltip-overlay)))))))

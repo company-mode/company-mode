@@ -2,6 +2,7 @@
 
 ## Next
 
+* Pseudo-tooltip stays up-to-date when text is inserted after the point.
 * Fixed `company-require-match` mechanics.
 
 ## 2013-03-24 (0.6.2)

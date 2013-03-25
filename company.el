@@ -1817,6 +1817,10 @@ Returns a negative number if the tooltip should be displayed above point."
                  (overlay-get company-pseudo-tooltip-overlay 'company-before))
     (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))
 
+(defun company-pseudo-tooltip-guard ()
+  (buffer-substring-no-properties
+   (point) (overlay-start company-pseudo-tooltip-overlay)))
+
 (defun company-pseudo-tooltip-frontend (command)
   "A `company-mode' front-end similar to a tool-tip but based on overlays."
   (case command
@@ -1828,10 +1832,15 @@ Returns a negative number if the tooltip should be displayed above point."
                          0))
            (new-height (company--pseudo-tooltip-height)))
        (unless (and (>= (* old-height new-height) 0)
-                    (>= (abs old-height) (abs new-height)))
+                    (>= (abs old-height) (abs new-height))
+                    (equal (company-pseudo-tooltip-guard)
+                           (overlay-get company-pseudo-tooltip-overlay
+                                        'company-guard)))
          ;; Redraw needed.
          (company-pseudo-tooltip-show-at-point (- (point)
-                                                  (length company-prefix)))))
+                                                  (length company-prefix)))
+         (overlay-put company-pseudo-tooltip-overlay
+                      'company-guard (company-pseudo-tooltip-guard))))
      (company-pseudo-tooltip-unhide))
     (hide (company-pseudo-tooltip-hide)
           (setq company-tooltip-offset 0))
