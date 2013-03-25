@@ -363,7 +363,10 @@ aborted manually."
 
 (defcustom company-completion-finished-hook nil
   "Hook run when company successfully completes.
-The hook is called with the selected candidate as an argument."
+The hook is called with the selected candidate as an argument.
+
+If you indend to use it to post-process candidates from a specific back-end,
+consider using the `post-completion' command instead."
   :group 'company
   :type 'hook)
 
@@ -405,7 +408,7 @@ completion.  If it is a list of syntax description characters (see
 This can also be a function, which is called with the new input and should
 return non-nil if company should auto-complete.
 
-A character that is part of a valid candidate never starts auto-completion."
+A character that is part of a valid candidate never triggers auto-completion."
   :group 'company
   :type '(choice (string :tag "Characters")
                  (set :tag "Syntax"
