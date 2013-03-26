@@ -39,7 +39,9 @@
 (defun company-template-templates-at (pos)
   (let (os)
     (dolist (o (overlays-at pos))
-      (when (overlay-get o 'company-template-fields)
+      ;; FIXME: Always return the whole list of templates?
+      ;; We remove templates not at point after every command.
+      (when (memq o company-template--buffer-templates)
         (push o os)))
     os))
 
@@ -121,11 +123,9 @@
 
 (defun company-template-clean-up (&optional pos)
   "Clean up all templates that don't contain POS."
-  (unless pos (setq pos (point)))
-  (let ((local-ovs (overlays-in (- pos 2) pos)))
+  (let ((local-ovs (overlays-at (or pos (point)))))
     (dolist (templ company-template--buffer-templates)
-      (unless (and (memq templ local-ovs)
-                   (overlay-get templ 'company-template-fields))
+      (unless (memq templ local-ovs)
         (company-template-remove-template templ)))))
 
 ;; hooks ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

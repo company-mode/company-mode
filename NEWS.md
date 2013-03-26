@@ -1,5 +1,12 @@
 # History of user-visible changes
 
+## 2013-03-26 (0.6.4)
+
+* Expanded template does not get removed until the point leaves it.  After your
+  input the last argument in a method call expanded by `company-eclim`, you can
+  press `<tab>` once more, to jump after the closing paren.  No other bundled
+  back-ends are affected.
+
 ## 2013-03-25 (0.6.3)
 
 * New tooltip face colors used on themes with light background.
