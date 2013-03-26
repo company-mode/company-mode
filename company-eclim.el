@@ -120,7 +120,8 @@ eclim can only complete correctly when the buffer has been saved."
                               (company-eclim--call-process
                                "java_complete" "-p" (company-eclim--project-name)
                                "-f" project-file
-                               "-o" (number-to-string (1- (point)))
+                               "-o" (number-to-string
+                                     (company-eclim--search-point prefix))
                                "-e" "utf-8"
                                "-l" "standard"))))
       (let* ((meta (cdr (assoc 'info item)))
@@ -130,6 +131,11 @@ eclim can only complete correctly when the buffer has been saved."
         (puthash completion meta company-eclim--doc))))
   (let ((completion-ignore-case nil))
     (all-completions prefix company-eclim--doc)))
+
+(defun company-eclim--search-point (prefix)
+  (if (or (plusp (length prefix)) (eq (char-before) ?.))
+      (1- (point))
+    (point)))
 
 (defun company-eclim--meta (candidate)
   (gethash candidate company-eclim--doc))
