@@ -64,10 +64,11 @@ Functions are offered for completion only after ' and \(."
   (concat "([ \t\n]*\\_<" (regexp-opt '("dolist" "dotimes")))
   "Regular expression matching sexps containing one variable binding.")
 
-(defun company-elisp-parse-local (prefix vars)
+(defun company-elisp-locals (prefix)
   (let ((regexp (concat "[ \t\n]*\\(\\_<" (regexp-quote prefix)
                         "\\(?:\\sw\\|\\s_\\)*\\_>\\)"))
-        (pos (point)))
+        (pos (point))
+        res)
     (ignore-errors
       (save-excursion
         (dotimes (i company-elisp-parse-depth)
@@ -84,27 +85,39 @@ Functions are offered for completion only after ' and \(."
                     (and (looking-at regexp)
                          ;; Don't add incomplete text as candidate.
                          (not (eq (match-end 0) pos))
-                         (add-to-list 'vars (match-string-no-properties 1))))
+                         (push (match-string-no-properties 1) res)))
                   (forward-sexp))))
              ((looking-at company-elisp-binding-regexp-1)
               (down-list 2)
               (and (looking-at regexp)
                    ;; Don't add incomplete text as candidate.
                    (not (eq (match-end 0) pos))
-                   (add-to-list 'vars (match-string-no-properties 1)))))))))
-    vars))
+                   (pushnew (match-string-no-properties 1) res))))))))
+    res))
 
 (defun company-elisp-candidates (prefix)
+  (append (company-elisp-locals prefix)
+          (company-elisp-globals prefix
+                                 (company-elisp-candidates-predicate prefix))))
+
+(defun company-elisp-globals (prefix predicate)
+  (all-completions prefix obarray predicate))
+
+(defun company-elisp-candidates-predicate (prefix)
   (let* ((completion-ignore-case nil)
-         (before (char-before (- (point) (length prefix))))
-         (predicate (if (and company-elisp-detect-function-context
-                             (not (eq before ?')))
-                        (if (eq before ?\()
-                            'fboundp
-                          'boundp)
-                      'company-elisp-predicate))
-         (candidates (all-completions prefix obarray predicate)))
-    (company-elisp-parse-local prefix candidates)))
+         (before (char-before (- (point) (length prefix)))))
+    (if (and company-elisp-detect-function-context
+             (not (eq before ?')))
+        (if (and (eq before ?\()
+                 (not
+                  (save-excursion
+                    (ignore-errors
+                      (up-list -2)
+                      (forward-char 1)
+                      (looking-at " *(")))))
+            'fboundp
+          'boundp)
+      'company-elisp-predicate)))
 
 (defun company-elisp-doc (symbol)
   (let* ((symbol (intern symbol))

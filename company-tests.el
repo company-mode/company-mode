@@ -208,3 +208,69 @@
     (apply command args)
     (let ((this-command command))
       (run-hooks 'post-command-hook))))
+
+(defmacro company-elisp-with-buffer (contents &rest body)
+  (declare (indent 0))
+  `(with-temp-buffer
+     (insert ,contents)
+     (re-search-backward "|")
+     (replace-match "")
+     ,@body))
+
+(ert-deftest company-elisp-candidates-predicate ()
+  (company-elisp-with-buffer
+    "(foo ba|)"
+    (should (eq (let ((company-elisp-detect-function-context t))
+                  (company-elisp-candidates-predicate "ba"))
+                'boundp))
+    (should (eq (let (company-elisp-detect-function-context)
+                  (company-elisp-candidates-predicate "ba"))
+                'company-elisp-predicate)))
+  (company-elisp-with-buffer
+    "(foo| )"
+    (should (eq (let ((company-elisp-detect-function-context t))
+                  (company-elisp-candidates-predicate "foo"))
+                'fboundp))
+    (should (eq (let (company-elisp-detect-function-context)
+                  (company-elisp-candidates-predicate "foo"))
+                'company-elisp-predicate)))
+  (company-elisp-with-buffer
+    "(foo 'b|)"
+    (should (eq (let ((company-elisp-detect-function-context t))
+                  (company-elisp-candidates-predicate "b"))
+                'company-elisp-predicate))))
+
+;; Mix it up with an integration test.
+(ert-deftest company-elisp-candidates-recognizes-binding-form ()
+  (company-elisp-with-buffer
+    "(let ((foo 7) (wh| )))"
+    (let ((obarray [when what whelp])
+          (what 1)
+          (whelp 2)
+          (wisp 3))
+      (should (equal '("what" "whelp")
+                     (let ((company-elisp-detect-function-context t))
+                       (company-elisp-candidates "wh")))))))
+
+(ert-deftest company-elisp-finds-vars ()
+  (let ((obarray [boo bar baz backquote])
+        (boo t)
+        (bar t)
+        (baz t))
+    (should (equal '("bar" "baz")
+                   (company-elisp-globals "ba" 'boundp)))))
+
+(ert-deftest company-elisp-finds-functions ()
+  (let ((obarray [when what whelp])
+        (what t)
+        (whelp t))
+    (should (equal '("when")
+                   (company-elisp-globals "wh" 'fboundp)))))
+
+(ert-deftest company-elisp-finds-things ()
+  (let ((obarray [when what whelp])
+        (what t)
+        (whelp t))
+    (should (equal '("what" "whelp" "when")
+                   (sort (company-elisp-globals "wh" 'company-elisp-predicate)
+                         'string<)))))
