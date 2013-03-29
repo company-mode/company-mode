@@ -306,3 +306,17 @@
     "(let ((foo 1)
            (f| )))"
     (should (null (company-elisp-locals "f" nil)))))
+
+(ert-deftest company-elisp-show-locals-first ()
+  (company-elisp-with-buffer
+    "(let ((floo 1)
+           (flop 2)
+           (flee 3))
+       fl|)"
+    (let ((obarray [float-pi]))
+      (let (company-elisp-show-locals-first)
+        (should (eq nil (company-elisp 'sorted))))
+      (let ((company-elisp-show-locals-first t))
+        (should (eq t (company-elisp 'sorted)))
+        (should (equal '("flee" "floo" "flop" "float-pi")
+                       (company-elisp-candidates "fl")))))))

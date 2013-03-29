@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* `company-elisp-show-locals-first`: new customizable variable.
+* `company-eclim` shows more accurate and comprehensive candidates.
+
 ## 2013-03-26 (0.6.4)
 
 * `company-eclim` shows valid completions after an opening paren.

@@ -37,6 +37,10 @@ Functions are offered for completion only after ' and \(."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
+(defcustom company-elisp-show-locals-first t
+  "If enabled, locally bound variables and functions are displayed
+first in the candidates list.")
+
 (defun company-grab-lisp-symbol ()
   (let ((prefix (company-grab-symbol)))
     (if prefix
@@ -107,9 +111,13 @@ Functions are offered for completion only after ' and \(."
     res))
 
 (defun company-elisp-candidates (prefix)
-  (let ((predicate (company-elisp-candidates-predicate prefix)))
-    (append (company-elisp-locals prefix (eq predicate 'fboundp))
-            (company-elisp-globals prefix predicate))))
+  (let* ((predicate (company-elisp-candidates-predicate prefix))
+         (locals (company-elisp-locals prefix (eq predicate 'fboundp)))
+         (globals (company-elisp-globals prefix predicate)))
+    (if company-elisp-show-locals-first
+        (append (sort locals 'string<)
+                (sort globals 'string<))
+      (append locals globals))))
 
 (defun company-elisp-globals (prefix predicate)
   (all-completions prefix obarray predicate))
@@ -148,6 +156,7 @@ Functions are offered for completion only after ' and \(."
     (prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
                  (company-grab-lisp-symbol)))
     (candidates (company-elisp-candidates arg))
+    (sorted company-elisp-show-locals-first)
     (meta (company-elisp-doc arg))
     (doc-buffer (let ((symbol (intern arg)))
                   (save-window-excursion
