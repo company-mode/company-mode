@@ -300,3 +300,9 @@
          (f| )))"
     (should (equal '("fee" "foo")
                    (sort (company-elisp-locals "f" t) 'string<)))))
+
+(ert-deftest company-elisp-locals-skips-current-varlist ()
+  (company-elisp-with-buffer
+    "(let ((foo 1)
+           (f| )))"
+    (should (null (company-elisp-locals "f" nil)))))

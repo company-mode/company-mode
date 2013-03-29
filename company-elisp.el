@@ -80,30 +80,29 @@ Functions are offered for completion only after ' and \(."
             (save-excursion
               (when (eq (char-after) ?\()
                 (forward-char 1)
-                (skip-chars-forward " \t\n")
-                (cond
-                 ((looking-at (if functions-p
-                                  company-elisp-fun-binding-regexp
-                                company-elisp-var-binding-regexp))
-                  (down-list 1)
-                  (condition-case nil
-                      (dotimes (i company-elisp-parse-limit)
-                        (save-excursion
-                          (when (looking-at "[ \t\n]*(")
-                            (down-list 1))
-                          (and (looking-at regexp)
-                               ;; Don't add incomplete text as candidate.
-                               (not (eq (match-end 0) pos))
-                               (pushnew (match-string-no-properties 1) res)))
-                        (forward-sexp))
-                    (scan-error nil)))
-                 ((unless functions-p
-                    (looking-at company-elisp-var-binding-regexp-1))
-                  (down-list 1)
-                  (and (looking-at regexp)
-                       ;; Don't add incomplete text as candidate.
-                       (not (eq (match-end 0) pos))
-                       (pushnew (match-string-no-properties 1) res))))))))
+                (when (ignore-errors
+                        (save-excursion (forward-list)
+                                        (<= (point) pos)))
+                  (skip-chars-forward " \t\n")
+                  (cond
+                   ((looking-at (if functions-p
+                                    company-elisp-fun-binding-regexp
+                                  company-elisp-var-binding-regexp))
+                    (down-list 1)
+                    (condition-case nil
+                        (dotimes (i company-elisp-parse-limit)
+                          (save-excursion
+                            (when (looking-at "[ \t\n]*(")
+                              (down-list 1))
+                            (when (looking-at regexp)
+                              (pushnew (match-string-no-properties 1) res)))
+                          (forward-sexp))
+                      (scan-error nil)))
+                   ((unless functions-p
+                      (looking-at company-elisp-var-binding-regexp-1))
+                    (down-list 1)
+                    (when (looking-at regexp)
+                      (pushnew (match-string-no-properties 1) res)))))))))
       (scan-error nil))
     res))
 
