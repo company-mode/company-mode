@@ -3,7 +3,7 @@
 ## Next
 
 * `company-elisp-show-locals-first`: new customizable variable.
-* `company-eclim` shows more accurate and comprehensive candidates.
+* `company-elisp` shows more accurate and comprehensive candidates list.
 
 ## 2013-03-26 (0.6.4)
 
