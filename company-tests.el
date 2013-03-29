@@ -240,7 +240,7 @@
                   (company-elisp-candidates-predicate "b"))
                 'company-elisp-predicate))))
 
-;; Mix it up with an integration test.
+;; This one's also an integration test.
 (ert-deftest company-elisp-candidates-recognizes-binding-form ()
   (company-elisp-with-buffer
     "(let ((foo 7) (wh| )))"
@@ -274,3 +274,29 @@
     (should (equal '("what" "whelp" "when")
                    (sort (company-elisp-globals "wh" 'company-elisp-predicate)
                          'string<)))))
+
+(ert-deftest company-elisp-locals-vars ()
+  (company-elisp-with-buffer
+    "(let ((foo 5) (bar 6))
+       (cl-labels ((borg ()))
+         (lambda (boo baz)
+           b|)))"
+    (should (equal '("bar" "baz" "boo")
+                   (company-elisp-locals "b" nil)))))
+
+(ert-deftest company-elisp-locals-single-var ()
+  (company-elisp-with-buffer
+    "(dotimes (itk 100)
+       (dolist (item items)
+         it|))"
+    (should (equal '("itk" "item")
+                   (company-elisp-locals "it" nil)))))
+
+(ert-deftest company-elisp-locals-funs ()
+  (company-elisp-with-buffer
+    "(cl-labels ((foo ())
+                 (fee ()))
+       (let ((fun 4))
+         (f| )))"
+    (should (equal '("fee" "foo")
+                   (sort (company-elisp-locals "f" t) 'string<)))))
