@@ -1,4 +1,4 @@
-;;; company-elisp.el --- A company-mode completion back-end for emacs-lisp-mode
+;;; company-elisp.el --- A company-mode completion back-end for emacs-lisp-mode -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009, 2011-2012  Free Software Foundation, Inc.
 
@@ -113,7 +113,10 @@ first in the candidates list.")
 (defun company-elisp-candidates (prefix)
   (let* ((predicate (company-elisp-candidates-predicate prefix))
          (locals (company-elisp-locals prefix (eq predicate 'fboundp)))
-         (globals (company-elisp-globals prefix predicate)))
+         (globals (company-elisp-globals prefix predicate))
+         (locals (loop for local in locals
+                       when (not (member local globals))
+                       collect local)))
     (if company-elisp-show-locals-first
         (append (sort locals 'string<)
                 (sort globals 'string<))

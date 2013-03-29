@@ -320,3 +320,11 @@
         (should (eq t (company-elisp 'sorted)))
         (should (equal '("flee" "floo" "flop" "float-pi")
                        (company-elisp-candidates "fl")))))))
+
+(ert-deftest company-elisp-candidates-no-duplicates ()
+  (company-elisp-with-buffer
+    "(let ((float-pi 4))
+       f|)"
+    (let ((obarray [float-pi])
+          (company-elisp-show-locals-first t))
+      (should (equal '("float-pi") (company-elisp-candidates "f"))))))
