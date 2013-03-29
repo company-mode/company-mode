@@ -242,15 +242,19 @@
 
 ;; This one's also an integration test.
 (ert-deftest company-elisp-candidates-recognizes-binding-form ()
-  (company-elisp-with-buffer
-    "(let ((foo 7) (wh| )))"
-    (let ((obarray [when what whelp])
-          (what 1)
-          (whelp 2)
-          (wisp 3))
+  (let ((company-elisp-detect-function-context t)
+        (obarray [when what whelp])
+        (what 1)
+        (whelp 2)
+        (wisp 3))
+    (company-elisp-with-buffer
+      "(let ((foo 7) (wh| )))"
       (should (equal '("what" "whelp")
-                     (let ((company-elisp-detect-function-context t))
-                       (company-elisp-candidates "wh")))))))
+                     (company-elisp-candidates "wh"))))
+    (company-elisp-with-buffer
+      "(cond ((null nil) (wh| )))"
+      (should (equal '("when")
+                     (company-elisp-candidates "wh"))))))
 
 (ert-deftest company-elisp-finds-vars ()
   (let ((obarray [boo bar baz backquote])

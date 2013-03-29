@@ -135,8 +135,12 @@ first in the candidates list.")
                   (save-excursion
                     (ignore-errors
                       (up-list -2)
-                      (forward-char 1)
-                      (looking-at " *(")))))
+                      (and (save-excursion
+                             (forward-char 1)
+                             (looking-at "[ \t\n]*("))
+                           (prog1 (search-backward "(")
+                             (forward-char 1))
+                           (looking-at company-elisp-var-binding-regexp))))))
             'fboundp
           'boundp)
       'company-elisp-predicate)))
