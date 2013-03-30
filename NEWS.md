@@ -2,6 +2,7 @@
 
 ## Next
 
+* Fixed keybindings when running in a terminal.
 * `company-elisp-show-locals-first`: new customizable variable.
 * `company-elisp` shows more accurate and comprehensive candidates list.
 
