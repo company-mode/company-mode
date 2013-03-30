@@ -72,7 +72,7 @@ first in the candidates list."
   "Regular expression matching head of a form with one variable binding.")
 
 (defvar company-elisp-fun-binding-regexp
-  (concat "\\_<\\(?:cl-\\)?" (regexp-opt '("flet" "labels")) "\\_>")
+  (concat "\\_<\\(?:cl-\\)?" (regexp-opt '("flet" "labels")) "\\*?\\_>")
   "Regular expression matching head of a function bindings form.")
 
 (defun company-elisp-locals (prefix functions-p)
