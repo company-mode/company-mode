@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2013-03-30 (0.6.5)
 
 * Fixed keybindings when running in a terminal.
 * `company-elisp-show-locals-first`: new customizable variable.
