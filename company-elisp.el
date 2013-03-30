@@ -59,8 +59,8 @@ first in the candidates list.")
 (defvar company-elisp-parse-depth 100)
 
 (defvar company-elisp-var-binding-regexp
-  (concat "\\_<" (regexp-opt '("let" "defun" "defmacro" "defsubst"
-                               "lambda" "lexical-let"))
+  (concat "\\_<\\(?:cl-\\)?" (regexp-opt '("let" "defun" "defmacro" "defsubst"
+                                           "lambda" "lexical-let"))
           "\\*?\\_>")
   "Regular expression matching head of a multiple variable bindings form.")
 
