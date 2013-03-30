@@ -39,7 +39,10 @@ Functions are offered for completion only after ' and \(."
 
 (defcustom company-elisp-show-locals-first t
   "If enabled, locally bound variables and functions are displayed
-first in the candidates list.")
+first in the candidates list."
+  :group 'company
+  :type '(choice (const :tag "Off" nil)
+                 (const :tag "On" t)))
 
 (defun company-grab-lisp-symbol ()
   (let ((prefix (company-grab-symbol)))
