@@ -8,7 +8,7 @@ elpa: *.el
 	mkdir -p "$$dir"; \
 	cp `git ls-files '*.el' | xargs` company-$$version; \
 	echo "(define-package \"company\" \"$$version\" \
-	\"extensible inline text completion mechanism\")" \
+	\"Modular in-buffer completion framework\")" \
 	> "$$dir"/company-pkg.el; \
 	tar cvf company-$$version.tar --mode 644 "$$dir"
 
