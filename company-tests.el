@@ -221,24 +221,24 @@
   (company-elisp-with-buffer
     "(foo ba|)"
     (should (eq (let ((company-elisp-detect-function-context t))
-                  (company-elisp-candidates-predicate "ba"))
+                  (company-elisp--candidates-predicate "ba"))
                 'boundp))
     (should (eq (let (company-elisp-detect-function-context)
-                  (company-elisp-candidates-predicate "ba"))
-                'company-elisp-predicate)))
+                  (company-elisp--candidates-predicate "ba"))
+                'company-elisp--predicate)))
   (company-elisp-with-buffer
     "(foo| )"
     (should (eq (let ((company-elisp-detect-function-context t))
-                  (company-elisp-candidates-predicate "foo"))
+                  (company-elisp--candidates-predicate "foo"))
                 'fboundp))
     (should (eq (let (company-elisp-detect-function-context)
-                  (company-elisp-candidates-predicate "foo"))
-                'company-elisp-predicate)))
+                  (company-elisp--candidates-predicate "foo"))
+                'company-elisp--predicate)))
   (company-elisp-with-buffer
     "(foo 'b|)"
     (should (eq (let ((company-elisp-detect-function-context t))
-                  (company-elisp-candidates-predicate "b"))
-                'company-elisp-predicate))))
+                  (company-elisp--candidates-predicate "b"))
+                'company-elisp--predicate))))
 
 ;; This one's also an integration test.
 (ert-deftest company-elisp-candidates-recognizes-binding-form ()
@@ -262,21 +262,21 @@
         (bar t)
         (baz t))
     (should (equal '("bar" "baz")
-                   (company-elisp-globals "ba" 'boundp)))))
+                   (company-elisp--globals "ba" 'boundp)))))
 
 (ert-deftest company-elisp-finds-functions ()
   (let ((obarray [when what whelp])
         (what t)
         (whelp t))
     (should (equal '("when")
-                   (company-elisp-globals "wh" 'fboundp)))))
+                   (company-elisp--globals "wh" 'fboundp)))))
 
 (ert-deftest company-elisp-finds-things ()
   (let ((obarray [when what whelp])
         (what t)
         (whelp t))
     (should (equal '("what" "whelp" "when")
-                   (sort (company-elisp-globals "wh" 'company-elisp-predicate)
+                   (sort (company-elisp--globals "wh" 'company-elisp--predicate)
                          'string<)))))
 
 (ert-deftest company-elisp-locals-vars ()
@@ -286,7 +286,7 @@
          (lambda (boo baz)
            b|)))"
     (should (equal '("bar" "baz" "boo")
-                   (company-elisp-locals "b" nil)))))
+                   (company-elisp--locals "b" nil)))))
 
 (ert-deftest company-elisp-locals-single-var ()
   (company-elisp-with-buffer
@@ -294,7 +294,7 @@
        (dolist (item items)
          it|))"
     (should (equal '("itk" "item")
-                   (company-elisp-locals "it" nil)))))
+                   (company-elisp--locals "it" nil)))))
 
 (ert-deftest company-elisp-locals-funs ()
   (company-elisp-with-buffer
@@ -303,13 +303,13 @@
        (let ((fun 4))
          (f| )))"
     (should (equal '("fee" "foo")
-                   (sort (company-elisp-locals "f" t) 'string<)))))
+                   (sort (company-elisp--locals "f" t) 'string<)))))
 
 (ert-deftest company-elisp-locals-skips-current-varlist ()
   (company-elisp-with-buffer
     "(let ((foo 1)
            (f| )))"
-    (should (null (company-elisp-locals "f" nil)))))
+    (should (null (company-elisp--locals "f" nil)))))
 
 (ert-deftest company-elisp-show-locals-first ()
   (company-elisp-with-buffer

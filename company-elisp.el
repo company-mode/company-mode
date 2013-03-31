@@ -44,7 +44,7 @@ first in the candidates list."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
-(defun company-grab-lisp-symbol ()
+(defun company-elisp--prefix ()
   (let ((prefix (company-grab-symbol)))
     (if prefix
         (unless (and (company-in-string-or-comment)
@@ -52,7 +52,7 @@ first in the candidates list."
           prefix)
       'stop)))
 
-(defun company-elisp-predicate (symbol)
+(defun company-elisp--predicate (symbol)
   (or (boundp symbol)
       (fboundp symbol)
       (facep symbol)
@@ -75,7 +75,7 @@ first in the candidates list."
   (concat "\\_<\\(?:cl-\\)?" (regexp-opt '("flet" "labels")) "\\*?\\_>")
   "Regular expression matching head of a function bindings form.")
 
-(defun company-elisp-locals (prefix functions-p)
+(defun company-elisp--locals (prefix functions-p)
   (let ((regexp (concat "[ \t\n]*\\(\\_<" (regexp-quote prefix)
                         "\\(?:\\sw\\|\\s_\\)*\\_>\\)"))
         (pos (point))
@@ -114,9 +114,9 @@ first in the candidates list."
     res))
 
 (defun company-elisp-candidates (prefix)
-  (let* ((predicate (company-elisp-candidates-predicate prefix))
-         (locals (company-elisp-locals prefix (eq predicate 'fboundp)))
-         (globals (company-elisp-globals prefix predicate))
+  (let* ((predicate (company-elisp--candidates-predicate prefix))
+         (locals (company-elisp--locals prefix (eq predicate 'fboundp)))
+         (globals (company-elisp--globals prefix predicate))
          (locals (loop for local in locals
                        when (not (member local globals))
                        collect local)))
@@ -125,10 +125,10 @@ first in the candidates list."
                 (sort globals 'string<))
       (append locals globals))))
 
-(defun company-elisp-globals (prefix predicate)
+(defun company-elisp--globals (prefix predicate)
   (all-completions prefix obarray predicate))
 
-(defun company-elisp-candidates-predicate (prefix)
+(defun company-elisp--candidates-predicate (prefix)
   (let* ((completion-ignore-case nil)
          (before (char-before (- (point) (length prefix)))))
     (if (and company-elisp-detect-function-context
@@ -146,9 +146,9 @@ first in the candidates list."
                            (looking-at company-elisp-var-binding-regexp))))))
             'fboundp
           'boundp)
-      'company-elisp-predicate)))
+      'company-elisp--predicate)))
 
-(defun company-elisp-doc (symbol)
+(defun company-elisp--doc (symbol)
   (let* ((symbol (intern symbol))
          (doc (if (fboundp symbol)
                   (documentation symbol t)
@@ -164,10 +164,10 @@ first in the candidates list."
   (case command
     (interactive (company-begin-backend 'company-elisp))
     (prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
-                 (company-grab-lisp-symbol)))
+                 (company-elisp--prefix)))
     (candidates (company-elisp-candidates arg))
     (sorted company-elisp-show-locals-first)
-    (meta (company-elisp-doc arg))
+    (meta (company-elisp--doc arg))
     (doc-buffer (let ((symbol (intern arg)))
                   (save-window-excursion
                     (ignore-errors
