@@ -47,8 +47,9 @@ first in the candidates list."
 (defun company-elisp--prefix ()
   (let ((prefix (company-grab-symbol)))
     (if prefix
-        (unless (and (company-in-string-or-comment)
-                     (/= (char-before (- (point) (length prefix))) ?`))
+        (when (if (company-in-string-or-comment)
+                  (= (char-before (- (point) (length prefix))) ?`)
+                (company-elisp--should-complete))
           prefix)
       'stop)))
 
@@ -58,22 +59,48 @@ first in the candidates list."
       (facep symbol)
       (featurep symbol)))
 
+(defun company-elisp--fns-regexp (&rest names)
+  (concat "\\_<\\(?:cl-\\)?" (regexp-opt names) "\\*?\\_>"))
+
 (defvar company-elisp-parse-limit 30)
 (defvar company-elisp-parse-depth 100)
 
+(defvar company-elisp-defun-names '("defun" "defmacro" "defsubst"))
+
 (defvar company-elisp-var-binding-regexp
-  (concat "\\_<\\(?:cl-\\)?" (regexp-opt '("let" "defun" "defmacro" "defsubst"
-                                           "lambda" "lexical-let"))
-          "\\*?\\_>")
+  (apply #'company-elisp--fns-regexp "let" "lambda" "lexical-let"
+         company-elisp-defun-names)
   "Regular expression matching head of a multiple variable bindings form.")
 
 (defvar company-elisp-var-binding-regexp-1
-  (concat "\\_<\\(?:cl-\\)?" (regexp-opt '("dolist" "dotimes")) "\\_>")
+  (company-elisp--fns-regexp "dolist" "dotimes")
   "Regular expression matching head of a form with one variable binding.")
 
 (defvar company-elisp-fun-binding-regexp
-  (concat "\\_<\\(?:cl-\\)?" (regexp-opt '("flet" "labels")) "\\*?\\_>")
+  (company-elisp--fns-regexp "flet" "labels")
   "Regular expression matching head of a function bindings form.")
+
+(defvar company-elisp-defuns-regexp
+  (concat "([ \t\n]*"
+          (apply #'company-elisp--fns-regexp company-elisp-defun-names)))
+
+(defun company-elisp--should-complete ()
+  (let ((start (point))
+        (depth (car (syntax-ppss))))
+    (not
+     (when (> depth 0)
+       (save-excursion
+         (up-list (- depth))
+         (when (looking-at company-elisp-defuns-regexp)
+           (forward-char)
+           (forward-sexp 1)
+           (unless (= (point) start)
+             (condition-case nil
+                 (let ((args-end (scan-sexps (point) 2)))
+                   (or (null args-end)
+                       (> args-end start)))
+               (scan-error
+                t)))))))))
 
 (defun company-elisp--locals (prefix functions-p)
   (let ((regexp (concat "[ \t\n]*\\(\\_<" (regexp-quote prefix)

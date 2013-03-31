@@ -1,5 +1,11 @@
 # History of user-visible changes
 
+## Next
+
+* `company-elisp` doesn't offer completions when typing the name and the
+  arguments of a new function or macro definition, allowing to fall back to
+  other back-ends like `company-dabbrev-code`.
+
 ## 2013-03-30 (0.6.5)
 
 * Fixed keybindings when running in a terminal.

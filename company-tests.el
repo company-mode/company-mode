@@ -213,6 +213,7 @@
   (declare (indent 0))
   `(with-temp-buffer
      (insert ,contents)
+     (setq major-mode 'emacs-lisp-mode)
      (re-search-backward "|")
      (replace-match "")
      ,@body))
@@ -332,3 +333,29 @@
     (let ((obarray [float-pi])
           (company-elisp-show-locals-first t))
       (should (equal '("float-pi") (company-elisp-candidates "f"))))))
+
+(ert-deftest company-elisp-shouldnt-complete-defun-name ()
+  (company-elisp-with-buffer
+    "(defun foob|)"
+    (should (null (company-elisp 'prefix)))))
+
+(ert-deftest company-elisp-should-complete-def-call ()
+  (company-elisp-with-buffer
+    "(defu|"
+    (should (equal "defu" (company-elisp 'prefix)))))
+
+(ert-deftest company-elisp-should-complete-in-defvar ()
+  ;; It will also complete the var name, at least for now.
+  (company-elisp-with-buffer
+    "(defvar abc de|"
+    (should (equal "de" (company-elisp 'prefix)))))
+
+(ert-deftest company-elisp-shouldnt-complete-in-defun-arglist ()
+  (company-elisp-with-buffer
+    "(defsubst foobar (ba|"
+    (should (null (company-elisp 'prefix)))))
+
+(ert-deftest company-elisp-prefix-in-defun-body ()
+  (company-elisp-with-buffer
+    "(defun foob ()|)"
+    (should (equal "" (company-elisp 'prefix)))))
