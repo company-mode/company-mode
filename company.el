@@ -4,7 +4,7 @@
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
-;; Version: 0.6.5
+;; Version: 0.6.6
 ;; Keywords: abbrev, convenience, matching
 ;; URL: http://company-mode.github.com/
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x, GNU Emacs 24.x
@@ -895,7 +895,10 @@ can retrieve meta-data for them."
 (defun company-manual-begin ()
   (interactive)
   (setq company--explicit-action t)
-  (company-auto-begin))
+  (unwind-protect
+      (company-auto-begin)
+    (unless company-candidates
+      (setq company--explicit-action nil))))
 
 (defun company-other-backend (&optional backward)
   (interactive (list current-prefix-arg))

@@ -148,6 +148,15 @@
         (company-call 'self-insert-command 1))
       (should (string= "ab " (buffer-string))))))
 
+(ert-deftest company-clears-explicit-action-when-no-matches ()
+  (with-temp-buffer
+    (company-mode)
+    (let (company-frontends
+          company-backends)
+      (company-call 'manual-begin) ;; fails
+      (should (null company-candidates))
+      (should (null (company-explicit-action-p))))))
+
 (ert-deftest company-pseudo-tooltip-does-not-get-displaced ()
   (with-temp-buffer
     (save-window-excursion

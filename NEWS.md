@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2013-04-01 (0.6.6)
 
 * `company-elisp` doesn't offer completions when typing the name and the
   arguments of a new function or macro definition, allowing to fall back to
