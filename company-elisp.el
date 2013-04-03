@@ -159,7 +159,7 @@ first in the candidates list."
   (let* ((completion-ignore-case nil)
          (before (char-before (- (point) (length prefix)))))
     (if (and company-elisp-detect-function-context
-             (not (eq before ?')))
+             (not (memq before '(?' ?`))))
         (if (and (eq before ?\()
                  (not
                   (save-excursion

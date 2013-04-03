@@ -250,6 +250,13 @@
                   (company-elisp--candidates-predicate "b"))
                 'company-elisp--predicate))))
 
+(ert-deftest company-elisp-candidates-predicate-in-docstring ()
+  (company-elisp-with-buffer
+   "(def foo () \"Doo be doo `ide|"
+   (should (eq 'company-elisp--predicate
+               (let ((company-elisp-detect-function-context t))
+                 (company-elisp--candidates-predicate "ide"))))))
+
 ;; This one's also an integration test.
 (ert-deftest company-elisp-candidates-recognizes-binding-form ()
   (let ((company-elisp-detect-function-context t)
