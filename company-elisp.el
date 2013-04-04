@@ -157,23 +157,28 @@ first in the candidates list."
 
 (defun company-elisp--candidates-predicate (prefix)
   (let* ((completion-ignore-case nil)
-         (before (char-before (- (point) (length prefix)))))
+         (beg (- (point) (length prefix)))
+         (before (char-before beg)))
     (if (and company-elisp-detect-function-context
              (not (memq before '(?' ?`))))
         (if (and (eq before ?\()
                  (not
                   (save-excursion
                     (ignore-errors
-                      (up-list -2)
-                      (and (save-excursion
-                             (forward-char 1)
-                             (looking-at "[ \t\n]*("))
-                           (prog1 (search-backward "(")
-                             (forward-char 1))
-                           (looking-at company-elisp-var-binding-regexp))))))
+                      (goto-char (1- beg))
+                      (or (company-elisp--before-binding-varlist-p)
+                          (progn
+                            (up-list -1)
+                            (company-elisp--before-binding-varlist-p)))))))
             'fboundp
           'boundp)
       'company-elisp--predicate)))
+
+(defun company-elisp--before-binding-varlist-p ()
+  (save-excursion
+    (and (prog1 (search-backward "(")
+           (forward-char 1))
+         (looking-at company-elisp-var-binding-regexp))))
 
 (defun company-elisp--doc (symbol)
   (let* ((symbol (intern symbol))

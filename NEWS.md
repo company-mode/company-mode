@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## 2013-04-01 (0.6.7)
+
+* Two `company-elisp` tweaks.
+
 ## 2013-04-01 (0.6.6)
 
 * `company-elisp` doesn't offer completions when typing the name and the

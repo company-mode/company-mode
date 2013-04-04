@@ -225,37 +225,34 @@
      (setq major-mode 'emacs-lisp-mode)
      (re-search-backward "|")
      (replace-match "")
-     ,@body))
+     (let ((company-elisp-detect-function-context t))
+       ,@body)))
 
 (ert-deftest company-elisp-candidates-predicate ()
   (company-elisp-with-buffer
     "(foo ba|)"
-    (should (eq (let ((company-elisp-detect-function-context t))
-                  (company-elisp--candidates-predicate "ba"))
+    (should (eq (company-elisp--candidates-predicate "ba")
                 'boundp))
     (should (eq (let (company-elisp-detect-function-context)
                   (company-elisp--candidates-predicate "ba"))
                 'company-elisp--predicate)))
   (company-elisp-with-buffer
     "(foo| )"
-    (should (eq (let ((company-elisp-detect-function-context t))
-                  (company-elisp--candidates-predicate "foo"))
+    (should (eq (company-elisp--candidates-predicate "foo")
                 'fboundp))
     (should (eq (let (company-elisp-detect-function-context)
                   (company-elisp--candidates-predicate "foo"))
                 'company-elisp--predicate)))
   (company-elisp-with-buffer
     "(foo 'b|)"
-    (should (eq (let ((company-elisp-detect-function-context t))
-                  (company-elisp--candidates-predicate "b"))
+    (should (eq (company-elisp--candidates-predicate "b")
                 'company-elisp--predicate))))
 
 (ert-deftest company-elisp-candidates-predicate-in-docstring ()
   (company-elisp-with-buffer
    "(def foo () \"Doo be doo `ide|"
    (should (eq 'company-elisp--predicate
-               (let ((company-elisp-detect-function-context t))
-                 (company-elisp--candidates-predicate "ide"))))))
+               (company-elisp--candidates-predicate "ide")))))
 
 ;; This one's also an integration test.
 (ert-deftest company-elisp-candidates-recognizes-binding-form ()
@@ -272,6 +269,16 @@
       "(cond ((null nil) (wh| )))"
       (should (equal '("when")
                      (company-elisp-candidates "wh"))))))
+
+(ert-deftest company-elisp-candidates-predicate-binding-without-value ()
+  (loop for (text prefix predicate) in '(("(let (foo|" "foo" boundp)
+                                         ("(let (foo (bar|" "bar" boundp)
+                                         ("(let (foo) (bar|" "bar" fboundp))
+        do
+        (eval `(company-elisp-with-buffer
+                 ,text
+                 (should (eq ',predicate
+                             (company-elisp--candidates-predicate ,prefix)))))))
 
 (ert-deftest company-elisp-finds-vars ()
   (let ((obarray [boo bar baz backquote])
