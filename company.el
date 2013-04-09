@@ -91,7 +91,7 @@
      (:background "cornsilk"))
     (((class color) (min-colors 88) (background dark))
      (:background "yellow")))
-  "Face used for the tool tip.")
+  "Face used for the tooltip.")
 
 (defface company-tooltip-selection
   '((default :inherit company-tooltip)
@@ -100,11 +100,11 @@
     (((class color) (min-colors 88) (background dark))
      (:background "orange1"))
     (t (:background "green")))
-  "Face used for the selection in the tool tip.")
+  "Face used for the selection in the tooltip.")
 
 (defface company-tooltip-mouse
   '((default :inherit highlight))
-  "Face used for the tool tip item under the mouse.")
+  "Face used for the tooltip item under the mouse.")
 
 (defface company-tooltip-common
   '((default :inherit company-tooltip)
@@ -112,7 +112,7 @@
      :foreground "darkred")
     (((background dark))
      :foreground "red"))
-  "Face used for the common completion in the tool tip.")
+  "Face used for the common completion in the tooltip.")
 
 (defface company-tooltip-common-selection
   '((default :inherit company-tooltip-selection)
@@ -120,7 +120,7 @@
      :foreground "darkred")
     (((background dark))
      :foreground "red"))
-  "Face used for the selected common completion in the tool tip.")
+  "Face used for the selected common completion in the tooltip.")
 
 (defface company-preview
   '((t :background "blue4"
@@ -202,11 +202,11 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (function :tag "custom function" nil))))
 
 (defcustom company-tooltip-limit 10
-  "The maximum number of candidates in the tool tip"
+  "The maximum number of candidates in the tooltip"
   :type 'integer)
 
 (defcustom company-tooltip-minimum 6
-  "The minimum height of the tool tip.
+  "The minimum height of the tooltip.
 If this many lines are not available, prefer to display the tooltip above."
   :type 'integer)
 
@@ -1815,7 +1815,7 @@ Returns a negative number if the tooltip should be displayed above point."
    (point) (overlay-start company-pseudo-tooltip-overlay)))
 
 (defun company-pseudo-tooltip-frontend (command)
-  "`company-mode' front-end similar to a tool-tip but based on overlays."
+  "`company-mode' front-end similar to a tooltip but based on overlays."
   (case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
     (post-command
