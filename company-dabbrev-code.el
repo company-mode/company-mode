@@ -29,6 +29,10 @@
 (require 'company-dabbrev)
 (eval-when-compile (require 'cl))
 
+(defgroup company-dabbrev-code nil
+  "dabbrev-like completion back-end for code."
+  :group 'company)
+
 (defcustom company-dabbrev-code-modes
   '(asm-mode batch-file-mode c++-mode c-mode cperl-mode csharp-mode css-mode
     emacs-lisp-mode erlang-mode espresso-mode f90-mode fortran-mode
@@ -40,7 +44,6 @@ In all these modes `company-dabbrev-code' will complete only symbols, not text
 in comments or strings.  In other modes `company-dabbrev-code' will pass control
 to other back-ends \(e.g. `company-dabbrev'\).
 Value t means complete in all modes."
-  :group 'company
   :type '(choice (repeat (symbol :tag "Major mode"))
                  (const tag "All modes" t)))
 
@@ -49,14 +52,12 @@ Value t means complete in all modes."
 If `all', search all other buffers.  If t, search buffers with the same
 major mode.
 See also `company-dabbrev-code-time-limit'."
-  :group 'company
   :type '(choice (const :tag "Off" nil)
                  (const :tag "Same major mode" t)
                  (const :tag "All" all)))
 
 (defcustom company-dabbrev-code-time-limit .5
   "Determines how long `company-dabbrev-code' should look for matches."
-  :group 'company
   :type '(choice (const :tag "Off" nil)
                  (number :tag "Seconds")))
 

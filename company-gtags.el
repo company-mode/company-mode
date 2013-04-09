@@ -28,11 +28,14 @@
 (require 'company)
 (eval-when-compile (require 'cl))
 
+(defgroup company-gtags nil
+  "Completion back-end for GNU Global."
+  :group 'company)
+
 (defcustom company-gtags-executable
   (executable-find "global")
   "Location of GNU global executable."
-  :type 'string
-  :group 'company)
+  :type 'string)
 
 (define-obsolete-variable-alias
   'company-gtags-gnu-global-program-name

@@ -28,11 +28,14 @@
 (require 'company)
 (require 'etags)
 
+(defgroup company-etags nil
+  "Completion back-end for etags."
+  :group 'company)
+
 (defcustom company-etags-use-main-table-list t
   "Always search `tags-table-list' if set.
 If this is disabled, `company-etags' will try to find the one table for each
 buffer automatically."
-  :group 'company-mode
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 

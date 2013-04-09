@@ -1,4 +1,4 @@
-;;; company-semantic.el --- company-mode back-end using CEDET Semantic
+;;; company-semantic.el --- company-mode completion back-end using Semantic
 
 ;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
@@ -39,9 +39,12 @@
 (declare-function semantic-tag-buffer "semantic/tag")
 (declare-function semantic-active-p "semantic")
 
+(defgroup company-semantic nil
+  "Completion back-end using Semantic."
+  :group 'company)
+
 (defcustom company-semantic-metadata-function 'company-semantic-summary-and-doc
   "The function turning a semantic tag into doc information."
-  :group 'company
   :type 'function)
 
 (defvar company-semantic-modes '(c-mode c++-mode jde-mode java-mode))

@@ -1,4 +1,4 @@
-;;; company-eclim.el --- company-mode completion back-end for eclim.
+;;; company-eclim.el --- company-mode completion back-end for Eclim
 
 ;; Copyright (C) 2009, 2011, 2013  Free Software Foundation, Inc.
 
@@ -34,6 +34,10 @@
 (require 'company-template)
 (eval-when-compile (require 'cl))
 
+(defgroup company-eclim nil
+  "Completion back-end for Eclim."
+  :group 'company)
+
 (defun company-eclim-executable-find ()
   (let (file)
     (dolist (eclipse-root '("/Applications/eclipse" "/usr/lib/eclipse"
@@ -46,13 +50,11 @@
 (defcustom company-eclim-executable
   (or (executable-find "eclim") (company-eclim-executable-find))
   "Location of eclim executable."
-  :group 'company
   :type 'file)
 
 (defcustom company-eclim-auto-save t
   "Determines whether to save the buffer when retrieving completions.
 eclim can only complete correctly when the buffer has been saved."
-  :group 'company
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 

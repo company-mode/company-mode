@@ -30,17 +30,19 @@
 (require 'help-mode)
 (require 'find-func)
 
+(defgroup company-elisp nil
+  "Completion back-end for emacs-lisp-mode."
+  :group 'company)
+
 (defcustom company-elisp-detect-function-context t
   "If enabled, offer Lisp functions only in appropriate contexts.
 Functions are offered for completion only after ' and \(."
-  :group 'company
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
 (defcustom company-elisp-show-locals-first t
   "If enabled, locally bound variables and functions are displayed
 first in the candidates list."
-  :group 'company
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 

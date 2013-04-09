@@ -1,4 +1,4 @@
-;;; company-ropemacs.el --- company-mode completion back-end for pysmell.el
+;;; company-ropemacs.el --- company-mode completion back-end for ropemacs
 
 ;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 

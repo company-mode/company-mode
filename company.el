@@ -91,8 +91,7 @@
      (:background "cornsilk"))
     (((class color) (min-colors 88) (background dark))
      (:background "yellow")))
-  "Face used for the tool tip."
-  :group 'company)
+  "Face used for the tool tip.")
 
 (defface company-tooltip-selection
   '((default :inherit company-tooltip)
@@ -101,13 +100,11 @@
     (((class color) (min-colors 88) (background dark))
      (:background "orange1"))
     (t (:background "green")))
-  "Face used for the selection in the tool tip."
-  :group 'company)
+  "Face used for the selection in the tool tip.")
 
 (defface company-tooltip-mouse
   '((default :inherit highlight))
-  "Face used for the tool tip item under the mouse."
-  :group 'company)
+  "Face used for the tool tip item under the mouse.")
 
 (defface company-tooltip-common
   '((default :inherit company-tooltip)
@@ -115,8 +112,7 @@
      :foreground "darkred")
     (((background dark))
      :foreground "red"))
-  "Face used for the common completion in the tool tip."
-  :group 'company)
+  "Face used for the common completion in the tool tip.")
 
 (defface company-tooltip-common-selection
   '((default :inherit company-tooltip-selection)
@@ -124,36 +120,30 @@
      :foreground "darkred")
     (((background dark))
      :foreground "red"))
-  "Face used for the selected common completion in the tool tip."
-  :group 'company)
+  "Face used for the selected common completion in the tool tip.")
 
 (defface company-preview
   '((t :background "blue4"
        :foreground "wheat"))
-  "Face used for the completion preview."
-  :group 'company)
+  "Face used for the completion preview.")
 
 (defface company-preview-common
   '((t :inherit company-preview
        :foreground "red"))
-  "Face used for the common part of the completion preview."
-  :group 'company)
+  "Face used for the common part of the completion preview.")
 
 (defface company-preview-search
   '((t :inherit company-preview
        :background "blue1"))
-  "Face used for the search string in the completion preview."
-  :group 'company)
+  "Face used for the search string in the completion preview.")
 
 (defface company-echo nil
-  "Face used for completions in the echo area."
-  :group 'company)
+  "Face used for completions in the echo area.")
 
 (defface company-echo-common
   '((((background dark)) (:foreground "firebrick1"))
     (((background light)) (:background "firebrick4")))
-  "Face used for the common part of completions in the echo area."
-  :group 'company)
+  "Face used for the common part of completions in the echo area.")
 
 (defun company-frontends-set (variable value)
   ;; uniquify
@@ -197,7 +187,6 @@ The visualized data is stored in `company-prefix', `company-candidates',
 `company-common', `company-selection', `company-point' and
 `company-search-string'."
   :set 'company-frontends-set
-  :group 'company
   :type '(repeat (choice (const :tag "echo" company-echo-frontend)
                          (const :tag "echo, strip common"
                                 company-echo-strip-common-frontend)
@@ -214,13 +203,11 @@ The visualized data is stored in `company-prefix', `company-candidates',
 
 (defcustom company-tooltip-limit 10
   "The maximum number of candidates in the tool tip"
-  :group 'company
   :type 'integer)
 
 (defcustom company-tooltip-minimum 6
   "The minimum height of the tool tip.
 If this many lines are not available, prefer to display the tooltip above."
-  :group 'company
   :type 'integer)
 
 (defvar company-safe-backends
@@ -343,7 +330,6 @@ e.g. to expand a snippet.
 The back-end should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
 `company-begin-backend' to start itself in that case."
-  :group 'company
   :type `(repeat
           (choice
            :tag "Back-end"
@@ -363,14 +349,12 @@ does not know about.  It should also be callable interactively and use
   "Hook run when company starts completing.
 The hook is called with one argument that is non-nil if the completion was
 started manually."
-  :group 'company
   :type 'hook)
 
 (defcustom company-completion-cancelled-hook nil
   "Hook run when company cancels completing.
 The hook is called with one argument that is non-nil if the completion was
 aborted manually."
-  :group 'company
   :type 'hook)
 
 (defcustom company-completion-finished-hook nil
@@ -379,12 +363,10 @@ The hook is called with the selected candidate as an argument.
 
 If you indend to use it to post-process candidates from a specific back-end,
 consider using the `post-completion' command instead."
-  :group 'company
   :type 'hook)
 
 (defcustom company-minimum-prefix-length 3
   "The minimum prefix length for automatic completion."
-  :group 'company
   :type '(integer :tag "prefix length"))
 
 (defcustom company-require-match 'company-explicit-action-p
@@ -393,7 +375,6 @@ This can be a function do determine if a match is required.
 
 This can be overridden by the back-end, if it returns t or 'never to
 'require-match.  `company-auto-complete' also takes precedence over this."
-  :group 'company
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
@@ -404,7 +385,6 @@ This can be overridden by the back-end, if it returns t or 'never to
   "Determines when to auto-complete.
 If this is enabled, all characters from `company-auto-complete-chars' complete
 the selected completion.  This can also be a function."
-  :group 'company
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
@@ -421,7 +401,6 @@ This can also be a function, which is called with the new input and should
 return non-nil if company should auto-complete.
 
 A character that is part of a valid candidate never triggers auto-completion."
-  :group 'company
   :type '(choice (string :tag "Characters")
                  (set :tag "Syntax"
                       (const :tag "Whitespace" ?\ )
@@ -444,7 +423,6 @@ A character that is part of a valid candidate never triggers auto-completion."
   "The idle delay in seconds until automatic completions starts.
 A value of nil means never complete automatically, t means complete
 immediately when a prefix of `company-minimum-prefix-length' is reached."
-  :group 'company
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (t)" t)
                  (number :tag "seconds")))
@@ -455,14 +433,12 @@ If this is t, it will complete after any command.  See `company-idle-delay'.
 
 Alternatively any command with a non-nil 'company-begin property is treated as
 if it was on this list."
-  :group 'company
   :type '(choice (const :tag "Any command" t)
                  (const :tag "Self insert command" '(self-insert-command))
                  (repeat :tag "Commands" function)))
 
 (defcustom company-show-numbers nil
   "If enabled, show quick-access numbers for the first ten candidates."
-  :group 'company
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 

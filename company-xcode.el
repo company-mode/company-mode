@@ -28,9 +28,12 @@
 (require 'company)
 (eval-when-compile (require 'cl))
 
+(defgroup company-xcode nil
+  "Completion back-end for Xcode projects."
+  :group 'company)
+
 (defcustom company-xcode-xcodeindex-executable (executable-find "xcodeindex")
   "Location of xcodeindex executable."
-  :group 'company-xcode
   :type 'file)
 
 (defvar company-xcode-tags nil)
@@ -50,7 +53,6 @@ valid in most contexts."
   :set (lambda (variable value)
          (set variable value)
          (company-xcode-reset))
-  :group 'company-xcode
   :type '(set (const "Category") (const "Class") (const "Class Method")
               (const "Class Variable") (const "Constant") (const "Enum")
               (const "Field") (const "Instance Method")

@@ -1,4 +1,4 @@
-;;; company-clang.el --- company-mode completion back-end for clang
+;;; company-clang.el --- company-mode completion back-end for Clang
 
 ;; Copyright (C) 2009, 2011, 2013  Free Software Foundation, Inc.
 
@@ -29,16 +29,18 @@
 (require 'company-template)
 (eval-when-compile (require 'cl))
 
+(defgroup company-clang nil
+  "Completion back-end for Clang."
+  :group 'company)
+
 (defcustom company-clang-executable
   (executable-find "clang")
   "Location of clang executable."
-  :group 'company-clang
   :type 'file)
 
 (defcustom company-clang-auto-save t
   "Determines whether to save the buffer when retrieving completions.
 clang can only complete correctly when the buffer has been saved."
-  :group 'company-clang
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
@@ -47,12 +49,10 @@ clang can only complete correctly when the buffer has been saved."
 Prefix files (-include ...) can be selected with
 `company-clang-set-prefix' or automatically through a custom
 `company-clang-prefix-guesser'."
-  :group 'company-clang
   :type '(repeat (string :tag "Argument" nil)))
 
 (defcustom company-clang-prefix-guesser 'company-clang-guess-prefix
   "A function to determine the prefix file for the current buffer."
-  :group 'company-clang
   :type '(function :tag "Guesser function" nil))
 
 (defvar company-clang-modes '(c-mode objc-mode)
