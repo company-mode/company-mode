@@ -1,4 +1,4 @@
-;;; company-elisp.el --- A company-mode completion back-end for emacs-lisp-mode -*- lexical-binding: t -*-
+;;; company-elisp.el --- company-mode completion back-end for emacs-lisp-mode -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009, 2011-2013  Free Software Foundation, Inc.
 
@@ -191,7 +191,7 @@ first in the candidates list."
 
 ;;;###autoload
 (defun company-elisp (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for `emacs-lisp-mode'."
+  "`company-mode' completion back-end for `emacs-lisp-mode'."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-elisp))

@@ -1,4 +1,4 @@
-;;; company-semantic.el --- A company-mode back-end using CEDET Semantic
+;;; company-semantic.el --- company-mode back-end using CEDET Semantic
 
 ;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
@@ -111,7 +111,7 @@ Symbols are chained by \".\" or \"->\"."
 
 ;;;###autoload
 (defun company-semantic (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end using CEDET Semantic."
+  "`company-mode' completion back-end using CEDET Semantic."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-semantic))

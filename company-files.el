@@ -1,4 +1,4 @@
-;;; company-files.el --- A company-mode completion back-end for file names
+;;; company-files.el --- company-mode completion back-end for file names
 
 ;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
@@ -75,7 +75,7 @@
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end existing file names."
+  "`company-mode' completion back-end existing file names."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-files))

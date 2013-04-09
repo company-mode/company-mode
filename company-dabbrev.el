@@ -1,4 +1,4 @@
-;;; company-dabbrev.el --- A dabbrev-like company-mode completion back-end
+;;; company-dabbrev.el --- dabbrev-like company-mode completion back-end
 
 ;; Copyright (C) 2009, 2011  Free Software Foundation, Inc.
 
@@ -109,7 +109,7 @@ See also `company-dabbrev-time-limit'."
 
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest ignored)
-  "A dabbrev-like `company-mode' completion back-end."
+  "dabbrev-like `company-mode' completion back-end."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-dabbrev))

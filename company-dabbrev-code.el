@@ -1,4 +1,4 @@
-;;; company-dabbrev-code.el --- A dabbrev-like company-mode back-end for code
+;;; company-dabbrev-code.el --- dabbrev-like company-mode back-end for code
 
 ;; Copyright (C) 2009, 2011  Free Software Foundation, Inc.
 
@@ -68,7 +68,7 @@ See also `company-dabbrev-code-time-limit'."
 
 ;;;###autoload
 (defun company-dabbrev-code (command &optional arg &rest ignored)
-  "A dabbrev-like `company-mode' back-end for code.
+  "dabbrev-like `company-mode' back-end for code.
 The back-end looks for all symbols in the current buffer that aren't in
 comments or strings."
   (interactive (list 'interactive))

@@ -1,4 +1,4 @@
-;;; company-oddmuse.el --- A company-mode completion back-end for oddmuse-mode
+;;; company-oddmuse.el --- company-mode completion back-end for oddmuse-mode
 
 ;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
 
@@ -42,7 +42,7 @@
 
 ;;;###autoload
 (defun company-oddmuse (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for `oddmuse-mode'."
+  "`company-mode' completion back-end for `oddmuse-mode'."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-oddmuse))

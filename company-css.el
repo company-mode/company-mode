@@ -1,4 +1,4 @@
-;;; company-css.el --- A company-mode completion back-end for css-mode
+;;; company-css.el --- company-mode completion back-end for css-mode
 
 ;; Copyright (C) 2009, 2011  Free Software Foundation, Inc.
 
@@ -278,7 +278,7 @@ Returns \"\" if no property found, but feasible at this position."
 
 ;;;###autoload
 (defun company-css (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for `css-mode'."
+  "`company-mode' completion back-end for `css-mode'."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-css))

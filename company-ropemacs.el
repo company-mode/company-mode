@@ -1,4 +1,4 @@
-;;; company-ropemacs.el --- A company-mode completion back-end for pysmell.el
+;;; company-ropemacs.el --- company-mode completion back-end for pysmell.el
 
 ;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
@@ -57,7 +57,7 @@
       (cons (elt location 0) (elt location 1)))))
 
 (defun company-ropemacs (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for ropemacs."
+  "`company-mode' completion back-end for ropemacs."
   (interactive (list 'interactive))
   (case command
     (init (when (and (derived-mode-p 'python-mode)

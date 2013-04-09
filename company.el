@@ -1839,7 +1839,7 @@ Returns a negative number if the tooltip should be displayed above point."
    (point) (overlay-start company-pseudo-tooltip-overlay)))
 
 (defun company-pseudo-tooltip-frontend (command)
-  "A `company-mode' front-end similar to a tool-tip but based on overlays."
+  "`company-mode' front-end similar to a tool-tip but based on overlays."
   (case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
     (post-command
@@ -1909,7 +1909,7 @@ Returns a negative number if the tooltip should be displayed above point."
     (setq company-preview-overlay nil)))
 
 (defun company-preview-frontend (command)
-  "A `company-mode' front-end showing the selection as if it had been inserted."
+  "`company-mode' front-end showing the selection as if it had been inserted."
   (case command
     (pre-command (company-preview-hide))
     (post-command (company-preview-show-at-point (point)))
@@ -2013,19 +2013,19 @@ Returns a negative number if the tooltip should be displayed above point."
     (company-echo-show)))
 
 (defun company-echo-frontend (command)
-  "A `company-mode' front-end showing the candidates in the echo area."
+  "`company-mode' front-end showing the candidates in the echo area."
   (case command
     (post-command (company-echo-show-soon 'company-echo-format))
     (hide (company-echo-hide))))
 
 (defun company-echo-strip-common-frontend (command)
-  "A `company-mode' front-end showing the candidates in the echo area."
+  "`company-mode' front-end showing the candidates in the echo area."
   (case command
     (post-command (company-echo-show-soon 'company-echo-strip-common-format))
     (hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
-  "A `company-mode' front-end showing the documentation in the echo area."
+  "`company-mode' front-end showing the documentation in the echo area."
   (case command
     (post-command (company-echo-show-when-idle 'company-fetch-metadata))
     (hide (company-echo-hide))))

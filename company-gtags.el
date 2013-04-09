@@ -1,4 +1,4 @@
-;;; company-gtags.el --- A company-mode completion back-end for GNU Global
+;;; company-gtags.el --- company-mode completion back-end for GNU Global
 
 ;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
 
@@ -70,7 +70,7 @@
 
 ;;;###autoload
 (defun company-gtags (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for GNU Global."
+  "`company-mode' completion back-end for GNU Global."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-gtags))

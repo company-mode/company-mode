@@ -1,4 +1,4 @@
-;;; company-eclim.el --- A company-mode completion back-end for eclim.
+;;; company-eclim.el --- company-mode completion back-end for eclim.
 
 ;; Copyright (C) 2009, 2011, 2013  Free Software Foundation, Inc.
 
@@ -154,7 +154,7 @@ eclim can only complete correctly when the buffer has been saved."
     (company-template-move-to-first templ)))
 
 (defun company-eclim (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for Eclim.
+  "`company-mode' completion back-end for Eclim.
 Eclim provides access to Eclipse Java IDE features for other editors.
 
 Eclim version 1.7.13 or newer (?) is required.

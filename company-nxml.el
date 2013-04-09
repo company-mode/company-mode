@@ -1,4 +1,4 @@
-;;; company-nxml.el --- A company-mode completion back-end for nxml-mode
+;;; company-nxml.el --- company-mode completion back-end for nxml-mode
 
 ;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
@@ -121,7 +121,7 @@
 
 ;;;###autoload
 (defun company-nxml (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for `nxml-mode'."
+  "`company-mode' completion back-end for `nxml-mode'."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-nxml))

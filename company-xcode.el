@@ -1,4 +1,4 @@
-;;; company-xcode.el --- A company-mode completion back-end for Xcode projects
+;;; company-xcode.el --- company-mode completion back-end for Xcode projects
 
 ;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
 
@@ -105,7 +105,7 @@ valid in most contexts."
                         company-xcode-tags))))))
 ;;;###autoload
 (defun company-xcode (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for Xcode projects."
+  "`company-mode' completion back-end for Xcode projects."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-xcode))

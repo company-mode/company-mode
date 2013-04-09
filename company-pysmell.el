@@ -1,4 +1,4 @@
-;;; company-pysmell.el --- A company-mode completion back-end for pysmell.el
+;;; company-pysmell.el --- company-mode completion back-end for pysmell.el
 
 ;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
 
@@ -53,7 +53,7 @@
 
 ;;;###autoload
 (defun company-pysmell (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end for pysmell.
+  "`company-mode' completion back-end for pysmell.
 This requires pysmell.el and pymacs.el."
   (interactive (list 'interactive))
   (case command

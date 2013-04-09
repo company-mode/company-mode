@@ -216,7 +216,7 @@
 
 ;;;###autoload
 (defun company-keywords (command &optional arg &rest ignored)
-  "A `company-mode' back-end for programming language keywords."
+  "`company-mode' back-end for programming language keywords."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-keywords))

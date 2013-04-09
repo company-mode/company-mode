@@ -1,4 +1,4 @@
-;;; company-ispell.el --- A company-mode completion back-end using ispell
+;;; company-ispell.el --- company-mode completion back-end using ispell
 
 ;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
 
@@ -51,7 +51,7 @@ If nil, use `ispell-complete-word-dict'."
 
 ;;;###autoload
 (defun company-ispell (command &optional arg &rest ignored)
-  "A `company-mode' completion back-end using ispell."
+  "`company-mode' completion back-end using ispell."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-ispell))
