@@ -256,11 +256,10 @@ Completions only work correctly when the buffer has been saved.
     (crop (and (string-match ":\\|(" arg)
                (substring arg 0 (match-beginning 0))))
     (post-completion (cond
-                      ((derived-mode-p 'objc-mode)
-                       (string-match ":" arg)
-                       (company-clang-objc-templatify arg))
-                      (t
-                       (company-template-c-like-templatify arg))))))
+                      ((not (derived-mode-p 'objc-mode))
+                       (company-template-c-like-templatify arg))
+                      ((string-match ":" arg)
+                       (company-clang-objc-templatify arg))))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here
