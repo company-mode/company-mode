@@ -228,7 +228,7 @@ Prefix files (-include ...) can be selected with
     (company-template-move-to-first templ)))
 
 (defun company-clang (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for clang.
+  "`company-mode' completion back-end for Clang.
 Clang is a parser for C and ObjC.  Clang version 1.1 or newer is required.
 
 Additional command line arguments can be specified in
