@@ -175,14 +175,13 @@
 
 (ert-deftest company-template-removed-after-the-last-jump ()
   (with-temp-buffer
-    (insert "{ }")
+    (insert "{ foo foo }")
     (goto-char 2)
     (let ((tpl (company-template-declare-template (point) (1- (point-max)))))
       (save-excursion
         (dotimes (i 2)
-          (insert " ")
-          (company-template-add-field tpl (point) "foo")
-          (forward-char 3)))
+          (search-forward "foo")
+          (company-template-add-field tpl (match-beginning 0) (match-end 0))))
       (company-call 'template-forward-field)
       (should (= 3 (point)))
       (company-call 'template-forward-field)
@@ -194,12 +193,10 @@
 
 (ert-deftest company-template-removed-after-input-and-jump ()
   (with-temp-buffer
-    (insert "{ }")
+    (insert "{ bar }")
     (goto-char 2)
     (let ((tpl (company-template-declare-template (point) (1- (point-max)))))
-      (save-excursion
-        (insert " ")
-        (company-template-add-field tpl (point) "bar"))
+      (company-template-add-field tpl 3 6)
       (company-call 'template-move-to-first tpl)
       (should (= 3 (point)))
       (dolist (c (string-to-list "tee"))
