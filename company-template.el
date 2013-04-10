@@ -47,9 +47,8 @@
 
 (defun company-template-move-to-first (templ)
   (interactive)
-  (let ((fields (overlay-get templ 'company-template-fields)))
-    (push-mark)
-    (goto-char (apply 'min (mapcar 'overlay-start fields)))))
+  (goto-char (overlay-start templ))
+  (company-template-forward-field))
 
 (defun company-template-forward-field ()
   (interactive)
@@ -92,15 +91,13 @@
         (delq templ company-template--buffer-templates))
   (delete-overlay templ))
 
-(defun company-template-add-field (templ pos text)
+(defun company-template-add-field (templ beg end)
+  "Add a field to template TEMPL, from BEG to END."
   (assert templ)
   (save-excursion
-    (save-excursion
-      (goto-char pos)
-      (insert text)
-      (when (> (point) (overlay-end templ))
-        (move-overlay templ (overlay-start templ) (point))))
-    (let ((ov (make-overlay pos (+ pos (length text))))
+    (when (> end (overlay-end templ))
+      (move-overlay templ (overlay-start templ) end))
+    (let ((ov (make-overlay beg end))
           (siblings (overlay-get templ 'company-template-fields)))
       ;; (overlay-put ov 'evaporate t)
       (overlay-put ov 'intangible t)
@@ -139,6 +136,22 @@
   (company-template-clean-up)
   (unless company-template--buffer-templates
     (remove-hook 'post-command-hook 'company-template-post-command t)))
+
+;; common ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun company-template-c-like-templatify (call)
+  (let* ((end (point))
+         (beg (- (point) (length call))))
+    (goto-char beg)
+    (when (search-forward "(" end 'move)
+      (if (eq (char-after) ?\))
+          (forward-char 1)
+        (let ((templ (company-template-declare-template beg end)))
+          (while (re-search-forward (concat " *\\([^,)]*\\)[,)]") end t)
+            (company-template-add-field templ
+                                        (match-beginning 1)
+                                        (match-end 1)))
+          (company-template-move-to-first templ))))))
 
 (provide 'company-template)
 ;;; company-template.el ends here

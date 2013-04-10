@@ -1,5 +1,11 @@
 # History of user-visible changes
 
+## Next
+
+* `company-eclim` and `company-clang` do not strip argument types from fields.
+* `company-clang` expand function calls into templates for all three modes now.
+* `company-clang` supports `c++-mode` by default.
+
 ## 2013-04-01 (0.6.7)
 
 * Two `company-elisp` tweaks.

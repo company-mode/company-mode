@@ -55,7 +55,7 @@ Prefix files (-include ...) can be selected with
   "A function to determine the prefix file for the current buffer."
   :type '(function :tag "Guesser function" nil))
 
-(defvar company-clang-modes '(c-mode objc-mode)
+(defvar company-clang-modes '(c-mode c++-mode objc-mode)
   "Major modes which clang may complete.")
 
 ;; prefix ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -100,15 +100,16 @@ Prefix files (-include ...) can be selected with
 
 ;; parsing ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: How to handle OVERLOAD and Pattern?
+;; TODO: Handle Pattern (syntactic hints would be neat).
+;; Do we ever see OVERLOAD (or OVERRIDE)?
 (defconst company-clang--completion-pattern
-  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:]*\\)\\(?: : \\(.*\\)$\\)?")
+  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:]*\\)\\(?: : \\(.*\\)$\\)?$")
 
 (defconst company-clang--error-buffer-name "*clang error*")
 
 (defvar company-clang--meta-cache nil)
 
-(defun company-clang--parse-output (prefix)
+(defun company-clang--parse-output (prefix objc)
   (goto-char (point-min))
   (let ((pattern (format company-clang--completion-pattern
                          (regexp-quote prefix)))
@@ -117,12 +118,21 @@ Prefix files (-include ...) can be selected with
     (setq company-clang--meta-cache (make-hash-table :test 'equal))
     (while (re-search-forward pattern nil t)
       (setq match (match-string-no-properties 1))
-      (let ((meta (match-string-no-properties 2)))
-        (when (and meta (not (string= match meta)))
-          (puthash match meta company-clang--meta-cache)))
       (unless (equal match "Pattern")
+        (let ((meta (match-string-no-properties 2)))
+          (when (and meta (not (string= match meta)))
+            (setq meta (company-clang--strip-formatting meta))
+            (when (and (not objc) (string-match "\\((.*)\\)" meta))
+              (setq match (concat match (match-string 1 meta))))
+            (puthash match meta company-clang--meta-cache)))
         (push match lines)))
     lines))
+
+(defun company-clang--strip-formatting (text)
+  (replace-regexp-in-string
+   "#]" " "
+   (replace-regexp-in-string "[<{[]#\\|#[>}]" "" text t)
+   t))
 
 (defun company-clang--handle-error (res args)
   (goto-char (point-min))
@@ -147,12 +157,13 @@ Prefix files (-include ...) can be selected with
         (goto-char (point-min))))))
 
 (defun company-clang--call-process (prefix &rest args)
-  (with-temp-buffer
-    (let ((res (apply 'call-process company-clang-executable nil t nil args)))
-      (unless (eq 0 res)
-        (company-clang--handle-error res args))
-      ;; Still try to get any useful input.
-      (company-clang--parse-output prefix))))
+  (let ((objc (derived-mode-p 'objc-mode)))
+    (with-temp-buffer
+      (let ((res (apply 'call-process company-clang-executable nil t nil args)))
+        (unless (eq 0 res)
+          (company-clang--handle-error res args))
+        ;; Still try to get any useful input.
+        (company-clang--parse-output prefix objc)))))
 
 (defsubst company-clang--build-location (pos)
   (save-excursion
@@ -207,8 +218,9 @@ Prefix files (-include ...) can be selected with
         (let* ((name (format "arg%d" cnt))
                (len (length name)))
           (incf end len)
-          (company-template-add-field templ (match-end 0) name)
-          (goto-char (+ (match-end 0) len))
+          (let ((pt (point)))
+            (insert name)
+            (company-template-add-field templ pt (point)))
           (when (< (point) end)
             (insert " ")
             (incf end))
@@ -240,18 +252,15 @@ Completions only work correctly when the buffer has been saved.
                  (not (company-in-string-or-comment))
                  (or (company-grab-symbol) 'stop)))
     (candidates (company-clang--candidates arg))
-    (meta (let ((meta (gethash arg company-clang--meta-cache)))
-            (when meta
-              (replace-regexp-in-string
-               "#]" " "
-               (replace-regexp-in-string "[<{[]#\\|#[>}]" "" meta t)
-               t))))
-    (crop (and (derived-mode-p 'objc-mode)
-               (string-match ":" arg)
+    (meta (gethash arg company-clang--meta-cache))
+    (crop (and (string-match ":\\|(" arg)
                (substring arg 0 (match-beginning 0))))
-    (post-completion (and (derived-mode-p 'objc-mode)
-                          (string-match ":" arg)
-                          (company-clang-objc-templatify arg)))))
+    (post-completion (cond
+                      ((derived-mode-p 'objc-mode)
+                       (string-match ":" arg)
+                       (company-clang-objc-templatify arg))
+                      (t
+                       (company-template-c-like-templatify arg))))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here

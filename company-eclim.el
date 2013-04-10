@@ -142,19 +142,6 @@ eclim can only complete correctly when the buffer has been saved."
 (defun company-eclim--meta (candidate)
   (gethash candidate company-eclim--doc))
 
-(defun company-eclim--templatify (call)
-  (let* ((end (point))
-         (beg (- (point) (length call)))
-         (templ (company-template-declare-template beg end)))
-    (save-excursion
-      (goto-char beg)
-      (while (re-search-forward "\\([(,] ?\\)\\([^ ]+ \\)\\([^ ,)]*\\)" end t)
-        (let ((name (match-string 3)))
-          (replace-match "\\1" t)
-          (decf end (length (match-string 2)))
-          (company-template-add-field templ (point) name))))
-    (company-template-move-to-first templ)))
-
 (defun company-eclim (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Eclim.
 Eclim provides access to Eclipse Java IDE features for other editors.
@@ -179,7 +166,7 @@ Completions only work correctly when the buffer has been saved.
     (crop (when (string-match "(" arg)
             (substring arg 0 (match-beginning 0))))
     (post-completion (when (string-match "([^)]" arg)
-                       (company-eclim--templatify arg)))))
+                       (company-template-c-like-templatify arg)))))
 
 (provide 'company-eclim)
 ;;; company-eclim.el ends here
