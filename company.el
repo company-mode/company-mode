@@ -381,7 +381,7 @@ This can be overridden by the back-end, if it returns t or 'never to
                         'company-explicit-action-p)
                  (const :tag "On" t)))
 
-(defcustom company-auto-complete 'company-explicit-action-p
+(defcustom company-auto-complete nil
   "Determines when to auto-complete.
 If this is enabled, all characters from `company-auto-complete-chars' complete
 the selected completion.  This can also be a function."
@@ -391,7 +391,7 @@ the selected completion.  This can also be a function."
                         'company-explicit-action-p)
                  (const :tag "On" t)))
 
-(defcustom company-auto-complete-chars '(?\  ?\( ?\) ?. ?\" ?$ ?\' ?< ?| ?!)
+(defcustom company-auto-complete-chars '(?\  ?\) ?.)
   "Determines which characters trigger an automatic completion.
 See `company-auto-complete'.  If this is a string, each string character causes
 completion.  If it is a list of syntax description characters (see
@@ -900,10 +900,6 @@ can retrieve meta-data for them."
                  (funcall company-require-match)
                (eq company-require-match t))
              (not (eq backend-value 'never))))))
-
-(defun company-punctuation-p (input)
-  "Return non-nil, if input starts with punctuation or parentheses."
-  (memq (char-syntax (string-to-char input)) '(?. ?\( ?\))))
 
 (defun company-auto-complete-p (input)
   "Return non-nil, if input starts with punctuation or parentheses."
