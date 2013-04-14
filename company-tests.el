@@ -29,6 +29,8 @@
 (require 'company)
 (require 'company-keywords)
 
+;;; Core
+
 (ert-deftest company-sorted-keywords ()
   "Test that keywords in `company-keywords-alist' are in alphabetical order."
   (dolist (pair company-keywords-alist)
@@ -173,15 +175,17 @@
         (company-call 'open-line 1)
         (should (eq 2 (overlay-start company-pseudo-tooltip-overlay)))))))
 
+;;; Template
+
 (ert-deftest company-template-removed-after-the-last-jump ()
   (with-temp-buffer
-    (insert "{ foo foo }")
+    (insert "{ }")
     (goto-char 2)
     (let ((tpl (company-template-declare-template (point) (1- (point-max)))))
       (save-excursion
         (dotimes (i 2)
-          (search-forward "foo")
-          (company-template-add-field tpl (match-beginning 0) (match-end 0))))
+          (insert " ")
+          (company-template-add-field tpl (point) "foo")))
       (company-call 'template-forward-field)
       (should (= 3 (point)))
       (company-call 'template-forward-field)
@@ -193,10 +197,12 @@
 
 (ert-deftest company-template-removed-after-input-and-jump ()
   (with-temp-buffer
-    (insert "{ bar }")
+    (insert "{ }")
     (goto-char 2)
     (let ((tpl (company-template-declare-template (point) (1- (point-max)))))
-      (company-template-add-field tpl 3 6)
+      (save-excursion
+        (insert " ")
+        (company-template-add-field tpl (point) "bar"))
       (company-call 'template-move-to-first tpl)
       (should (= 3 (point)))
       (dolist (c (string-to-list "tee"))
@@ -214,6 +220,18 @@
     (apply command args)
     (let ((this-command command))
       (run-hooks 'post-command-hook))))
+
+(ert-deftest company-template-c-like-templatify ()
+  (with-temp-buffer
+    (let ((text "foo(int a, short b)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (should (equal "foo(arg0, arg1)" (buffer-string)))
+      (should (looking-at "arg0"))
+      (should (equal "int a"
+                     (overlay-get (company-template-field-at) 'display))))))
+
+;;; Elisp
 
 (defmacro company-elisp-with-buffer (contents &rest body)
   (declare (indent 0))
@@ -379,3 +397,14 @@
   (company-elisp-with-buffer
     "(defun foob ()|)"
     (should (equal "" (company-elisp 'prefix)))))
+
+;;; Clang
+
+(ert-deftest company-clang-objc-templatify ()
+  (with-temp-buffer
+    (let ((text "createBookWithTitle:andAuthor:"))
+      (insert text)
+      (company-clang-objc-templatify text)
+      (should (equal "createBookWithTitle:arg0 andAuthor:arg1" (buffer-string)))
+      (should (looking-at "arg0"))
+      (should (null (overlay-get (company-template-field-at) 'display))))))

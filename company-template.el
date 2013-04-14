@@ -64,10 +64,12 @@
            (setq minimum pos)))
     (push-mark)
     (goto-char minimum)
-    (let ((field (loop for ovl in (overlays-at start)
-                       when (overlay-get ovl 'company-template-parent)
-                       return ovl)))
-      (company-template-remove-field field))))
+    (company-template-remove-field (company-template-field-at start))))
+
+(defun company-template-field-at (&optional point)
+  (loop for ovl in (overlays-at (or point (point)))
+        when (overlay-get ovl 'company-template-parent)
+        return ovl))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -91,21 +93,26 @@
         (delq templ company-template--buffer-templates))
   (delete-overlay templ))
 
-(defun company-template-add-field (templ beg end)
-  "Add a field to template TEMPL, from BEG to END."
+(defun company-template-add-field (templ pos text &optional display)
+  "Add new field to template TEMPL at POS, inserting TEXT.
+When DISPLAY is non-nil, set the respective property on the overlay.
+Leave point at the end of the field."
   (assert templ)
-  (save-excursion
-    (when (> end (overlay-end templ))
-      (move-overlay templ (overlay-start templ) end))
-    (let ((ov (make-overlay beg end))
-          (siblings (overlay-get templ 'company-template-fields)))
-      ;; (overlay-put ov 'evaporate t)
-      (overlay-put ov 'intangible t)
-      (overlay-put ov 'face 'company-template-field)
-      (overlay-put ov 'company-template-parent templ)
-      (overlay-put ov 'insert-in-front-hooks '(company-template-insert-hook))
-      (push ov siblings)
-      (overlay-put templ 'company-template-fields siblings))))
+  (goto-char pos)
+  (insert text)
+  (when (> (point) (overlay-end templ))
+    (move-overlay templ (overlay-start templ) (point)))
+  (let ((ov (make-overlay pos (+ pos (length text))))
+        (siblings (overlay-get templ 'company-template-fields)))
+    ;; (overlay-put ov 'evaporate t)
+    (overlay-put ov 'intangible t)
+    (overlay-put ov 'face 'company-template-field)
+    (when display
+      (overlay-put ov 'display display))
+    (overlay-put ov 'company-template-parent templ)
+    (overlay-put ov 'insert-in-front-hooks '(company-template-insert-hook))
+    (push ov siblings)
+    (overlay-put templ 'company-template-fields siblings)))
 
 (defun company-template-remove-field (ovl &optional clear)
   (when (overlayp ovl)
@@ -140,17 +147,21 @@
 ;; common ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun company-template-c-like-templatify (call)
-  (let* ((end (point))
-         (beg (- (point) (length call))))
+  (let* ((end (point-marker))
+         (beg (- (point) (length call)))
+         (cnt 0))
     (goto-char beg)
     (when (search-forward "(" end 'move)
       (if (eq (char-after) ?\))
           (forward-char 1)
         (let ((templ (company-template-declare-template beg end)))
           (while (re-search-forward (concat " *\\([^,)]*\\)[,)]") end t)
-            (company-template-add-field templ
-                                        (match-beginning 1)
-                                        (match-end 1)))
+            (let ((sig (match-string 1)))
+              (delete-region (match-beginning 1) (match-end 1))
+              (save-excursion
+                (company-template-add-field templ (match-beginning 1)
+                                            (format "arg%d" cnt) sig))
+              (incf cnt)))
           (company-template-move-to-first templ))))))
 
 (provide 'company-template)

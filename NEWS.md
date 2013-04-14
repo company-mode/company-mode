@@ -4,8 +4,9 @@
 
 * `company-auto-complete` is disabled by default.
 * `company-auto-complete-chars` default value includes fewer syntax classes.
+* In expanded function calls, arguments skipped by the user default to "argN".
 * `company-eclim` and `company-clang` do not strip argument types from fields.
-* `company-clang` expand function calls into templates for all three modes now.
+* `company-clang` expands function calls for all three modes now.
 * `company-clang` supports `c++-mode` by default.
 
 ## 2013-04-01 (0.6.7)
