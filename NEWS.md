@@ -2,9 +2,6 @@
 
 ## Next
 
-* Candidates from grouped back-ends are retrieved more accurately: each
-  `candidates` command receives in the second argument the respective value the
-  back-end returned to the `prefix` command.
 * `company-auto-complete` is disabled by default.
 * `company-auto-complete-chars` default value includes fewer syntax classes.
 * In expanded function calls, arguments skipped by the user default to "argN".

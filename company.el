@@ -658,9 +658,9 @@ keymap during active completions (`company-active-map'):
     (case command
       (candidates
        (loop for backend in backends
-             for prefix = (funcall backend 'prefix)
-             when prefix
-             append (funcall backend 'candidates prefix)))
+             when (equal (funcall backend 'prefix)
+                         (car args))
+             append (apply backend 'candidates args)))
       (sorted nil)
       (duplicates t)
       (otherwise

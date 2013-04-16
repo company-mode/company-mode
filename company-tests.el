@@ -159,25 +159,6 @@
       (should (null company-candidates))
       (should (null (company-explicit-action-p))))))
 
-(ert-deftest company-multi-backend-adapter-uses-respective-prefixes ()
-  ;; And ignores the second argument.
-  (let ((company-backend
-         (list (lambda (command &optional arg)
-                 (case command
-                   (prefix "bar")
-                   (candidates (mapcar (lambda (tail) (concat arg "-" tail))
-                                       '("a" "b" "c")))))
-               (lambda (command &optional arg)
-                 (case command
-                   (prefix "foo-bar")
-                   (candidates (mapcar (lambda (tail) (concat arg "-" tail))
-                                       '("d" "e"))))))))
-    (should (equal (sort '("bar-a" "bar-b" "bar-c" "foo-bar-d" "foo-bar-e")
-                         'string<)
-                   (company-call-backend 'candidates "hubba-hubba")))))
-
-;; Pseudo-Tooltip
-
 (ert-deftest company-pseudo-tooltip-does-not-get-displaced ()
   (with-temp-buffer
     (save-window-excursion
