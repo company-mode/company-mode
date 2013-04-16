@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2013-04-16 (0.6.8)
 
 * `company-auto-complete` is disabled by default.
 * `company-auto-complete-chars` default value includes fewer syntax classes.
@@ -9,7 +9,7 @@
 * `company-clang` expands function calls for all three modes now.
 * `company-clang` supports `c++-mode` by default.
 
-## 2013-04-01 (0.6.7)
+## 2013-04-05 (0.6.7)
 
 * Two `company-elisp` tweaks.
 
