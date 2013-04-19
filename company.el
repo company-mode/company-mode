@@ -213,6 +213,7 @@ If this many lines are not available, prefer to display the tooltip above."
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
     (company-clang . "Clang")
+    (company-cmake . "CMake")
     (company-css . "CSS")
     (company-dabbrev . "dabbrev for plain text")
     (company-dabbrev-code . "dabbrev for code")
@@ -262,7 +263,7 @@ Requires Emacs 24.1 or newer."
          (all-completions arg (nth 3 res)
                           (plist-get (nthcdr 4 res) :predicate)))))))
 
-(defcustom company-backends '(company-elisp company-nxml company-css
+(defcustom company-backends '(company-elisp company-nxml company-css company-cmake
                               company-semantic company-clang company-eclim
                               company-xcode company-ropemacs
                               (company-gtags company-etags company-dabbrev-code
