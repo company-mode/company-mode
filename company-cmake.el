@@ -26,7 +26,8 @@
 ;;
 ;;; Change Log:
 ;;
-;; 2013-04-20: first import
+;; 2013-04-21, support meta command
+;; 2013-04-20, first import
 
 ;;; Code:
 (require 'company)
@@ -53,9 +54,11 @@
 (defvar company-cmake-modes '(cmake-mode)
   "Major modes which cmake may complete.")
 
-(defvar company-cmake--meta-cache nil)
+;; store the meta command options which cmake could use to get
+;; actual meta
+(defvar company-cmake--meta-command-cache nil)
 
-(defun company-cmake--parse-output (prefix)
+(defun company-cmake--parse-output (prefix cmd)
   "analyze the temp-buffer and output lines"
   (goto-char (point-min))
   (let ((pattern (format company-cmake--completion-pattern
@@ -65,15 +68,45 @@
         )
     (while (re-search-forward pattern nil t)
       (setq match (match-string-no-properties 1))
+      (puthash match cmd company-cmake--meta-command-cache)
       (push match lines))
     lines))
 
 (defun company-cmake--candidates (prefix)
-  (with-temp-buffer
-    (let ((res (apply 'call-process company-cmake-executable nil t nil company-cmake-executable-arguments)))
-      (unless (eq 0 res)
-        (messsage "cmake executable exited with error=%d" res))
-      (company-cmake--parse-output prefix)))
+    (let ((res 0)
+          results
+          cmd
+          )
+
+      (setq company-cmake--meta-command-cache (make-hash-table :test 'equal))
+      (mapcar (lambda (e)
+                (with-temp-buffer
+                  (setq res (apply 'call-process company-cmake-executable nil t nil (list e)))
+                  (unless (eq 0 res)
+                    (messsage "cmake executable exited with error=%d" res))
+                  (setq cmd (replace-regexp-in-string "-list$" "" e) )
+                  (setq results (append results (company-cmake--parse-output prefix cmd)))
+                  )
+                )
+              company-cmake-executable-arguments)
+      results
+      )
+  )
+
+(defun company-cmake--meta (prefix)
+  (let ((cmd-opts (gethash prefix company-cmake--meta-command-cache))
+        result
+        )
+    (with-temp-buffer
+      (apply 'call-process company-cmake-executable nil t nil (list cmd-opts prefix))
+      ;; go to third line, trim and output it, tested with cmake 2.8.9
+      (goto-char (point-min))
+      (forward-line 2)
+      (setq result (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+      (setq result (replace-regexp-in-string "^[ \t\n\r]+" "" result))
+      result
+      )
+    )
   )
 
 (defun company-cmake (command &optional arg &rest ignored)
@@ -90,7 +123,7 @@ CMake is a cross-platform, open-source make system."
                  (not (company-in-string-or-comment))
                  (company-grab-symbol)))
     (candidates (company-cmake--candidates arg))
-    (meta (format "This value is named %s" arg))
+    (meta (company-cmake--meta arg))
     )
   )
 
