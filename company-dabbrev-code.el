@@ -35,10 +35,9 @@
 
 (defcustom company-dabbrev-code-modes
   '(asm-mode batch-file-mode c++-mode c-mode cperl-mode csharp-mode css-mode
-    emacs-lisp-mode erlang-mode espresso-mode f90-mode fortran-mode
-    haskell-mode java-mode javascript-mode jde-mode js2-mode lisp-mode
-    lua-mode objc-mode perl-mode php-mode python-mode ruby-mode scheme-mode
-    shell-script-mode)
+    emacs-lisp-mode erlang-mode f90-mode fortran-mode haskell-mode java-mode
+    javascript-mode jde-mode js2-mode lisp-mode lua-mode objc-mode perl-mode
+    php-mode prog-mode python-mode ruby-mode scheme-mode shell-script-mode)
   "Modes that use `company-dabbrev-code'.
 In all these modes `company-dabbrev-code' will complete only symbols, not text
 in comments or strings.  In other modes `company-dabbrev-code' will pass control

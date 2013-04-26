@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* `company-dabbrev-code` supports all `prog-mode` derivatives.
+
 ## 2013-04-16 (0.6.8)
 
 * `company-auto-complete` is disabled by default.
