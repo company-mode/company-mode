@@ -38,9 +38,10 @@
   "Location of clang executable."
   :type 'file)
 
-(defcustom company-clang-auto-save t
+(defcustom company-clang-auto-save nil
   "Determines whether to save the buffer when retrieving completions.
-clang can only complete correctly when the buffer has been saved."
+New clang can read from standard input so that we can turn this option to Off.
+If you are still using the old version of clang, turn it on."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
@@ -109,6 +110,13 @@ Prefix files (-include ...) can be selected with
 
 (defvar company-clang--meta-cache nil)
 
+(defsubst company-clang--lang-option ()
+  (cond ((eq major-mode 'c++-mode) "c++") ((eq major-mode 'c-mode) "c")
+        ((eq major-mode 'objc-mode)
+         (cond ((string= "m" (file-name-extension (buffer-file-name))) "objective-c")
+               (t "objective-c++")))
+        (t "c++")))
+
 (defun company-clang--parse-output (prefix objc)
   (goto-char (point-min))
   (let ((pattern (format company-clang--completion-pattern
@@ -157,28 +165,36 @@ Prefix files (-include ...) can be selected with
         (goto-char (point-min))))))
 
 (defun company-clang--call-process (prefix &rest args)
-  (let ((objc (derived-mode-p 'objc-mode)))
-    (with-temp-buffer
-      (let ((res (apply 'call-process company-clang-executable nil t nil args)))
-        (unless (eq 0 res)
-          (company-clang--handle-error res args))
-        ;; Still try to get any useful input.
-        (company-clang--parse-output prefix objc)))))
+  (let ((objc (derived-mode-p 'objc-mode))
+        (buf (get-buffer-create "*clang-output*"))
+        res)
+    (with-current-buffer buf (erase-buffer))
+    (setq res (if company-clang-auto-save
+                  (apply 'call-process company-clang-executable nil buf nil args)
+                (apply 'call-process-region (point-min) (point-max)
+                       company-clang-executable nil buf nil args)))
+    (with-current-buffer buf
+      (unless (eq 0 res)
+        (company-clang--handle-error res args))
+      ;; Still try to get any useful input.
+      (company-clang--parse-output prefix objc))))
 
 (defsubst company-clang--build-location (pos)
   (save-excursion
     (goto-char pos)
-    (format "%s:%d:%d" buffer-file-name (line-number-at-pos)
+    (format "%s:%d:%d" (if company-clang-auto-save buffer-file-name "-") (line-number-at-pos)
             (1+ (current-column)))))
 
 (defsubst company-clang--build-complete-args (pos)
   (append '("-cc1" "-fsyntax-only" "-code-completion-macros")
+          (unless company-clang-auto-save
+            (list "-x" (company-clang--lang-option)))
           company-clang-arguments
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
           '("-code-completion-at")
           (list (company-clang--build-location pos))
-          (list buffer-file-name)))
+          (list (if company-clang-auto-save buffer-file-name "-"))))
 
 (defun company-clang--candidates (prefix)
   (and company-clang-auto-save
