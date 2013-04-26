@@ -38,12 +38,6 @@
   "Location of clang executable."
   :type 'file)
 
-(defcustom company-clang-auto-save t
-  "Determines whether to save the buffer when retrieving completions.
-clang can only complete correctly when the buffer has been saved."
-  :type '(choice (const :tag "Off" nil)
-                 (const :tag "On" t)))
-
 (defcustom company-clang-arguments nil
   "Additional arguments to pass to clang when completing.
 Prefix files (-include ...) can be selected with
@@ -109,6 +103,12 @@ Prefix files (-include ...) can be selected with
 
 (defvar company-clang--meta-cache nil)
 
+(defun company-clang--lang-option ()
+     (if (eq major-mode 'objc-mode)
+         (if (string= "m" (file-name-extension buffer-file-name))
+             "objective-c" "objective-c++")
+       (substring (symbol-name major-mode) 0 -5)))
+
 (defun company-clang--parse-output (prefix objc)
   (goto-char (point-min))
   (let ((pattern (format company-clang--completion-pattern
@@ -142,7 +142,7 @@ Prefix files (-include ...) can be selected with
          (err (if (re-search-forward pattern nil t)
                   (buffer-substring-no-properties (point-min)
                                                   (1- (match-beginning 0)))
-                ;; Warn the user more agressively if no match was found.
+                ;; Warn the user more aggressively if no match was found.
                 (message "clang failed with error %d:\n%s" res cmd)
                 (buffer-string))))
 
@@ -157,31 +157,41 @@ Prefix files (-include ...) can be selected with
         (goto-char (point-min))))))
 
 (defun company-clang--call-process (prefix &rest args)
-  (let ((objc (derived-mode-p 'objc-mode)))
-    (with-temp-buffer
-      (let ((res (apply 'call-process company-clang-executable nil t nil args)))
-        (unless (eq 0 res)
-          (company-clang--handle-error res args))
-        ;; Still try to get any useful input.
-        (company-clang--parse-output prefix objc)))))
+  (let ((objc (derived-mode-p 'objc-mode))
+        (buf (get-buffer-create "*clang-output*"))
+        res)
+    (with-current-buffer buf (erase-buffer))
+    (setq res (if (company-clang--auto-save-p)
+                  (apply 'call-process company-clang-executable nil buf nil args)
+                (apply 'call-process-region (point-min) (point-max)
+                       company-clang-executable nil buf nil args)))
+    (with-current-buffer buf
+      (unless (eq 0 res)
+        (company-clang--handle-error res args))
+      ;; Still try to get any useful input.
+      (company-clang--parse-output prefix objc))))
 
 (defsubst company-clang--build-location (pos)
   (save-excursion
     (goto-char pos)
-    (format "%s:%d:%d" buffer-file-name (line-number-at-pos)
+    (format "%s:%d:%d"
+            (if (company-clang--auto-save-p) buffer-file-name "-")
+            (line-number-at-pos)
             (1+ (current-column)))))
 
 (defsubst company-clang--build-complete-args (pos)
   (append '("-cc1" "-fsyntax-only" "-code-completion-macros")
+          (unless (company-clang--auto-save-p)
+            (list "-x" (company-clang--lang-option)))
           company-clang-arguments
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
           '("-code-completion-at")
           (list (company-clang--build-location pos))
-          (list buffer-file-name)))
+          (list (if (company-clang--auto-save-p) buffer-file-name "-"))))
 
 (defun company-clang--candidates (prefix)
-  (and company-clang-auto-save
+  (and (company-clang--auto-save-p)
        (buffer-modified-p)
        (basic-save-buffer))
   (when (null company-clang--prefix)
@@ -194,6 +204,11 @@ Prefix files (-include ...) can be selected with
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defconst company-clang-required-version 1.1)
+
+(defvar company-clang--version nil)
+
+(defun company-clang--auto-save-p ()
+  (< company-clang--version 2.9))
 
 (defsubst company-clang-version ()
   "Return the version of `company-clang-executable'."
@@ -232,15 +247,17 @@ Additional command line arguments can be specified in
 with `company-clang-set-prefix' or automatically through a custom
 `company-clang-prefix-guesser'.
 
-Completions only work correctly when the buffer has been saved.
-`company-clang-auto-save' determines whether to do this automatically."
+With Clang versions before 2.9, we have to save the buffer before performing
+completion.  With Clang 2.9 and later, buffer contents are passed via stardard
+input."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-clang))
     (init (when (memq major-mode company-clang-modes)
             (unless company-clang-executable
               (error "Company found no clang executable"))
-            (when (< (company-clang-version) company-clang-required-version)
+            (setq company-clang--version (company-clang-version))
+            (when (< company-clang--version company-clang-required-version)
               (error "Company requires clang version 1.1"))))
     (prefix (and (memq major-mode company-clang-modes)
                  buffer-file-name
