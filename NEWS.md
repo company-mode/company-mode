@@ -2,6 +2,7 @@
 
 ## Next
 
+* Better interaction with `outline-minor-mode`.
 * `company-dabbrev-code` supports all `prog-mode` derivatives.
 
 ## 2013-04-16 (0.6.8)

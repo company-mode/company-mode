@@ -1621,13 +1621,15 @@ Example:
 
 (defun company-buffer-lines (beg end)
   (goto-char beg)
-  (let (lines)
-    (while (and (= 1 (vertical-motion 1))
-                (<= (point) end))
-      (push (buffer-substring beg (min end (1- (point)))) lines)
-      (setq beg (point)))
-    (unless (eq beg end)
-      (push (buffer-substring beg end) lines))
+  (let (lines done)
+    (while (and (< (point) end) (not done))
+      (let ((bol (point)))
+        ;; A visual line can contain several physical lines (e.g. with outline's
+        ;; folding overlay).  Take only the first one.
+        (re-search-forward "$")
+        (push (buffer-substring bol (min end (point))) lines))
+      (unless (= 1 (vertical-motion 1))
+        (setq done t)))
     (nreverse lines)))
 
 (defsubst company-modify-line (old new offset)
@@ -1802,6 +1804,8 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
     (overlay-put company-pseudo-tooltip-overlay 'invisible t)
+    ;; Beat outline's folding overlays, at least.
+    (overlay-put company-pseudo-tooltip-overlay 'priority 1)
     (overlay-put company-pseudo-tooltip-overlay 'before-string
                  (overlay-get company-pseudo-tooltip-overlay 'company-before))
     (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))
