@@ -1333,8 +1333,10 @@ and invoke the normal binding."
   (interactive "e")
   (when (nth 4 (event-start event))
     (company-set-selection (- (cdr (posn-actual-col-row (event-start event)))
-                              (company--row)
-                              1))
+                              (if (zerop company-tooltip-offset)
+                                  1
+                                (- 2 company-tooltip-offset))
+                              (company--row)))
     t))
 
 (defun company-complete-mouse (event)
