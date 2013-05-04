@@ -1328,16 +1328,35 @@ and invoke the normal binding."
     (company-abort)
     (company--unread-last-input)))
 
+(defun company--inside-tooltip-p (event-col-row ovl-row)
+  (when company-pseudo-tooltip-overlay
+    (let* ((ovl company-pseudo-tooltip-overlay)
+           (column (overlay-get ovl 'company-column))
+           (width (overlay-get ovl 'company-width))
+           (height (overlay-get ovl 'company-height))
+           (evt-col (car event-col-row))
+           (evt-row (cdr event-col-row)))
+      (and (>= evt-col column)
+           (< evt-col (+ column width))
+           (> evt-row ovl-row)
+           (<= evt-row (+ ovl-row height) )))))
+
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
   (interactive "e")
-  (when (nth 4 (event-start event))
-    (company-set-selection (- (cdr (posn-actual-col-row (event-start event)))
-                              (if (zerop company-tooltip-offset)
-                                  1
-                                (- 2 company-tooltip-offset))
-                              (company--row)))
-    t))
+  (let ((event-col-row (posn-actual-col-row (event-start event)))
+        (ovl-row (company--row)))
+    (if (company--inside-tooltip-p event-col-row ovl-row)
+        (progn
+          (company-set-selection (- (cdr event-col-row)
+                                    (if (zerop company-tooltip-offset)
+                                        1
+                                      (- 2 company-tooltip-offset))
+                                    ovl-row))
+          t)
+      (company-abort)
+      (company--unread-last-input)
+      nil)))
 
 (defun company-complete-mouse (event)
   "Complete the candidate picked by the mouse."
@@ -1769,10 +1788,11 @@ Returns a negative number if the tooltip should be displayed above point."
 
         (setq company-pseudo-tooltip-overlay ov)
         (overlay-put ov 'company-replacement-args args)
-        (overlay-put ov 'company-before
-                     (apply 'company--replacement-string
-                            (company--create-lines selection (abs height))
-                            args))
+
+        (let ((lines (company--create-lines selection (abs height))))
+          (overlay-put ov 'company-before
+                       (apply 'company--replacement-string lines args))
+          (overlay-put ov 'company-width (string-width (car lines))))
 
         (overlay-put ov 'company-column column)
         (overlay-put ov 'company-height height)))))
@@ -1784,8 +1804,7 @@ Returns a negative number if the tooltip should be displayed above point."
                                    company-selection))))
 
 (defun company-pseudo-tooltip-edit (lines selection)
-  (let ((column (overlay-get company-pseudo-tooltip-overlay 'company-column))
-        (height (overlay-get company-pseudo-tooltip-overlay 'company-height)))
+  (let ((height (overlay-get company-pseudo-tooltip-overlay 'company-height)))
     (overlay-put company-pseudo-tooltip-overlay 'company-before
                  (apply 'company--replacement-string
                         (company--create-lines selection (abs height))

@@ -2,6 +2,7 @@
 
 ## Next
 
+* Mouse click outside the tooltip aborts completion.
 * `company-clang` uses standard input to pass the contents of current buffer to
   Clang 2.9+, otherwise saves the buffer and passes the path to the file.
 * `company-clang-auto-save` option has been removed.
