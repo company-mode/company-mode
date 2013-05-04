@@ -1338,8 +1338,11 @@ and invoke the normal binding."
            (evt-row (cdr event-col-row)))
       (and (>= evt-col column)
            (< evt-col (+ column width))
-           (> evt-row ovl-row)
-           (<= evt-row (+ ovl-row height) )))))
+           (if (> height 0)
+               (and (> evt-row ovl-row)
+                    (<= evt-row (+ ovl-row height) ))
+             (and (< evt-row ovl-row)
+                  (>= evt-row (+ ovl-row height))))))))
 
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
@@ -1347,12 +1350,16 @@ and invoke the normal binding."
   (let ((event-col-row (posn-actual-col-row (event-start event)))
         (ovl-row (company--row)))
     (if (company--inside-tooltip-p event-col-row ovl-row)
-        (progn
-          (company-set-selection (- (cdr event-col-row)
+        (let ((ovl-height (overlay-get company-pseudo-tooltip-overlay
+                                       'company-height)))
+          (company-set-selection (+ (cdr event-col-row)
                                     (if (zerop company-tooltip-offset)
-                                        1
-                                      (- 2 company-tooltip-offset))
-                                    ovl-row))
+                                        -1
+                                      (- company-tooltip-offset 2))
+                                    (- ovl-row)
+                                    (if (< ovl-height 0)
+                                        (- 1 ovl-height)
+                                      0)))
           t)
       (company-abort)
       (company--unread-last-input)
