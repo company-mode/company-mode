@@ -39,10 +39,11 @@
   :type 'file)
 
 (defcustom company-clang-begin-after-member-access t
-  "When non-nil, automatic completion will start whenever the current symbol
-is preceded by \".\" or \"->\", ignoring `company-minimum-prefix-length'.
+  "When non-nil, automatic completion will start whenever the current symbol is
+preceded by \".\", \"->\" or \"::\", ignoring `company-minimum-prefix-length'.
 
-If `company-begin-commands' is a list, it should include `c-electric-lt-gt'.")
+If `company-begin-commands' is a list, it should include `c-electric-lt-gt' and
+`c-electric-colon', for automatic completion right after \">\" and \":\".")
 
 (defcustom company-clang-arguments nil
   "Additional arguments to pass to clang when completing.
@@ -213,7 +214,7 @@ Prefix files (-include ...) can be selected with
         (if (and company-clang-begin-after-member-access
                  (save-excursion
                    (forward-char (- (length symbol)))
-                   (looking-back "\\.\\|->" (- (point) 3))))
+                   (looking-back "\\.\\|->\\|::" (- (point) 2))))
             (cons symbol t)
           symbol)
       'stop)))
