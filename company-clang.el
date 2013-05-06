@@ -266,7 +266,7 @@ with `company-clang-set-prefix' or automatically through a custom
 `company-clang-prefix-guesser'.
 
 With Clang versions before 2.9, we have to save the buffer before performing
-completion.  With Clang 2.9 and later, buffer contents are passed via stardard
+completion.  With Clang 2.9 and later, buffer contents are passed via standard
 input."
   (interactive (list 'interactive))
   (case command
