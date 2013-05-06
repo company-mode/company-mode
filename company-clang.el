@@ -38,6 +38,12 @@
   "Location of clang executable."
   :type 'file)
 
+(defcustom company-clang-begin-after-member-access t
+  "When non-nil, automatic completion will start whenever the current symbol
+is preceded by \".\" or \"->\", ignoring `company-minimum-prefix-length'.
+
+If `company-begin-commands' is a list, it should include `c-electric-lt-gt'.")
+
 (defcustom company-clang-arguments nil
   "Additional arguments to pass to clang when completing.
 Prefix files (-include ...) can be selected with
@@ -201,6 +207,17 @@ Prefix files (-include ...) can be selected with
          prefix
          (company-clang--build-complete-args (- (point) (length prefix)))))
 
+(defun company-clang--prefix ()
+  (let ((symbol (company-grab-symbol)))
+    (if symbol
+        (if (and company-clang-begin-after-member-access
+                 (save-excursion
+                   (forward-char (- (length symbol)))
+                   (looking-back "\\.\\|->" (- (point) 3))))
+            (cons symbol t)
+          symbol)
+      'stop)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defconst company-clang-required-version 1.1)
@@ -263,7 +280,7 @@ input."
                  buffer-file-name
                  company-clang-executable
                  (not (company-in-string-or-comment))
-                 (or (company-grab-symbol) 'stop)))
+                 (company-clang--prefix)))
     (candidates (company-clang--candidates arg))
     (meta (gethash arg company-clang--meta-cache))
     (crop (and (string-match ":\\|(" arg)

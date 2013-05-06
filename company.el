@@ -280,13 +280,12 @@ Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
 of the following:
 
-`prefix': The back-end should return the text to be completed.  It must be
-text immediately before `point'.  Returning nil passes control to the next
-back-end.  The function should return 'stop if it should complete but cannot
-\(e.g. if it is in the middle of a string\).  If the returned value is only
-part of the prefix (e.g. the part after \"->\" in C), the back-end may return a
-cons of prefix and prefix length, which is then used in the
-`company-minimum-prefix-length' test.
+`prefix': The back-end should return the text to be completed.  It must be text
+immediately before `point'.  Returning nil passes control to the next back-end.
+The function should return 'stop if it should complete but cannot \(e.g. if it
+is in the middle of a string\).  Instead of a string, the back-end may return a
+cons where car is the prefix and cdr is used in `company-minimum-prefix-length'
+test. It's either number or t, in which case the test automatically succeeds.
 
 `candidates': The second argument is the prefix to be completed.  The
 return value should be a list of candidates that start with the prefix.
@@ -951,8 +950,9 @@ can retrieve meta-data for them."
 (defun company--good-prefix-p (prefix)
   (and (or (company-explicit-action-p)
            (unless (eq prefix 'stop)
-             (>= (or (cdr-safe prefix) (length prefix))
-                 company-minimum-prefix-length)))
+             (or (eq (cdr-safe prefix) t)
+                 (>= (or (cdr-safe prefix) (length prefix))
+                     company-minimum-prefix-length))))
        (stringp (or (car-safe prefix) prefix))))
 
 (defun company--continue ()
