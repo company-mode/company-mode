@@ -213,6 +213,7 @@ If this many lines are not available, prefer to display the tooltip above."
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
+    (company-capf . "completion-at-point-functions")
     (company-clang . "Clang")
     (company-css . "CSS")
     (company-dabbrev . "dabbrev for plain text")
@@ -240,56 +241,6 @@ If this many lines are not available, prefer to display the tooltip above."
                           (company-safe-backends-p backend)
                         (assq backend company-safe-backends))
                 (return t))))))
-
-(defun company--capf-data ()
-  (let ((data (run-hook-wrapped 'completion-at-point-functions
-                                ;; Ignore misbehaving functions.
-                                #'completion--capf-wrapper 'optimist)))
-    (when (consp data) data)))
-
-(defun company-capf (command &optional arg &rest _args)
-  "`company-mode' back-end using `completion-at-point-functions'.
-Requires Emacs 24.1 or newer."
-  (interactive (list 'interactive))
-  (case command
-    (interactive (company-begin-backend 'company-capf))
-    (prefix
-     (let ((res (company--capf-data)))
-       (when res
-         (if (> (nth 2 res) (point))
-             'stop
-           (buffer-substring-no-properties (nth 1 res) (point))))))
-    (candidates
-     (let ((res (company--capf-data)))
-       (when res
-         (let* ((table (nth 3 res))
-                (pred (plist-get (nthcdr 4 res) :predicate))
-                (meta (completion-metadata
-                      (buffer-substring (nth 1 res) (nth 2 res))
-                      table pred))
-                (sortfun (cdr (assq 'display-sort-function meta)))
-                (candidates (all-completions arg table pred)))
-           (if sortfun (funcall sortfun candidates) candidates)))))
-    (sorted
-     (let ((res (company--capf-data)))
-       (when res
-         (let ((meta (completion-metadata
-                      (buffer-substring (nth 1 res) (nth 2 res))
-                      (nth 3 res) (plist-get (nthcdr 4 res) :predicate))))
-           (cdr (assq 'display-sort-function meta))))))
-    (duplicates nil) ;Don't bother.
-    (no-cache t)     ;FIXME: Improve!
-    (meta nil)       ;FIXME: Return one-line docstring for `arg'.
-    (doc-buffer nil) ;FIXME: Return help buffer for `arg'.
-    (location nil)   ;FIXME: Return (BUF . POS) or (FILE . LINENB) of `arg'.
-    (require-match nil)            ;This should be a property of the front-end!
-    (init nil)      ;Don't bother: plenty of other ways to initialize the code.
-    (post-completion
-     (let* ((res (company--capf-data))
-            (exit-function (plist-get (nthcdr 4 res) :exit-function)))
-       (if exit-function
-           (funcall exit-function arg 'finished))))
-    ))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-semantic company-clang company-eclim
