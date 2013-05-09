@@ -69,6 +69,8 @@ eclim can only complete correctly when the buffer has been saved."
 (defvar company-eclim--doc nil)
 (make-variable-buffer-local 'company-eclim--doc)
 
+(declare-function json-read "json")
+
 (defun company-eclim--call-process (&rest args)
   (let ((coding-system-for-read 'utf-8)
         res)

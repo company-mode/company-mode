@@ -111,7 +111,7 @@ first in the candidates list."
         res)
     (condition-case nil
         (save-excursion
-          (dotimes (i company-elisp-parse-depth)
+          (dotimes (_ company-elisp-parse-depth)
             (up-list -1)
             (save-excursion
               (when (eq (char-after) ?\()
@@ -126,7 +126,7 @@ first in the candidates list."
                                   company-elisp-var-binding-regexp))
                     (down-list 1)
                     (condition-case nil
-                        (dotimes (i company-elisp-parse-limit)
+                        (dotimes (_ company-elisp-parse-limit)
                           (save-excursion
                             (when (looking-at "[ \t\n]*(")
                               (down-list 1))

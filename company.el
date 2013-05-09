@@ -1357,6 +1357,10 @@ and invoke the normal binding."
     (company-abort)
     (company--unread-last-input)))
 
+(defvar company-pseudo-tooltip-overlay)
+
+(defvar company-tooltip-offset)
+
 (defun company--inside-tooltip-p (event-col-row row height)
   (let* ((ovl company-pseudo-tooltip-overlay)
          (column (overlay-get ovl 'company-column))
