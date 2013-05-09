@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2013  Free Software Foundation, Inc.
 
-;; Author: Stefan Monnier
+;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
 ;; This file is part of GNU Emacs.
 
