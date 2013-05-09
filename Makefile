@@ -22,7 +22,8 @@ clean:
 	@rm -rf company-*/ company-*.tar company-*.tar.bz2
 
 test:
-	${EMACS} -Q -nw -L . -l company-tests.el --eval "(ert t)"
+	${EMACS} -Q -nw -L . -l company-tests.el \
+	--eval "(let (pop-up-windows) (ert t))"
 
 test-batch:
 	${EMACS} -Q --batch -L . -l company-tests.el \
