@@ -4,24 +4,11 @@ language: emacs-lisp
 
 env:
   matrix:
-    - EMACS=emacs22
     - EMACS=emacs23
     - EMACS=emacs24
     - EMACS=emacs-snapshot
 
 install:
-  - if [ "$EMACS" = "emacs22" ]; then
-        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22_22.2-0ubuntu9_i386.deb &&
-        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-bin-common_22.2-0ubuntu9_i386.deb &&
-        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-common_22.2-0ubuntu9_all.deb &&
-        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-el_22.2-0ubuntu9_all.deb &&
-        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-gtk_22.2-0ubuntu9_i386.deb &&
-        sudo apt-get update -qq &&
-        sudo apt-get remove -qq emacs emacs23-bin-common emacs23-common emacs23-nox &&
-        sudo apt-get install -qq libjpeg62 xaw3dg &&
-        sudo dpkg -i emacs22_22.2-0ubuntu9_i386.deb emacs22-bin-common_22.2-0ubuntu9_i386.deb emacs22-common_22.2-0ubuntu9_all.deb emacs22-el_22.2-0ubuntu9_all.deb emacs22-gtk_22.2-0ubuntu9_i386.deb &&
-        sudo update-alternatives --set emacs22 /usr/bin/emacs22-gtk;
-    fi
   - if [ "$EMACS" = "emacs23" ]; then
         sudo apt-get update -qq &&
         sudo apt-get install -qq emacs23-gtk emacs23-el;
