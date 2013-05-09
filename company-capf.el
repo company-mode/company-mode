@@ -66,7 +66,7 @@ Requires Emacs 24.1 or newer."
     (meta nil)           ;FIXME: Return one-line docstring for `arg'.
     (doc-buffer nil)     ;FIXME: Return help buffer for `arg'.
     (location nil)       ;FIXME: Return (BUF . POS) or (FILE . LINENB) of `arg'.
-    (require-match nil)  ;This should be a property of the front-end!
+    (require-match nil)  ;Front-ends should also have a say in this.
     (init nil)       ;Don't bother: plenty of other ways to initialize the code.
     (post-completion
      (let* ((res (company--capf-data))
