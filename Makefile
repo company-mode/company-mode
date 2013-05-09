@@ -31,5 +31,5 @@ test-batch:
 	  '(not (tag interactive)))"
 
 downloads:
-	${EMACS} -Q --batch -l ert ||
+	${EMACS} -Q --batch -l ert || \
 	${CURL} ${ERT_URL} > ert.el
