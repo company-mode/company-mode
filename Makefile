@@ -19,7 +19,7 @@ elpa: *.el
 	tar cvf company-$$version.tar --mode 644 "$$dir"
 
 clean:
-	@rm -rf company-*/ company-*.tar company-*.tar.bz2
+	@rm -rf company-*/ company-*.tar company-*.tar.bz2 *.elc ert.el
 
 test:
 	${EMACS} -Q -nw -L . -l company-tests.el \
@@ -32,3 +32,6 @@ test-batch:
 downloads:
 	${EMACS} -Q --batch -l ert || \
 	${CURL} ${ERT_URL} > ert.el
+
+compile:
+	${EMACS} -Q --batch -L . -f batch-byte-compile company.el company-*.el
