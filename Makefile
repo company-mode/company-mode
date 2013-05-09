@@ -1,4 +1,8 @@
 EMACS=emacs
+CURL=curl --silent
+ERT_URL=http://git.savannah.gnu.org/cgit/emacs.git/plain/lisp/emacs-lisp/ert.el
+
+.PHONY: ert test test-batch
 
 package: *.el
 	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
@@ -25,3 +29,7 @@ test-batch:
 	${EMACS} -Q --batch --eval "(add-to-list 'load-path \".\")" \
 	-l company-tests.el --eval "(ert-run-tests-batch-and-exit \
 	  '(not (tag interactive)))"
+
+downloads:
+	${EMACS} -Q --batch -l ert ||
+	${CURL} ${ERT_URL} > ert.el
