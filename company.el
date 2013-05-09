@@ -1779,6 +1779,10 @@ Returns a negative number if the tooltip should be displayed above point."
     (let* ((height (company--pseudo-tooltip-height))
            above)
 
+      (when (and header-line-format
+                 (version< "24" emacs-version))
+        (decf row))
+
       (when (< height 0)
         (setq row (+ row height -1)
               above t))
