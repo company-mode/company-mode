@@ -1,7 +1,8 @@
 # History of user-visible changes
 
-## Next
+## 2013-05-10 (0.6.9)
 
+* `company-capf` respects `:exit-function` completion property.
 * `company-backends`: `prefix` command can return `t` in the cdr.
 * `company-clang-begin-after-member-access`: New option.
 * Mouse click outside the tooltip aborts completion.
