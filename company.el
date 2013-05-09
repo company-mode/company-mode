@@ -1328,30 +1328,32 @@ and invoke the normal binding."
     (company-abort)
     (company--unread-last-input)))
 
-(defun company--inside-tooltip-p (event-col-row ovl-row)
-  (when company-pseudo-tooltip-overlay
-    (let* ((ovl company-pseudo-tooltip-overlay)
-           (column (overlay-get ovl 'company-column))
-           (width (overlay-get ovl 'company-width))
-           (height (overlay-get ovl 'company-height))
-           (evt-col (car event-col-row))
-           (evt-row (cdr event-col-row)))
-      (and (>= evt-col column)
-           (< evt-col (+ column width))
-           (if (> height 0)
-               (and (> evt-row ovl-row)
-                    (<= evt-row (+ ovl-row height) ))
-             (and (< evt-row ovl-row)
-                  (>= evt-row (+ ovl-row height))))))))
+(defun company--inside-tooltip-p (event-col-row row height)
+  (let* ((ovl company-pseudo-tooltip-overlay)
+         (column (overlay-get ovl 'company-column))
+         (width (overlay-get ovl 'company-width))
+         (evt-col (car event-col-row))
+         (evt-row (cdr event-col-row)))
+    (and (>= evt-col column)
+         (< evt-col (+ column width))
+         (if (> height 0)
+             (and (> evt-row row)
+                  (<= evt-row (+ row height) ))
+           (and (< evt-row row)
+                (>= evt-row (+ row height)))))))
 
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
   (interactive "e")
   (let ((event-col-row (posn-actual-col-row (event-start event)))
-        (ovl-row (company--row)))
-    (if (company--inside-tooltip-p event-col-row ovl-row)
-        (let ((ovl-height (overlay-get company-pseudo-tooltip-overlay
-                                       'company-height)))
+        (ovl-row (company--row))
+        (ovl-height (and company-pseudo-tooltip-overlay
+                         (min (overlay-get company-pseudo-tooltip-overlay
+                                           'company-height)
+                              company-candidates-length))))
+    (if (and ovl-height
+             (company--inside-tooltip-p event-col-row ovl-row ovl-height))
+        (progn
           (company-set-selection (+ (cdr event-col-row)
                                     (if (zerop company-tooltip-offset)
                                         -1
