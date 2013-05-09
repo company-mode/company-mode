@@ -1,3 +1,5 @@
+EMACS=emacs
+
 package: *.el
 	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
 	tar cjvf company-$$ver.tar.bz2 --mode 644 `git ls-files '*.el' | xargs`
@@ -14,3 +16,12 @@ elpa: *.el
 
 clean:
 	@rm -rf company-*/ company-*.tar company-*.tar.bz2
+
+test:
+	${EMACS} -Q -nw --eval "(add-to-list 'load-path \".\")" \
+	-l company-tests.el --eval "(ert t)"
+
+test-batch:
+	${EMACS} -Q --batch --eval "(add-to-list 'load-path \".\")" \
+	-l company-tests.el --eval "(ert-run-tests-batch-and-exit \
+	  '(not (tag interactive)))"
