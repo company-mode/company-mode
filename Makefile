@@ -1,6 +1,6 @@
 EMACS=emacs
 CURL=curl --silent
-ERT_URL=http://git.savannah.gnu.org/cgit/emacs.git/plain/lisp/emacs-lisp/ert.el
+ERT_URL=http://git.savannah.gnu.org/cgit/emacs.git/plain/lisp/emacs-lisp/ert.el?h=emacs-24
 
 .PHONY: ert test test-batch
 
