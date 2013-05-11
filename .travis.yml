@@ -30,6 +30,3 @@ before_script:
 
 script:
   make test-batch EMACS=${EMACS}
-
-notifications:
-  email: false
