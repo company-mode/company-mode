@@ -180,6 +180,7 @@
         (should (eq 2 (overlay-start company-pseudo-tooltip-overlay)))))))
 
 (ert-deftest company-pseudo-tooltip-overlay-show ()
+  :tags '(interactive)
   (with-temp-buffer
     (save-window-excursion
     (set-window-buffer nil (current-buffer))
@@ -196,6 +197,12 @@
         (should (eq (overlay-get ov 'company-column) col))
         (should (string= (overlay-get ov 'company-before)
                          " 123\nc45 c\nddd\n")))))))
+
+(ert-deftest company-column-with-composition ()
+  (with-temp-buffer
+    (insert "lambda ()")
+    (compose-region 1 (1+ (length "lambda")) "\\")
+    (should (= (company--column) 4))))
 
 ;;; Template
 

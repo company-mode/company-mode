@@ -574,7 +574,11 @@ keymap during active completions (`company-active-map'):
 (defun company--column (&optional pos)
   (save-excursion
     (when pos (goto-char pos))
-    (- (point) (progn (vertical-motion 0) (point)))))
+    (save-restriction
+      (narrow-to-region (save-excursion
+                          (vertical-motion 0) (point))
+                        (point))
+      (current-column))))
 
 (defun company--row (&optional pos)
   (save-excursion
