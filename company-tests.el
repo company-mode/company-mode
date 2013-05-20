@@ -179,33 +179,23 @@
         (company-call 'open-line 1)
         (should (eq 2 (overlay-start company-pseudo-tooltip-overlay)))))))
 
-(defun company-test-pseudo-tooltip-overlay-show ()
-  (save-window-excursion
+(ert-deftest company-pseudo-tooltip-overlay-show ()
+  (with-temp-buffer
+    (save-window-excursion
     (set-window-buffer nil (current-buffer))
     (insert "aaaa\n bb\nccccc\nddd")
     (search-backward "bb")
-    (let ((col-row (company--col-row))
+    (let ((col (company--column))
           (company-candidates-length 2)
           (company-candidates '("123" "45")))
-      (company-pseudo-tooltip-show (cdr col-row) (car col-row) 0)
+      (company-pseudo-tooltip-show (company--row) col 0)
       (let ((ov company-pseudo-tooltip-overlay))
         (should (eq (overlay-get ov 'company-width) 3))
         ;; FIXME: Make it 2?
-        (should (eq (overlay-get ov 'company-height) 10))
-        (should (eq (overlay-get ov 'company-column) (car col-row)))
+        (should (eq (overlay-get ov 'company-height) company-tooltip-limit))
+        (should (eq (overlay-get ov 'company-column) col))
         (should (string= (overlay-get ov 'company-before)
-                         " 123\nc45 c\nddd\n"))))))
-
-(ert-deftest company-pseudo-tooltip-overlay-show ()
-  :tags '(interactive)
-  (with-temp-buffer
-    (company-test-pseudo-tooltip-overlay-show)))
-
-(ert-deftest company-pseudo-tooltip-overlay-show-with-header-line ()
-  :tags '(interactive)
-  (with-temp-buffer
-    (setq header-line-format "foo bar")
-    (company-test-pseudo-tooltip-overlay-show)))
+                         " 123\nc45 c\nddd\n")))))))
 
 ;;; Template
 

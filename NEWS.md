@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* Works in horizontally scrolled windows.
+
 ## 2013-05-10 (0.6.9)
 
 * `company-capf` respects `:exit-function` completion property.
