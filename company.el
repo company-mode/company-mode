@@ -571,17 +571,16 @@ keymap during active completions (`company-active-map'):
 (defun company-input-noop ()
   (push 31415926 unread-command-events))
 
-;; Hack:
-;; posn-col-row is incorrect in older Emacsen when line-spacing is set
-(defun company--col-row (&optional pos)
-  (let ((posn (posn-at-point pos)))
-    (cons (car (posn-col-row posn)) (cdr (posn-actual-col-row posn)))))
+(defun company--column (&optional pos)
+  (save-excursion
+    (when pos (goto-char pos))
+    (- (point) (progn (vertical-motion 0) (point)))))
 
-(defsubst company--column (&optional pos)
-  (car (posn-col-row (posn-at-point pos))))
-
-(defsubst company--row (&optional pos)
-  (cdr (posn-actual-col-row (posn-at-point pos))))
+(defun company--row (&optional pos)
+  (save-excursion
+    (when pos (goto-char pos))
+    (count-screen-lines (window-start)
+                        (progn (vertical-motion 0) (point)))))
 
 ;;; backends ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1326,10 +1325,20 @@ and invoke the normal binding."
            (and (< evt-row row)
                 (>= evt-row (+ row height)))))))
 
+(defun company--event-col-row (event)
+  (let* ((col-row (posn-actual-col-row (event-start event)))
+         (col (car col-row))
+         (row (cdr col-row)))
+    (incf col (window-hscroll))
+    (and header-line-format
+         (version< "24" emacs-version)
+         (decf row))
+    (cons col row)))
+
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
   (interactive "e")
-  (let ((event-col-row (posn-actual-col-row (event-start event)))
+  (let ((event-col-row (company--event-col-row event))
         (ovl-row (company--row))
         (ovl-height (and company-pseudo-tooltip-overlay
                          (min (overlay-get company-pseudo-tooltip-overlay
@@ -1659,9 +1668,11 @@ Example:
 
 (defun company--replacement-string (lines old column nl &optional align-top)
 
-  (let ((width (length (car lines))))
-    (when (> width (- (window-width) column))
-      (setq column (max 0 (- (window-width) width)))))
+  (let ((width (length (car lines)))
+        (remaining-cols (- (+ (window-width) (window-hscroll))
+                           column)))
+    (when (> width remaining-cols)
+      (decf column (- width remaining-cols))))
 
   (let (new)
     (when align-top
@@ -1745,7 +1756,7 @@ Example:
 ;; show
 
 (defsubst company--window-inner-height ()
-  (let ((edges (window-inside-edges (selected-window))))
+  (let ((edges (window-inside-edges)))
     (- (nth 3 edges) (nth 1 edges))))
 
 (defsubst company--pseudo-tooltip-height ()
@@ -1762,14 +1773,8 @@ Returns a negative number if the tooltip should be displayed above point."
   (company-pseudo-tooltip-hide)
   (save-excursion
 
-    (move-to-column 0)
-
     (let* ((height (company--pseudo-tooltip-height))
            above)
-
-      (when (and header-line-format
-                 (version< "24" emacs-version))
-        (decf row))
 
       (when (< height 0)
         (setq row (+ row height -1)
@@ -1797,10 +1802,9 @@ Returns a negative number if the tooltip should be displayed above point."
         (overlay-put ov 'company-height height)))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
-  (let ((col-row (company--col-row pos)))
-    (when col-row
-      (company-pseudo-tooltip-show (1+ (cdr col-row)) (car col-row)
-                                   company-selection))))
+  (let ((row (company--row pos))
+        (col (company--column pos)))
+    (company-pseudo-tooltip-show (1+ row) col company-selection)))
 
 (defun company-pseudo-tooltip-edit (selection)
   (let ((height (overlay-get company-pseudo-tooltip-overlay 'company-height)))
