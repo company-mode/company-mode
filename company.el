@@ -574,16 +574,14 @@ keymap during active completions (`company-active-map'):
 (defun company--column (&optional pos)
   (save-excursion
     (when pos (goto-char pos))
-    (let ((pt (point))
-          (modifier 0))
+    (let ((pt (point)))
       (save-restriction
-        (save-excursion
-          (vertical-motion 0)
-          (narrow-to-region (point) pt)
-          (let ((prefix (get-text-property (point) 'line-prefix)))
-            (when prefix (setq modifier (length prefix)))))
-        (+ (current-column)
-           modifier)))))
+        (+ (save-excursion
+             (vertical-motion 0)
+             (narrow-to-region (point) pt)
+             (let ((prefix (get-text-property (point) 'line-prefix)))
+               (if prefix (length prefix) 0)))
+           (current-column))))))
 
 (defun company--row (&optional pos)
   (save-excursion
@@ -1682,8 +1680,7 @@ Example:
     (concat (or before (company-safe-substring old 0 offset))
             new
             (company-safe-substring old
-                                    (let ((to (+ offset (length new))))
-                                      (if (> to 0) to 0))))))
+                                    (max (+ offset (length new)) 0)))))
 
 (defsubst company--length-limit (lst limit)
   (if (nthcdr limit lst)
