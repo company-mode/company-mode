@@ -725,7 +725,7 @@ can retrieve meta-data for them."
   (or company--explicit-action
       company-selection-changed))
 
-(defsubst company-reformat (candidate)
+(defun company-reformat (candidate)
   ;; company-ispell needs this, because the results are always lower-case
   ;; It's mory efficient to fix it only when they are displayed.
   (concat company-prefix (substring candidate (length company-prefix))))
@@ -743,14 +743,14 @@ can retrieve meta-data for them."
            (and (symbolp this-command) (get this-command 'company-begin)))
        (not (and transient-mark-mode mark-active))))
 
-(defsubst company-call-frontends (command)
+(defun company-call-frontends (command)
   (dolist (frontend company-frontends)
     (condition-case err
         (funcall frontend command)
       (error (error "Company: Front-end %s error \"%s\" on command %s"
                     frontend (error-message-string err) command)))))
 
-(defsubst company-set-selection (selection &optional force-update)
+(defun company-set-selection (selection &optional force-update)
   (setq selection (max 0 (min (1- company-candidates-length) selection)))
   (when (or force-update (not (equal selection company-selection)))
     (setq company-selection selection
@@ -1425,7 +1425,7 @@ To show the number next to the candidates in some back-ends, enable
       (push (make-string (- company-space-strings-limit 1 i) ?\  ) lst))
     (apply 'vector lst)))
 
-(defsubst company-space-string (len)
+(defun company-space-string (len)
   (if (< len company-space-strings-limit)
       (aref company-space-strings len)
     (make-string len ?\ )))
@@ -1672,7 +1672,7 @@ Example:
       (push (buffer-substring beg end) lines))
     (nreverse lines)))
 
-(defsubst company-modify-line (old new offset)
+(defun company-modify-line (old new offset)
   (let ((prefix (get-text-property 0 'line-prefix old))
         before)
     (when prefix
@@ -1783,7 +1783,7 @@ Example:
   (let ((edges (window-inside-edges)))
     (- (nth 3 edges) (nth 1 edges))))
 
-(defsubst company--pseudo-tooltip-height ()
+(defun company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
 Returns a negative number if the tooltip should be displayed above point."
   (let* ((lines (company--row))
@@ -1960,7 +1960,7 @@ Returns a negative number if the tooltip should be displayed above point."
         (message "%s" company-echo-last-msg)
       (message ""))))
 
-(defsubst company-echo-show-soon (&optional getter)
+(defun company-echo-show-soon (&optional getter)
   (when company-echo-timer
     (cancel-timer company-echo-timer))
   (setq company-echo-timer (run-with-timer 0 nil 'company-echo-show getter)))
