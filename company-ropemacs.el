@@ -22,8 +22,6 @@
 
 ;;; Commentary:
 ;;
-;; Requires pymacs Emacs package (you can get it from Marmalade),
-;; and on Python side: pymacs, rope, ropemacs and ropemode.
 
 ;;; Code:
 
@@ -57,7 +55,10 @@
       (cons (elt location 0) (elt location 1)))))
 
 (defun company-ropemacs (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for ropemacs."
+  "`company-mode' completion back-end for ropemacs.
+
+Depends on third-party code: Pymacs (both Python and Emacs packages),
+rope, ropemacs and ropemode."
   (interactive (list 'interactive))
   (case command
     (init (when (and (derived-mode-p 'python-mode)
