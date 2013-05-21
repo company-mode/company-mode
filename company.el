@@ -1966,11 +1966,6 @@ Returns a negative number if the tooltip should be displayed above point."
   (setq company-echo-timer (run-with-timer 0 nil 'company-echo-show getter)))
 
 (defsubst company-echo-show-when-idle (&optional getter)
-  (when (sit-for .01)
-    (company-echo-show getter)))
-
-(defsubst company-echo-show-when-not-busy (&optional getter)
-  "Run `company-echo-show' with arg GETTER once Emacs isn't busy."
   (when (sit-for company-echo-delay)
     (company-echo-show getter)))
 
