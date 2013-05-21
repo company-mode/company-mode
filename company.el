@@ -574,11 +574,16 @@ keymap during active completions (`company-active-map'):
 (defun company--column (&optional pos)
   (save-excursion
     (when pos (goto-char pos))
-    (save-restriction
-      (narrow-to-region (save-excursion
-                          (vertical-motion 0) (point))
-                        (point))
-      (current-column))))
+    (let ((pt (point))
+          (modifier 0))
+      (save-restriction
+        (save-excursion
+          (vertical-motion 0)
+          (narrow-to-region (point) pt)
+          (let ((prefix (get-text-property (point) 'line-prefix)))
+            (when prefix (setq modifier (length prefix)))))
+        (+ (current-column)
+           modifier)))))
 
 (defun company--row (&optional pos)
   (save-excursion
@@ -1425,7 +1430,7 @@ To show the number next to the candidates in some back-ends, enable
       (aref company-space-strings len)
     (make-string len ?\ )))
 
-(defsubst company-safe-substring (str from &optional to)
+(defun company-safe-substring (str from &optional to)
   (if (> from (string-width str))
       ""
     (with-temp-buffer
@@ -1661,9 +1666,17 @@ Example:
     (nreverse lines)))
 
 (defsubst company-modify-line (old new offset)
-  (concat (company-safe-substring old 0 offset)
-          new
-          (company-safe-substring old (+ offset (length new)))))
+  (let ((prefix (get-text-property 0 'line-prefix old))
+        before)
+    (when prefix
+      (if (<= offset (length prefix))
+        (setq before (substring prefix 0 offset)))
+      (decf offset (length prefix)))
+    (concat (or before (company-safe-substring old 0 offset))
+            new
+            (company-safe-substring old
+                                    (let ((to (+ offset (length new))))
+                                      (if (> to 0) to 0))))))
 
 (defsubst company--length-limit (lst limit)
   (if (nthcdr limit lst)

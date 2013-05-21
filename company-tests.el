@@ -204,6 +204,23 @@
     (compose-region 1 (1+ (length "lambda")) "\\")
     (should (= (company--column) 4))))
 
+(ert-deftest company-column-with-line-prefix ()
+  (with-temp-buffer
+    (insert "foo")
+    (put-text-property (point-min) (point) 'line-prefix "  ")
+    (should (= (company--column) 5))))
+
+(ert-deftest company-modify-line-with-line-prefix ()
+  (let ((str (propertize "foobar" 'line-prefix "-*-")))
+    (should (string= (company-modify-line str "zz" 4)
+                     "fzzbar"))
+    (should (string= (company-modify-line str "zzxx" 0)
+                     "zzxxoobar"))
+    (should (string= (company-modify-line str "zzxx" 0)
+                     "zzxxoobar"))
+    (should (string= (company-modify-line str "zz" 10)
+                     "foobar zz"))))
+
 ;;; Template
 
 (ert-deftest company-template-removed-after-the-last-jump ()

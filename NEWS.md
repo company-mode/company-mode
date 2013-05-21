@@ -2,6 +2,7 @@
 
 ## Next
 
+* Plays nicer with `org-indent-mode`.
 * Works in horizontally scrolled windows.
 
 ## 2013-05-10 (0.6.9)
