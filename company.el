@@ -1656,13 +1656,20 @@ Example:
 (defun company-buffer-lines (beg end)
   (goto-char beg)
   (let (lines)
-    (while (< (point) end)
-      (let ((bol (point)))
+    (while (and (= 1 (vertical-motion 1))
+                (<= (point) end))
+      (let ((bound (min end (1- (point)))))
         ;; A visual line can contain several physical lines (e.g. with outline's
         ;; folding overlay).  Take only the first one.
-        (re-search-forward "$")
-        (push (buffer-substring bol (min end (point))) lines))
-      (vertical-motion 1))
+        (push (buffer-substring beg
+                                (save-excursion
+                                  (goto-char beg)
+                                  (re-search-forward "$" bound 'move)
+                                  (point)))
+              lines))
+      (setq beg (point)))
+    (unless (eq beg end)
+      (push (buffer-substring beg end) lines))
     (nreverse lines)))
 
 (defsubst company-modify-line (old new offset)
