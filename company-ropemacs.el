@@ -43,9 +43,7 @@
   "Return buffer with docstring of CANDIDATE if it is available."
   (let ((doc (company-with-candidate-inserted candidate (rope-get-doc))))
     (when doc
-      (with-current-buffer (company-doc-buffer)
-        (insert doc)
-        (current-buffer)))))
+      (company-doc-buffer doc))))
 
 (defun company-ropemacs-location (candidate)
   "Return location of CANDIDATE in cons form (FILE . LINE) if it is available."

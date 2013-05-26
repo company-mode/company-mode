@@ -1458,9 +1458,12 @@ To show the number next to the candidates in some back-ends, enable
             (cons selected (company-call-backend 'meta selected))))
     (cdr company-last-metadata)))
 
-(defun company-doc-buffer (&optional _string)
-  (with-current-buffer (get-buffer-create "*Company meta-data*")
+(defun company-doc-buffer (&optional string)
+  (with-current-buffer (get-buffer-create "*company-documentation*")
     (erase-buffer)
+    (when string
+      (save-excursion
+        (insert string)))
     (current-buffer)))
 
 (defvar company--electric-commands

@@ -74,11 +74,10 @@
 (defun company-semantic-doc-buffer (tag)
   (let ((doc (semantic-documentation-for-tag tag)))
     (when doc
-      (with-current-buffer (company-doc-buffer)
-        (insert (funcall semantic-idle-summary-function tag nil t)
-                "\n"
-                doc)
-        (current-buffer)))))
+      (company-doc-buffer
+       (concat (funcall semantic-idle-summary-function tag nil t)
+               "\n"
+               doc)))))
 
 (defsubst company-semantic-completions (prefix)
   (ignore-errors
