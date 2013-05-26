@@ -1674,10 +1674,10 @@ Example:
   (let ((prefix (get-text-property 0 'line-prefix old)))
     (when prefix ; Keep the original value unmodified, for no special reason.
       (setq old (concat prefix old))
-      (remove-text-properties 0 (length old) '(line-prefix) old))
-    (concat (company-safe-substring old 0 offset)
-            new
-            (company-safe-substring old (+ offset (length new))))))
+      (remove-text-properties 0 (length old) '(line-prefix) old)))
+  (concat (company-safe-substring old 0 offset)
+          new
+          (company-safe-substring old (+ offset (length new)))))
 
 (defsubst company--length-limit (lst limit)
   (if (nthcdr limit lst)
