@@ -260,12 +260,13 @@ Each back-end is a function that takes a variable number of arguments.
 The first argument is the command requested from the back-end.  It is one
 of the following:
 
-`prefix': The back-end should return the text to be completed.  It must be text
-immediately before point.  Returning nil passes control to the next back-end.
-The function should return `stop' if it should complete but cannot \(e.g. if it
-is in the middle of a string\).  Instead of a string, the back-end may return a
-cons where car is the prefix and cdr is used in `company-minimum-prefix-length'
-test. It's either number or t, in which case the test automatically succeeds.
+`prefix': The back-end should return the text to be completed.  It must be
+text immediately before point.  Returning nil passes control to the next
+back-end.  The function should return `stop' if it should complete but
+cannot \(e.g. if it is in the middle of a string\).  Instead of a string,
+the back-end may return a cons where car is the prefix and cdr is used in
+`company-minimum-prefix-length' test. It's either number or t, in which
+case the test automatically succeeds.
 
 `candidates': The second argument is the prefix to be completed.  The
 return value should be a list of candidates that start with the prefix.
@@ -289,22 +290,23 @@ return a (short) documentation string for it.
 The back-end should create a buffer (preferably with `company-doc-buffer'),
 fill it with documentation and return it.
 
-`location': The second argument is a completion candidate.  The back-end can
-return the cons of buffer and buffer location, or of file and line
+`location': The second argument is a completion candidate.  The back-end
+can return the cons of buffer and buffer location, or of file and line
 number where the completion candidate was defined.
 
-`require-match': If this value is t, the user is not allowed to enter anything
-not offered as a candidate.  Use with care!  The default value nil gives the
-user that choice with `company-require-match'.  Return value 'never overrides
-that option the other way around.
+`require-match': If this value is t, the user is not allowed to enter
+anything not offered as a candidate.  Use with care!  The default value nil
+gives the user that choice with `company-require-match'.  Return value
+'never overrides that option the other way around.
 
 `init': Called once for each buffer, the back-end can check for external
-programs and files and load any required libraries.  Raising an error here will
-show up in message log once, and the backend will not be used for completion.
+programs and files and load any required libraries.  Raising an error here
+will show up in message log once, and the backend will not be used for
+completion.
 
-`post-completion': Called after a completion candidate has been inserted into
-the buffer.  The second argument is the candidate.  Can be used to modify it,
-e.g. to expand a snippet.
+`post-completion': Called after a completion candidate has been inserted
+into the buffer.  The second argument is the candidate.  Can be used to
+modify it, e.g. to expand a snippet.
 
 The back-end should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
@@ -340,8 +342,8 @@ aborted manually."
   "Hook run when company successfully completes.
 The hook is called with the selected candidate as an argument.
 
-If you indend to use it to post-process candidates from a specific back-end,
-consider using the `post-completion' command instead."
+If you indend to use it to post-process candidates from a specific
+back-end, consider using the `post-completion' command instead."
   :type 'hook)
 
 (defcustom company-minimum-prefix-length 3
@@ -362,8 +364,8 @@ This can be overridden by the back-end, if it returns t or `never' to
 
 (defcustom company-auto-complete nil
   "Determines when to auto-complete.
-If this is enabled, all characters from `company-auto-complete-chars' complete
-the selected completion.  This can also be a function."
+If this is enabled, all characters from `company-auto-complete-chars'
+complete the selected completion.  This can also be a function."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
@@ -372,8 +374,8 @@ the selected completion.  This can also be a function."
 
 (defcustom company-auto-complete-chars '(?\  ?\) ?.)
   "Determines which characters trigger an automatic completion.
-See `company-auto-complete'.  If this is a string, each string character causes
-completion.  If it is a list of syntax description characters (see
+See `company-auto-complete'.  If this is a string, each string character
+causes completion.  If it is a list of syntax description characters (see
 `modify-syntax-entry'), all characters with that syntax auto-complete.
 
 This can also be a function, which is called with the new input and should
@@ -410,8 +412,8 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
   "A list of commands following which company will start completing.
 If this is t, it will complete after any command.  See `company-idle-delay'.
 
-Alternatively any command with a non-nil 'company-begin property is treated as
-if it was on this list."
+Alternatively any command with a non-nil `company-begin' property is treated
+as if it was on this list."
   :type '(choice (const :tag "Any command" t)
                  (const :tag "Self insert command" '(self-insert-command))
                  (repeat :tag "Commands" function)))
@@ -501,9 +503,9 @@ Completions can be searched with `company-search-candidates' or
 `company-filter-candidates'.  These can be used while completion is
 inactive, as well.
 
-The completion data is retrieved using `company-backends' and displayed using
-`company-frontends'.  If you want to start a specific back-end, call it
-interactively or use `company-begin-backend'.
+The completion data is retrieved using `company-backends' and displayed
+using `company-frontends'.  If you want to start a specific back-end, call
+it interactively or use `company-begin-backend'.
 
 regular keymap (`company-mode-map'):
 
@@ -1260,8 +1262,8 @@ Don't start this directly, use `company-search-candidates' or
 
 Regular characters are appended to the search string.
 
-The command `company-search-kill-others' (\\[company-search-kill-others]) uses
- the search string to limit the completion candidates."
+The command `company-search-kill-others' (\\[company-search-kill-others])
+uses the search string to limit the completion candidates."
   (interactive)
   (company-search-mode 1)
   (company-enable-overriding-keymap company-search-map))
@@ -1393,8 +1395,9 @@ and invoke the normal binding."
 
 (defun company-complete ()
   "Complete the common part of all candidates or the current selection.
-The first time this is called, the common part is completed, the second time, or
-when the selection has been changed, the selected candidate is completed."
+The first time this is called, the common part is completed, the second
+time, or when the selection has been changed, the selected candidate is
+completed."
   (interactive)
   (when (company-manual-begin)
     (if (or company-selection-changed
@@ -1487,7 +1490,7 @@ To show the number next to the candidates in some back-ends, enable
     (setq unread-command-events (list last-input-event))))
 
 (defun company-show-doc-buffer ()
-  "Temporarily show a buffer with the complete documentation for the selection."
+  "Temporarily show the documentation buffer for the selection."
   (interactive)
   (company--electric-do
     (let* ((selected (nth company-selection company-candidates))
@@ -1553,14 +1556,14 @@ To show the number next to the candidates in some back-ends, enable
 (defun company-begin-with (candidates
                            &optional prefix-length require-match callback)
   "Start a completion at point.
-CANDIDATES is the list of candidates to use and PREFIX-LENGTH is the length of
-the prefix that already is in the buffer before point.  It defaults to 0.
+CANDIDATES is the list of candidates to use and PREFIX-LENGTH is the length
+of the prefix that already is in the buffer before point.
+It defaults to 0.
 
-CALLBACK is a function called with the selected result if the user successfully
-completes the input.
+CALLBACK is a function called with the selected result if the user
+successfully completes the input.
 
-Example:
-\(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
+Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
   ;; FIXME: When Emacs 23 is no longer a concern, replace
   ;; `company-begin-with-marker' with a lexical variable; use a lexical closure.
   (setq company-begin-with-marker (copy-marker (point) t))

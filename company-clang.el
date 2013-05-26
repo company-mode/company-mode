@@ -39,17 +39,18 @@
   :type 'file)
 
 (defcustom company-clang-begin-after-member-access t
-  "When non-nil, automatic completion will start whenever the current symbol is
-preceded by \".\", \"->\" or \"::\", ignoring `company-minimum-prefix-length'.
+  "When non-nil, automatic completion will start whenever the current
+symbol is preceded by \".\", \"->\" or \"::\", ignoring
+`company-minimum-prefix-length'.
 
-If `company-begin-commands' is a list, it should include `c-electric-lt-gt' and
-`c-electric-colon', for automatic completion right after \">\" and \":\".")
+If `company-begin-commands' is a list, it should include `c-electric-lt-gt'
+and `c-electric-colon', for automatic completion right after \">\" and
+\":\".")
 
 (defcustom company-clang-arguments nil
   "Additional arguments to pass to clang when completing.
-Prefix files (-include ...) can be selected with
-`company-clang-set-prefix' or automatically through a custom
-`company-clang-prefix-guesser'."
+Prefix files (-include ...) can be selected with `company-clang-set-prefix'
+or automatically through a custom `company-clang-prefix-guesser'."
   :type '(repeat (string :tag "Argument" nil)))
 
 (defcustom company-clang-prefix-guesser 'company-clang-guess-prefix
@@ -265,9 +266,9 @@ Additional command line arguments can be specified in
 with `company-clang-set-prefix' or automatically through a custom
 `company-clang-prefix-guesser'.
 
-With Clang versions before 2.9, we have to save the buffer before performing
-completion.  With Clang 2.9 and later, buffer contents are passed via standard
-input."
+With Clang versions before 2.9, we have to save the buffer before
+performing completion.  With Clang 2.9 and later, buffer contents are
+passed via standard input."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-clang))
