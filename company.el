@@ -273,8 +273,8 @@ return value should be a list of candidates that start with the prefix.
 
 Optional commands:
 
-`sorted': The back-end may return t here to indicate that the candidates
-are sorted and will not need to be sorted again.
+`sorted': Return t here to indicate that the candidates are sorted and will
+not need to be sorted again.
 
 `duplicates': If non-nil, company will take care of removing duplicates
 from the list.
@@ -283,25 +283,24 @@ from the list.
 progresses, unless the back-end returns t for this command.  The second
 argument is the latest prefix.
 
-`meta': The second argument is a completion candidate.  The back-end should
-return a (short) documentation string for it.
+`meta': The second argument is a completion candidate.  Return a (short)
+documentation string for it.
 
-`doc-buffer': The second argument is a completion candidate.
-The back-end should create a buffer (preferably with `company-doc-buffer'),
-fill it with documentation and return it.
+`doc-buffer': The second argument is a completion candidate.  Return a
+buffer with documentation for it.  Preferably use `company-doc-buffer',
 
-`location': The second argument is a completion candidate.  The back-end
-can return the cons of buffer and buffer location, or of file and line
-number where the completion candidate was defined.
+`location': The second argument is a completion candidate.  Return the cons
+of buffer and buffer location, or of file and line number where the
+completion candidate was defined.
 
-`require-match': If this value is t, the user is not allowed to enter
+`require-match': If this returns t, the user is not allowed to enter
 anything not offered as a candidate.  Use with care!  The default value nil
 gives the user that choice with `company-require-match'.  Return value
-'never overrides that option the other way around.
+`never' overrides that option the other way around.
 
-`init': Called once for each buffer, the back-end can check for external
+`init': Called once for each buffer. The back-end can check for external
 programs and files and load any required libraries.  Raising an error here
-will show up in message log once, and the backend will not be used for
+will show up in message log once, and the back-end will not be used for
 completion.
 
 `post-completion': Called after a completion candidate has been inserted
