@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2013-05-26 (0.6.10)
 
 * Plays nicer with `org-indent-mode`.
 * Works in horizontally scrolled windows.
