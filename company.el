@@ -1671,16 +1671,13 @@ Example:
     (nreverse lines)))
 
 (defun company-modify-line (old new offset)
-  (let ((prefix (get-text-property 0 'line-prefix old))
-        before)
-    (when prefix
-      (if (<= offset (length prefix))
-        (setq before (substring prefix 0 offset)))
-      (decf offset (length prefix)))
-    (concat (or before (company-safe-substring old 0 offset))
+  (let ((prefix (get-text-property 0 'line-prefix old)))
+    (when prefix ; Keep the original value unmodified, for no special reason.
+      (setq old (concat prefix old))
+      (remove-text-properties 0 (length old) '(line-prefix) old))
+    (concat (company-safe-substring old 0 offset)
             new
-            (company-safe-substring old
-                                    (max (+ offset (length new)) 0)))))
+            (company-safe-substring old (+ offset (length new))))))
 
 (defsubst company--length-limit (lst limit)
   (if (nthcdr limit lst)
@@ -1850,6 +1847,8 @@ Returns a negative number if the tooltip should be displayed above point."
     (overlay-put company-pseudo-tooltip-overlay 'invisible t)
     ;; Beat outline's folding overlays, at least.
     (overlay-put company-pseudo-tooltip-overlay 'priority 1)
+    ;; No (extra) prefix for the first line.
+    (overlay-put company-pseudo-tooltip-overlay 'line-prefix "")
     (overlay-put company-pseudo-tooltip-overlay 'before-string
                  (overlay-get company-pseudo-tooltip-overlay 'company-before))
     (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))

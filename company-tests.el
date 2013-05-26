@@ -212,14 +212,18 @@
 
 (ert-deftest company-modify-line-with-line-prefix ()
   (let ((str (propertize "foobar" 'line-prefix "-*-")))
-    (should (string= (company-modify-line str "zz" 4)
-                     "fzzbar"))
-    (should (string= (company-modify-line str "zzxx" 0)
-                     "zzxxoobar"))
-    (should (string= (company-modify-line str "zzxx" 0)
-                     "zzxxoobar"))
-    (should (string= (company-modify-line str "zz" 10)
-                     "foobar zz"))))
+    (should (equal-including-properties
+             (company-modify-line str "zz" 4)
+             "-*-fzzbar"))
+    (should (equal-including-properties
+             (company-modify-line str "zzxx" 1)
+             "-zzxxobar"))
+    (should (equal-including-properties
+             (company-modify-line str "xx" 0)
+             "xx-foobar"))
+    (should (equal-including-properties
+             (company-modify-line str "zz" 10)
+             "-*-foobar zz"))))
 
 ;;; Template
 
