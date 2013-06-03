@@ -1845,6 +1845,7 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-hide-temporarily ()
   (when (overlayp company-pseudo-tooltip-overlay)
     (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
+    (overlay-put company-pseudo-tooltip-overlay 'line-prefix nil)
     (overlay-put company-pseudo-tooltip-overlay 'before-string nil)))
 
 (defun company-pseudo-tooltip-unhide ()
