@@ -145,7 +145,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
 (defun company-clang--handle-error (res args)
   (goto-char (point-min))
   (let* ((buf (get-buffer-create company-clang--error-buffer-name))
-         (cmd (concat company-clang-executable (mapconcat 'identity args " ")))
+         (cmd (concat company-clang-executable " " (mapconcat 'identity args " ")))
          (pattern (format company-clang--completion-pattern ""))
          (err (if (re-search-forward pattern nil t)
                   (buffer-substring-no-properties (point-min)
