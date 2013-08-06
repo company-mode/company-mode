@@ -523,11 +523,33 @@ keymap during active completions (`company-active-map'):
     (company-cancel)
     (kill-local-variable 'company-point)))
 
+(defcustom company-global-modes t
+  "Modes for which `company-mode' mode is turned on by `global-company-mode'.
+If nil, means no modes.  If t, then all major modes have it turned on.
+If a list, it should be a list of `major-mode' symbol names for which
+`company-mode' should be automatically turned on.  The sense of the list is
+negated if it begins with `not'.  For example:
+ (c-mode c++-mode)
+means that `company-mode' is turned on for buffers in C and C++ modes only.
+ (not message-mode)
+means that `company-mode' is always turned on except in `message-mode' buffers."
+  :type '(choice (const :tag "none" nil)
+                 (const :tag "all" t)
+                 (set :menu-tag "mode specific" :tag "modes"
+                      :value (not)
+                      (const :tag "Except" not)
+                      (repeat :inline t (symbol :tag "mode")))))
+
 ;;;###autoload
 (define-globalized-minor-mode global-company-mode company-mode company-mode-on)
 
 (defun company-mode-on ()
-  (unless (or noninteractive (eq (aref (buffer-name) 0) ?\s))
+  (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
+             (cond ((eq company-global-modes t)
+                    t)
+                   ((eq (car-safe company-global-modes) 'not)
+                    (not (memq major-mode (cdr company-global-modes))))
+                   (t (memq major-mode company-global-modes))))
     (company-mode 1)))
 
 (defsubst company-assert-enabled ()

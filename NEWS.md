@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* `company-global-modes`: New option.
+
 ## 2013-05-26 (0.6.10)
 
 * Plays nicer with `org-indent-mode`.
