@@ -2,6 +2,7 @@
 
 ## Next
 
+* Better `linum` compatibility in Emacs <= 24.2.
 * `company-global-modes`: New option.
 
 ## 2013-05-26 (0.6.10)

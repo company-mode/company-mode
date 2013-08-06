@@ -195,7 +195,7 @@
         ;; FIXME: Make it 2?
         (should (eq (overlay-get ov 'company-height) company-tooltip-limit))
         (should (eq (overlay-get ov 'company-column) col))
-        (should (string= (overlay-get ov 'company-before)
+        (should (string= (overlay-get ov 'company-after)
                          " 123\nc45 c\nddd\n")))))))
 
 (ert-deftest company-column-with-composition ()
