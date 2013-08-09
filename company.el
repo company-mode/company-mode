@@ -215,6 +215,7 @@ If this many lines are not available, prefer to display the tooltip above."
   '((company-abbrev . "Abbrev")
     (company-capf . "completion-at-point-functions")
     (company-clang . "Clang")
+    (company-cmake . "CMake")
     (company-css . "CSS")
     (company-dabbrev . "dabbrev for plain text")
     (company-dabbrev-code . "dabbrev for code")
@@ -244,7 +245,7 @@ If this many lines are not available, prefer to display the tooltip above."
 
 (defcustom company-backends '(company-elisp company-nxml company-css
                               company-semantic company-clang company-eclim
-                              company-xcode company-ropemacs
+                              company-xcode company-ropemacs company-cmake
                               (company-gtags company-etags company-dabbrev-code
                                company-keywords)
                               company-oddmuse company-files company-dabbrev)

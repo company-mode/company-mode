@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-cmake` is now bundled.
 * Better `linum` compatibility in Emacs <= 24.2.
 * `company-global-modes`: New option.
 
