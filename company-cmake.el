@@ -96,18 +96,17 @@ They affect which types of symbols we get completion candidates for.")
       (setq result (replace-regexp-in-string "^[ \t\n\r]+" "" result))
       result)))
 
-(defun company-cmake-doc-buffer (candidates)
-  (let ((cmd-opts (gethash prefix company-cmake--meta-command-cache))
-        result)
+(defun company-cmake-doc-buffer (prefix)
+  (let ((cmd-opts (gethash prefix company-cmake--meta-command-cache)))
     (with-temp-buffer
       (call-process company-cmake-executable nil t nil cmd-opts prefix)
-      ;; Go to the third line, trim it and return the result.
+      ;; Go to the third line, trim it and return the doc buffer.
       ;; Tested with cmake 2.8.9.
       (goto-char (point-min))
       (forward-line 2)
-      (setq result (buffer-substring-no-properties (line-beginning-position)
-                                                   (point-max)))
-      result)))
+      (company-doc-buffer
+       (buffer-substring-no-properties (line-beginning-position)
+                                       (point-max))))))
 
 (defun company-cmake (command &optional arg &rest ignored)
   "`company-mode' completion back-end for CMake.
