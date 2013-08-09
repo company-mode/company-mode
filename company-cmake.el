@@ -96,7 +96,7 @@ They affect which types of symbols we get completion candidates for.")
       (setq result (replace-regexp-in-string "^[ \t\n\r]+" "" result))
       result)))
 
-(defun company-cmake-doc-buffer (prefix)
+(defun company-cmake--doc-buffer (prefix)
   (let ((cmd-opts (gethash prefix company-cmake--meta-command-cache)))
     (with-temp-buffer
       (call-process company-cmake-executable nil t nil cmd-opts prefix)
@@ -122,7 +122,7 @@ CMake is a cross-platform, open-source make system."
                  (company-grab-symbol)))
     (candidates (company-cmake--candidates arg))
     (meta (company-cmake--meta arg))
-    (doc-buffer (company-cmake-doc-buffer arg))
+    (doc-buffer (company-cmake--doc-buffer arg))
     ))
 
 (provide 'company-cmake)
