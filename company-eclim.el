@@ -144,6 +144,14 @@ eclim can only complete correctly when the buffer has been saved."
 (defun company-eclim--meta (candidate)
   (gethash candidate company-eclim--doc))
 
+(defun company-eclim--prefix ()
+  (let ((prefix (company-grab-symbol)))
+    (when prefix
+      ;; Completion candidates for annotations don't include '@'.
+      (when (eq ?@ (string-to-char prefix))
+        (setq prefix (substring prefix 1)))
+      prefix)))
+
 (defun company-eclim (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Eclim.
 Eclim provides access to Eclipse Java IDE features for other editors.
@@ -160,7 +168,7 @@ Completions only work correctly when the buffer has been saved.
                  company-eclim-executable
                  (company-eclim--project-name)
                  (not (company-in-string-or-comment))
-                 (or (company-grab-symbol) 'stop)))
+                 (or (company-eclim--prefix) 'stop)))
     (candidates (company-eclim--candidates arg))
     (meta (company-eclim--meta arg))
     ;; because "" doesn't return everything
