@@ -244,7 +244,7 @@ If this many lines are not available, prefer to display the tooltip above."
                 (return t))))))
 
 (defcustom company-backends '(company-elisp company-nxml company-css
-                              company-semantic company-clang company-eclim
+                              company-eclim company-semantic company-clang
                               company-xcode company-ropemacs company-cmake
                               (company-gtags company-etags company-dabbrev-code
                                company-keywords)
