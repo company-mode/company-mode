@@ -281,6 +281,14 @@
       (should (equal "int a"
                      (overlay-get (company-template-field-at) 'display))))))
 
+(ert-deftest company-template-c-like-templatify-trims-after-closing-paren ()
+  (with-temp-buffer
+    (let ((text "foo(int a, short b)!@ #1334 a"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (should (equal "foo(arg0, arg1)" (buffer-string)))
+      (should (looking-at "arg0")))))
+
 ;;; Elisp
 
 (defmacro company-elisp-with-buffer (contents &rest body)

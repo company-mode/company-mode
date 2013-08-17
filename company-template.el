@@ -150,6 +150,8 @@ Leave point at the end of the field."
   (let* ((end (point-marker))
          (beg (- (point) (length call)))
          (cnt 0))
+    (when (re-search-backward ")" beg t)
+      (delete-region (match-end 0) end))
     (goto-char beg)
     (when (search-forward "(" end 'move)
       (if (eq (char-after) ?\))
