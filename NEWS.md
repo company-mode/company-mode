@@ -1,7 +1,9 @@
 # History of user-visible changes
 
-## Next
+## 2013-08-18 (0.6.11)
 
+* `company-template-c-like-templatify` removes all text after closing paren, for
+  use in backends that display additional info there.
 * `company-cmake` is now bundled.
 * Better `linum` compatibility in Emacs <= 24.2.
 * `company-global-modes`: New option.
