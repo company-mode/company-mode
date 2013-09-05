@@ -70,6 +70,7 @@ eclim can only complete correctly when the buffer has been saved."
 (make-variable-buffer-local 'company-eclim--doc)
 
 (declare-function json-read "json")
+(defvar json-array-type)
 
 (defun company-eclim--call-process (&rest args)
   (let ((coding-system-for-read 'utf-8)
@@ -109,8 +110,7 @@ eclim can only complete correctly when the buffer has been saved."
 (defun company-eclim--candidates (prefix)
   (interactive "d")
   (let ((project-file (file-relative-name buffer-file-name
-                                          (company-eclim--project-dir)))
-        (project-name (company-eclim--project-name)))
+                                          (company-eclim--project-dir))))
     (when company-eclim-auto-save
       (when (buffer-modified-p)
         (basic-save-buffer))

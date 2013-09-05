@@ -1,6 +1,6 @@
 ;;; company-template.el
 
-;; Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2010, 2013 Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -33,6 +33,9 @@
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap [tab] 'company-template-forward-field)
     keymap))
+
+(defvar company-template--buffer-templates nil)
+(make-variable-buffer-local 'company-template--buffer-templates)
 
 ;; interactive ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -72,9 +75,6 @@
         return ovl))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defvar company-template--buffer-templates nil)
-(make-variable-buffer-local 'company-template--buffer-templates)
 
 (defun company-template-declare-template (beg end)
   (let ((ov (make-overlay beg end)))
@@ -134,7 +134,7 @@ Leave point at the end of the field."
 
 ;; hooks ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun company-template-insert-hook (ovl after-p &rest ignore)
+(defun company-template-insert-hook (ovl after-p &rest _ignore)
   "Called when a snippet input prompt is modified."
   (unless after-p
     (company-template-remove-field ovl t)))
