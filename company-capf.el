@@ -35,40 +35,47 @@
   "`company-mode' back-end using `completion-at-point-functions'.
 Requires Emacs 24.1 or newer."
   (interactive (list 'interactive))
-  (case command
-    (interactive (company-begin-backend 'company-capf))
-    (prefix
+  (pcase command
+    (`interactive (company-begin-backend 'company-capf))
+    (`prefix
      (let ((res (company--capf-data)))
        (when res
          (if (> (nth 2 res) (point))
              'stop
            (buffer-substring-no-properties (nth 1 res) (point))))))
-    (candidates
+    (`candidates
      (let ((res (company--capf-data)))
        (when res
          (let* ((table (nth 3 res))
                 (pred (plist-get (nthcdr 4 res) :predicate))
                 (meta (completion-metadata
-                       (buffer-substring (nth 1 res) (nth 2 res))
-                       table pred))
+                      (buffer-substring (nth 1 res) (nth 2 res))
+                      table pred))
                 (sortfun (cdr (assq 'display-sort-function meta)))
                 (candidates (all-completions arg table pred)))
            (if sortfun (funcall sortfun candidates) candidates)))))
-    (sorted
+    (`sorted
      (let ((res (company--capf-data)))
        (when res
          (let ((meta (completion-metadata
                       (buffer-substring (nth 1 res) (nth 2 res))
                       (nth 3 res) (plist-get (nthcdr 4 res) :predicate))))
            (cdr (assq 'display-sort-function meta))))))
-    (duplicates nil)     ;Don't bother.
-    (no-cache t)         ;FIXME: Improve!
-    (meta nil)           ;FIXME: Return one-line docstring for `arg'.
-    (doc-buffer nil)     ;FIXME: Return help buffer for `arg'.
-    (location nil)       ;FIXME: Return (BUF . POS) or (FILE . LINENB) of `arg'.
-    (require-match nil)  ;Front-ends should also have a say in this.
-    (init nil)       ;Don't bother: plenty of other ways to initialize the code.
-    (post-completion
+    (`duplicates nil) ;Don't bother.
+    (`no-cache t)     ;FIXME: Improve!
+    (`meta
+     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-docsig)))
+       (when f (funcall f arg))))
+    (`doc-buffer
+     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-doc-buffer)))
+       (when f (funcall f arg))))
+    (`location
+     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-location)))
+       (when f (funcall f arg))))
+    (`require-match
+     (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
+    (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
+    (`post-completion
      (let* ((res (company--capf-data))
             (exit-function (plist-get (nthcdr 4 res) :exit-function)))
        (if exit-function
