@@ -598,14 +598,13 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company--column (&optional pos)
   (save-excursion
     (when pos (goto-char pos))
-    (let ((pt (point)))
-      (save-restriction
-        (+ (save-excursion
-             (vertical-motion 0)
-             (narrow-to-region (point) pt)
-             (let ((prefix (get-text-property (point) 'line-prefix)))
-               (if prefix (length prefix) 0)))
-           (current-column))))))
+    (save-restriction
+      (+ (save-excursion
+           (vertical-motion 0)
+           (narrow-to-region (point) (point-max))
+           (let ((prefix (get-text-property (point) 'line-prefix)))
+             (if prefix (length prefix) 0)))
+         (current-column)))))
 
 (defun company--row (&optional pos)
   (save-excursion

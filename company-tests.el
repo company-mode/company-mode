@@ -210,6 +210,13 @@
     (put-text-property (point-min) (point) 'line-prefix "  ")
     (should (= (company--column) 5))))
 
+(ert-deftest company-column-wth-line-prefix-on-empty-line ()
+  (with-temp-buffer
+    (insert "\n")
+    (forward-char -1)
+    (put-text-property (point-min) (point-max) 'line-prefix "  ")
+    (should (= (company--column) 2))))
+
 (ert-deftest company-modify-line-with-line-prefix ()
   (let ((str (propertize "foobar" 'line-prefix "-*-")))
     (should (equal-including-properties
