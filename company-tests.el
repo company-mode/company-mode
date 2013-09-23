@@ -217,14 +217,22 @@
     (put-text-property (point-min) (point-max) 'line-prefix "  ")
     (should (= (company--column) 2))))
 
-(ert-deftest company-modify-line-with-line-prefix ()
-  (let ((str (propertize "foobar" 'line-prefix "-*-")))
+(ert-deftest company-plainify ()
+  (let ((tab-width 8))
+    (should (equal-including-properties
+             (company-plainify "\tabc\td\t")
+             (concat "        "
+                     "abc     "
+                     "d       "))))
+  (should (equal-including-properties
+           (company-plainify (propertize "foobar" 'line-prefix "-*-"))
+           "-*-foobar")))
+
+(ert-deftest company-modify-line ()
+  (let ((str "-*-foobar"))
     (should (equal-including-properties
              (company-modify-line str "zz" 4)
              "-*-fzzbar"))
-    (should (equal-including-properties
-             (company-modify-line str "zzxx" 1)
-             "-zzxxobar"))
     (should (equal-including-properties
              (company-modify-line str "xx" 0)
              "xx-foobar"))

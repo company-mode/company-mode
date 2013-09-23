@@ -1637,7 +1637,11 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 (defsubst company-round-tab (arg)
   (* (/ (+ arg tab-width) tab-width) tab-width))
 
-(defun company-untabify (str)
+(defun company-plainify (str)
+  (let ((prefix (get-text-property 0 'line-prefix str)))
+    (when prefix ; Keep the original value unmodified, for no special reason.
+      (setq str (concat prefix str))
+      (remove-text-properties 0 (length str) '(line-prefix) str)))
   (let* ((pieces (split-string str "\t"))
          (copy pieces))
     (while (cdr copy)
@@ -1698,10 +1702,6 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (nreverse lines)))
 
 (defun company-modify-line (old new offset)
-  (let ((prefix (get-text-property 0 'line-prefix old)))
-    (when prefix ; Keep the original value unmodified, for no special reason.
-      (setq old (concat prefix old))
-      (remove-text-properties 0 (length old) '(line-prefix) old)))
   (concat (company-safe-substring old 0 offset)
           new
           (company-safe-substring old (+ offset (length new)))))
@@ -1831,7 +1831,7 @@ Returns a negative number if the tooltip should be displayed above point."
                     (move-to-window-line (+ row (abs height)))
                     (point)))
              (ov (make-overlay beg end))
-             (args (list (mapcar 'company-untabify
+             (args (list (mapcar 'company-plainify
                                  (company-buffer-lines beg end))
                          column nl above)))
 
