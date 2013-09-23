@@ -71,7 +71,8 @@
                           (unless (eq (aref file (1- (length file))) ?/) "/")
                           child) candidates))))
       (setq company-files-completion-cache (cons dir (nreverse candidates))))
-    (cdr company-files-completion-cache)))
+    (all-completions prefix
+                     (cdr company-files-completion-cache))))
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
