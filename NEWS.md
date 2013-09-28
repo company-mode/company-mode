@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* Default value of `company-begin-commands` changed to `(self-insert-command)`.
+* Futher improvement in `org-indent-mode` compatibility.
+
 ## 2013-08-18 (0.6.11)
 
 * `company-template-c-like-templatify` removes all text after closing paren, for

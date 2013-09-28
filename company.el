@@ -408,7 +408,7 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
                  (const :tag "immediate (t)" t)
                  (number :tag "seconds")))
 
-(defcustom company-begin-commands t
+(defcustom company-begin-commands '(self-insert-command)
   "A list of commands following which company will start completing.
 If this is t, it will complete after any command.  See `company-idle-delay'.
 
