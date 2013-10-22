@@ -4,11 +4,31 @@ language: emacs-lisp
 
 env:
   matrix:
+    - EMACS=emacs22
     - EMACS=emacs23
     - EMACS=emacs24
     - EMACS=emacs-snapshot
 
+matrix:
+  allow_failures:
+    - env: EMACS=emacs22
+
 install:
+  - if [ "$EMACS" = "emacs22" ]; then
+        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22_22.2-0ubuntu9_i386.deb &&
+        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-bin-common_22.2-0ubuntu9_i386.deb &&
+        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-common_22.2-0ubuntu9_all.deb &&
+        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-el_22.2-0ubuntu9_all.deb &&
+        curl -Os http://security.ubuntu.com/ubuntu/pool/universe/e/emacs22/emacs22-gtk_22.2-0ubuntu9_i386.deb &&
+        sudo apt-get -qq update &&
+        sudo apt-get -qq remove emacs emacs23-bin-common emacs23-common emacs23-nox &&
+        sudo apt-get -qq --fix-missing install install-info emacsen-common libjpeg62:i386 xaw3dg:i386 liblockfile1:i386 libasound2:i386 libgif4:i386 libncurses5:i386 libpng12-0:i386 libtiff4:i386 libxpm4:i386 libxft2:i386 libglib2.0-0:i386 libgtk2.0-0:i386 &&
+        sudo apt-get -qq -f install &&
+        sudo dpkg -i emacs22-common_22.2-0ubuntu9_all.deb emacs22-el_22.2-0ubuntu9_all.deb &&
+        sudo dpkg -i --force-depends emacs22-bin-common_22.2-0ubuntu9_i386.deb &&
+        sudo dpkg -i emacs22_22.2-0ubuntu9_i386.deb emacs22-gtk_22.2-0ubuntu9_i386.deb &&
+        sudo update-alternatives --set emacs22 /usr/bin/emacs22-gtk;
+    fi
   - if [ "$EMACS" = "emacs23" ]; then
         sudo apt-get update -qq &&
         sudo apt-get install -qq emacs23-gtk emacs23-el;
