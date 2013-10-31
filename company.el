@@ -423,6 +423,12 @@ as if it was on this list."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
+(defcustom company-selection-wrap-around nil
+  "If enabled, selecting item before first or after last wraps around."
+  :type '(choice (const :tag "off" nil)
+                 (const :tag "on" t))
+  :group 'company)
+
 (defvar company-end-of-buffer-workaround t
   "Work around a visualization bug when completing at the end of the buffer.
 The work-around consists of adding a newline.")
@@ -772,7 +778,10 @@ can retrieve meta-data for them."
                     frontend (error-message-string err) command)))))
 
 (defun company-set-selection (selection &optional force-update)
-  (setq selection (max 0 (min (1- company-candidates-length) selection)))
+  (setq selection
+        (if company-selection-wrap-around
+            (mod selection company-candidates-length)
+          (max 0 (min (1- company-candidates-length) selection))))
   (when (or force-update (not (equal selection company-selection)))
     (setq company-selection selection
           company-selection-changed t)
