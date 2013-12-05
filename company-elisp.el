@@ -197,7 +197,7 @@ first in the candidates list."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-elisp))
-    (prefix (and (eq (derived-mode-p 'emacs-lisp-mode) 'emacs-lisp-mode)
+    (prefix (and (derived-mode-p 'emacs-lisp-mode 'inferior-emacs-lisp-mode)
                  (company-elisp--prefix)))
     (candidates (company-elisp-candidates arg))
     (sorted company-elisp-show-locals-first)
