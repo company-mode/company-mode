@@ -426,8 +426,7 @@ as if it was on this list."
 (defcustom company-selection-wrap-around nil
   "If enabled, selecting item before first or after last wraps around."
   :type '(choice (const :tag "off" nil)
-                 (const :tag "on" t))
-  :group 'company)
+                 (const :tag "on" t)))
 
 (defvar company-end-of-buffer-workaround t
   "Work around a visualization bug when completing at the end of the buffer.
@@ -759,8 +758,7 @@ can retrieve meta-data for them."
 
 (defun company--should-complete ()
   (and (not (or buffer-read-only overriding-terminal-local-map
-                overriding-local-map
-                (minibufferp)))
+                overriding-local-map))
        ;; Check if in the middle of entering a key combination.
        (or (equal (this-command-keys-vector) [])
            (not (keymapp (key-binding (this-command-keys-vector)))))
