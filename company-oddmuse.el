@@ -26,9 +26,9 @@
 ;;; Code:
 
 (require 'company)
+(eval-when-compile (require 'cl))
 (eval-when 'compile (require 'yaooddmuse nil t))
 (eval-when 'compile (require 'oddmuse nil t))
-(eval-when-compile (require 'cl))
 
 (defvar company-oddmuse-link-regexp
   "\\(\\<[A-Z][[:alnum:]]*\\>\\)\\|\\[\\[\\([[:alnum:]]+\\>\\|\\)")
