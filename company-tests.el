@@ -198,6 +198,13 @@
         (should (string= (overlay-get ov 'company-after)
                          " 123\nc45 c\nddd\n")))))))
 
+(ert-deftest company-create-lines-shows-numbers ()
+  (let ((company-show-numbers t)
+        (company-candidates '("x" "y" "z"))
+        (company-candidates-length 3))
+    (should (equal '("x 1" "y 2" "z 3")
+                   (company--create-lines 0 999)))))
+
 (ert-deftest company-column-with-composition ()
   (with-temp-buffer
     (insert "lambda ()")

@@ -1773,8 +1773,10 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 
     (dotimes (_ len)
       (setq width (max (length (pop lines-copy)) width)))
-    (setq width (min width (window-width)))
-
+    (setq width (min (window-width)
+                     (if company-show-numbers
+                         (+ 2 width)
+                       width)))
     (setq lines-copy lines)
 
     ;; number can make tooltip too long
