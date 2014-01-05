@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-capf` supports completion tables that return non-default boundaries.
 * `company-elisp` is enabled in `inferior-emacs-lisp-mode`.
 
 ## 2013-09-28 (0.6.12)
