@@ -54,13 +54,14 @@ Requires Emacs 24.1 or newer."
                 (sortfun (cdr (assq 'display-sort-function meta)))
                 (boundaries (completion-boundaries arg table pred ""))
                 (candidates (all-completions arg table pred)))
-           (unless (zerop (car boundaries))
-             (let ((before (substring arg 0 (car boundaries))))
-               (setq candidates
-                     (mapcar (lambda (candidate)
-                               (concat before candidate))
-                             candidates))))
-           (if sortfun (funcall sortfun candidates) candidates)))))
+           (when sortfun
+             (setq candidates (funcall sortfun candidates)))
+           (if (not (zerop (car boundaries)))
+               (let ((before (substring arg 0 (car boundaries))))
+                 (mapcar (lambda (candidate)
+                           (concat before candidate))
+                         candidates))
+             candidates)))))
     (`sorted
      (let ((res (company--capf-data)))
        (when res
