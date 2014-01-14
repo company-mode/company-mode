@@ -1,6 +1,6 @@
 ;;; company-etags.el --- company-mode completion back-end for etags
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -25,6 +25,7 @@
 
 ;;; Code:
 
+(eval-when-compile (require 'cl))
 (require 'company)
 (require 'etags)
 

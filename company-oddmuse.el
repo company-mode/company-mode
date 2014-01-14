@@ -1,6 +1,6 @@
 ;;; company-oddmuse.el --- company-mode completion back-end for oddmuse-mode
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -27,8 +27,8 @@
 
 (require 'company)
 (eval-when-compile (require 'cl))
-(eval-when 'compile (require 'yaooddmuse nil t))
-(eval-when 'compile (require 'oddmuse nil t))
+(eval-when-compile (require 'yaooddmuse nil t))
+(eval-when-compile (require 'oddmuse nil t))
 
 (defvar company-oddmuse-link-regexp
   "\\(\\<[A-Z][[:alnum:]]*\\>\\)\\|\\[\\[\\([[:alnum:]]+\\>\\|\\)")
