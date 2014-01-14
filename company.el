@@ -828,13 +828,13 @@ can retrieve meta-data for them."
   ;; Save in cache:
   (push (cons company-prefix company-candidates) company-candidates-cache)
   ;; Calculate common.
-  (let ((completion-ignore-case (company-call-backend 'ignore-case))
-        ;; We want to support non-prefix completion, so filtering is the
-        ;; responsibility of each respective backend, not ours.
-        ;; On the other hand, we don't want to replace non-prefix input in
-        ;; `company-complete-common'.
-        (common (try-completion company-prefix company-candidates)))
-    (setq company-common (company--safe-candidate common))))
+  (let ((completion-ignore-case (company-call-backend 'ignore-case)))
+    ;; We want to support non-prefix completion, so filtering is the
+    ;; responsibility of each respective backend, not ours.
+    ;; On the other hand, we don't want to replace non-prefix input in
+    ;; `company-complete-common'.
+    (setq company-common (company--safe-candidate
+                          (try-completion company-prefix company-candidates)))))
 
 (defun company--safe-candidate (str)
   (or (company-call-backend 'crop str)

@@ -166,6 +166,7 @@
   (with-temp-buffer
     (company-mode)
     (let (company-frontends
+          company-end-of-buffer-workaround
           (company-backends
            (list (lambda (command &optional arg)
                    (case command
@@ -177,7 +178,7 @@
         (company-complete))
       (should (string= "ab" (buffer-string)))
       (delete-char -2)
-      (insert "AB") ; hack, to keep it in one test
+      (insert "A") ; hack, to keep it in one test
       (company-complete-selection)
       (should (string= "abcd" (buffer-string))))))
 
@@ -196,21 +197,6 @@
         (company-complete))
       (company-complete-selection)
       (should (string= "ABcd" (buffer-string))))))
-
-(ert-deftest company-non-prefix-completion ()
-  (with-temp-buffer
-    (insert "tc")
-    (company-mode)
-    (let (company-frontends
-          company-end-of-buffer-workaround
-          (company-backends
-           (list (lambda (command &optional arg)
-                   (case command
-                     (prefix (buffer-substring (point-min) (point)))
-                     (candidates '("tea-cup" "teal-color")))))))
-      (let (this-command)
-        (company-complete))
-      (should (string= "tc" (buffer-string))))))
 
 (ert-deftest company-non-prefix-completion ()
   (with-temp-buffer
