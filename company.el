@@ -243,9 +243,15 @@ If this many lines are not available, prefer to display the tooltip above."
                         (assq backend company-safe-backends))
                 (return t))))))
 
-(defcustom company-backends '(company-elisp company-nxml company-css
+(defvar company--include-capf (version< "24.3.50" emacs-version))
+
+(defcustom company-backends `(,@(unless company--include-capf
+                                  (list 'company-elisp))
+                              company-nxml company-css
                               company-eclim company-semantic company-clang
                               company-xcode company-ropemacs company-cmake
+                              ,@(when company--include-capf
+                                  (list 'company-capf))
                               (company-gtags company-etags company-dabbrev-code
                                company-keywords)
                               company-oddmuse company-files company-dabbrev)

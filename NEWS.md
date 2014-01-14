@@ -2,6 +2,8 @@
 
 ## Next
 
+* Starting with Emacs version 24.4, `company-capf` is included in
+  `company-backends` and replaces `company-elisp`.
 * `company-capf` supports completion tables that return non-default boundaries.
 * `company-elisp` is enabled in `inferior-emacs-lisp-mode`.
 
