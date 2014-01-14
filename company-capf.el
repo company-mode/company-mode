@@ -58,7 +58,10 @@ Requires Emacs 24.1 or newer."
                       table pred))
                 (sortfun (cdr (assq 'display-sort-function meta)))
                 (boundaries (completion-boundaries arg table pred ""))
-                (candidates (all-completions arg table pred)))
+                (candidates (completion-all-completions arg table pred (length arg)))
+                (last (last candidates 1)))
+           (when (numberp (cdr last))
+             (setcdr last nil))
            (when sortfun
              (setq candidates (funcall sortfun candidates)))
            (if (not (zerop (car boundaries)))

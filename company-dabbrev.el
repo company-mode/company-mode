@@ -120,7 +120,7 @@ See also `company-dabbrev-time-limit'."
              (company-dabbrev--search (company-dabbrev--make-regexp arg)
                                       company-dabbrev-time-limit
                                       company-dabbrev-other-buffers)))
-    (ignore-case t)
+    (ignore-case 'keep-prefix)
     (duplicates t)))
 
 (provide 'company-dabbrev)

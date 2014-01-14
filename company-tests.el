@@ -162,6 +162,73 @@
       (should (null company-candidates))
       (should (null (company-explicit-action-p))))))
 
+(ert-deftest company-ignore-case-replaces-prefix ()
+  (with-temp-buffer
+    (company-mode)
+    (let (company-frontends
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abcd" "abef"))
+                     (ignore-case t))))))
+      (insert "A")
+      (let (this-command)
+        (company-complete))
+      (should (string= "ab" (buffer-string)))
+      (delete-char -2)
+      (insert "AB") ; hack, to keep it in one test
+      (company-complete-selection)
+      (should (string= "abcd" (buffer-string))))))
+
+(ert-deftest company-ignore-case-with-keep-prefix ()
+  (with-temp-buffer
+    (insert "AB")
+    (company-mode)
+    (let (company-frontends
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abcd" "abef"))
+                     (ignore-case 'keep-prefix))))))
+      (let (this-command)
+        (company-complete))
+      (company-complete-selection)
+      (should (string= "ABcd" (buffer-string))))))
+
+(ert-deftest company-non-prefix-completion ()
+  (with-temp-buffer
+    (insert "tc")
+    (company-mode)
+    (let (company-frontends
+          company-end-of-buffer-workaround
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("tea-cup" "teal-color")))))))
+      (let (this-command)
+        (company-complete))
+      (should (string= "tc" (buffer-string))))))
+
+(ert-deftest company-non-prefix-completion ()
+  (with-temp-buffer
+    (insert "tc")
+    (company-mode)
+    (let (company-frontends
+          company-end-of-buffer-workaround
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("tea-cup" "teal-color")))))))
+      (let (this-command)
+        (company-complete))
+      (should (string= "tc" (buffer-string)))
+      (company-complete-selection)
+      (should (string= "tea-cup" (buffer-string))))))
+
 (ert-deftest company-pseudo-tooltip-does-not-get-displaced ()
   :tags '(interactive)
   (with-temp-buffer

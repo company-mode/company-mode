@@ -63,7 +63,7 @@ If nil, use `ispell-complete-word-dict'."
     (candidates (lookup-words arg (or company-ispell-dictionary
                                       ispell-complete-word-dict)))
     (sorted t)
-    (ignore-case t)))
+    (ignore-case 'keep-prefix)))
 
 (provide 'company-ispell)
 ;;; company-ispell.el ends here

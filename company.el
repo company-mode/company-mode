@@ -739,6 +739,14 @@ Controlled by `company-auto-complete'.")
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
 
+(defun company--insert-candidate (candidate)
+  ;; XXX: Return value we check here is subject to change.
+  (set-text-properties 0 (length candidate) nil candidate)
+  (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
+      (insert (company-strip-prefix candidate))
+    (delete-region (- (point) (length company-prefix)) (point))
+    (insert candidate)))
+
 (defmacro company-with-candidate-inserted (candidate &rest body)
   "Evaluate BODY with CANDIDATE temporarily inserted.
 This is a tool for back-ends that need candidates inserted before they
@@ -747,7 +755,7 @@ can retrieve meta-data for them."
   `(let ((inhibit-modification-hooks t)
          (inhibit-point-motion-hooks t)
          (modified-p (buffer-modified-p)))
-     (insert (company-strip-prefix ,candidate))
+     (company--insert-candidate ,candidate)
      (unwind-protect
          (progn ,@body)
        (delete-region company-point (point)))))
@@ -760,7 +768,10 @@ can retrieve meta-data for them."
 (defun company-reformat (candidate)
   ;; company-ispell needs this, because the results are always lower-case
   ;; It's mory efficient to fix it only when they are displayed.
-  (concat company-prefix (substring candidate (length company-prefix))))
+  ;; FIXME: Adopt the current text's capitalization instead?
+  (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
+      (concat company-prefix (substring candidate (length company-prefix)))
+    candidate))
 
 (defun company--should-complete ()
   (and (not (or buffer-read-only overriding-terminal-local-map
@@ -817,11 +828,13 @@ can retrieve meta-data for them."
   ;; Save in cache:
   (push (cons company-prefix company-candidates) company-candidates-cache)
   ;; Calculate common.
-  (let ((completion-ignore-case (company-call-backend 'ignore-case)))
-    (setq company-common (company--safe-candidate
-                          (try-completion company-prefix company-candidates))))
-  (when (eq company-common t)
-    (setq company-candidates nil)))
+  (let ((completion-ignore-case (company-call-backend 'ignore-case))
+        ;; We want to support non-prefix completion, so filtering is the
+        ;; responsibility of each respective backend, not ours.
+        ;; On the other hand, we don't want to replace non-prefix input in
+        ;; `company-complete-common'.
+        (common (try-completion company-prefix company-candidates)))
+    (setq company-common (company--safe-candidate common))))
 
 (defun company--safe-candidate (str)
   (or (company-call-backend 'crop str)
@@ -1089,7 +1102,7 @@ can retrieve meta-data for them."
   (setq company-point (point)))
 
 (defun company-finish (result)
-  (insert (company-strip-prefix result))
+  (company--insert-candidate result)
   (company-cancel result)
   ;; Don't start again, unless started manually.
   (setq company-point (point)))
@@ -1425,7 +1438,8 @@ and invoke the normal binding."
     (if (and (not (cdr company-candidates))
              (equal company-common (car company-candidates)))
         (company-complete-selection)
-      (insert (company-strip-prefix company-common)))))
+      (when company-common
+        (company--insert-candidate company-common)))))
 
 (defun company-complete ()
   "Complete the common part of all candidates or the current selection.
@@ -1929,7 +1943,7 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
   "`company-pseudo-tooltip-frontend', but not shown for single candidates."
   (unless (and (eq command 'post-command)
-               (not (cdr company-candidates)))
+               (company--show-inline-p))
     (company-pseudo-tooltip-frontend command)))
 
 ;;; overlay ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1978,9 +1992,15 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-preview-if-just-one-frontend (command)
   "`company-preview-frontend', but only shown for single candidates."
-  (unless (and (eq command 'post-command)
-               (cdr company-candidates))
+  (when (or (not (eq command 'post-command))
+            (company--show-inline-p))
     (company-preview-frontend command)))
+
+(defun company--show-inline-p ()
+  (and (not (cdr company-candidates))
+       company-common
+       (string-prefix-p company-prefix company-common
+                        (company-call-backend 'ignore-case))))
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
