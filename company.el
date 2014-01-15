@@ -833,8 +833,11 @@ can retrieve meta-data for them."
     ;; responsibility of each respective backend, not ours.
     ;; On the other hand, we don't want to replace non-prefix input in
     ;; `company-complete-common'.
-    (setq company-common (company--safe-candidate
-                          (try-completion company-prefix company-candidates)))))
+    (setq company-common
+          (if (cdr company-candidates)
+              (company--safe-candidate
+               (try-completion company-prefix company-candidates))
+            (car company-candidates)))))
 
 (defun company--safe-candidate (str)
   (or (company-call-backend 'crop str)
