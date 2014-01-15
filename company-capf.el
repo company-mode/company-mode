@@ -77,6 +77,19 @@ Requires Emacs 24.1 or newer."
                       (buffer-substring (nth 1 res) (nth 2 res))
                       (nth 3 res) (plist-get (nthcdr 4 res) :predicate))))
            (cdr (assq 'display-sort-function meta))))))
+    (`common-part
+     ;; Can't just use 0 when base-size (see above) is non-zero.
+     (let ((start (if (get-text-property 0 'face arg)
+                      0
+                    (next-single-property-change 0 'face arg))))
+       (when start
+         ;; completions-common-part comes first, but we can't just look for this
+         ;; value because it can be in a list.
+         (or
+          (let ((value (get-text-property start 'face arg)))
+            (text-property-not-all start (length arg)
+                                   'face value arg))
+          (length arg)))))
     (`duplicates nil) ;Don't bother.
     (`no-cache t)     ;FIXME: Improve!
     (`meta

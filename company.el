@@ -1677,34 +1677,40 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (pop copy))
     (apply 'concat pieces)))
 
+(defun company--highlight-common (line properties)
+  ;; XXX: Subject to change.
+  (let ((common (or (company-call-backend 'common-part line)
+                    (length company-common))))
+    (add-text-properties 0 common properties line)))
+
 (defun company-fill-propertize (line width selected)
-  (setq line (company-safe-substring line 0 width))
-  (add-text-properties 0 width '(face company-tooltip
-                                 mouse-face company-tooltip-mouse)
-                       line)
-  (add-text-properties 0 (length company-common)
-                       '(face company-tooltip-common
-                         mouse-face company-tooltip-mouse)
-                       line)
-  (when selected
-    (if (and company-search-string
-             (string-match (regexp-quote company-search-string) line
-                           (length company-prefix)))
-        (progn
-          (add-text-properties (match-beginning 0) (match-end 0)
-                               '(face company-tooltip-selection)
-                               line)
-          (when (< (match-beginning 0) (length company-common))
-            (add-text-properties (match-beginning 0) (length company-common)
-                                 '(face company-tooltip-common-selection)
-                                 line)))
-      (add-text-properties 0 width '(face company-tooltip-selection
-                                          mouse-face company-tooltip-selection)
-                           line)
-      (add-text-properties 0 (length company-common)
-                           '(face company-tooltip-common-selection
-                             mouse-face company-tooltip-selection)
-                           line)))
+  (let ((common (or (company-call-backend 'common-part line)
+                    (length company-common))))
+    (setq line (company-safe-substring line 0 width))
+    (add-text-properties 0 width '(face company-tooltip
+                                   mouse-face company-tooltip-mouse)
+                         line)
+    (add-text-properties 0 common '(face company-tooltip-common
+                                    mouse-face company-tooltip-mouse)
+                         line)
+    (when selected
+      (if (and company-search-string
+               (string-match (regexp-quote company-search-string) line
+                             (length company-prefix)))
+          (progn
+            (add-text-properties (match-beginning 0) (match-end 0)
+                                 '(face company-tooltip-selection)
+                                 line)
+            (when (< (match-beginning 0) common)
+              (add-text-properties (match-beginning 0) common
+                                   '(face company-tooltip-common-selection)
+                                   line)))
+        (add-text-properties 0 width '(face company-tooltip-selection
+                                       mouse-face company-tooltip-selection)
+                             line)
+        (add-text-properties 0 common '(face company-tooltip-common-selection
+                                        mouse-face company-tooltip-selection)
+                             line))))
   line)
 
 ;;; replace
