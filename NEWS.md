@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-01-14 (0.6.13)
 
 * Experimental support for non-prefix completion.
 * Starting with Emacs version 24.4, `company-capf` is included in

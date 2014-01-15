@@ -1,6 +1,6 @@
 ;;; company-capf.el --- company-mode completion-at-point-functions back-end -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2014  Free Software Foundation, Inc.
 
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
