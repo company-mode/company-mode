@@ -353,7 +353,7 @@ back-end, consider using the `post-completion' command instead."
   :type 'hook)
 
 (defcustom company-minimum-prefix-length 3
-  "The minimum prefix length for automatic completion."
+  "The minimum prefix length for idle completion."
   :type '(integer :tag "prefix length"))
 
 (defcustom company-require-match 'company-explicit-action-p
@@ -371,7 +371,8 @@ This can be overridden by the back-end, if it returns t or `never' to
 (defcustom company-auto-complete nil
   "Determines when to auto-complete.
 If this is enabled, all characters from `company-auto-complete-chars'
-complete the selected completion.  This can also be a function."
+trigger insertion of the selected completion candidate.
+This can also be a function."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
@@ -379,9 +380,9 @@ complete the selected completion.  This can also be a function."
                  (const :tag "On" t)))
 
 (defcustom company-auto-complete-chars '(?\  ?\) ?.)
-  "Determines which characters trigger an automatic completion.
+  "Determines which characters trigger auto-completion.
 See `company-auto-complete'.  If this is a string, each string character
-causes completion.  If it is a list of syntax description characters (see
+tiggers auto-completion.  If it is a list of syntax description characters (see
 `modify-syntax-entry'), all characters with that syntax auto-complete.
 
 This can also be a function, which is called with the new input and should
@@ -407,19 +408,20 @@ A character that is part of a valid candidate never triggers auto-completion."
                  (function :tag "Predicate function")))
 
 (defcustom company-idle-delay .7
-  "The idle delay in seconds until automatic completions starts.
-A value of nil means never complete automatically, t means complete
+  "The idle delay in seconds until completion starts automatically.
+A value of nil means no idle completion, t means show candidates
 immediately when a prefix of `company-minimum-prefix-length' is reached."
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (t)" t)
                  (number :tag "seconds")))
 
 (defcustom company-begin-commands '(self-insert-command)
-  "A list of commands following which company will start completing.
-If this is t, it will complete after any command.  See `company-idle-delay'.
+  "A list of commands after which idle completion is allowed.
+If this is t, it can show completions after any command.  See
+`company-idle-delay'.
 
-Alternatively any command with a non-nil `company-begin' property is treated
-as if it was on this list."
+Alternatively, any command with a non-nil `company-begin' property is
+treated as if it was on this list."
   :type '(choice (const :tag "Any command" t)
                  (const :tag "Self insert command" '(self-insert-command))
                  (repeat :tag "Commands" function)))
@@ -722,7 +724,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (make-variable-buffer-local 'company--explicit-action)
 
 (defvar company--auto-completion nil
-  "Non-nil when current candidate is being completed automatically.
+  "Non-nil when current candidate is being inserted automatically.
 Controlled by `company-auto-complete'.")
 
 (defvar company--point-max nil)
@@ -1420,13 +1422,13 @@ and invoke the normal binding."
       nil)))
 
 (defun company-complete-mouse (event)
-  "Complete the candidate picked by the mouse."
+  "Insert the candidate picked by the mouse."
   (interactive "e")
   (when (company-select-mouse event)
     (company-complete-selection)))
 
 (defun company-complete-selection ()
-  "Complete the selected candidate."
+  "Insert the selected candidate."
   (interactive)
   (when (company-manual-begin)
     (let ((result (nth company-selection company-candidates)))
@@ -1435,7 +1437,7 @@ and invoke the normal binding."
       (company-finish result))))
 
 (defun company-complete-common ()
-  "Complete the common part of all candidates."
+  "Insert the common part of all candidates."
   (interactive)
   (when (company-manual-begin)
     (if (and (not (cdr company-candidates))
@@ -1445,10 +1447,10 @@ and invoke the normal binding."
         (company--insert-candidate company-common)))))
 
 (defun company-complete ()
-  "Complete the common part of all candidates or the current selection.
-The first time this is called, the common part is completed, the second
+  "Insert the common part of all candidates or the current selection.
+The first time this is called, the common part is inserted, the second
 time, or when the selection has been changed, the selected candidate is
-completed."
+inserted."
   (interactive)
   (when (company-manual-begin)
     (if (or company-selection-changed
@@ -1458,7 +1460,7 @@ completed."
       (setq this-command 'company-complete-common))))
 
 (defun company-complete-number (n)
-  "Complete the Nth candidate.
+  "Insert the Nth candidate.
 To show the number next to the candidates in some back-ends, enable
 `company-show-numbers'."
   (when (company-manual-begin)
