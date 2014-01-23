@@ -1862,10 +1862,10 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (setq lines (nreverse new))))
 
 (defun company--numbered-line (text width)
-  (concat (company-space-string company-tooltip-margin)
-          (propertize (company-safe-substring text 0 width)
-                      'face 'company-tooltip)
-          (company-space-string company-tooltip-margin)))
+  (propertize (concat (company-space-string company-tooltip-margin)
+                      (company-safe-substring text 0 width)
+                      (company-space-string company-tooltip-margin))
+   'face 'company-tooltip))
 
 ;; show
 
