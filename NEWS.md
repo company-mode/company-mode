@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* The tooltip front-end is rendered with margins, controlled by the user option
+  `company-tooltip-margin`.
+
 ## 2014-01-14 (0.6.13)
 
 * Experimental support for non-prefix completion.

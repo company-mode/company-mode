@@ -211,6 +211,10 @@ The visualized data is stored in `company-prefix', `company-candidates',
 If this many lines are not available, prefer to display the tooltip above."
   :type 'integer)
 
+(defcustom company-tooltip-margin 1
+  "Width of margin columns to show around the toolip."
+  :type 'integer)
+
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
     (company-capf . "completion-at-point-functions")
@@ -1689,14 +1693,20 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (add-text-properties 0 common properties line)))
 
 (defun company-fill-propertize (line width selected)
-  (let ((common (or (company-call-backend 'common-part line)
-                    (length company-common))))
-    (setq line (company-safe-substring line 0 width))
+  (let* ((margin company-tooltip-margin)
+         (common (+ (or (company-call-backend 'common-part line)
+                        (length company-common)) margin)))
+    (setq line (concat (company-space-string company-tooltip-margin)
+                       (company-safe-substring
+                        line 0 (+ width company-tooltip-margin)))
+          width (+ width (* 2 margin)))
+
     (add-text-properties 0 width '(face company-tooltip
                                    mouse-face company-tooltip-mouse)
                          line)
-    (add-text-properties 0 common '(face company-tooltip-common
-                                    mouse-face company-tooltip-mouse)
+    (add-text-properties margin common
+                         '(face company-tooltip-common
+                           mouse-face company-tooltip-mouse)
                          line)
     (when selected
       (if (and company-search-string
@@ -1713,8 +1723,9 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
         (add-text-properties 0 width '(face company-tooltip-selection
                                        mouse-face company-tooltip-selection)
                              line)
-        (add-text-properties 0 common '(face company-tooltip-common-selection
-                                        mouse-face company-tooltip-selection)
+        (add-text-properties margin common
+                             '(face company-tooltip-common-selection
+                               mouse-face company-tooltip-selection)
                              line))))
   line)
 
@@ -1750,6 +1761,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (length lst)))
 
 (defun company--replacement-string (lines old column nl &optional align-top)
+  (decf column company-tooltip-margin)
 
   (let ((width (length (car lines)))
         (remaining-cols (- (+ (company--window-width) (window-hscroll))
@@ -1757,17 +1769,24 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (when (> width remaining-cols)
       (decf column (- width remaining-cols))))
 
-  (let (new)
+  (let ((cutoff (and (< column 0) (- column)))
+        new)
+    (when cutoff
+      (setq column 0))
     (when align-top
       ;; untouched lines first
       (dotimes (_ (- (length old) (length lines)))
         (push (pop old) new)))
     ;; length into old lines.
     (while old
-      (push (company-modify-line (pop old) (pop lines) column) new))
+      (push (company-modify-line (pop old)
+                                 (company--cutoff-line (pop lines) cutoff)
+                                 column) new))
     ;; Append whole new lines.
     (while lines
-      (push (concat (company-space-string column) (pop lines)) new))
+      (push (concat (company-space-string column)
+                    (company--cutoff-line (pop lines) cutoff))
+            new))
 
     (let ((str (concat (when nl "\n")
                        (mapconcat 'identity (nreverse new) "\n")
@@ -1775,10 +1794,16 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (font-lock-append-text-property 0 (length str) 'face 'default str)
       str)))
 
+(defun company--cutoff-line (line cutoff)
+  (if (and cutoff line)
+      (substring line cutoff)
+    line))
+
 (defun company--create-lines (selection limit)
 
   (let ((len company-candidates-length)
         (numbered 99999)
+        (window-width (company--window-width))
         lines
         width
         lines-copy
@@ -1802,9 +1827,11 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
           len (min limit len)
           lines-copy lines)
 
+    (decf window-width (* 2 company-tooltip-margin))
+
     (dotimes (_ len)
       (setq width (max (length (pop lines-copy)) width)))
-    (setq width (min (company--window-width)
+    (setq width (min window-width
                      (if company-show-numbers
                          (+ 2 width)
                        width)))
@@ -1815,9 +1842,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (setq numbered company-tooltip-offset))
 
     (when previous
-      (push (propertize (company-safe-substring previous 0 width)
-                        'face 'company-tooltip)
-            new))
+      (push (company--numbered-line previous width) new))
 
     (dotimes (i len)
       (push (company-fill-propertize
@@ -1832,11 +1857,15 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
             new))
 
     (when remainder
-      (push (propertize (company-safe-substring remainder 0 width)
-                        'face 'company-tooltip)
-            new))
+      (push (company--numbered-line remainder width) new))
 
     (setq lines (nreverse new))))
+
+(defun company--numbered-line (text width)
+  (concat (company-space-string company-tooltip-margin)
+          (propertize (company-safe-substring text 0 width)
+                      'face 'company-tooltip)
+          (company-space-string company-tooltip-margin)))
 
 ;; show
 
