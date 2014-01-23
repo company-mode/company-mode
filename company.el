@@ -1752,7 +1752,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 (defun company--replacement-string (lines old column nl &optional align-top)
 
   (let ((width (length (car lines)))
-        (remaining-cols (- (+ (window-width) (window-hscroll))
+        (remaining-cols (- (+ (company--window-width) (window-hscroll))
                            column)))
     (when (> width remaining-cols)
       (decf column (- width remaining-cols))))
@@ -1804,7 +1804,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 
     (dotimes (_ len)
       (setq width (max (length (pop lines-copy)) width)))
-    (setq width (min (window-width)
+    (setq width (min (company--window-width)
                      (if company-show-numbers
                          (+ 2 width)
                        width)))
@@ -1843,6 +1843,18 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 (defsubst company--window-inner-height ()
   (let ((edges (window-inside-edges)))
     (- (nth 3 edges) (nth 1 edges))))
+
+(defsubst company--window-width ()
+  (- (window-width)
+     (cond
+      ((display-graphic-p) 0)
+      ;; Account for the line continuation column.
+      ((version< "24.3.1" emacs-version) 1)
+      ;; Emacs 24.3 and earlier included margins
+      ;; in window-width when in TTY.
+      (t (1+ (let ((margins (window-margins)))
+               (+ (or (car margins) 0)
+                  (or (cdr margins) 0))))))))
 
 (defun company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
