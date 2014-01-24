@@ -1769,9 +1769,9 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (when (> width remaining-cols)
       (decf column (- width remaining-cols))))
 
-  (let ((cutoff (and (< column 0) (- column)))
+  (let ((offset (and (< column 0) (- column)))
         new)
-    (when cutoff
+    (when offset
       (setq column 0))
     (when align-top
       ;; untouched lines first
@@ -1780,12 +1780,12 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     ;; length into old lines.
     (while old
       (push (company-modify-line (pop old)
-                                 (company--cutoff-line (pop lines) cutoff)
+                                 (company--offset-line (pop lines) offset)
                                  column) new))
     ;; Append whole new lines.
     (while lines
       (push (concat (company-space-string column)
-                    (company--cutoff-line (pop lines) cutoff))
+                    (company--offset-line (pop lines) offset))
             new))
 
     (let ((str (concat (when nl "\n")
@@ -1794,9 +1794,9 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (font-lock-append-text-property 0 (length str) 'face 'default str)
       str)))
 
-(defun company--cutoff-line (line cutoff)
-  (if (and cutoff line)
-      (substring line cutoff)
+(defun company--offset-line (line offset)
+  (if (and offset line)
+      (substring line offset)
     line))
 
 (defun company--create-lines (selection limit)
@@ -1842,7 +1842,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (setq numbered company-tooltip-offset))
 
     (when previous
-      (push (company--numbered-line previous width) new))
+      (push (company--position-line previous width) new))
 
     (dotimes (i len)
       (push (company-fill-propertize
@@ -1857,11 +1857,11 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
             new))
 
     (when remainder
-      (push (company--numbered-line remainder width) new))
+      (push (company--position-line remainder width) new))
 
     (setq lines (nreverse new))))
 
-(defun company--numbered-line (text width)
+(defun company--position-line (text width)
   (propertize (concat (company-space-string company-tooltip-margin)
                       (company-safe-substring text 0 width)
                       (company-space-string company-tooltip-margin))
