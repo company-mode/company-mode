@@ -2,6 +2,8 @@
 
 ## Next
 
+* The tooltip front-end is rendered with scrollbar, controlled by the user
+  option `company-tooltip-offset-display`.
 * The tooltip front-end is rendered with margins, controlled by the user option
   `company-tooltip-margin`.
 

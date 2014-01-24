@@ -1,6 +1,6 @@
 ;;; company-tests.el --- company-mode tests
 
-;; Copyright (C) 2011, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2011, 2013-2014  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -300,6 +300,15 @@
     (should (equal-including-properties
              (company-modify-line str "zz" 10)
              "-*-foobar zz"))))
+
+(ert-deftest company-scrollbar-bounds ()
+  (should (equal nil (company--scrollbar-bounds 0 3 3)))
+  (should (equal nil (company--scrollbar-bounds 0 4 3)))
+  (should (equal '(0 . 0) (company--scrollbar-bounds 0 1 2)))
+  (should (equal '(1 . 1) (company--scrollbar-bounds 2 2 4)))
+  (should (equal '(2 . 3) (company--scrollbar-bounds 7 4 12)))
+  (should (equal '(1 . 2) (company--scrollbar-bounds 3 4 12)))
+  (should (equal '(1 . 3) (company--scrollbar-bounds 4 5 11))))
 
 ;;; Template
 

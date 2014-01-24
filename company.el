@@ -123,6 +123,21 @@
      :foreground "red"))
   "Face used for the selected common completion in the tooltip.")
 
+(defface company-scrollbar-fg
+  '((((background light))
+     :background "darkred")
+    (((background dark))
+     :background "red"))
+  "Face used for the tooltip scrollbar thumb.")
+
+(defface company-scrollbar-bg
+  '((default :inherit company-tooltip)
+    (((background light))
+     :background "wheat")
+    (((background dark))
+     :background "gold"))
+  "Face used for the tooltip scrollbar background.")
+
 (defface company-preview
   '((t :background "blue4"
        :foreground "wheat"))
@@ -214,6 +229,13 @@ If this many lines are not available, prefer to display the tooltip above."
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
   :type 'integer)
+
+(defcustom company-tooltip-offset-display 'scrollbar
+  "Method using which the tooltip displays scrolling position.
+`scrollbar' means draw a scrollbar to the right of the items.
+`lines' means wrap items in lines with \"before\" and \"after\" counters."
+  :type '(choice (const :tag "Scrollbar" scrollbar)
+                 (const :tag "Two lines" lines)))
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
@@ -1647,8 +1669,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 (defvar company-tooltip-offset 0)
 (make-variable-buffer-local 'company-tooltip-offset)
 
-(defun company-pseudo-tooltip-update-offset (selection num-lines limit)
-
+(defun company-tooltip--lines-update-offset (selection num-lines limit)
   (decf limit 2)
   (setq company-tooltip-offset
         (max (min selection company-tooltip-offset)
@@ -1667,6 +1688,13 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
         (incf limit))))
 
   limit)
+
+(defun company-tooltip--simple-update-offset (selection num-lines limit)
+  (setq company-tooltip-offset
+        (if (< selection company-tooltip-offset)
+            selection
+          (max company-tooltip-offset
+               (- selection limit -1)))))
 
 ;;; propertize
 
@@ -1809,17 +1837,24 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
         lines-copy
         previous
         remainder
+        scrollbar-bounds
         new)
 
     ;; Scroll to offset.
-    (setq limit (company-pseudo-tooltip-update-offset selection len limit))
+    (if (eq company-tooltip-offset-display 'lines)
+        (setq limit (company-tooltip--lines-update-offset selection len limit))
+      (company-tooltip--simple-update-offset selection len limit))
 
-    (when (> company-tooltip-offset 0)
-      (setq previous (format "...(%d)" company-tooltip-offset)))
-
-    (setq remainder (- len limit company-tooltip-offset)
-          remainder (when (> remainder 0)
-                      (setq remainder (format "...(%d)" remainder))))
+    (cond
+     ((eq company-tooltip-offset-display 'scrollbar)
+      (setq scrollbar-bounds (company--scrollbar-bounds company-tooltip-offset
+                                                        limit len)))
+     ((eq company-tooltip-offset-display 'lines)
+      (when (> company-tooltip-offset 0)
+        (setq previous (format "...(%d)" company-tooltip-offset)))
+      (setq remainder (- len limit company-tooltip-offset)
+            remainder (when (> remainder 0)
+                        (setq remainder (format "...(%d)" remainder))))))
 
     (decf selection company-tooltip-offset)
     (setq width (max (length previous) (length remainder))
@@ -1828,6 +1863,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
           lines-copy lines)
 
     (decf window-width (* 2 company-tooltip-margin))
+    (when scrollbar-bounds (decf window-width))
 
     (dotimes (_ len)
       (setq width (max (length (pop lines-copy)) width)))
@@ -1842,26 +1878,43 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (setq numbered company-tooltip-offset))
 
     (when previous
-      (push (company--position-line previous width) new))
+      (push (company--scrollpos-line previous width) new))
 
     (dotimes (i len)
-      (push (company-fill-propertize
-             (if (>= numbered 10)
-                 (company-reformat (pop lines))
-               (incf numbered)
-               (format "%s %d"
-                       (company-safe-substring (company-reformat (pop lines))
-                                               0 (- width 2))
-                       (mod numbered 10)))
-             width (equal i selection))
-            new))
+      (let ((line (company-fill-propertize
+                   (if (>= numbered 10)
+                       (company-reformat (pop lines))
+                     (incf numbered)
+                     (format "%s %d"
+                             (company-safe-substring
+                              (company-reformat (pop lines)) 0 (- width 2))
+                             (mod numbered 10)))
+                   width (equal i selection))))
+        (push (if scrollbar-bounds
+                  (company--scrollbarize line i scrollbar-bounds)
+                line)
+              new)))
 
     (when remainder
-      (push (company--position-line remainder width) new))
+      (push (company--scrollpos-line remainder width) new))
 
     (setq lines (nreverse new))))
 
-(defun company--position-line (text width)
+(defun company--scrollbar-bounds (offset limit length)
+  (when (> length limit)
+    (let* ((size (ceiling (* limit (float limit)) length))
+           (lower (floor (* limit (float offset)) length))
+           (upper (+ lower size -1)))
+      (cons lower upper))))
+
+(defun company--scrollbarize (line i bounds)
+  (concat line
+          (propertize " " 'face
+                      (if (and (>= i (car bounds)) (<= i (cdr bounds)))
+                          'company-scrollbar-fg
+                        'company-scrollbar-bg))))
+
+(defun company--scrollpos-line (text width)
   (propertize (concat (company-space-string company-tooltip-margin)
                       (company-safe-substring text 0 width)
                       (company-space-string company-tooltip-margin))
