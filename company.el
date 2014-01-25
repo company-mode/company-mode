@@ -1869,7 +1869,8 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (dotimes (_ len)
       (setq width (max (length (pop lines-copy)) width)))
     (setq width (min window-width
-                     (if company-show-numbers
+                     (if (and company-show-numbers
+                              (< company-tooltip-offset 10))
                          (+ 2 width)
                        width)))
     (setq lines-copy lines)
