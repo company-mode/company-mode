@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-01-25 (0.6.14)
 
 * The tooltip front-end is rendered with scrollbar, controlled by the user
   option `company-tooltip-offset-display`.
