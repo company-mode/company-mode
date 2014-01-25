@@ -1435,9 +1435,10 @@ and invoke the normal binding."
              (company--inside-tooltip-p event-col-row ovl-row ovl-height))
         (progn
           (company-set-selection (+ (cdr event-col-row)
-                                    (if (zerop company-tooltip-offset)
-                                        -1
-                                      (- company-tooltip-offset 2))
+                                    (1- company-tooltip-offset)
+                                    (if (and (eq company-tooltip-offset-display 'lines)
+                                             (not (zerop company-tooltip-offset)))
+                                        -1 0)
                                     (- ovl-row)
                                     (if (< ovl-height 0)
                                         (- 1 ovl-height)
