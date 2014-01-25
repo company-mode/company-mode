@@ -1841,6 +1841,10 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
         scrollbar-bounds
         new)
 
+    ;; Maybe clear old offset.
+    (when (<= len (+ company-tooltip-offset limit))
+      (setq company-tooltip-offset 0))
+    (message "offset interm %s" company-tooltip-offset)
     ;; Scroll to offset.
     (if (eq company-tooltip-offset-display 'lines)
         (setq limit (company-tooltip--lines-update-offset selection len limit))
