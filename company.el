@@ -441,7 +441,7 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
                  (const :tag "immediate (t)" t)
                  (number :tag "seconds")))
 
-(defcustom company-begin-commands '(self-insert-command)
+(defcustom company-begin-commands '(self-insert-command org-self-insert-command)
   "A list of commands after which idle completion is allowed.
 If this is t, it can show completions after any command.  See
 `company-idle-delay'.
