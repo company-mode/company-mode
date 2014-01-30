@@ -41,7 +41,7 @@ buffer automatically."
                  (const :tag "on" t)))
 
 (defvar company-etags-modes '(c-mode objc-mode c++-mode java-mode jde-mode
-                              pascal-mode perl-mode python-mode))
+                              pascal-mode perl-mode cperl-mode python-mode))
 
 (defvar company-etags-buffer-table 'unknown)
 (make-variable-buffer-local 'company-etags-buffer-table)
