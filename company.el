@@ -358,6 +358,15 @@ does not know about.  It should also be callable interactively and use
 
 (put 'company-backends 'safe-local-variable 'company-safe-backends-p)
 
+(defcustom company-transformers nil
+  "Functions to change the list of candidates received from backends,
+after sorting and removal of duplicates (if appropriate).
+Each function gets called with the return value of the previous one."
+  :type '(repeat
+          (choice
+           (const :tag "Sort by occurrence" 'company-sort-by-occurrence)
+           (function :tag "Custom function"))))
+
 (defcustom company-completion-started-hook nil
   "Hook run when company starts completing.
 The hook is called with one argument that is non-nil if the completion was
@@ -899,13 +908,55 @@ can retrieve meta-data for them."
               (while c2
                 (setcdr c2 (progn (while (equal (pop c2) (car c2)))
                                   c2)))))))
+    (setq candidates (company--transform-candidates candidates))
     (when candidates
       (if (or (cdr candidates)
               (not (eq t (compare-strings (car candidates) nil nil
                                           prefix nil nil ignore-case))))
-          candidates
+          (company--transform-candidates candidates)
         ;; Already completed and unique; don't start.
         t))))
+
+(defun company--transform-candidates (candidates)
+  (let ((c candidates))
+    (dolist (tr company-transformers)
+      (setq c (funcall tr c)))
+    c))
+
+(defun company-sort-by-occurrence (candidates)
+  "Sort CANDIDATES according to their occurrences.
+Searches for each in the currently visible part of the current buffer and
+gives priority to the closest ones above point, then closest ones below
+point. The rest of the list is appended unchanged."
+  (let* (occurs
+         (noccurs
+          (delete-if
+           (lambda (candidate)
+             (when (or
+                    (save-excursion
+                      (and (zerop (forward-line -1))
+                           (search-backward candidate (window-start) t)))
+                    (save-excursion
+                      (search-forward candidate (window-end) t)))
+               (let ((beg (match-beginning 0))
+                     (end (match-end 0)))
+                 (when (save-excursion
+                         (goto-char end)
+                         (and (not (memq (get-text-property (point) 'face)
+                                         '(font-lock-function-name-face
+                                           font-lock-keyword-face)))
+                              (let ((prefix (company-call-backend 'prefix)))
+                                (and (stringp prefix)
+                                     (= (length prefix) (- end beg))))))
+                   (push (cons candidate (if (< beg (point))
+                                             (- (point) end)
+                                           (- beg (window-start))))
+                         occurs)
+                   t))))
+           candidates)))
+    (nconc
+     (mapcar #'car (sort occurs (lambda (e1 e2) (< (cdr e1) (cdr e2)))))
+     noccurs)))
 
 (defun company-idle-begin (buf win tick pos)
   (and company-mode

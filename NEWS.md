@@ -2,6 +2,8 @@
 
 ## Next
 
+* New user option `company-transformers`.
+* First transformer, `company-sort-by-occurrence`.
 * New user options controlling `company-dabbrev` and `company-dabbrev-code`.
 
 ## 2014-01-25 (0.6.14)
