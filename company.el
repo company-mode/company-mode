@@ -945,7 +945,8 @@ point. The rest of the list is appended unchanged."
                          (and (not (memq (get-text-property (point) 'face)
                                          '(font-lock-function-name-face
                                            font-lock-keyword-face)))
-                              (let ((prefix (company-call-backend 'prefix)))
+                              (let* ((prefix (company-call-backend 'prefix))
+                                     (prefix (or (car-safe prefix) prefix)))
                                 (and (stringp prefix)
                                      (= (length prefix) (- end beg))))))
                    (push (cons candidate (if (< beg (point))
