@@ -41,7 +41,7 @@ See also `company-dabbrev-time-limit'."
                  (const :tag "Same major mode" t)
                  (const :tag "All" all)))
 
-(defcustom company-dabbrev-time-limit .5
+(defcustom company-dabbrev-time-limit .1
   "Determines how many seconds `company-dabbrev' should look for matches."
   :type '(choice (const :tag "Off" nil)
                  (number :tag "Seconds")))
