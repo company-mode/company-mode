@@ -40,8 +40,8 @@ buffer automatically."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
-(defvar company-etags-modes '(c-mode objc-mode c++-mode java-mode jde-mode
-                              pascal-mode perl-mode python-mode))
+(defvar company-etags-modes '(prog-mode c-mode objc-mode c++-mode java-mode
+                              jde-mode pascal-mode perl-mode python-mode))
 
 (defvar company-etags-buffer-table 'unknown)
 (make-variable-buffer-local 'company-etags-buffer-table)
@@ -74,7 +74,7 @@ buffer automatically."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-etags))
-    (prefix (and (memq major-mode company-etags-modes)
+    (prefix (and (apply 'derived-mode-p company-etags-modes)
                  (not (company-in-string-or-comment))
                  (company-etags-buffer-table)
                  (or (company-grab-symbol) 'stop)))
