@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* New user options controlling `company-dabbrev` and `company-dabbrev-code`.
+
 ## 2014-01-25 (0.6.14)
 
 * The tooltip front-end is rendered with scrollbar, controlled by the user

@@ -50,6 +50,9 @@ See also `company-dabbrev-time-limit'."
   "A regular expression matching the characters `company-dabbrev' looks for."
   :type 'regexp)
 
+(defcustom company-dabbrev-ignore-case 'keep-prefix
+  "The value of `ignore-case' returned by `company-dabbrev'.")
+
 (defmacro company-dabrev--time-limit-while (test start limit &rest body)
   (declare (indent 3) (debug t))
   `(let ((company-time-limit-while-counter 0))
@@ -120,7 +123,7 @@ See also `company-dabbrev-time-limit'."
              (company-dabbrev--search (company-dabbrev--make-regexp arg)
                                       company-dabbrev-time-limit
                                       company-dabbrev-other-buffers)))
-    (ignore-case 'keep-prefix)
+    (ignore-case company-dabbrev-ignore-case)
     (duplicates t)))
 
 (provide 'company-dabbrev)
