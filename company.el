@@ -927,7 +927,8 @@ can retrieve meta-data for them."
   "Sort CANDIDATES according to their occurrences.
 Searches for each in the currently visible part of the current buffer and
 gives priority to the closest ones above point, then closest ones below
-point. The rest of the list is appended unchanged."
+point. The rest of the list is appended unchanged.
+Keywords and function definition names are ignored."
   (let* (occurs
          (noccurs
           (delete-if
