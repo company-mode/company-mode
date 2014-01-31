@@ -362,10 +362,10 @@ does not know about.  It should also be callable interactively and use
   "Functions to change the list of candidates received from backends,
 after sorting and removal of duplicates (if appropriate).
 Each function gets called with the return value of the previous one."
-  :type '(repeat
-          (choice
-           (const :tag "Sort by occurrence" 'company-sort-by-occurrence)
-           (function :tag "Custom function"))))
+  :type '(choice
+          (const :tag "None" nil)
+          (const :tag "Sort by occurrence" (company-sort-by-occurrence))
+          (repeat :tag "User defined" (function))))
 
 (defcustom company-completion-started-hook nil
   "Hook run when company starts completing.
