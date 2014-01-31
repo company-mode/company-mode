@@ -53,6 +53,9 @@ See also `company-dabbrev-time-limit'."
 (defcustom company-dabbrev-ignore-case 'keep-prefix
   "The value of `ignore-case' returned by `company-dabbrev'.")
 
+(defcustom company-dabbrev-minimum-length (1+ company-minimum-prefix-length)
+  "The minimum length for the string to be included.")
+
 (defmacro company-dabrev--time-limit-while (test start limit &rest body)
   (declare (indent 3) (debug t))
   `(let ((company-time-limit-while-counter 0))
@@ -82,7 +85,8 @@ See also `company-dabbrev-time-limit'."
         (setq match (match-string-no-properties 0))
         (if (and ignore-comments (company-in-string-or-comment))
             (re-search-backward "\\s<\\|\\s!\\|\\s\"\\|\\s|" nil t)
-          (push match symbols)))
+          (when (>= (length match) company-dabbrev-minimum-length)
+            (push match symbols))))
       (goto-char (or pos (point-min)))
       ;; search after pos
       (company-dabrev--time-limit-while (re-search-forward regexp nil t)
@@ -90,7 +94,8 @@ See also `company-dabbrev-time-limit'."
         (setq match (match-string-no-properties 0))
         (if (and ignore-comments (company-in-string-or-comment))
             (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
-          (push match symbols)))
+          (when (>= (length match) company-dabbrev-minimum-length)
+            (push match symbols))))
       symbols)))
 
 (defun company-dabbrev--search (regexp &optional limit other-buffers
