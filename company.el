@@ -1050,11 +1050,7 @@ Keywords and function definition names are ignored."
                                 company-point)
               company-prefix)))
 
-(defsubst company--string-incremental-p (old-prefix new-prefix)
-  (and (> (length new-prefix) (length old-prefix))
-       (equal old-prefix (substring new-prefix 0 (length old-prefix)))))
-
-(defun company--continue-failed (new-prefix)
+(defun company--continue-failed ()
   (when (company--incremental-p)
     (let ((input (buffer-substring-no-properties (point) company-point)))
       (cond
@@ -1065,8 +1061,7 @@ Keywords and function definition names are ignored."
           (let ((company--auto-completion t))
             (company-complete-selection))
           nil))
-       ((and (company--string-incremental-p company-prefix new-prefix)
-             (company-require-match-p))
+       ((company-require-match-p)
         ;; wrong incremental input, but required match
         (delete-char (- (length input)))
         (ding)
@@ -1106,7 +1101,7 @@ Keywords and function definition names are ignored."
           (setq company-prefix new-prefix)
           (company-update-candidates c)
           c)
-         (t (company--continue-failed new-prefix)))
+         (t (company--continue-failed)))
         (company-cancel))))
 
 (defun company--begin-new ()
