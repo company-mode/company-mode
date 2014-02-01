@@ -139,18 +139,27 @@
   "Face used for the tooltip scrollbar background.")
 
 (defface company-preview
-  '((t :background "blue4"
-       :foreground "wheat"))
+  '((((background light))
+     :inherit company-tooltip-selection)
+    (((background dark))
+     :background "blue4"
+     :foreground "wheat"))
   "Face used for the completion preview.")
 
 (defface company-preview-common
-  '((t :inherit company-preview
-       :foreground "red"))
+  '((((background light))
+     :inherit company-tooltip-selection)
+    (((background dark))
+     :inherit company-preview
+     :foreground "red"))
   "Face used for the common part of the completion preview.")
 
 (defface company-preview-search
-  '((t :inherit company-preview
-       :background "blue1"))
+  '((((background light))
+     :inherit company-tooltip-common-selection)
+    (((background dark))
+     :inherit company-preview
+     :background "blue1"))
   "Face used for the search string in the completion preview.")
 
 (defface company-echo nil

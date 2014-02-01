@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-preview*` faces inherit from `company-tooltip-selection` and
+  `company-tooltip-common-selection` on light themes.
 * `company-preview-frontend` renders itself after the cursor.
 * New user option `company-transformers`.
 * First transformer, `company-sort-by-occurrence`.
