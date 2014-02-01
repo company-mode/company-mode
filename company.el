@@ -945,8 +945,8 @@ Keywords and function definition names are ignored."
            (lambda (candidate)
              (when (or
                     (save-excursion
-                      (and (zerop (forward-line -1))
-                           (search-backward candidate (window-start) t)))
+                      (progn (forward-line 0)
+                             (search-backward candidate (window-start) t)))
                     (save-excursion
                       (search-forward candidate (window-end) t)))
                (let ((beg (match-beginning 0))
