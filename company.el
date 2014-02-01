@@ -923,7 +923,7 @@ can retrieve meta-data for them."
       (if (or (cdr candidates)
               (not (eq t (compare-strings (car candidates) nil nil
                                           prefix nil nil ignore-case))))
-          (company--transform-candidates candidates)
+          candidates
         ;; Already completed and unique; don't start.
         t))))
 
