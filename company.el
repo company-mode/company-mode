@@ -2120,9 +2120,9 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-preview-show-at-point (pos)
   (company-preview-hide)
 
-  (setq company-preview-overlay (make-overlay pos pos))
+  (setq company-preview-overlay (make-overlay pos (1+ pos)))
 
-  (let ((completion(nth company-selection company-candidates)))
+  (let ((completion (nth company-selection company-candidates)))
     (setq completion (propertize completion 'face 'company-preview))
     (add-text-properties 0 (length company-common)
                          '(face company-preview-common) completion)
@@ -2141,7 +2141,9 @@ Returns a negative number if the tooltip should be displayed above point."
          (not (equal completion ""))
          (add-text-properties 0 1 '(cursor t) completion))
 
-    (overlay-put company-preview-overlay 'after-string completion)
+    (overlay-put company-preview-overlay 'display
+                 (concat completion (unless (eq pos (point-max))
+                                      (buffer-substring pos (1+ pos)))))
     (overlay-put company-preview-overlay 'window (selected-window))))
 
 (defun company-preview-hide ()
