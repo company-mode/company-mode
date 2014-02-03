@@ -90,7 +90,7 @@ Requires Emacs 24.1 or newer."
             (text-property-not-all start (length arg)
                                    'face value arg))
           (length arg)))))
-    (`duplicates t) ;Don't bother.
+    (`duplicates t)
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.
     (`meta
