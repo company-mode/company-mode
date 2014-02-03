@@ -90,8 +90,9 @@ Requires Emacs 24.1 or newer."
             (text-property-not-all start (length arg)
                                    'face value arg))
           (length arg)))))
-    (`duplicates nil) ;Don't bother.
-    (`no-cache t)     ;FIXME: Improve!
+    (`duplicates t) ;Don't bother.
+    (`no-cache t)   ;Not much can be done here, as long as we handle
+                    ;non-prefix matches.
     (`meta
      (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-docsig)))
        (when f (funcall f arg))))
