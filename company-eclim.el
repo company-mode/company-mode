@@ -66,9 +66,6 @@ eclim can only complete correctly when the buffer has been saved."
 (defvar company-eclim--project-name nil)
 (make-variable-buffer-local 'company-eclim--project-name)
 
-(defvar company-eclim--doc nil)
-(make-variable-buffer-local 'company-eclim--doc)
-
 (declare-function json-read "json")
 (defvar json-array-type)
 
@@ -110,7 +107,8 @@ eclim can only complete correctly when the buffer has been saved."
 (defun company-eclim--candidates (prefix)
   (interactive "d")
   (let ((project-file (file-relative-name buffer-file-name
-                                          (company-eclim--project-dir))))
+                                          (company-eclim--project-dir)))
+        completions)
     (when company-eclim-auto-save
       (when (buffer-modified-p)
         (basic-save-buffer))
@@ -118,8 +116,6 @@ eclim can only complete correctly when the buffer has been saved."
       (company-eclim--call-process "java_src_update"
                                    "-p" (company-eclim--project-name)
                                    "-f" project-file))
-    (setq company-eclim--doc
-          (make-hash-table :test 'equal))
     (dolist (item (cdr (assoc 'completions
                               (company-eclim--call-process
                                "java_complete" "-p" (company-eclim--project-name)
@@ -130,11 +126,12 @@ eclim can only complete correctly when the buffer has been saved."
                                "-l" "standard"))))
       (let* ((meta (cdr (assoc 'info item)))
              (completion meta))
-        (when (string-match " [:-]" completion)
+        (when (string-match " ?[(:-]" completion)
           (setq completion (substring completion 0 (match-beginning 0))))
-        (puthash completion meta company-eclim--doc))))
-  (let ((completion-ignore-case nil))
-    (all-completions prefix company-eclim--doc)))
+        (put-text-property 0 1 'meta meta completion)
+        (push completion completions)))
+    (let ((completion-ignore-case nil))
+      (all-completions prefix completions))))
 
 (defun company-eclim--search-point (prefix)
   (if (or (plusp (length prefix)) (eq (char-before) ?.))
@@ -142,7 +139,12 @@ eclim can only complete correctly when the buffer has been saved."
     (point)))
 
 (defun company-eclim--meta (candidate)
-  (gethash candidate company-eclim--doc))
+  (get-text-property 0 'meta candidate))
+
+(defun company-eclim--annotation (candidate)
+  (let ((meta (company-eclim--meta candidate)))
+    (when (string-match "\\(([^-]*\\) -" meta)
+      (substring meta (match-beginning 1) (match-end 1)))))
 
 (defun company-eclim--prefix ()
   (let ((prefix (company-grab-symbol)))
@@ -173,10 +175,11 @@ Completions only work correctly when the buffer has been saved.
     (meta (company-eclim--meta arg))
     ;; because "" doesn't return everything
     (no-cache (equal arg ""))
-    (crop (when (string-match "(" arg)
-            (substring arg 0 (match-beginning 0))))
-    (post-completion (when (string-match "([^)]" arg)
-                       (company-template-c-like-templatify arg)))))
+    (annotation (company-eclim--annotation arg))
+    (post-completion (let ((anno (company-eclim--annotation arg)))
+                       (when anno
+                         (insert anno)
+                         (company-template-c-like-templatify anno))))))
 
 (provide 'company-eclim)
 ;;; company-eclim.el ends here

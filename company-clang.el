@@ -109,8 +109,6 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 (defconst company-clang--error-buffer-name "*clang error*")
 
-(defvar company-clang--meta-cache nil)
-
 (defun company-clang--lang-option ()
      (if (eq major-mode 'objc-mode)
          (if (string= "m" (file-name-extension buffer-file-name))
@@ -123,18 +121,31 @@ or automatically through a custom `company-clang-prefix-guesser'."
                          (regexp-quote prefix)))
         (case-fold-search nil)
         lines match)
-    (setq company-clang--meta-cache (make-hash-table :test 'equal))
     (while (re-search-forward pattern nil t)
       (setq match (match-string-no-properties 1))
       (unless (equal match "Pattern")
+        (save-match-data
+          (when (string-match ":" match)
+            (setq match (substring match 0 (match-beginning 0)))))
         (let ((meta (match-string-no-properties 2)))
           (when (and meta (not (string= match meta)))
-            (setq meta (company-clang--strip-formatting meta))
-            (when (and (not objc) (string-match "\\((.*)\\)" meta))
-              (setq match (concat match (match-string 1 meta))))
-            (puthash match meta company-clang--meta-cache)))
+            (put-text-property 0 1 'meta
+                               (company-clang--strip-formatting meta)
+                               match)))
         (push match lines)))
     lines))
+
+(defun company-clang--meta (candidate)
+  (get-text-property 0 'meta candidate))
+
+(defun company-clang--annotation (candidate)
+  (let ((meta (company-clang--meta candidate)))
+    (cond
+     ((null meta) nil)
+     ((string-match ":" meta)
+      (substring meta (match-beginning 0)))
+     ((string-match "\\((.*)\\'\\)" meta)
+      (match-string 1 meta)))))
 
 (defun company-clang--strip-formatting (text)
   (replace-regexp-in-string
@@ -243,13 +254,15 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 (defun company-clang-objc-templatify (selector)
   (let* ((end (point-marker))
-         (beg (- (point) (length selector)))
+         (beg (- (point) (length selector) 1))
          (templ (company-template-declare-template beg end))
          (cnt 0))
     (save-excursion
       (goto-char beg)
       (catch 'stop
         (while (search-forward ":" end t)
+          (when (looking-at "([^)]*) ?")
+            (delete-region (match-beginning 0) (match-end 0)))
           (company-template-add-field templ (point) (format "arg%d" cnt))
           (if (< (point) end)
               (insert " ")
@@ -284,14 +297,14 @@ passed via standard input."
                  (not (company-in-string-or-comment))
                  (company-clang--prefix)))
     (candidates (company-clang--candidates arg))
-    (meta (gethash arg company-clang--meta-cache))
-    (crop (and (string-match ":\\|(" arg)
-               (substring arg 0 (match-beginning 0))))
-    (post-completion (cond
-                      ((not (derived-mode-p 'objc-mode))
-                       (company-template-c-like-templatify arg))
-                      ((string-match ":" arg)
-                       (company-clang-objc-templatify arg))))))
+    (meta       (company-clang--meta arg))
+    (annotation (company-clang--annotation arg))
+    (post-completion (let ((anno (company-clang--annotation arg)))
+                       (when anno
+                         (insert anno)
+                         (if (string-match ":" anno)
+                             (company-clang-objc-templatify anno)
+                          (company-template-c-like-templatify anno)))))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here

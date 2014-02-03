@@ -2,6 +2,9 @@
 
 ## Next
 
+* New back-end command, `annotation`, for text displayed inline in the popup
+  that's not a part of completion candidate.
+* `company-capf`, `company-clang` and `company-eclim` use `annotation`.
 * `company-preview*` faces inherit from `company-tooltip-selection` and
   `company-tooltip-common-selection` on light themes.
 * New user option `company-transformers`.

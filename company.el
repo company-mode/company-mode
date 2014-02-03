@@ -123,6 +123,14 @@
      :foreground "red"))
   "Face used for the selected common completion in the tooltip.")
 
+(defface company-tooltip-annotation
+  '((default :inherit company-tooltip)
+    (((background light))
+     :foreground "firebrick4")
+    (((background dark))
+     :foreground "red4"))
+  "Face used for the annotation in the tooltip.")
+
 (defface company-scrollbar-fg
   '((((background light))
      :background "darkred")
@@ -334,6 +342,13 @@ buffer with documentation for it.  Preferably use `company-doc-buffer',
 `location': The second argument is a completion candidate.  Return the cons
 of buffer and buffer location, or of file and line number where the
 completion candidate was defined.
+
+`annotation': The second argument is a completion candidate.  Returns a
+string to be displayed inline with the candidate in the popup.  If
+duplicates are removed by company, candidates with equal string values will
+be kept if they have different annotations.  For that to work properly,
+backends should store the related information with candidates using text
+properties.
 
 `require-match': If this returns t, the user is not allowed to enter
 anything not offered as a candidate.  Use with care!  The default value nil
@@ -787,8 +802,8 @@ Controlled by `company-auto-complete'.")
   (substring str (length company-prefix)))
 
 (defun company--insert-candidate (candidate)
+  (setq candidate (substring-no-properties candidate))
   ;; XXX: Return value we check here is subject to change.
-  (set-text-properties 0 (length candidate) nil candidate)
   (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
       (insert (company-strip-prefix candidate))
     (delete-region (- (point) (length company-prefix)) (point))
@@ -883,10 +898,16 @@ can retrieve meta-data for them."
     (setq company-common
           (if (cdr company-candidates)
               (company--safe-candidate
-               (try-completion company-prefix company-candidates))
+               (let ((common (try-completion company-prefix company-candidates)))
+                 (if (eq common t)
+                     ;; Mulple equal strings, probably with different
+                     ;; annotations.
+                     company-prefix
+                   common)))
             (car company-candidates)))))
 
 (defun company--safe-candidate (str)
+  ;; XXX: This feature is deprecated.
   (or (company-call-backend 'crop str)
       str))
 
@@ -913,11 +934,7 @@ can retrieve meta-data for them."
           (unless (company-call-backend 'sorted)
             (setq candidates (sort candidates 'string<)))
           (when (company-call-backend 'duplicates)
-            ;; strip duplicates
-            (let ((c2 candidates))
-              (while c2
-                (setcdr c2 (progn (while (equal (pop c2) (car c2)))
-                                  c2)))))))
+            (company--strip-duplicates candidates))))
     (setq candidates (company--transform-candidates candidates))
     (when candidates
       (if (or (cdr candidates)
@@ -926,6 +943,25 @@ can retrieve meta-data for them."
           candidates
         ;; Already completed and unique; don't start.
         t))))
+
+(defun company--strip-duplicates (candidates)
+  (let ((c2 candidates))
+    (while c2
+      (setcdr c2
+              (let ((str (car c2))
+                    (anno 'unk))
+                (pop c2)
+                (while (let ((str2 (car c2)))
+                         (if (not (equal str str2))
+                             nil
+                           (when (eq anno 'unk)
+                             (setq anno (company-call-backend
+                                         'annotation str)))
+                           (equal anno
+                                  (company-call-backend
+                                   'annotation str2))))
+                  (pop c2))
+                c2)))))
 
 (defun company--transform-candidates (candidates)
   (let ((c candidates))
@@ -1593,7 +1629,7 @@ To show the number next to the candidates in some back-ends, enable
 
 (defun company-fetch-metadata ()
   (let ((selected (nth company-selection company-candidates)))
-    (unless (equal selected (car company-last-metadata))
+    (unless (eq selected (car company-last-metadata))
       (setq company-last-metadata
             (cons selected (company-call-backend 'meta selected))))
     (cdr company-last-metadata)))
@@ -1774,20 +1810,16 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (pop copy))
     (apply 'concat pieces)))
 
-(defun company--highlight-common (line properties)
-  ;; XXX: Subject to change.
-  (let ((common (or (company-call-backend 'common-part line)
-                    (length company-common))))
-    (add-text-properties 0 common properties line)))
-
-(defun company-fill-propertize (line width selected)
-  (let* ((margin company-tooltip-margin)
-         (common (+ (or (company-call-backend 'common-part line)
-                        (length company-common)) margin)))
-    (setq line (concat (company-space-string company-tooltip-margin)
-                       (company-safe-substring
-                        line 0 (+ width company-tooltip-margin)))
-          width (+ width (* 2 margin)))
+(defun company-fill-propertize (value annotation width selected left right)
+  (let* ((margin (length left))
+         (common (+ (or (company-call-backend 'common-part value)
+                        (length company-common)) margin))
+         (ann-start (+ margin (length value)))
+         (line (concat left
+                       (company-safe-substring (concat value annotation)
+                                               0 width)
+                       right)))
+    (setq width (+ width margin (length right)))
 
     (add-text-properties 0 width '(face company-tooltip
                                    mouse-face company-tooltip-mouse)
@@ -1796,16 +1828,20 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
                          '(face company-tooltip-common
                            mouse-face company-tooltip-mouse)
                          line)
+    (add-text-properties ann-start (+ ann-start (length annotation))
+                         '(face company-tooltip-annotation
+                           mouse-face company-tooltip-mouse)
+                         line)
     (when selected
       (if (and company-search-string
-               (string-match (regexp-quote company-search-string) line
+               (string-match (regexp-quote company-search-string) value
                              (length company-prefix)))
-          (progn
-            (add-text-properties (match-beginning 0) (match-end 0)
-                                 '(face company-tooltip-selection)
+          (let ((beg (+ margin (match-beginning 0)))
+                (end (+ margin (match-end 0))))
+            (add-text-properties beg end '(face company-tooltip-selection)
                                  line)
-            (when (< (match-beginning 0) common)
-              (add-text-properties (match-beginning 0) common
+            (when (< beg common)
+              (add-text-properties beg common
                                    '(face company-tooltip-common-selection)
                                    line)))
         (add-text-properties 0 width '(face company-tooltip-selection
@@ -1814,8 +1850,8 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
         (add-text-properties margin common
                              '(face company-tooltip-common-selection
                                mouse-face company-tooltip-selection)
-                             line))))
-  line)
+                             line)))
+    line))
 
 ;;; replace
 
@@ -1888,17 +1924,16 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     line))
 
 (defun company--create-lines (selection limit)
-
   (let ((len company-candidates-length)
         (numbered 99999)
         (window-width (company--window-width))
         lines
         width
         lines-copy
+        items
         previous
         remainder
-        scrollbar-bounds
-        new)
+        scrollbar-bounds)
 
     ;; Maybe clear old offset.
     (when (<= len (+ company-tooltip-offset limit))
@@ -1930,40 +1965,49 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (when scrollbar-bounds (decf window-width))
 
     (dotimes (_ len)
-      (setq width (max (length (pop lines-copy)) width)))
+      (let* ((value (pop lines-copy))
+             (annotation (company-call-backend 'annotation value)))
+        (push (cons value annotation) items)
+        (setq width (max (+ (length value) (length annotation)) width))))
+
     (setq width (min window-width
                      (if (and company-show-numbers
                               (< company-tooltip-offset 10))
                          (+ 2 width)
                        width)))
-    (setq lines-copy lines)
 
     ;; number can make tooltip too long
     (when company-show-numbers
       (setq numbered company-tooltip-offset))
 
-    (when previous
-      (push (company--scrollpos-line previous width) new))
+    (let ((items (nreverse items)) new)
+      (when previous
+        (push (company--scrollpos-line previous width) new))
 
-    (dotimes (i len)
-      (let ((line (company-fill-propertize
-                   (if (>= numbered 10)
-                       (company-reformat (pop lines))
-                     (incf numbered)
-                     (format "%s %d"
-                             (company-safe-substring
-                              (company-reformat (pop lines)) 0 (- width 2))
-                             (mod numbered 10)))
-                   width (equal i selection))))
-        (push (if scrollbar-bounds
-                  (company--scrollbarize line i scrollbar-bounds)
-                line)
-              new)))
+      (dotimes (i len)
+        (let* ((item (pop items))
+               (str (company-reformat (car item)))
+               (annotation (cdr item))
+               (right (company-space-string company-tooltip-margin))
+               (width width))
+          (when (< numbered 10)
+            (decf width 2)
+            (incf numbered)
+            (setq right (concat (format " %d" (mod numbered 10)) right)))
+          (push (concat
+                 (company-fill-propertize str annotation
+                                          width (equal i selection)
+                                          (company-space-string
+                                           company-tooltip-margin)
+                                          right)
+                 (when scrollbar-bounds
+                   (company--scrollbar i scrollbar-bounds)))
+                new)))
 
-    (when remainder
-      (push (company--scrollpos-line remainder width) new))
+      (when remainder
+        (push (company--scrollpos-line remainder width) new))
 
-    (setq lines (nreverse new))))
+      (nreverse new))))
 
 (defun company--scrollbar-bounds (offset limit length)
   (when (> length limit)
@@ -1972,12 +2016,11 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
            (upper (+ lower size -1)))
       (cons lower upper))))
 
-(defun company--scrollbarize (line i bounds)
-  (concat line
-          (propertize " " 'face
-                      (if (and (>= i (car bounds)) (<= i (cdr bounds)))
-                          'company-scrollbar-fg
-                        'company-scrollbar-bg))))
+(defun company--scrollbar (i bounds)
+  (propertize " " 'face
+              (if (and (>= i (car bounds)) (<= i (cdr bounds)))
+                  'company-scrollbar-fg
+                'company-scrollbar-bg)))
 
 (defun company--scrollpos-line (text width)
   (propertize (concat (company-space-string company-tooltip-margin)

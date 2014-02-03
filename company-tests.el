@@ -232,7 +232,7 @@
         (company-call 'open-line 1)
         (should (eq 2 (overlay-start company-pseudo-tooltip-overlay)))))))
 
-(ert-deftest company-pseudo-tooltip-overlay-show ()
+(ert-deftest company-pseudo-tooltip-show ()
   :tags '(interactive)
   (with-temp-buffer
     (save-window-excursion
@@ -251,6 +251,37 @@
         (should (eq (overlay-get ov 'company-column) col))
         (should (string= (overlay-get ov 'company-after)
                          "  123 \nc 45  c\nddd\n")))))))
+
+(ert-deftest company-preview-show-with-annotations ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (save-excursion (insert "\n"))
+      (let ((company-candidates-length 1)
+            (company-candidates '("123")))
+        (company-preview-show-at-point (point))
+        (let ((ov company-preview-overlay))
+          (should (string= (overlay-get ov 'display) "123\n")))))))
+
+(ert-deftest company-pseudo-tooltip-show-with-annotations ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (insert " ")
+      (save-excursion (insert "\n"))
+      (let ((company-candidates-length 2)
+            (company-backend (lambda (action &optional arg &rest _ignore)
+                               (when (eq action 'annotation)
+                                 (cdr (assoc arg '(("123" . "(4)")))))))
+            (company-candidates '("123" "45")))
+        (company-pseudo-tooltip-show-at-point (point))
+        (let ((ov company-pseudo-tooltip-overlay))
+          ;; With margins.
+          (should (eq (overlay-get ov 'company-width) 8))
+          (should (string= (overlay-get ov 'company-after)
+                           " 123(4) \n 45     \n")))))))
 
 (ert-deftest company-create-lines-shows-numbers ()
   (let ((company-show-numbers t)
