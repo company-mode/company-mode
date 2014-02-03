@@ -32,6 +32,7 @@
 (defvar company-template-nav-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap [tab] 'company-template-forward-field)
+    (define-key keymap (kbd "TAB") 'company-template-forward-field)
     keymap))
 
 (defvar company-template--buffer-templates nil)
