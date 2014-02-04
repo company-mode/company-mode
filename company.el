@@ -87,7 +87,9 @@
   :group 'matching)
 
 (defface company-tooltip
-  '((default :foreground "black")
+  '((default :foreground "black"
+      :weight normal
+      :underline nil :overline nil :strike-through nil)
     (((class color) (min-colors 88) (background light))
      (:background "cornsilk"))
     (((class color) (min-colors 88) (background dark))
@@ -495,10 +497,6 @@ treated as if it was on this list."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
-(defvar company-end-of-buffer-workaround t
-  "Work around a visualization bug when completing at the end of the buffer.
-The work-around consists of adding a newline.")
-
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-mode-map (make-sparse-keymap)
@@ -671,13 +669,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company--column (&optional pos)
   (save-excursion
     (when pos (goto-char pos))
-    (save-restriction
-      (+ (save-excursion
-           (vertical-motion 0)
-           (narrow-to-region (point) (point-max))
-           (let ((prefix (get-text-property (point) 'line-prefix)))
-             (if prefix (length prefix) 0)))
-         (current-column)))))
+    (car (posn-col-row (posn-at-point)))))
 
 (defun company--row (&optional pos)
   (save-excursion
@@ -794,9 +786,6 @@ Controlled by `company-auto-complete'.")
 (make-variable-buffer-local 'company-point)
 
 (defvar company-timer nil)
-
-(defvar company-added-newline nil)
-(make-variable-buffer-local 'company-added-newline)
 
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
@@ -1177,9 +1166,6 @@ Keywords and function definition names are ignored."
   (or (and company-candidates (company--continue))
       (and (company--should-complete) (company--begin-new)))
   (when company-candidates
-    (when (and company-end-of-buffer-workaround (eobp))
-      (save-excursion (insert "\n"))
-      (setq company-added-newline (buffer-chars-modified-tick)))
     (setq company-point (point)
           company--point-max (point-max))
     (company-ensure-emulation-alist)
@@ -1187,13 +1173,6 @@ Keywords and function definition names are ignored."
     (company-call-frontends 'update)))
 
 (defun company-cancel (&optional result)
-  (and company-added-newline
-       (> (point-max) (point-min))
-       (let ((tick (buffer-chars-modified-tick)))
-         (delete-region (1- (point-max)) (point-max))
-         (equal tick company-added-newline))
-       ;; Only set unmodified when tick remained the same since insert.
-       (set-buffer-modified-p nil))
   (when company-prefix
     (if (stringp result)
         (progn
@@ -1201,8 +1180,7 @@ Keywords and function definition names are ignored."
           (run-hook-with-args 'company-completion-finished-hook result)
           (company-call-backend 'post-completion result))
       (run-hook-with-args 'company-completion-cancelled-hook result)))
-  (setq company-added-newline nil
-        company-backend nil
+  (setq company-backend nil
         company-prefix nil
         company-candidates nil
         company-candidates-length nil
@@ -1459,6 +1437,12 @@ followed by `company-search-kill-others' after each input."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defvar company-pseudo-tooltip-overlay nil)
+(make-variable-buffer-local 'company-pseudo-tooltip-overlay)
+
+(defvar company-tooltip-offset 0)
+(make-variable-buffer-local 'company-tooltip-offset)
+
 (defun company-select-next ()
   "Select the next candidate in the list."
   (interactive)
@@ -1488,10 +1472,6 @@ and invoke the normal binding."
       (company-select-previous)
     (company-abort)
     (company--unread-last-input)))
-
-(defvar company-pseudo-tooltip-overlay)
-
-(defvar company-tooltip-offset)
 
 (defun company--inside-tooltip-p (event-col-row row height)
   (let* ((ovl company-pseudo-tooltip-overlay)
@@ -1759,12 +1739,6 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-pseudo-tooltip-overlay nil)
-(make-variable-buffer-local 'company-pseudo-tooltip-overlay)
-
-(defvar company-tooltip-offset 0)
-(make-variable-buffer-local 'company-tooltip-offset)
-
 (defun company-tooltip--lines-update-offset (selection num-lines limit)
   (decf limit 2)
   (setq company-tooltip-offset
@@ -1796,19 +1770,6 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 
 (defsubst company-round-tab (arg)
   (* (/ (+ arg tab-width) tab-width) tab-width))
-
-(defun company-plainify (str)
-  (let ((prefix (get-text-property 0 'line-prefix str)))
-    (when prefix ; Keep the original value unmodified, for no special reason.
-      (setq str (concat prefix str))
-      (remove-text-properties 0 (length str) '(line-prefix) str)))
-  (let* ((pieces (split-string str "\t"))
-         (copy pieces))
-    (while (cdr copy)
-      (setcar copy (company-safe-substring
-                    (car copy) 0 (company-round-tab (string-width (car copy)))))
-      (pop copy))
-    (apply 'concat pieces)))
 
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
@@ -1854,74 +1815,17 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     line))
 
 ;;; replace
-
-(defun company-buffer-lines (beg end)
-  (goto-char beg)
-  (let (lines)
-    (while (and (= 1 (vertical-motion 1))
-                (<= (point) end))
-      (let ((bound (min end (1- (point)))))
-        ;; A visual line can contain several physical lines (e.g. with outline's
-        ;; folding overlay).  Take only the first one.
-        (push (buffer-substring beg
-                                (save-excursion
-                                  (goto-char beg)
-                                  (re-search-forward "$" bound 'move)
-                                  (point)))
-              lines))
-      (setq beg (point)))
-    (unless (eq beg end)
-      (push (buffer-substring beg end) lines))
-    (nreverse lines)))
-
-(defun company-modify-line (old new offset)
-  (concat (company-safe-substring old 0 offset)
-          new
-          (company-safe-substring old (+ offset (length new)))))
-
-(defsubst company--length-limit (lst limit)
-  (if (nthcdr limit lst)
-      limit
-    (length lst)))
-
-(defun company--replacement-string (lines old column nl &optional align-top)
-  (decf column company-tooltip-margin)
-
-  (let ((width (length (car lines)))
-        (remaining-cols (- (+ (company--window-width) (window-hscroll))
-                           column)))
-    (when (> width remaining-cols)
-      (decf column (- width remaining-cols))))
-
-  (let ((offset (and (< column 0) (- column)))
-        new)
-    (when offset
-      (setq column 0))
-    (when align-top
-      ;; untouched lines first
-      (dotimes (_ (- (length old) (length lines)))
-        (push (pop old) new)))
-    ;; length into old lines.
-    (while old
-      (push (company-modify-line (pop old)
-                                 (company--offset-line (pop lines) offset)
-                                 column) new))
-    ;; Append whole new lines.
-    (while lines
-      (push (concat (company-space-string column)
-                    (company--offset-line (pop lines) offset))
-            new))
-
-    (let ((str (concat (when nl "\n")
-                       (mapconcat 'identity (nreverse new) "\n")
-                       "\n")))
-      (font-lock-append-text-property 0 (length str) 'face 'default str)
-      str)))
-
-(defun company--offset-line (line offset)
-  (if (and offset line)
-      (substring line offset)
-    line))
+(defsubst company--window-width ()
+  (- (window-width)
+     (cond
+      ((display-graphic-p) 0)
+      ;; Account for the line continuation column.
+      ((version< "24.3.1" emacs-version) 1)
+      ;; Emacs 24.3 and earlier included margins
+      ;; in window-width when in TTY.
+      (t (1+ (let ((margins (window-margins)))
+               (+ (or (car margins) 0)
+                  (or (cdr margins) 0))))))))
 
 (defun company--create-lines (selection limit)
   (let ((len company-candidates-length)
@@ -1968,7 +1872,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
       (let* ((value (pop lines-copy))
              (annotation (company-call-backend 'annotation value)))
         (push (cons value annotation) items)
-        (setq width (max (+ (length value) (length annotation)) width))))
+        (setq width (max (+ (string-width value) (length annotation)) width))))
 
     (setq width (min window-width
                      (if (and company-show-numbers
@@ -2034,18 +1938,6 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
   (let ((edges (window-inside-edges)))
     (- (nth 3 edges) (nth 1 edges))))
 
-(defsubst company--window-width ()
-  (- (window-width)
-     (cond
-      ((display-graphic-p) 0)
-      ;; Account for the line continuation column.
-      ((version< "24.3.1" emacs-version) 1)
-      ;; Emacs 24.3 and earlier included margins
-      ;; in window-width when in TTY.
-      (t (1+ (let ((margins (window-margins)))
-               (+ (or (car margins) 0)
-                  (or (cdr margins) 0))))))))
-
 (defun company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
 Returns a negative number if the tooltip should be displayed above point."
@@ -2056,37 +1948,94 @@ Returns a negative number if the tooltip should be displayed above point."
         (- (max 3 (min company-tooltip-limit lines)))
       (max 3 (min company-tooltip-limit below)))))
 
+(defun company--create-line-overlay (column width line &optional overlay)
+  "Creates an overlay on the current screen line for the given line of pseudo-tooltip.
+COLUMN is the desired starting column of tooltip. WIDTH is the
+desired width of tooltip. LINE is the formatted text content of
+the tooltip line. OVERLAY if non-nil must be an overlay object,
+in which case it will be reused instead of creating a new overlay
+object. Returns the overlay object, and moves point to the
+beginning of next screen line."
+  (vertical-motion 0)
+  (let* ((line-start (current-column))
+         (line-prefix-type (if (= line-start 0) 'line-prefix 'wrap-prefix))
+         (line-prefix (get-text-property (point) line-prefix-type))
+         (line-prefix-width (if line-prefix (string-width line-prefix) 0))
+         (start-column (+ line-start (- line-prefix-width) column))
+         (end-column (+ line-start (- line-prefix-width) column width))
+         screen-column beg pad-before pad-after protrude dangle)
+    (if (>= start-column line-start)
+        (move-to-column start-column)
+      (setq protrude (- line-start start-column)
+            start-column line-start))
+    (setq screen-column (current-column))
+    (when (> screen-column start-column)
+      (backward-char)
+      (setq screen-column (current-column)))
+    (when (< screen-column start-column)
+      (setq pad-before (make-string (- start-column screen-column) ? )))
+    (setq beg (point))
+    (move-to-column end-column)
+    (setq screen-column (current-column)
+          dangle (eolp))
+    (setq pad-after
+          (if (> screen-column end-column)
+              (make-string (- screen-column end-column) ? )
+            ""))
+    (if overlay
+        (move-overlay overlay beg (point))
+      (setq overlay (make-overlay beg (point))))
+    (vertical-motion 1)
+    (overlay-put overlay 'company-before pad-before)
+    (overlay-put overlay 'company-after pad-after)
+    (overlay-put overlay 'company-line line)
+    (overlay-put overlay 'company-line-start line-start)
+    (overlay-put overlay 'company-prefix-width line-prefix-width)
+    (overlay-put overlay 'company-protrude protrude)
+    (overlay-put overlay 'company-dangle dangle)
+    (overlay-put overlay 'priority 100)
+    overlay))
+
 (defun company-pseudo-tooltip-show (row column selection)
   (company-pseudo-tooltip-hide)
   (save-excursion
-
     (let* ((height (company--pseudo-tooltip-height))
-           above)
+           (nrow (if (< height 0)
+                     (+ row height -1)
+                   row))
+           (lines (company--create-lines selection (abs height)))
+           (aline (car lines))
+           (width (if aline (string-width aline) 0))
+           (beg (progn
+                  (move-to-window-line nrow)
+                  (point)))
+           (end (save-excursion
+                  (move-to-window-line (+ nrow (abs height)))
+                  (point)))
+           (pad (- height (count-screen-lines beg end)))
+           (padend (if (> pad 0)
+                     (save-excursion
+                       (let ((buffer-undo-list t)
+                             (modified (buffer-modified-p))
+                             (inhibit-modification-hooks t)
+                             (inhibit-point-motion-hooks t))
+                         (goto-char (point-max))
+                         (insert (make-string pad ?\n))
+                         (set-buffer-modified-p modified)
+                         (point)))
+                     end))
+           (ovl (make-overlay beg padend))
+           (line-overlays
+            (mapcar
+             (apply-partially 'company--create-line-overlay column width)
+             lines)))
 
-      (when (< height 0)
-        (setq row (+ row height -1)
-              above t))
-
-      (let* ((nl (< (move-to-window-line row) row))
-             (beg (point))
-             (end (save-excursion
-                    (move-to-window-line (+ row (abs height)))
-                    (point)))
-             (ov (make-overlay beg end))
-             (args (list (mapcar 'company-plainify
-                                 (company-buffer-lines beg end))
-                         column nl above)))
-
-        (setq company-pseudo-tooltip-overlay ov)
-        (overlay-put ov 'company-replacement-args args)
-
-        (let ((lines (company--create-lines selection (abs height))))
-          (overlay-put ov 'company-after
-                       (apply 'company--replacement-string lines args))
-          (overlay-put ov 'company-width (string-width (car lines))))
-
-        (overlay-put ov 'company-column column)
-        (overlay-put ov 'company-height height)))))
+      (overlay-put ovl 'company-width width)
+      (overlay-put ovl 'company-height height)
+      (overlay-put ovl 'company-column column)
+      (overlay-put ovl 'company-newlines-padded pad)
+      (overlay-put ovl 'company-line-overlays line-overlays)
+      (setq company-pseudo-tooltip-overlay ovl))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
   (let ((row (company--row pos))
@@ -2094,34 +2043,83 @@ Returns a negative number if the tooltip should be displayed above point."
     (company-pseudo-tooltip-show (1+ row) col company-selection)))
 
 (defun company-pseudo-tooltip-edit (selection)
-  (let ((height (overlay-get company-pseudo-tooltip-overlay 'company-height)))
-    (overlay-put company-pseudo-tooltip-overlay 'company-after
-                 (apply 'company--replacement-string
-                        (company--create-lines selection (abs height))
-                        (overlay-get company-pseudo-tooltip-overlay
-                                     'company-replacement-args)))))
+  (assert (overlayp company-pseudo-tooltip-overlay))
+  (let* ((height (overlay-get company-pseudo-tooltip-overlay 'company-height))
+         (column (overlay-get company-pseudo-tooltip-overlay 'company-column))
+         (oldwidth (overlay-get company-pseudo-tooltip-overlay 'company-width))
+         (ovls (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays))
+         (nls (overlay-get company-pseudo-tooltip-overlay 'company-newlines-padded))
+         (lines (company--create-lines selection (abs height)))
+         (aline (car lines))
+         (width (if aline (string-width aline) 0)))
+    (save-excursion
+      (loop for ovl in ovls
+            do (let ((line (pop lines))
+                     (startpos (overlay-start ovl))
+                     (offset (overlay-get ovl 'company-line-start)))
+                 (overlay-put ovl 'company-line line)
+                 (when (and line
+                            (> (length line) 0)
+                            (or (not (= width oldwidth))
+                                (and (> nls 0) (not (= offset 0)))))
+                     (goto-char startpos)
+                     (company--create-line-overlay column width line ovl)))))
+    (overlay-put company-pseudo-tooltip-overlay 'company-width width)))
 
 (defun company-pseudo-tooltip-hide ()
   (when company-pseudo-tooltip-overlay
+    (let ((ovls (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays))
+          (padding (overlay-get company-pseudo-tooltip-overlay 'company-newlines-padded)))
+      (mapc 'delete-overlay ovls)
+      (when (> padding 0)
+        (let ((buffer-undo-list t)
+              (modified (buffer-modified-p))
+              (inhibit-modification-hooks t)
+              (inhibit-point-motion-hooks t))
+            (delete-region (- (point-max) padding) (point-max))
+            (set-buffer-modified-p modified))))
     (delete-overlay company-pseudo-tooltip-overlay)
     (setq company-pseudo-tooltip-overlay nil)))
 
+(defun company-pseudo-tooltip-hide-line (overlay)
+  (overlay-put overlay 'before-string nil)
+  (overlay-put overlay 'after-string nil)
+  (overlay-put overlay 'display nil))
+
 (defun company-pseudo-tooltip-hide-temporarily ()
-  (when (overlayp company-pseudo-tooltip-overlay)
-    (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
-    (overlay-put company-pseudo-tooltip-overlay 'line-prefix nil)
-    (overlay-put company-pseudo-tooltip-overlay 'after-string nil)))
+  (when company-pseudo-tooltip-overlay
+    (let ((ovls (overlay-get company-pseudo-tooltip-overlay
+                             'company-line-overlays)))
+      (mapc 'company-pseudo-tooltip-hide-line ovls))))
+
+(defun company-pseudo-tooltip-unhide-line (line-overlay)
+  (let ((before (overlay-get line-overlay 'company-before))
+        (after (overlay-get line-overlay 'company-after))
+        (line (overlay-get line-overlay 'company-line))
+        (offset (overlay-get line-overlay 'company-line-start))
+        (protrude (overlay-get line-overlay 'company-protrude))
+        (dangle (overlay-get line-overlay 'company-dangle)))
+    (when (and (stringp line)
+               (> (length line) 0))
+      (overlay-put line-overlay 'display "")
+      (if (not protrude)
+          (overlay-put line-overlay (if dangle 'after-string 'display)
+                       (concat before line after))
+        (let* ((prefix-width (overlay-get line-overlay 'company-prefix-width))
+               (prefix (concat (make-string (- prefix-width protrude) ? )
+                               (substring line 0 protrude))))
+          (overlay-put line-overlay
+                       (if (= offset 0) 'line-prefix 'wrap-prefix)
+                       prefix)
+          (overlay-put line-overlay (if dangle 'after-string 'display)
+                       (concat before
+                               (substring line protrude)
+                               after)))))))
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
-    (overlay-put company-pseudo-tooltip-overlay 'invisible t)
-    ;; Beat outline's folding overlays, at least.
-    (overlay-put company-pseudo-tooltip-overlay 'priority 1)
-    ;; No (extra) prefix for the first line.
-    (overlay-put company-pseudo-tooltip-overlay 'line-prefix "")
-    (overlay-put company-pseudo-tooltip-overlay 'after-string
-                 (overlay-get company-pseudo-tooltip-overlay 'company-after))
-    (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))
+    (let ((ovls (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays)))
+      (mapc 'company-pseudo-tooltip-unhide-line ovls))))
 
 (defun company-pseudo-tooltip-guard ()
   (buffer-substring-no-properties

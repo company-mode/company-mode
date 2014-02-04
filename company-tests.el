@@ -237,20 +237,23 @@
   (with-temp-buffer
     (save-window-excursion
     (set-window-buffer nil (current-buffer))
-    (insert "aaaa\n  bb\nccccccc\nddd")
+    (setq tab-width 8)
+    (insert "aaaa\n  bb\n\tccccccc\nddd")
     (search-backward "bb")
     (let ((col (company--column))
-          (company-candidates-length 2)
-          (company-candidates '("123" "45")))
+          (company-candidates-length 3)
+          (company-candidates '("123" "45" "67890")))
       (company-pseudo-tooltip-show (company--row) col 0)
       (let ((ov company-pseudo-tooltip-overlay))
         ;; With margins.
-        (should (eq (overlay-get ov 'company-width) 5))
+        (should (eq (overlay-get ov 'company-width) 7))
         ;; FIXME: Make it 2?
         (should (eq (overlay-get ov 'company-height) company-tooltip-limit))
         (should (eq (overlay-get ov 'company-column) col))
-        (should (string= (overlay-get ov 'company-after)
-                         "  123 \nc 45  c\nddd\n")))))))
+        )
+      (company-pseudo-tooltip-hide)
+      (should (string= (buffer-substring-no-properties (point-min) (point-max))
+                       "aaaa\n  bb\n\tccccccc\nddd"))))))
 
 (ert-deftest company-preview-show-with-annotations ()
   :tags '(interactive)
@@ -277,11 +280,12 @@
                                  (cdr (assoc arg '(("123" . "(4)")))))))
             (company-candidates '("123" "45")))
         (company-pseudo-tooltip-show-at-point (point))
-        (let ((ov company-pseudo-tooltip-overlay))
+        (let ((ov company-pseudo-tooltip-overlay)
+              (lines (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays)))
           ;; With margins.
           (should (eq (overlay-get ov 'company-width) 8))
-          (should (string= (overlay-get ov 'company-after)
-                           " 123(4) \n 45     \n")))))))
+          (should (string= (overlay-get (pop lines) 'company-line) " 123(4) "))
+          (should (string= (overlay-get (pop lines) 'company-line) " 45     ")))))))
 
 (ert-deftest company-create-lines-shows-numbers ()
   (let ((company-show-numbers t)
@@ -289,48 +293,6 @@
         (company-candidates-length 3))
     (should (equal '(" x 1 " " y 2 " " z 3 ")
                    (company--create-lines 0 999)))))
-
-(ert-deftest company-column-with-composition ()
-  (with-temp-buffer
-    (insert "lambda ()")
-    (compose-region 1 (1+ (length "lambda")) "\\")
-    (should (= (company--column) 4))))
-
-(ert-deftest company-column-with-line-prefix ()
-  (with-temp-buffer
-    (insert "foo")
-    (put-text-property (point-min) (point) 'line-prefix "  ")
-    (should (= (company--column) 5))))
-
-(ert-deftest company-column-wth-line-prefix-on-empty-line ()
-  (with-temp-buffer
-    (insert "\n")
-    (forward-char -1)
-    (put-text-property (point-min) (point-max) 'line-prefix "  ")
-    (should (= (company--column) 2))))
-
-(ert-deftest company-plainify ()
-  (let ((tab-width 8))
-    (should (equal-including-properties
-             (company-plainify "\tabc\td\t")
-             (concat "        "
-                     "abc     "
-                     "d       "))))
-  (should (equal-including-properties
-           (company-plainify (propertize "foobar" 'line-prefix "-*-"))
-           "-*-foobar")))
-
-(ert-deftest company-modify-line ()
-  (let ((str "-*-foobar"))
-    (should (equal-including-properties
-             (company-modify-line str "zz" 4)
-             "-*-fzzbar"))
-    (should (equal-including-properties
-             (company-modify-line str "xx" 0)
-             "xx-foobar"))
-    (should (equal-including-properties
-             (company-modify-line str "zz" 10)
-             "-*-foobar zz"))))
 
 (ert-deftest company-scrollbar-bounds ()
   (should (equal nil (company--scrollbar-bounds 0 3 3)))
