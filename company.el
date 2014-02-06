@@ -1177,9 +1177,11 @@ Keywords and function definition names are ignored."
   (or (and company-candidates (company--continue))
       (and (company--should-complete) (company--begin-new)))
   (when company-candidates
-    (when (and company-end-of-buffer-workaround (eobp))
-      (save-excursion (insert "\n"))
-      (setq company-added-newline (buffer-chars-modified-tick)))
+    (let ((modified (buffer-modified-p)))
+      (when (and company-end-of-buffer-workaround (eobp))
+        (save-excursion (insert "\n"))
+        (setq company-added-newline
+              (or modified (buffer-chars-modified-tick)))))
     (setq company-point (point)
           company--point-max (point-max))
     (company-ensure-emulation-alist)
@@ -1192,7 +1194,8 @@ Keywords and function definition names are ignored."
        (let ((tick (buffer-chars-modified-tick)))
          (delete-region (1- (point-max)) (point-max))
          (equal tick company-added-newline))
-       ;; Only set unmodified when tick remained the same since insert.
+       ;; Only set unmodified when tick remained the same since insert,
+       ;; and the buffer wasn't modified before.
        (set-buffer-modified-p nil))
   (when company-prefix
     (if (stringp result)
