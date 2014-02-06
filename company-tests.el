@@ -230,7 +230,10 @@
         (let (this-command)
           (company-call 'complete))
         (company-call 'open-line 1)
-        (should (eq 2 (overlay-start company-pseudo-tooltip-overlay)))))))
+        (let ((lines (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays)))
+          (should (eq 2 (overlay-start (pop lines))))
+          (should (eq 6 (overlay-start (pop lines))))
+          (should (eq 7 (overlay-start (pop lines)))))))))
 
 (ert-deftest company-pseudo-tooltip-show ()
   :tags '(interactive)
@@ -243,7 +246,7 @@
     (let ((col (company--column))
           (company-candidates-length 3)
           (company-candidates '("123" "45" "67890")))
-      (company-pseudo-tooltip-show (company--row) col 0)
+      (company-pseudo-tooltip-show-at-point (point))
       (let ((ov company-pseudo-tooltip-overlay))
         ;; With margins.
         (should (eq (overlay-get ov 'company-width) 7))
