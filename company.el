@@ -2125,8 +2125,13 @@ beginning of next screen line."
           (overlay-put line-overlay (if dangle 'after-string 'display)
                        (concat before line after))
         (when (> prefix-width 0)
-          (let ((prefix (concat (make-string (- prefix-width protrude) ? )
-                                (substring line 0 protrude))))
+          (let ((prefix
+                 (concat (make-string
+                          (max 0 (- prefix-width protrude))
+                          ? )
+                         (substring line
+                                    (max 0 (- protrude prefix-width))
+                                    protrude))))
             (overlay-put line-overlay
                          (if (= offset 0) 'line-prefix 'wrap-prefix)
                          prefix)))
