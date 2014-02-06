@@ -669,7 +669,8 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company--column (&optional pos)
   (save-excursion
     (when pos (goto-char pos))
-    (car (posn-col-row (posn-at-point)))))
+    (+ (car (posn-col-row (posn-at-point)))
+       (window-hscroll))))
 
 (defun company--row (&optional pos)
   (save-excursion
@@ -1984,7 +1985,8 @@ beginning of next screen line."
             ""))
     (if overlay
         (move-overlay overlay beg (point))
-      (setq overlay (make-overlay beg (point))))
+      (setq overlay (make-overlay beg (point)))
+      (overlay-put overlay 'window (selected-window)))
     (vertical-motion 0)
     (when (= (current-column) line-start)
       (vertical-motion 1))
@@ -2000,7 +2002,7 @@ beginning of next screen line."
 
 (defsubst company--adjust-column (column width)
   (let* ((window-width (company--window-width))
-         (over (- (+ column width) window-width)))
+         (over (- (+ column width) (window-hscroll) window-width)))
     (if (> over 0)
         (- column over company-tooltip-margin)
       (- column company-tooltip-margin))))
