@@ -1980,14 +1980,14 @@ beginning of next screen line."
       (backward-char)
       (setq screen-column (current-column)))
     (when (< screen-column start-column)
-      (setq pad-before (make-string (- start-column screen-column) ? )))
+      (setq pad-before (company-space-string (- start-column screen-column))))
     (setq beg (point))
     (move-to-column end-column)
     (setq screen-column (current-column)
           dangle (eolp))
     (setq pad-after
           (if (> screen-column end-column)
-              (make-string (- screen-column end-column) ? )
+              (company-space-string (- screen-column end-column))
             ""))
     (if overlay
         (move-overlay overlay beg (point))
@@ -2141,9 +2141,8 @@ display width of exactly WIDTH."
                        (concat before line after))
         (when (> prefix-width 0)
           (let ((prefix
-                 (concat (make-string
-                          (max 0 (- prefix-width protrude))
-                          ? )
+                 (concat (company-space-string
+                          (max 0 (- prefix-width protrude)))
                          (substring line
                                     (max 0 (- protrude prefix-width))
                                     protrude))))
