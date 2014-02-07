@@ -2165,7 +2165,9 @@ display width of exactly WIDTH."
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
-    (let ((ovls (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays)))
+    (let ((ovls (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays))
+          (inhibit-point-motion-hooks t)
+          (inhibit-modification-hooks t))
       (mapc 'company-pseudo-tooltip-unhide-line ovls))))
 
 (defun company-pseudo-tooltip-frontend (command)
