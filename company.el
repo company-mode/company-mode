@@ -2007,18 +2007,23 @@ beginning of next screen line."
         (- column over company-tooltip-margin)
       (- column company-tooltip-margin))))
 
-(defun company-pseudo-tooltip-show (row column height selection)
+(defun company-pseudo-tooltip-show (row column width height lines)
+  "Creates tooltip at specified coordinates.
+ROW and COLUMN specifies the window coordinate of the top or
+bottom left corner of tooltip, depending on HEIGHT. WIDTH and
+HEIGHT specifies the dimensions of tooltip. If HEIGHT is negative
+then tooltip grows upwards. LINES is a list of strings to be
+displayed in the tooltip. Each element of LINES should have a
+display width of exactly WIDTH."
   (company-pseudo-tooltip-hide)
   (save-excursion
-    (let* ((lines (company--create-lines selection height))
-           (aline (car lines))
-           (width (if aline (string-width aline) 0))
-           (adjcol (company--adjust-column column width))
+    (let* ((adjcol (company--adjust-column column width))
+           (firstrow (if (> height 0) row (+ row height)))
            (lastrow (progn
-                      (move-to-window-line (+ row height))
+                      (move-to-window-line (+ firstrow (abs height)))
                       (company--row)))
            (beg (point))
-           (pad (- (+ row height) lastrow))
+           (pad (- (+ firstrow (abs height)) lastrow))
            (modified (buffer-modified-p))
            (inhibit-point-motion-hooks t)
            (padstart (point-max))
@@ -2033,7 +2038,7 @@ beginning of next screen line."
            (ovl (make-overlay beg padend))
            (line-overlays
             (progn
-              (move-to-window-line row)
+              (move-to-window-line firstrow)
               (mapcar
                (apply-partially 'company--create-line-overlay adjcol width)
                lines))))
@@ -2048,13 +2053,17 @@ beginning of next screen line."
       (setq company-pseudo-tooltip-overlay ovl))))
 
 (defun company-pseudo-tooltip-show-at-point (pos)
-  (let ((row (1+ (company--row pos)))
-        (col (company--column pos))
-        (height (company--pseudo-tooltip-height)))
-    (when (< height 0)
-      (setq row (+ row height -1)
-            height (abs height)))
-    (company-pseudo-tooltip-show row col height company-selection)))
+  (let* ((row (1+ (company--row pos)))
+         (col (company--column pos))
+         (height (company--pseudo-tooltip-height))
+         (lines (company--create-lines company-selection (abs height)))
+         (aline (car lines))
+         (width (if aline (string-width aline) 0)))
+      (if (< height 0)
+          (setq height (- (length lines))
+                row (- row 1))
+        (setq height (length lines)))
+      (company-pseudo-tooltip-show row col width height lines)))
 
 (defun company-pseudo-tooltip-edit (selection)
   (let* ((height (overlay-get company-pseudo-tooltip-overlay 'company-height))
