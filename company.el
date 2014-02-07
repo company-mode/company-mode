@@ -2102,6 +2102,7 @@ display width of exactly WIDTH."
           (oldtick (overlay-get company-pseudo-tooltip-overlay 'company-tick))
           (tick (buffer-chars-modified-tick))
           (padding (overlay-get company-pseudo-tooltip-overlay 'company-newlines-padded)))
+      (mapc 'company-pseudo-tooltip-hide-line ovls)
       (mapc 'delete-overlay ovls)
       (delete-overlay company-pseudo-tooltip-overlay)
       (setq company-pseudo-tooltip-overlay nil)
@@ -2117,6 +2118,11 @@ display width of exactly WIDTH."
   (overlay-put overlay 'after-string nil)
   (overlay-put overlay 'line-prefix nil)
   (overlay-put overlay 'wrap-prefix nil)
+  (let ((restore (overlay-get overlay 'company-restore))
+        (pos (overlay-start overlay)))
+    (when restore
+      (put-text-property pos (1+ pos) (car restore) (cdr restore))))
+  (overlay-put overlay 'company-restore nil)
   (overlay-put overlay 'display nil))
 
 (defun company-pseudo-tooltip-hide-temporarily ()
@@ -2140,15 +2146,20 @@ display width of exactly WIDTH."
           (overlay-put line-overlay (if dangle 'after-string 'display)
                        (concat before line after))
         (when (> prefix-width 0)
-          (let ((prefix
-                 (concat (company-space-string
-                          (max 0 (- prefix-width protrude)))
-                         (substring line
-                                    (max 0 (- protrude prefix-width))
-                                    protrude))))
-            (overlay-put line-overlay
-                         (if (= offset 0) 'line-prefix 'wrap-prefix)
-                         prefix)))
+          (let* ((prefix
+                  (concat (company-space-string
+                           (max 0 (- prefix-width protrude)))
+                          (substring line
+                                     (max 0 (- protrude prefix-width))
+                                     protrude)))
+                 (start (overlay-start line-overlay))
+                 (end (overlay-end line-overlay))
+                 (type (if (= offset 0) 'line-prefix 'wrap-prefix))
+                 (prop (get-text-property start type)))
+            (if (> end start)
+                (overlay-put line-overlay type prefix)
+              (overlay-put line-overlay 'company-restore (cons type prop))
+              (put-text-property start (1+ start) type prefix))))
         (overlay-put line-overlay (if dangle 'after-string 'display)
                      (concat before (substring line protrude) after))))))
 
