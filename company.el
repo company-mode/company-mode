@@ -1605,6 +1605,12 @@ To show the number next to the candidates in some back-ends, enable
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defconst company--buffer-save-commands
+  (list 'save-buffer 'save-buffers-kill-emacs
+        'save-buffers-kill-terminal 'save-some-buffers)
+  "List of commands known to potentially save current buffer
+  contents to disk.")
+
 (defvar company-last-metadata nil)
 (make-variable-buffer-local 'company-last-metadata)
 
@@ -2155,14 +2161,17 @@ display width of exactly WIDTH."
 (defun company-pseudo-tooltip-frontend (command)
   "`company-mode' front-end similar to a tooltip but based on overlays."
   (case command
-    (pre-command (company-pseudo-tooltip-hide-temporarily))
+    (pre-command (if (memq this-command company--buffer-save-commands)
+                     (company-pseudo-tooltip-hide)
+                   (company-pseudo-tooltip-hide-temporarily)))
     (post-command
      (let ((old-height (if (overlayp company-pseudo-tooltip-overlay)
                            (overlay-get company-pseudo-tooltip-overlay
                                         'company-height)
                          0))
            (new-height (company--pseudo-tooltip-height)))
-       (unless (and (>= (* old-height new-height) 0)
+       (unless (and company-pseudo-tooltip-overlay
+                    (>= (* old-height new-height) 0)
                     (>= (abs old-height) (abs new-height))
                     (equal (buffer-chars-modified-tick)
                            (overlay-get company-pseudo-tooltip-overlay
