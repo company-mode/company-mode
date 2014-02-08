@@ -1087,26 +1087,25 @@ Keywords and function definition names are ignored."
               company-prefix)))
 
 (defun company--continue-failed ()
-  (when (company--incremental-p)
-    (let ((input (buffer-substring-no-properties (point) company-point)))
-      (cond
-       ((company-auto-complete-p input)
-        ;; auto-complete
-        (save-excursion
-          (goto-char company-point)
-          (let ((company--auto-completion t))
-            (company-complete-selection))
-          nil))
-       ((company-require-match-p)
-        ;; wrong incremental input, but required match
-        (delete-char (- (length input)))
-        (ding)
-        (message "Matching input is required")
-        company-candidates)
-       ((equal company-prefix (car company-candidates))
-        ;; last input was actually success
-        (company-cancel company-prefix)
-        nil)))))
+  (let ((input (buffer-substring-no-properties (point) company-point)))
+    (cond
+     ((company-auto-complete-p input)
+      ;; auto-complete
+      (save-excursion
+        (goto-char company-point)
+        (let ((company--auto-completion t))
+          (company-complete-selection))
+        nil))
+     ((company-require-match-p)
+      ;; wrong incremental input, but required match
+      (delete-char (- (length input)))
+      (ding)
+      (message "Matching input is required")
+      company-candidates)
+     ((equal company-prefix (car company-candidates))
+      ;; last input was actually success
+      (company-cancel company-prefix))
+     (t (company-cancel)))))
 
 (defun company--good-prefix-p (prefix)
   (and (or (company-explicit-action-p)
@@ -1127,18 +1126,18 @@ Keywords and function definition names are ignored."
                           (- company-point (length company-prefix))))
               (setq new-prefix (or (car-safe new-prefix) new-prefix))
               (company-calculate-candidates new-prefix))))
-    (or (cond
-         ((eq c t)
-          ;; t means complete/unique.
-          (company-cancel new-prefix)
-          nil)
-         ((consp c)
-          ;; incremental match
-          (setq company-prefix new-prefix)
-          (company-update-candidates c)
-          c)
-         (t (company--continue-failed)))
-        (company-cancel))))
+    (cond
+     ((eq c t)
+      ;; t means complete/unique.
+      (company-cancel new-prefix))
+     ((consp c)
+      ;; incremental match
+      (setq company-prefix new-prefix)
+      (company-update-candidates c)
+      c)
+     ((not (company--incremental-p))
+      (company-cancel))
+     (t (company--continue-failed)))))
 
 (defun company--begin-new ()
   (let (prefix c)
@@ -1222,7 +1221,9 @@ Keywords and function definition names are ignored."
     (cancel-timer company-timer))
   (company-search-mode 0)
   (company-call-frontends 'hide)
-  (company-enable-overriding-keymap nil))
+  (company-enable-overriding-keymap nil)
+  ;; Make return value explicit.
+  nil)
 
 (defun company-abort ()
   (interactive)
