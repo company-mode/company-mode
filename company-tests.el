@@ -251,7 +251,7 @@
         ;; With margins.
         (should (eq (overlay-get ov 'company-width) 7))
         ;; FIXME: Make it 2?
-        (should (eq (overlay-get ov 'company-height) company-tooltip-limit))
+        (should (eq (overlay-get ov 'company-height) 3))
         (should (eq (overlay-get ov 'company-column) col))
         )
       (company-pseudo-tooltip-hide)
