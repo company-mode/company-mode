@@ -1961,7 +1961,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
         scrollbar-bounds)
 
     ;; Maybe clear old offset.
-    (when (<= len (+ company-tooltip-offset limit))
+    (when (< len (+ company-tooltip-offset limit))
       (setq company-tooltip-offset 0))
 
     ;; Scroll to offset.
