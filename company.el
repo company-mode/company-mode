@@ -1853,7 +1853,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
                          '(face company-tooltip-common
                            mouse-face company-tooltip-mouse)
                          line)
-    (add-text-properties ann-start (+ ann-start (length annotation))
+    (add-text-properties ann-start (min (+ ann-start (length annotation)) width)
                          '(face company-tooltip-annotation
                            mouse-face company-tooltip-mouse)
                          line)
