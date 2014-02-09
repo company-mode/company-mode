@@ -1971,7 +1971,7 @@ beginning of next screen line."
          (line-prefix-width (if line-prefix (string-width line-prefix) 0))
          (start-column (+ line-start (- line-prefix-width) column))
          (end-column (+ line-start (- line-prefix-width) column width))
-         screen-column beg end pad-before pad-after protrude dangle)
+         screen-column beg end pad-before pad-after protrude)
     (if (>= start-column line-start)
         (move-to-column start-column)
       (setq protrude (- line-start start-column)
@@ -1985,11 +1985,12 @@ beginning of next screen line."
     (setq beg (point))
     (move-to-column end-column)
     (setq screen-column (current-column)
-          dangle (eolp)
-          pad-after (if (> screen-column end-column)
-                        (company-space-string (- screen-column end-column))
-                      "")
-          end (if dangle (1+ (point)) (point)))
+          end (if (eolp) (1+ (point)) (point))
+          pad-after (concat
+                     (if (> screen-column end-column)
+                         (company-space-string (- screen-column end-column))
+                       "")
+                     (buffer-substring (point) end)))
     (if overlay
         (move-overlay overlay beg end)
       (setq overlay (make-overlay beg end))
@@ -2003,7 +2004,6 @@ beginning of next screen line."
     (overlay-put overlay 'company-line-start line-start)
     (overlay-put overlay 'company-prefix-width line-prefix-width)
     (overlay-put overlay 'company-protrude protrude)
-    (overlay-put overlay 'company-dangle dangle)
     overlay))
 
 (defsubst company--adjust-column (column width)
@@ -2127,8 +2127,7 @@ current window."
         (line (overlay-get line-overlay 'company-line))
         (offset (overlay-get line-overlay 'company-line-start))
         (prefix-width (overlay-get line-overlay 'company-prefix-width))
-        (protrude (overlay-get line-overlay 'company-protrude))
-        (dangle (overlay-get line-overlay 'company-dangle)))
+        (protrude (overlay-get line-overlay 'company-protrude)))
     (when (and (stringp line)
                (> (length line) 0))
       (when (and protrude (> prefix-width 0))
@@ -2141,8 +2140,7 @@ current window."
       (overlay-put line-overlay 'display
                    (concat before
                            (if protrude (substring line protrude) line)
-                           after
-                           (if dangle "\n"))))))
+                           after)))))
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
