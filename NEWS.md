@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-continue-commands`.
 * New back-end command, `annotation`, for text displayed inline in the popup
   that's not a part of completion candidate.
 * `company-capf`, `company-clang` and `company-eclim` use `annotation`.

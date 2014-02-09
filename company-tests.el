@@ -117,6 +117,50 @@
       (should (eq nil company-candidates-length))
       (should (eq 4 (point))))))
 
+(ert-deftest company-should-complete-whitelist ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          company-begin-commands
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc" "abd")))))))
+      (let ((company-continue-commands nil))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (null company-candidates-length)))
+      (let ((company-continue-commands '(backward-delete-char)))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (eq 2 company-candidates-length))))))
+
+(ert-deftest company-should-complete-blacklist ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          company-begin-commands
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc" "abd")))))))
+      (let ((company-continue-commands '(not backward-delete-char)))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (null company-candidates-length)))
+      (let ((company-continue-commands '(not backward-delete-char-untabify)))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (eq 2 company-candidates-length))))))
+
 (ert-deftest company-auto-complete-explicit ()
   (with-temp-buffer
     (insert "ab")
@@ -383,6 +427,8 @@
 (defun company-call (name &rest args)
   (let* ((maybe (intern (format "company-%s" name)))
          (command (if (fboundp maybe) maybe name)))
+    (let ((this-command command))
+      (run-hooks 'pre-command-hook))
     (apply command args)
     (let ((this-command command))
       (run-hooks 'post-command-hook))))
