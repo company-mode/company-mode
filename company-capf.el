@@ -104,7 +104,11 @@ Requires Emacs 24.1 or newer."
        (when f (funcall f arg))))
     (`annotation
      (save-excursion
-       (goto-char company-point)
+       ;; FIXME: `company-begin' sets `company-point' after calling
+       ;; `company--begin-new'.  We shouldn't rely on `company-point' here,
+       ;; better to cache the capf-data value instead.
+       (when company-point
+         (goto-char company-point))
        (let ((f (plist-get (nthcdr 4 (company--capf-data)) :annotation-function)))
          (when f (funcall f arg)))))
     (`require-match
