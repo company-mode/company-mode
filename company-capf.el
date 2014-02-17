@@ -34,7 +34,7 @@
           (data (run-hook-wrapped 'completion-at-point-functions
                                   ;; Ignore misbehaving functions.
                                   #'completion--capf-wrapper 'optimist)))
-    (when (and (consp data) (numberp (nth 1 data))) data)))
+    (when (and (consp (cdr data)) (numberp (nth 1 data))) data)))
 
 (defun company-capf (command &optional arg &rest _args)
   "`company-mode' back-end using `completion-at-point-functions'.
