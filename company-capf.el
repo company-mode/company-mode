@@ -27,6 +27,14 @@
 
 (eval-when-compile (require 'cl))
 
+(defvar company--capf-data nil)
+(make-variable-buffer-local 'company--capf-data)
+
+(defun company--capf-clear-data (&optional _ignore)
+  (setq company--capf-data nil)
+  (remove-hook 'company-completion-cancelled-hook 'company--capf-clear-data t)
+  (remove-hook 'company-completion-finished-hook 'company--capf-clear-data t))
+
 (defun company--capf-data ()
   ;; Ignore tags-completion-at-point-function because it subverts company-etags
   ;; in the default value of company-backends, where the latter comes later.
@@ -47,9 +55,12 @@ Requires Emacs 24.1 or newer."
        (when res
          (if (> (nth 2 res) (point))
              'stop
+           (setq company--capf-data res)
+           (add-hook 'company-completion-cancelled-hook 'company--capf-clear-data nil t)
+           (add-hook 'company-completion-finished-hook 'company--capf-clear-data nil t)
            (buffer-substring-no-properties (nth 1 res) (point))))))
     (`candidates
-     (let ((res (company--capf-data)))
+     (let ((res company--capf-data))
        (when res
          (let* ((table (nth 3 res))
                 (pred (plist-get (nthcdr 4 res) :predicate))
@@ -71,7 +82,7 @@ Requires Emacs 24.1 or newer."
                          candidates))
              candidates)))))
     (`sorted
-     (let ((res (company--capf-data)))
+     (let ((res company--capf-data))
        (when res
          (let ((meta (completion-metadata
                       (buffer-substring (nth 1 res) (nth 2 res))
@@ -94,13 +105,13 @@ Requires Emacs 24.1 or newer."
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.
     (`meta
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-docsig)))
+     (let ((f (plist-get (nthcdr 4 company--capf-data) :company-docsig)))
        (when f (funcall f arg))))
     (`doc-buffer
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-doc-buffer)))
+     (let ((f (plist-get (nthcdr 4 company--capf-data) :company-doc-buffer)))
        (when f (funcall f arg))))
     (`location
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-location)))
+     (let ((f (plist-get (nthcdr 4 company--capf-data) :company-location)))
        (when f (funcall f arg))))
     (`annotation
      (save-excursion
@@ -109,13 +120,13 @@ Requires Emacs 24.1 or newer."
        ;; better to cache the capf-data value instead.
        (when company-point
          (goto-char company-point))
-       (let ((f (plist-get (nthcdr 4 (company--capf-data)) :annotation-function)))
+       (let ((f (plist-get (nthcdr 4 company--capf-data) :annotation-function)))
          (when f (funcall f arg)))))
     (`require-match
-     (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
+     (plist-get (nthcdr 4 company--capf-data) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
     (`post-completion
-     (let* ((res (company--capf-data))
+     (let* ((res company--capf-data)
             (exit-function (plist-get (nthcdr 4 res) :exit-function)))
        (if exit-function
            (funcall exit-function arg 'finished))))
