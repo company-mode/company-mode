@@ -495,7 +495,9 @@ treated as if it was on this list."
                  (const :tag "Self insert command" '(self-insert-command))
                  (repeat :tag "Commands" function)))
 
-(defcustom company-continue-commands t
+(defcustom company-continue-commands '(not save-buffer save-some-buffers
+                                           save-buffers-kill-terminal
+                                           save-buffers-kill-emacs)
   "A list of commands that are allowed during completion.
 If this is t, or if `company-begin-commands' is t, any command is allowed.
 Otherwise, the value must be a list of symbols.  If it starts with `not',
@@ -503,6 +505,9 @@ the cdr is the list of commands that abort completion.  Otherwise, all
 commands except those in that list, or in `company-begin-commands', or
 commands in the `company-' namespace, abort completion."
   :type '(choice (const :tag "Any command" t)
+                 (cons  :tag "Any except"
+                        (const not)
+                        (repeat :tag "Commands" function))
                  (repeat :tag "Commands" function)))
 
 (defcustom company-show-numbers nil

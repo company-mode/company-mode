@@ -3,7 +3,8 @@
 ## Next
 
 * New back-end command, `match`, for non-prefix completion.
-* New user option `company-continue-commands`.
+* New user option `company-continue-commands`. The default value aborts
+  completion on buffer saving commands.
 * New back-end command, `annotation`, for text displayed inline in the popup
   that's not a part of completion candidate.
 * `company-capf`, `company-clang` and `company-eclim` use `annotation`.
