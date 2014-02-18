@@ -315,11 +315,16 @@ text immediately before point.  Returning nil passes control to the next
 back-end.  The function should return `stop' if it should complete but
 cannot \(e.g. if it is in the middle of a string\).  Instead of a string,
 the back-end may return a cons where car is the prefix and cdr is used in
-`company-minimum-prefix-length' test. It's either number or t, in which
-case the test automatically succeeds.
+`company-minimum-prefix-length' test.  It must be either number or t, and
+in the latter case the test automatically succeeds.
 
 `candidates': The second argument is the prefix to be completed.  The
-return value should be a list of candidates that start with the prefix.
+return value should be a list of candidates that match the prefix.
+
+Non-prefix matches are also supported (candidates that don't start with the
+prefix, but match it in some backend-defined way).  Backends that use this
+feature must disable cache (return t to `no-cache') and should also respond
+to `match'.
 
 Optional commands:
 
@@ -343,12 +348,17 @@ buffer with documentation for it.  Preferably use `company-doc-buffer',
 of buffer and buffer location, or of file and line number where the
 completion candidate was defined.
 
-`annotation': The second argument is a completion candidate.  Returns a
+`annotation': The second argument is a completion candidate.  Return a
 string to be displayed inline with the candidate in the popup.  If
 duplicates are removed by company, candidates with equal string values will
 be kept if they have different annotations.  For that to work properly,
-backends should store the related information with candidates using text
+backends should store the related information on candidates using text
 properties.
+
+`match': The second argument is a completion candidate.  Backends that
+provide non-prefix completions should return the position of the end of
+text in the candidate that matches `prefix'.  It will be used when
+rendering the popup.
 
 `require-match': If this returns t, the user is not allowed to enter
 anything not offered as a candidate.  Use with care!  The default value nil
@@ -1837,7 +1847,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
-         (common (+ (or (company-call-backend 'common-part value)
+         (common (+ (or (company-call-backend 'match value)
                         (length company-common)) margin))
          (ann-start (+ margin (length value)))
          (line (concat left

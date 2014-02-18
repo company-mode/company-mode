@@ -88,7 +88,7 @@ Requires Emacs 24.1 or newer."
                       (buffer-substring (nth 1 res) (nth 2 res))
                       (nth 3 res) (plist-get (nthcdr 4 res) :predicate))))
            (cdr (assq 'display-sort-function meta))))))
-    (`common-part
+    (`match
      ;; Can't just use 0 when base-size (see above) is non-zero.
      (let ((start (if (get-text-property 0 'font-lock-face arg)
                       0
