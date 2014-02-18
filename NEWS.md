@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-02-18 (0.7)
 
 * New back-end command, `match`, for non-prefix completion.
 * New user option `company-continue-commands`. The default value aborts
