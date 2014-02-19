@@ -256,6 +256,7 @@ If this many lines are not available, prefer to display the tooltip above."
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
+    (company-bbdb . "BBDB")
     (company-capf . "completion-at-point-functions")
     (company-clang . "Clang")
     (company-cmake . "CMake")
@@ -290,6 +291,7 @@ If this many lines are not available, prefer to display the tooltip above."
 
 (defcustom company-backends `(,@(unless company--include-capf
                                   (list 'company-elisp))
+                              company-bbdb
                               company-nxml company-css
                               company-eclim company-semantic company-clang
                               company-xcode company-ropemacs company-cmake
