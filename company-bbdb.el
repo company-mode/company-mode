@@ -1,4 +1,4 @@
-;;; company-bbdb.el --- A company-mode completion back-end for BBDB in message-mode
+;;; company-bbdb.el --- company-mode completion back-end for BBDB in message-mode
 
 ;; Copyright (C) 2013-2014  Free Software Foundation, Inc.
 
@@ -21,14 +21,17 @@
 
 (require 'company)
 (eval-when-compile (require 'cl))
-(require 'bbdb nil t)
-(require 'bbdb-com nil t)
+
+(declare-function bbdb-record-get-field "bbdb")
+(declare-function bbdb-records "bbdb")
+(declare-function bbdb-dwim-mail "bbdb-com")
+(declare-function bbdb-search "bbdb-com")
 
 (defvar company-bbdb-records (make-hash-table :test 'equal))
 
 ;;;###autoload
 (defun company-bbdb (command &optional arg &rest ignore)
-  "A `company-mode' completion back-end for `bbdb'."
+  "`company-mode' completion back-end for `bbdb'."
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-bbdb))
@@ -44,10 +47,8 @@
                                       full-mail))
                                   (bbdb-record-get-field record 'mail)))
                         (bbdb-search (bbdb-records) arg nil arg)))
-
     (sorted t)
-    (no-cache t)
-    (t nil)))
+    (no-cache t)))
 
 (provide 'company-bbdb)
 ;;; company-bbdb.el ends here
