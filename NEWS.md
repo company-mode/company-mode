@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* New bundled back-end, `company-bbdb`.
+
 ## 2014-02-18 (0.7)
 
 * New back-end command, `match`, for non-prefix completion.
