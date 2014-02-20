@@ -2,7 +2,8 @@
 
 ## Next
 
-* New bundled back-end, `company-bbdb`.
+* New user option `company-tooltip-align-annotations`, on by default.
+* New bundled back-end `company-bbdb`.
 
 ## 2014-02-18 (0.7)
 

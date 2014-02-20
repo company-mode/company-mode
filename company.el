@@ -254,6 +254,10 @@ If this many lines are not available, prefer to display the tooltip above."
   :type '(choice (const :tag "Scrollbar" scrollbar)
                  (const :tag "Two lines" lines)))
 
+(defcustom company-tooltip-align-annotations t
+  "When non-nil, align annotations to the right tooltip border."
+  :type 'boolean)
+
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
     (company-bbdb . "BBDB")
@@ -1856,10 +1860,27 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
   (let* ((margin (length left))
          (common (+ (or (company-call-backend 'match value)
                         (length company-common)) margin))
-         (ann-start (+ margin (length value)))
+         (ann-ralign company-tooltip-align-annotations)
+         (ann-truncate (< width
+                          (+ (length value) (length annotation)
+                             (if ann-ralign 1 0))))
+         (ann-start (+ margin
+                       (if ann-ralign
+                           (if ann-truncate
+                               (1+ (length value))
+                             (- width (length annotation)))
+                         (length value))))
          (line (concat left
-                       (company-safe-substring (concat value annotation)
-                                               0 width)
+                       (if (or ann-truncate (not ann-ralign))
+                           (company-safe-substring
+                            (concat value
+                                    (when (and annotation ann-ralign) " ")
+                                    annotation)
+                            0 width)
+                         (concat
+                          (company-safe-substring value 0
+                                                  (- width (length annotation)))
+                          annotation))
                        right)))
     (setq width (+ width margin (length right)))
 
@@ -2009,8 +2030,15 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (dotimes (_ len)
       (let* ((value (pop lines-copy))
              (annotation (company-call-backend 'annotation value)))
+        (when (and annotation company-tooltip-align-annotations)
+          ;; `lisp-completion-at-point' adds a space.
+          (setq annotation (comment-string-strip annotation t nil)))
         (push (cons value annotation) items)
-        (setq width (max (+ (length value) (length annotation)) width))))
+        (setq width (max (+ (length value)
+                            (if (and annotation company-tooltip-align-annotations)
+                                (1+ (length annotation))
+                              (length annotation)))
+                         width))))
 
     (setq width (min window-width
                      (if (and company-show-numbers
