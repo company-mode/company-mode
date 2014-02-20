@@ -27,8 +27,6 @@
 (declare-function bbdb-dwim-mail "bbdb-com")
 (declare-function bbdb-search "bbdb-com")
 
-(defvar company-bbdb-records (make-hash-table :test 'equal))
-
 ;;;###autoload
 (defun company-bbdb (command &optional arg &rest ignore)
   "`company-mode' completion back-end for `bbdb'."
@@ -41,10 +39,7 @@
                                (line-beginning-position))
                  (company-grab-symbol)))
     (candidates (mapcan (lambda (record)
-                          (mapcar (lambda (mail)
-                                    (let ((full-mail (bbdb-dwim-mail record mail)))
-                                      (puthash full-mail record company-bbdb-records)
-                                      full-mail))
+                          (mapcar (lambda (mail) (bbdb-dwim-mail record mail))
                                   (bbdb-record-get-field record 'mail)))
                         (bbdb-search (bbdb-records) arg nil arg)))
     (sorted t)
