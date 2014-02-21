@@ -117,6 +117,50 @@
       (should (eq nil company-candidates-length))
       (should (eq 4 (point))))))
 
+(ert-deftest company-should-complete-whitelist ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          company-begin-commands
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc" "abd")))))))
+      (let ((company-continue-commands nil))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (null company-candidates-length)))
+      (let ((company-continue-commands '(backward-delete-char)))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (eq 2 company-candidates-length))))))
+
+(ert-deftest company-should-complete-blacklist ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          company-begin-commands
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc" "abd")))))))
+      (let ((company-continue-commands '(not backward-delete-char)))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (null company-candidates-length)))
+      (let ((company-continue-commands '(not backward-delete-char-untabify)))
+        (let (this-command)
+          (company-complete))
+        (company-call 'backward-delete-char 1)
+        (should (eq 2 company-candidates-length))))))
+
 (ert-deftest company-auto-complete-explicit ()
   (with-temp-buffer
     (insert "ab")
@@ -281,7 +325,8 @@
             (company-backend (lambda (action &optional arg &rest _ignore)
                                (when (eq action 'annotation)
                                  (cdr (assoc arg '(("123" . "(4)")))))))
-            (company-candidates '("123" "45")))
+            (company-candidates '("123" "45"))
+            company-tooltip-align-annotations)
         (company-pseudo-tooltip-show-at-point (point))
         (let ((ov company-pseudo-tooltip-overlay)
               (lines (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays)))
@@ -290,12 +335,57 @@
           (should (string= (overlay-get (pop lines) 'company-line) " 123(4) "))
           (should (string= (overlay-get (pop lines) 'company-line) " 45     ")))))))
 
+(ert-deftest company-pseudo-tooltip-show-with-annotations-right-aligned ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (insert " ")
+      (save-excursion (insert "\n"))
+      (let ((company-candidates-length 3)
+            (company-backend (lambda (action &optional arg &rest _ignore)
+                               (when (eq action 'annotation)
+                                 (cdr (assoc arg '(("123" . "(4)")
+                                                   ("67" . "(891011)")))))))
+            (company-candidates '("123" "45" "67"))
+            (company-tooltip-align-annotations t))
+        (company-pseudo-tooltip-show-at-point (point))
+        (let ((ov company-pseudo-tooltip-overlay)
+              (lines (overlay-get company-pseudo-tooltip-overlay 'company-line-overlays)))
+          ;; With margins.
+          (should (eq (overlay-get ov 'company-width) 13))
+          (should (string= (overlay-get (pop lines) 'company-line) " 123     (4) "))
+          (should (string= (overlay-get (pop lines) 'company-line) " 45          "))
+          (should (string= (overlay-get (pop lines) 'company-line) " 67 (891011) ")))))))
+
 (ert-deftest company-create-lines-shows-numbers ()
   (let ((company-show-numbers t)
         (company-candidates '("x" "y" "z"))
         (company-candidates-length 3))
     (should (equal '(" x 1 " " y 2 " " z 3 ")
                    (company--create-lines 0 999)))))
+
+(ert-deftest company-create-lines-truncates-annotations ()
+  (let* ((ww (company--window-width))
+         (data `(("1" . "(123)")
+                 ("2" . nil)
+                 ("3" . ,(concat "(" (make-string (- ww 2) ?4) ")"))))
+         (company-candidates (mapcar #'car data))
+         (company-candidates-length 3)
+         (company-tooltip-margin 1)
+         (company-backend (lambda (cmd &optional arg)
+                            (when (eq cmd 'annotation)
+                              (cdr (assoc arg data)))))
+         company-tooltip-align-annotations)
+    (should (equal (list (format " 1(123)%s " (company-space-string (- ww 8)))
+                         (format " 2%s " (company-space-string (- ww 3)))
+                         (format " 3(444%s " (make-string (- ww 7) ?4)))
+                   (company--create-lines 0 999)))
+    (let ((company-tooltip-align-annotations t))
+      (should (equal (list (format " 1%s(123) " (company-space-string (- ww 8)))
+                           (format " 2%s " (company-space-string (- ww 3)))
+                           (format " 3 (444%s " (make-string (- ww 8) ?4)))
+                     (company--create-lines 0 999))))))
 
 (ert-deftest company-scrollbar-bounds ()
   (should (equal nil (company--scrollbar-bounds 0 3 3)))
@@ -348,6 +438,8 @@
 (defun company-call (name &rest args)
   (let* ((maybe (intern (format "company-%s" name)))
          (command (if (fboundp maybe) maybe name)))
+    (let ((this-command command))
+      (run-hooks 'pre-command-hook))
     (apply command args)
     (let ((this-command command))
       (run-hooks 'post-command-hook))))

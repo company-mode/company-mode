@@ -2,6 +2,14 @@
 
 ## Next
 
+* New user option `company-tooltip-align-annotations`, off by default.
+* New bundled back-end `company-bbdb`.
+
+## 2014-02-18 (0.7)
+
+* New back-end command, `match`, for non-prefix completion.
+* New user option `company-continue-commands`. The default value aborts
+  completion on buffer saving commands.
 * New back-end command, `annotation`, for text displayed inline in the popup
   that's not a part of completion candidate.
 * `company-capf`, `company-clang` and `company-eclim` use `annotation`.

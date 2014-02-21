@@ -53,6 +53,16 @@ See also `company-dabbrev-time-limit'."
 (defcustom company-dabbrev-ignore-case 'keep-prefix
   "The value of `ignore-case' returned by `company-dabbrev'.")
 
+(defcustom company-dabbrev-downcase 'case-replace
+  "Whether to downcase the returned candidates.
+
+The value of nil means keep them as-is.
+`case-replace' means use the value of `case-replace'.
+Any other value means downcase.
+
+If you set this value to nil, you may also want to set
+`company-dabbrev-ignore-case' to any value other than `keep-prefix'.")
+
 (defcustom company-dabbrev-minimum-length (1+ company-minimum-prefix-length)
   "The minimum length for the string to be included.")
 
@@ -124,10 +134,15 @@ See also `company-dabbrev-time-limit'."
     (interactive (company-begin-backend 'company-dabbrev))
     (prefix (company-grab-word))
     (candidates
-     (mapcar 'downcase
-             (company-dabbrev--search (company-dabbrev--make-regexp arg)
-                                      company-dabbrev-time-limit
-                                      company-dabbrev-other-buffers)))
+     (let ((words (company-dabbrev--search (company-dabbrev--make-regexp arg)
+                                         company-dabbrev-time-limit
+                                         company-dabbrev-other-buffers))
+           (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
+                           case-replace
+                         company-dabbrev-downcase)))
+       (if downcase-p
+           (mapcar 'downcase words)
+         words)))
     (ignore-case company-dabbrev-ignore-case)
     (duplicates t)))
 
