@@ -70,6 +70,7 @@
 ;;; Code:
 
 (eval-when-compile (require 'cl))
+(require 'newcomment)
 
 ;; FIXME: Use `user-error'.
 (add-to-list 'debug-ignored-errors "^.* frontend cannot be used twice$")
