@@ -255,7 +255,7 @@ If this many lines are not available, prefer to display the tooltip above."
   :type '(choice (const :tag "Scrollbar" scrollbar)
                  (const :tag "Two lines" lines)))
 
-(defcustom company-tooltip-align-annotations t
+(defcustom company-tooltip-align-annotations nil
   "When non-nil, align annotations to the right tooltip border."
   :type 'boolean)
 
