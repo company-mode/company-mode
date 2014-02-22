@@ -2278,7 +2278,8 @@ current window."
          (not (equal completion ""))
          (add-text-properties 0 1 '(cursor t) completion))
 
-    (overlay-put company-preview-overlay 'display
+    (overlay-put company-preview-overlay 'display "")
+    (overlay-put company-preview-overlay 'after-string
                  (concat completion (unless (eq pos (point-max))
                                       (buffer-substring pos (1+ pos)))))
     (overlay-put company-preview-overlay 'window (selected-window))))
