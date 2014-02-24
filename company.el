@@ -762,9 +762,12 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                 dir (file-name-directory (directory-file-name dir))))))))
 
 (defun company-call-backend (&rest args)
-  (if (functionp company-backend)
-      (apply company-backend args)
-    (apply 'company--multi-backend-adapter company-backend args)))
+  (condition-case err
+      (if (functionp company-backend)
+          (apply company-backend args)
+        (apply 'company--multi-backend-adapter company-backend args))
+    (error (error "Company: Back-end %s error \"%s\" with args %s"
+                    company-backend (error-message-string err) args))))
 
 (defun company--multi-backend-adapter (backends command &rest args)
   (let ((backends (loop for b in backends
