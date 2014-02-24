@@ -312,9 +312,8 @@
             (company-candidates '("123")))
         (company-preview-show-at-point (point))
         (let ((ov company-preview-overlay))
-          (should (null (overlay-get ov 'display)))
-          (should (eq (overlay-start ov) (overlay-end ov)))
-          (should (string= (overlay-get ov 'after-string) "123")))))))
+          (should (string= (overlay-get ov 'display) "123\n"))
+          (should (null (overlay-get ov 'after-string))))))))
 
 (ert-deftest company-pseudo-tooltip-show-with-annotations ()
   :tags '(interactive)
