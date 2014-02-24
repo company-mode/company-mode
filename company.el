@@ -2279,6 +2279,7 @@ current window."
         (overlay-put company-preview-overlay 'after-string completion)
       (overlay-put company-preview-overlay 'display
                    (concat completion (buffer-substring pos (1+ pos)))))
+    (overlay-put company-preview-overlay 'priority 100)
     (overlay-put company-preview-overlay 'window (selected-window))))
 
 (defun company-preview-hide ()
