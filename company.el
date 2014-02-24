@@ -2186,8 +2186,7 @@ current window."
   (when company-pseudo-tooltip-overlay
     (mapc 'company-pseudo-tooltip-hide-line
           (overlay-get company-pseudo-tooltip-overlay
-                       'company-line-overlays))
-    (overlay-put company-pseudo-tooltip-overlay 'display nil)))
+                       'company-line-overlays))))
 
 (defun company-pseudo-tooltip-unhide-line (line-overlay)
   (let ((before (overlay-get line-overlay 'company-before))
@@ -2280,6 +2279,7 @@ current window."
         (overlay-put company-preview-overlay 'after-string completion)
       (overlay-put company-preview-overlay 'display
                    (concat completion (buffer-substring pos (1+ pos)))))
+    (overlay-put company-preview-overlay 'priority 100)
     (overlay-put company-preview-overlay 'window (selected-window))))
 
 (defun company-preview-hide ()
