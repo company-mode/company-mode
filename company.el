@@ -1051,27 +1051,20 @@ Keywords and function definition names are ignored."
      noccurs)))
 
 (defun company-idle-begin (buf win tick pos)
-  (and company-mode
-       (eq buf (current-buffer))
+  (and (eq buf (current-buffer))
        (eq win (selected-window))
        (eq tick (buffer-chars-modified-tick))
        (eq pos (point))
-       (not company-candidates)
        (not (equal (point) company-point))
-       (let ((company-idle-delay t)
-             (company-begin-commands t))
-         (company-begin)
-         (when company-candidates
-           (when (version< emacs-version "24.3.50")
-             (company-input-noop))
-           (company-post-command)))))
+       (when (company-auto-begin)
+         (when (version< emacs-version "24.3.50")
+           (company-input-noop))
+         (company-post-command))))
 
 (defun company-auto-begin ()
-  (company-assert-enabled)
   (and company-mode
        (not company-candidates)
        (let ((company-idle-delay t)
-             (company-minimum-prefix-length 0)
              (company-begin-commands t))
          (company-begin)))
   ;; Return non-nil if active.
@@ -1079,9 +1072,11 @@ Keywords and function definition names are ignored."
 
 (defun company-manual-begin ()
   (interactive)
+  (company-assert-enabled)
   (setq company--explicit-action t)
   (unwind-protect
-      (company-auto-begin)
+      (let ((company-minimum-prefix-length 0))
+        (company-auto-begin))
     (unless company-candidates
       (setq company--explicit-action nil))))
 
