@@ -1873,6 +1873,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
                                (1+ (length value))
                              (- width (length annotation)))
                          (length value))))
+         (ann-end (min (+ ann-start (length annotation)) width))
          (line (concat left
                        (if (or ann-truncate (not ann-ralign))
                            (company-safe-substring
@@ -1894,10 +1895,11 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
                          '(face company-tooltip-common
                            mouse-face company-tooltip-mouse)
                          line)
-    (add-text-properties ann-start (min (+ ann-start (length annotation)) width)
-                         '(face company-tooltip-annotation
-                           mouse-face company-tooltip-mouse)
-                         line)
+    (when (< ann-start ann-end)
+      (add-text-properties ann-start ann-end
+                           '(face company-tooltip-annotation
+                                  mouse-face company-tooltip-mouse)
+                           line))
     (when selected
       (if (and company-search-string
                (string-match (regexp-quote company-search-string) value
