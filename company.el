@@ -1898,7 +1898,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (when (< ann-start ann-end)
       (add-text-properties ann-start ann-end
                            '(face company-tooltip-annotation
-                                  mouse-face company-tooltip-mouse)
+                             mouse-face company-tooltip-mouse)
                            line))
     (when selected
       (if (and company-search-string
