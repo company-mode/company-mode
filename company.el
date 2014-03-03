@@ -1168,7 +1168,6 @@ Keywords and function definition names are ignored."
                        (setq new-prefix (or (car-safe new-prefix) new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
-              (setq new-prefix (or (car-safe new-prefix) new-prefix))
               (company-calculate-candidates new-prefix))))
     (cond
      ((eq c t)
