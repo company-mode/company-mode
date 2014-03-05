@@ -1072,6 +1072,8 @@ Keywords and function definition names are ignored."
                   (message "%s" (error-message-string err))
                   (company-cancel))
            (quit (company-cancel)))))
+  (unless company-candidates
+    (setq company-backend nil))
   ;; Return non-nil if active.
   company-candidates)
 
@@ -1776,9 +1778,7 @@ To show the number next to the candidates in some back-ends, enable
   (setq company-backend backend)
   ;; Return non-nil if active.
   (or (company-manual-begin)
-      (progn
-        (setq company-backend nil)
-        (error "Cannot complete at point"))))
+      (error "Cannot complete at point")))
 
 (defun company-begin-with (candidates
                            &optional prefix-length require-match callback)
