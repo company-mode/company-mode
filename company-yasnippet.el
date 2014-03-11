@@ -1,4 +1,4 @@
-;;; company-clang.el --- company-mode completion back-end for Clang
+;;; company-yasnippet.el --- company-mode completion back-end for Yasnippet
 
 ;; Copyright (C) 2014  Free Software Foundation, Inc.
 
