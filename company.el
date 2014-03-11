@@ -1885,7 +1885,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
                                (1+ (length value))
                              (- width (length annotation)))
                          (length value))))
-         (ann-end (min (+ ann-start (length annotation)) width))
+         (ann-end (min (+ ann-start (length annotation)) (+ margin width)))
          (line (concat left
                        (if (or ann-truncate (not ann-ralign))
                            (company-safe-substring
