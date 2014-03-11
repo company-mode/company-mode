@@ -302,7 +302,7 @@ If this many lines are not available, prefer to display the tooltip above."
                               company-xcode company-ropemacs company-cmake
                               ,@(when company--include-capf
                                   (list 'company-capf))
-                              (company-gtags company-etags company-dabbrev-code
+                              (company-dabbrev-code company-gtags company-etags
                                company-keywords)
                               company-oddmuse company-files company-dabbrev)
   "The list of active back-ends (completion engines).
@@ -776,17 +776,28 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                         collect b)))
     (case command
       (candidates
-       (loop for backend in backends
-             when (equal (funcall backend 'prefix)
-                         (car args))
-             append (apply backend 'candidates args)))
+       ;; Small perf optimization: don't tag the candidates received
+       ;; from the first backend in the group.
+       (append (apply (car backends) 'candidates args)
+               (loop for backend in (cdr backends)
+                     when (equal (funcall backend 'prefix)
+                                 (car args))
+                     append (mapcar
+                             (lambda (str)
+                               (propertize str 'company-backend backend))
+                             (apply backend 'candidates args)))))
       (sorted nil)
       (duplicates t)
-      (otherwise
+      ((prefix ignore-case no-cache require-match)
        (let (value)
          (dolist (backend backends)
            (when (setq value (apply backend command args))
-             (return value))))))))
+             (return value)))))
+      (otherwise
+       (let* ((arg (car args))
+              (backend (or (get-text-property 0 'company-backend arg)
+                           (car backends))))
+         (apply backend command args))))))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

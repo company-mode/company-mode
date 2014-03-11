@@ -2,6 +2,8 @@
 
 ## Next
 
+* Completion candidates returned from grouped back-ends are tagged to remember
+  which back-end each came from.
 * New user option `company-tooltip-align-annotations`, off by default.
 * New bundled back-end `company-bbdb`.
 

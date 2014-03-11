@@ -65,6 +65,28 @@
                    (candidates '("c" "d")))))))
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
 
+(ert-deftest company-multi-backend-remembers-candidate-backend ()
+  (let ((company-backend
+         (list (lambda (command &optional arg &rest ignore)
+                 (case command
+                   (ignore-case nil)
+                   (annotation "1")
+                   (candidates '("a" "c"))
+                   (post-completion "13")))
+               (lambda (command &optional arg &rest ignore)
+                 (case command
+                   (ignore-case t)
+                   (annotation "2")
+                   (candidates '("b" "d"))
+                   (post-completion "42"))))))
+    (let ((candidates (company-calculate-candidates nil)))
+      (should (equal candidates '("a" "b" "c" "d")))
+      (should (equal t (company-call-backend 'ignore-case)))
+      (should (equal "1" (company-call-backend 'annotation (nth 0 candidates))))
+      (should (equal "2" (company-call-backend 'annotation (nth 1 candidates))))
+      (should (equal "13" (company-call-backend 'post-completion (nth 2 candidates))))
+      (should (equal "42" (company-call-backend 'post-completion (nth 3 candidates)))))))
+
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer
     (insert "a")
@@ -285,7 +307,8 @@
     (search-backward "bb")
     (let ((col (company--column))
           (company-candidates-length 2)
-          (company-candidates '("123" "45")))
+          (company-candidates '("123" "45"))
+          (company-backend 'ignore))
       (company-pseudo-tooltip-show (company--row) col 0)
       (let ((ov company-pseudo-tooltip-overlay))
         ;; With margins.
@@ -352,7 +375,8 @@
 (ert-deftest company-create-lines-shows-numbers ()
   (let ((company-show-numbers t)
         (company-candidates '("x" "y" "z"))
-        (company-candidates-length 3))
+        (company-candidates-length 3)
+        (company-backend 'ignore))
     (should (equal '(" x 1 " " y 2 " " z 3 ")
                    (company--create-lines 0 999)))))
 
