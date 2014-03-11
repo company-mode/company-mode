@@ -794,10 +794,11 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
            (when (setq value (apply backend command args))
              (return value)))))
       (otherwise
-       (let* ((arg (car args))
-              (backend (or (get-text-property 0 'company-backend arg)
-                           (car backends))))
-         (apply backend command args))))))
+       (let ((arg (car args)))
+         (when (> (length arg) 0)
+           (let ((backend (or (get-text-property 0 'company-backend arg)
+                              (car backends))))
+             (apply backend command args))))))))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
