@@ -571,21 +571,23 @@ The work-around consists of adding a newline.")
   (and (symbolp backend)
        (not (fboundp backend))
        (ignore-errors (require backend nil t)))
-
-  (if (or (symbolp backend)
-          (functionp backend))
-      (condition-case err
-          (progn
-            (funcall backend 'init)
-            (put backend 'company-init t))
-        (error
-         (put backend 'company-init 'failed)
-         (unless (memq backend company--disabled-backends)
-           (message "Company back-end '%s' could not be initialized:\n%s"
-                    backend (error-message-string err)))
-         (pushnew backend company--disabled-backends)
-         nil))
-    (mapc 'company-init-backend backend)))
+  (cond
+   ((symbolp backend)
+    (condition-case err
+        (progn
+          (funcall backend 'init)
+          (put backend 'company-init t))
+      (error
+       (put backend 'company-init 'failed)
+       (unless (memq backend company--disabled-backends)
+         (message "Company back-end '%s' could not be initialized:\n%s"
+                  backend (error-message-string err)))
+       (pushnew backend company--disabled-backends)
+       nil)))
+   ;; No initialization for lambdas.
+   ((functionp backend) t)
+   (t ;; Must be a list.
+    (mapc 'company-init-backend backend))))
 
 (defvar company-default-lighter " company")
 
