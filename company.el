@@ -1061,7 +1061,7 @@ Keywords and function definition names are ignored."
                    t))))
            candidates)))
     (nconc
-     (mapcar #'car (sort occurs (lambda (e1 e2) (< (cdr e1) (cdr e2)))))
+     (mapcar #'car (sort occurs (lambda (e1 e2) (<= (cdr e1) (cdr e2)))))
      noccurs)))
 
 (defun company-idle-begin (buf win tick pos)
