@@ -2,6 +2,7 @@
 
 ## Next
 
+* New function `company-version`.
 * New bundled back-end `company-yasnippet`.
 * Completion candidates returned from grouped back-ends are tagged to remember
   which back-end each came from.

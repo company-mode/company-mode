@@ -1820,6 +1820,18 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
         ,require-match)))
    callback))
 
+(defun company-version (&optional show-version)
+  "Get the Company version as string.
+
+If SHOW-VERSION is non-nil, show the version in the echo area."
+  (interactive (list t))
+  (with-temp-buffer
+    (insert-file-contents (find-library-name "company"))
+    (require 'lisp-mnt)
+    (if show-version
+        (message "Company version: %s" (lm-version))
+      (lm-version))))
+
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-pseudo-tooltip-overlay nil)
