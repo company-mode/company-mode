@@ -51,6 +51,7 @@
 
 (defvar company-semantic--current-tags nil
   "Tags for the current context.")
+(make-variable-buffer-local 'company-semantic--current-tags)
 
 (defun company-semantic-doc-or-summary (tag)
   (or (semantic-documentation-for-tag tag)
