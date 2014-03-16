@@ -53,20 +53,26 @@
 (defun company-yasnippet (command &optional arg &rest ignore)
   "`company-mode' back-end for `yasnippet'.
 
-This back-end is supposed to be used in a particular way:
+This back-end should be used with care, because as long as there are
+snippets defined for the current major mode, this back-end will always
+shadow back-ends that come after it.  Recommended usages:
 
-* In a buffer-local value of `company-backends'.
-* Grouped with a backend or several that provide actual text completions.
-
-Neither condition is mandatory, but as long as there are snippets defined
-for the current major mode, this back-end will always shadow back-ends that
-come after it. So any other back-ends intended to be used in the current
-buffer should be grouped with it.  Example config:
+* In a buffer-local value of `company-backends', grouped with a back-end or
+  several that provide actual text completions.
 
   (add-hook 'js-mode-hook
             (lambda ()
               (set (make-local-variable 'company-backends)
-                   '((company-dabbrev-code company-yasnippet))))"
+                   '((company-dabbrev-code company-yasnippet)))))
+
+* After keyword `:with', grouped with other back-ends.
+
+  (push '(company-semantic :with company-yasnippet) company-backends)
+
+* Not in `company-backends', just bound to a key.
+
+  (global-set-key (kbd \"C-c y\") 'company-yasnippet)
+"
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-yasnippet))

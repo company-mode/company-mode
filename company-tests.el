@@ -87,6 +87,22 @@
       (should (equal "13" (company-call-backend 'post-completion (nth 2 candidates))))
       (should (equal "42" (company-call-backend 'post-completion (nth 3 candidates)))))))
 
+(ert-deftest company-multi-backend-handles-keyword-with ()
+  (let ((primo (lambda (command &optional arg)
+                 (case command
+                   (prefix "a")
+                   (candidates '("abb" "abc" "abd")))))
+        (secundo (lambda (command &optional arg)
+                   (case command
+                     (prefix "a")
+                     (candidates '("acc" "acd"))))))
+    (let ((company-backend (list 'ignore 'ignore :with secundo)))
+      (should (null (company-call-backend 'prefix))))
+    (let ((company-backend (list 'ignore primo :with secundo)))
+      (should (equal "a" (company-call-backend 'prefix)))
+      (should (equal '("abb" "abc" "abd" "acc" "acd")
+                     (company-call-backend 'candidates "a"))))))
+
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer
     (insert "a")

@@ -306,9 +306,6 @@ If this many lines are not available, prefer to display the tooltip above."
                                company-keywords)
                               company-oddmuse company-files company-dabbrev)
   "The list of active back-ends (completion engines).
-Each list elements can itself be a list of back-ends.  In that case their
-completions are merged.  Otherwise only the first matching back-end returns
-results.
 
 `company-begin-backend' can be used to start a specific back-end,
 `company-other-backend' will skip to the next matching back-end in the list.
@@ -383,7 +380,22 @@ modify it, e.g. to expand a snippet.
 
 The back-end should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
-`company-begin-backend' to start itself in that case."
+`company-begin-backend' to start itself in that case.
+
+Grouped back-ends:
+
+An element of `company-backends' can also itself be a list of back-ends,
+then it's considered to be a \"grouped\" back-end.
+
+When possible, commands taking a candidate as an argument are dispatched to
+the back-end it came from.  In other cases, the first non-nil value among
+all the back-ends is returned.
+
+The latter is the case for the `prefix' command.  But if the group contains
+the keyword `:with', the back-ends after it are ignored for this command.
+
+The completions from back-ends in a group are merged (but only from those
+that return the same `prefix')."
   :type `(repeat
           (choice
            :tag "Back-end"
@@ -395,6 +407,7 @@ does not know about.  It should also be callable interactively and use
                            ,@(mapcar (lambda (b)
                                        `(const :tag ,(cdr b) ,(car b)))
                                      company-safe-backends)
+                           (const :tag "With" :with)
                            (symbol :tag "User defined"))))))
 
 (put 'company-backends 'safe-local-variable 'company-safe-backends-p)
@@ -587,7 +600,9 @@ The work-around consists of adding a newline.")
    ;; No initialization for lambdas.
    ((functionp backend) t)
    (t ;; Must be a list.
-    (mapc 'company-init-backend backend))))
+    (dolist (b backend)
+      (unless (keywordp b)
+        (company-init-backend b))))))
 
 (defvar company-default-lighter " company")
 
@@ -776,6 +791,10 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                         when (not (and (symbolp b)
                                        (eq 'failed (get b 'company-init))))
                         collect b)))
+    (setq backends
+          (if (eq command 'prefix)
+              (butlast backends (length (member :with backends)))
+            (delq :with backends)))
     (case command
       (candidates
        ;; Small perf optimization: don't tag the candidates received

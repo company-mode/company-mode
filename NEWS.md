@@ -2,6 +2,8 @@
 
 ## Next
 
+* Group of back-ends can now contain keyword `:with`, which makes all back-ends
+  after it to be skipped for prefix calculation.
 * New function `company-version`.
 * New bundled back-end `company-yasnippet`.
 * Completion candidates returned from grouped back-ends are tagged to remember
