@@ -49,6 +49,7 @@
        res))
    (yas--get-snippet-tables)))
 
+;;;###autoload
 (defun company-yasnippet (command &optional arg &rest ignore)
   "`company-mode' back-end for `yasnippet'.
 
@@ -65,8 +66,7 @@ buffer should be grouped with it.  Example config:
   (add-hook 'js-mode-hook
             (lambda ()
               (set (make-local-variable 'company-backends)
-                   '((company-dabbrev-code company-yasnippet))))
-"
+                   '((company-dabbrev-code company-yasnippet))))"
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-yasnippet))
