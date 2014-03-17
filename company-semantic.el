@@ -53,19 +53,25 @@
   "Tags for the current context.")
 (make-variable-buffer-local 'company-semantic--current-tags)
 
+(defun company-semantic-documentation-for-tag (tag)
+  (when (semantic-tag-buffer tag)
+    ;; When TAG's buffer is unknown, the function below raises an error.
+    (semantic-documentation-for-tag tag)))
+
 (defun company-semantic-doc-or-summary (tag)
-  (or (semantic-documentation-for-tag tag)
+  (or (company-semantic-documentation-for-tag tag)
       (and (require 'semantic-idle nil t)
            (require 'semantic/idle nil t)
            (funcall semantic-idle-summary-function tag nil t))))
 
 (defun company-semantic-summary-and-doc (tag)
-  (let ((doc (semantic-documentation-for-tag tag))
+  (debug)
+  (let ((doc (company-semantic-documentation-for-tag tag))
         (summary (funcall semantic-idle-summary-function tag nil t)))
     (and (stringp doc)
          (string-match "\n*\\(.*\\)$" doc)
          (setq doc (match-string 1 doc)))
-    (concat (funcall semantic-idle-summary-function tag nil t)
+    (concat summary
             (when doc
                   (if (< (+ (length doc) (length summary) 4) (window-width))
                       " -- "
@@ -73,7 +79,7 @@
             doc)))
 
 (defun company-semantic-doc-buffer (tag)
-  (let ((doc (semantic-documentation-for-tag tag)))
+  (let ((doc (company-semantic-documentation-for-tag tag)))
     (when doc
       (company-doc-buffer
        (concat (funcall semantic-idle-summary-function tag nil t)
