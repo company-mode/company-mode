@@ -196,7 +196,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
     (format "%s:%d:%d"
             (if (company-clang--auto-save-p) buffer-file-name "-")
             (line-number-at-pos)
-            (1+ (current-column)))))
+            (- (point) (line-beginning-position) -1))))
 
 (defsubst company-clang--build-complete-args (pos)
   (append '("-cc1" "-fsyntax-only" "-code-completion-macros")
