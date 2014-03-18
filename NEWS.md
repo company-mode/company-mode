@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-03-18 (0.7.1)
 
 * Group of back-ends can now contain keyword `:with`, which makes all back-ends
   after it to be skipped for prefix calculation.
