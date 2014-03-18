@@ -65,7 +65,6 @@
            (funcall semantic-idle-summary-function tag nil t))))
 
 (defun company-semantic-summary-and-doc (tag)
-  (debug)
   (let ((doc (company-semantic-documentation-for-tag tag))
         (summary (funcall semantic-idle-summary-function tag nil t)))
     (and (stringp doc)
