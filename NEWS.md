@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## 2014-03-19 (0.7.2)
+
+* Support for Emacs 22 officially dropped.
+* `company-clang` supports `indent-tabs-mode` and multibyte chars before point.
+
 ## 2014-03-18 (0.7.1)
 
 * Group of back-ends can now contain keyword `:with`, which makes all back-ends
