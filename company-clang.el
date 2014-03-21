@@ -196,9 +196,12 @@ or automatically through a custom `company-clang-prefix-guesser'."
     (format "%s:%d:%d"
             (if (company-clang--auto-save-p) buffer-file-name "-")
             (line-number-at-pos)
-            (1+ (string-bytes (buffer-substring
-                               (line-beginning-position)
-                               (point)))))))
+            (1+ (length
+                 (encode-coding-region
+                  (line-beginning-position)
+                  (point)
+                  'utf-8
+                  t))))))
 
 (defsubst company-clang--build-complete-args (pos)
   (append '("-cc1" "-fsyntax-only" "-code-completion-macros")
