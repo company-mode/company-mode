@@ -445,6 +445,12 @@ back-end, consider using the `post-completion' command instead."
   "The minimum prefix length for idle completion."
   :type '(integer :tag "prefix length"))
 
+(defcustom company-continue-invalidated-if-manual t
+  "Continue completing an insufficiently long prefix if started manually."
+  :group 'company
+  :type '(choice (const :tag "Off" nil)
+                 (const :tag "On" t)))
+
 (defcustom company-require-match 'company-explicit-action-p
   "If enabled, disallow non-matching input.
 This can be a function do determine if a match is required.
@@ -1200,6 +1206,11 @@ Keywords and function definition names are ignored."
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (c (when (and (company--good-prefix-p new-prefix)
+                       (or company-continue-invalidated-if-manual
+                           ;; else must exceed minimum or previous length
+                           (>= (or (cdr-safe new-prefix) (length new-prefix))
+                               (min company-minimum-prefix-length
+                                    (length company-prefix))))
                        (setq new-prefix (or (car-safe new-prefix) new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
