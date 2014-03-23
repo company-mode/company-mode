@@ -87,7 +87,7 @@ comments or strings."
                  (or company-dabbrev-code-everywhere
                      (not (company-in-string-or-comment)))
                  (or (company-grab-symbol) 'stop)))
-    (candidates (let ((case-fold-search nil))
+    (candidates (let ((case-fold-search company-dabbrev-code-ignore-case))
                   (company-dabbrev--search
                    (company-dabbrev-code--make-regexp arg)
                    company-dabbrev-code-time-limit

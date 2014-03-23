@@ -445,6 +445,14 @@ back-end, consider using the `post-completion' command instead."
   "The minimum prefix length for idle completion."
   :type '(integer :tag "prefix length"))
 
+(defcustom company-manual-stop-when-too-short nil
+  "If enabled, cancel a manually started completion when the prefix gets
+shorter than both `company-minimum-prefix-length' and the length of the
+prefix it was started from."
+  :group 'company
+  :type '(choice (const :tag "Off" nil)
+                 (const :tag "On" t)))
+
 (defcustom company-require-match 'company-explicit-action-p
   "If enabled, disallow non-matching input.
 This can be a function do determine if a match is required.
@@ -851,6 +859,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   "Non-nil, if explicit completion took place.")
 (make-variable-buffer-local 'company--explicit-action)
 
+(defvar company--manual-prefix nil)
+(make-variable-buffer-local 'company--manual-prefix)
+
 (defvar company--auto-completion nil
   "Non-nil when current candidate is being inserted automatically.
 Controlled by `company-auto-complete'.")
@@ -1200,6 +1211,11 @@ Keywords and function definition names are ignored."
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (c (when (and (company--good-prefix-p new-prefix)
+                       (not (and company-manual-stop-when-too-short
+                                 ;; must not be less than minimum or initial length
+                                 (< (or (cdr-safe new-prefix) (length new-prefix))
+                                    (min company-minimum-prefix-length
+                                         (length company--manual-prefix)))))
                        (setq new-prefix (or (car-safe new-prefix) new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
@@ -1242,6 +1258,8 @@ Keywords and function definition names are ignored."
               (when company--explicit-action
                 (message "No completion found"))
             (setq company-prefix prefix)
+            (when (company-explicit-action-p)
+              (setq company--manual-prefix prefix))
             (when (symbolp backend)
               (setq company-lighter (concat " " (symbol-name backend))))
             (company-update-candidates c)
@@ -1292,6 +1310,7 @@ Keywords and function definition names are ignored."
         company-selection 0
         company-selection-changed nil
         company--explicit-action nil
+        company--manual-prefix nil
         company-lighter company-default-lighter
         company--point-max nil
         company-point nil)
