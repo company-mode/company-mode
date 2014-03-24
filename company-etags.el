@@ -41,10 +41,8 @@ buffer automatically."
                  (const :tag "on" t)))
 
 (defcustom company-etags-ignore-case nil
-  "Ignore case for `company-etags'.  This implies that candidates are
-searched case-insensitively."
-  :type '(choice (const :tag "off" nil)
-                 (const :tag "on" t)))
+  "Non-nil to ignore case in completion candidates."
+  :type 'boolean)
 
 (defvar company-etags-modes '(prog-mode c-mode objc-mode c++-mode java-mode
                               jde-mode pascal-mode perl-mode python-mode))
