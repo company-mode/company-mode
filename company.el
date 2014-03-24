@@ -445,7 +445,7 @@ back-end, consider using the `post-completion' command instead."
   "The minimum prefix length for idle completion."
   :type '(integer :tag "prefix length"))
 
-(defcustom company-manual-stop-when-too-short nil
+(defcustom company-abort-manual-when-too-short nil
   "If enabled, cancel a manually started completion when the prefix gets
 shorter than both `company-minimum-prefix-length' and the length of the
 prefix it was started from."
@@ -1198,7 +1198,13 @@ Keywords and function definition names are ignored."
      (t (company-cancel)))))
 
 (defun company--good-prefix-p (prefix)
-  (and (or (company-explicit-action-p)
+  (and (or (and company--manual-prefix
+                ;; changed selection not enough for valid prefix
+                (not (and company-abort-manual-when-too-short
+                          ;; must not be less than minimum or initial length
+                          (< (or (cdr-safe prefix) (length prefix))
+                             (min company-minimum-prefix-length
+                                  (length company--manual-prefix))))))
            (unless (eq prefix 'stop)
              (or (eq (cdr-safe prefix) t)
                  (>= (or (cdr-safe prefix) (length prefix))
@@ -1211,11 +1217,6 @@ Keywords and function definition names are ignored."
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (c (when (and (company--good-prefix-p new-prefix)
-                       (not (and company-manual-stop-when-too-short
-                                 ;; must not be less than minimum or initial length
-                                 (< (or (cdr-safe new-prefix) (length new-prefix))
-                                    (min company-minimum-prefix-length
-                                         (length company--manual-prefix)))))
                        (setq new-prefix (or (car-safe new-prefix) new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
@@ -1258,7 +1259,7 @@ Keywords and function definition names are ignored."
               (when company--explicit-action
                 (message "No completion found"))
             (setq company-prefix prefix)
-            (when (company-explicit-action-p)
+            (when company--explicit-action
               (setq company--manual-prefix prefix))
             (when (symbolp backend)
               (setq company-lighter (concat " " (symbol-name backend))))
