@@ -1198,18 +1198,17 @@ Keywords and function definition names are ignored."
      (t (company-cancel)))))
 
 (defun company--good-prefix-p (prefix)
-  (and (or (and company--manual-prefix
+  (and (stringp (or (car-safe prefix) prefix)) ;excludes 'stop
+       (or (and company--manual-prefix
                 ;; changed selection not enough for valid prefix
                 (not (and company-abort-manual-when-too-short
                           ;; must not be less than minimum or initial length
                           (< (or (cdr-safe prefix) (length prefix))
                              (min company-minimum-prefix-length
                                   (length company--manual-prefix))))))
-           (unless (eq prefix 'stop)
-             (or (eq (cdr-safe prefix) t)
-                 (>= (or (cdr-safe prefix) (length prefix))
-                     company-minimum-prefix-length))))
-       (stringp (or (car-safe prefix) prefix))))
+           (or (eq (cdr-safe prefix) t)
+               (>= (or (cdr-safe prefix) (length prefix))
+                   company-minimum-prefix-length)))))
 
 (defun company--continue ()
   (when (company-call-backend 'no-cache company-prefix)
