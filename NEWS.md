@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-03-25 (0.7.3)
 
 * New user option `company-etags-ignore-case`.
 
