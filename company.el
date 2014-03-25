@@ -449,9 +449,7 @@ back-end, consider using the `post-completion' command instead."
   "If enabled, cancel a manually started completion when the prefix gets
 shorter than both `company-minimum-prefix-length' and the length of the
 prefix it was started from."
-  :group 'company
-  :type '(choice (const :tag "Off" nil)
-                 (const :tag "On" t)))
+  :type 'boolean)
 
 (defcustom company-require-match 'company-explicit-action-p
   "If enabled, disallow non-matching input.
@@ -855,9 +853,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defvar company-selection-changed nil)
 (make-variable-buffer-local 'company-selection-changed)
 
-(defvar company--explicit-action nil
-  "Non-nil, if explicit completion took place.")
-(make-variable-buffer-local 'company--explicit-action)
+(defvar company--manual-action nil
+  "Non-nil, if manual completion took place.")
+(make-variable-buffer-local 'company--manual-action)
 
 (defvar company--manual-prefix nil)
 (make-variable-buffer-local 'company--manual-prefix)
@@ -903,7 +901,7 @@ can retrieve meta-data for them."
 
 (defun company-explicit-action-p ()
   "Return whether explicit completion action was taken by the user."
-  (or company--explicit-action
+  (or company--manual-action
       company-selection-changed))
 
 (defun company-reformat (candidate)
@@ -1124,12 +1122,12 @@ Keywords and function definition names are ignored."
 (defun company-manual-begin ()
   (interactive)
   (company-assert-enabled)
-  (setq company--explicit-action t)
+  (setq company--manual-action t)
   (unwind-protect
       (let ((company-minimum-prefix-length 0))
         (company-auto-begin))
     (unless company-candidates
-      (setq company--explicit-action nil))))
+      (setq company--manual-action nil))))
 
 (defun company-other-backend (&optional backward)
   (interactive (list current-prefix-arg))
@@ -1199,16 +1197,14 @@ Keywords and function definition names are ignored."
 
 (defun company--good-prefix-p (prefix)
   (and (stringp (or (car-safe prefix) prefix)) ;excludes 'stop
-       (or (and company--manual-prefix
-                ;; changed selection not enough for valid prefix
-                (not (and company-abort-manual-when-too-short
-                          ;; must not be less than minimum or initial length
-                          (< (or (cdr-safe prefix) (length prefix))
-                             (min company-minimum-prefix-length
-                                  (length company--manual-prefix))))))
-           (or (eq (cdr-safe prefix) t)
-               (>= (or (cdr-safe prefix) (length prefix))
-                   company-minimum-prefix-length)))))
+       (or (eq (cdr-safe prefix) t)
+           (let ((len (or (cdr-safe prefix) (length prefix))))
+             (if company--manual-prefix
+                 (or (not company-abort-manual-when-too-short)
+                     ;; Must not be less than minimum or initial length.
+                     (>= len (min company-minimum-prefix-length
+                                  (length company--manual-prefix))))
+               (>= len company-minimum-prefix-length))))))
 
 (defun company--continue ()
   (when (company-call-backend 'no-cache company-prefix)
@@ -1255,10 +1251,10 @@ Keywords and function definition names are ignored."
                 c (company-calculate-candidates prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
           (if (not (consp c))
-              (when company--explicit-action
+              (when company--manual-action
                 (message "No completion found"))
             (setq company-prefix prefix)
-            (when company--explicit-action
+            (when company--manual-action
               (setq company--manual-prefix prefix))
             (when (symbolp backend)
               (setq company-lighter (concat " " (symbol-name backend))))
@@ -1309,7 +1305,7 @@ Keywords and function definition names are ignored."
         company-common nil
         company-selection 0
         company-selection-changed nil
-        company--explicit-action nil
+        company--manual-action nil
         company--manual-prefix nil
         company-lighter company-default-lighter
         company--point-max nil

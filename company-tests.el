@@ -46,13 +46,15 @@
 
 (ert-deftest company-good-prefix ()
   (let ((company-minimum-prefix-length 5)
-        company--explicit-action
-        (company-selection-changed t))  ;never enough
+        company-abort-manual-when-too-short
+        company--manual-action            ;idle begin
+        (company-selection-changed t))    ;has no effect
     (should (eq t (company--good-prefix-p "!@#$%")))
     (should (eq nil (company--good-prefix-p "abcd")))
     (should (eq nil (company--good-prefix-p 'stop)))
     (should (eq t (company--good-prefix-p '("foo" . 5))))
-    (should (eq nil (company--good-prefix-p '("foo" . 4))))))
+    (should (eq nil (company--good-prefix-p '("foo" . 4))))
+    (should (eq t (company--good-prefix-p '("foo" . t))))))
 
 (ert-deftest company--manual-prefix-set-and-unset ()
   (with-temp-buffer
@@ -72,21 +74,20 @@
 (ert-deftest company-abort-manual-when-too-short ()
   (let ((company-minimum-prefix-length 5)
         (company-abort-manual-when-too-short t)
-        (company-selection-changed t))    ;never enough
-    (let ((company--explicit-action nil)) ;idle begin
+        (company-selection-changed t))    ;has not effect
+    (let ((company--manual-action nil))   ;idle begin
       (should (eq t (company--good-prefix-p "!@#$%")))
-      (should (eq nil (company--good-prefix-p "abcd")))
-      (should (eq nil (company--good-prefix-p 'stop)))
       (should (eq t (company--good-prefix-p '("foo" . 5))))
-      (should (eq nil (company--good-prefix-p '("foo" . 4)))))
-    (let ((company--explicit-action t)
+      (should (eq t (company--good-prefix-p '("foo" . t)))))
+    (let ((company--manual-action t)
           (company--manual-prefix "abc")) ;manual begin from this prefix
       (should (eq t (company--good-prefix-p "!@#$")))
       (should (eq nil (company--good-prefix-p "ab")))
       (should (eq nil (company--good-prefix-p 'stop)))
       (should (eq t (company--good-prefix-p '("foo" . 4))))
       (should (eq t (company--good-prefix-p "abcd")))
-      (should (eq t (company--good-prefix-p "abcd"))))))
+      (should (eq t (company--good-prefix-p "abc")))
+      (should (eq t (company--good-prefix-p '("bar" . t)))))))
 
 (ert-deftest company-multi-backend-with-lambdas ()
   (let ((company-backend
