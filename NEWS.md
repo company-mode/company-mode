@@ -2,6 +2,7 @@
 
 ## Next
 
+* Support for Emacs 23 dropped.
 * New user option `company-abort-manual-when-too-short`.
 
 ## 2014-03-25 (0.7.3)

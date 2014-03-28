@@ -7,7 +7,7 @@
 ;; Version: 0.7.3
 ;; Keywords: abbrev, convenience, matching
 ;; URL: http://company-mode.github.io/
-;; Compatibility: GNU Emacs 23.x, GNU Emacs 24.x
+;; Compatibility: GNU Emacs 24.x
 
 ;; This file is part of GNU Emacs.
 
@@ -48,11 +48,11 @@
 ;; Here is a simple example completing "foo":
 ;;
 ;; (defun company-my-backend (command &optional arg &rest ignored)
-;;   (case command
-;;     (prefix (when (looking-back "foo\\>")
+;;   (pcase command
+;;     (`prefix (when (looking-back "foo\\>")
 ;;               (match-string 0)))
-;;     (candidates (list "foobar" "foobaz" "foobarbaz"))
-;;     (meta (format "This value is named %s" arg))))
+;;     (`candidates (list "foobar" "foobaz" "foobarbaz"))
+;;     (`meta (format "This value is named %s" arg))))
 ;;
 ;; Sometimes it is a good idea to mix several back-ends together, for example to
 ;; enrich gtags with dabbrev-code results (to emulate local variables).
@@ -801,8 +801,8 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
           (if (eq command 'prefix)
               (butlast backends (length (member :with backends)))
             (delq :with backends)))
-    (case command
-      (candidates
+    (pcase command
+      (`candidates
        ;; Small perf optimization: don't tag the candidates received
        ;; from the first backend in the group.
        (append (apply (car backends) 'candidates args)
@@ -813,14 +813,14 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                              (lambda (str)
                                (propertize str 'company-backend backend))
                              (apply backend 'candidates args)))))
-      (sorted nil)
-      (duplicates t)
-      ((prefix ignore-case no-cache require-match)
+      (`sorted nil)
+      (`duplicates t)
+      ((or `prefix `ignore-case `no-cache `require-match)
        (let (value)
          (dolist (backend backends)
            (when (setq value (apply backend command args))
              (return value)))))
-      (otherwise
+      (_
        (let ((arg (car args)))
          (when (> (length arg) 0)
            (let ((backend (or (get-text-property 0 'company-backend arg)
@@ -1802,15 +1802,10 @@ To show the number next to the candidates in some back-ends, enable
 (defvar company-callback nil)
 (make-variable-buffer-local 'company-callback)
 
-(defvar company-begin-with-marker nil)
-(make-variable-buffer-local 'company-begin-with-marker)
-
 (defun company-remove-callback (&optional ignored)
   (remove-hook 'company-completion-finished-hook company-callback t)
   (remove-hook 'company-completion-cancelled-hook 'company-remove-callback t)
-  (remove-hook 'company-completion-finished-hook 'company-remove-callback t)
-  (when company-begin-with-marker
-    (set-marker company-begin-with-marker nil)))
+  (remove-hook 'company-completion-finished-hook 'company-remove-callback t))
 
 (defun company-begin-backend (backend &optional callback)
   "Start a completion at point using BACKEND."
@@ -1839,20 +1834,18 @@ CALLBACK is a function called with the selected result if the user
 successfully completes the input.
 
 Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
-  ;; FIXME: When Emacs 23 is no longer a concern, replace
-  ;; `company-begin-with-marker' with a lexical variable; use a lexical closure.
-  (setq company-begin-with-marker (copy-marker (point) t))
-  (company-begin-backend
-   `(lambda (command &optional arg &rest ignored)
-      (cond
-       ((eq command 'prefix)
-        (when (equal (point) (marker-position company-begin-with-marker))
-          (buffer-substring ,(- (point) (or prefix-length 0)) (point))))
-       ((eq command 'candidates)
-        (all-completions arg ',candidates))
-       ((eq command 'require-match)
-        ,require-match)))
-   callback))
+  (let ((begin-marker (copy-marker (point) t)))
+    (company-begin-backend
+     (lambda (command &optional arg &rest ignored)
+       (pcase command
+        (`prefix
+         (when (equal (point) (marker-position begin-marker))
+           (buffer-substring (- (point) (or prefix-length 0)) (point))))
+        (`candidates
+         (all-completions arg candidates))
+        (`require-match
+         require-match)))
+     callback)))
 
 (defun company-version (&optional show-version)
   "Get the Company version as string.
@@ -2335,10 +2328,10 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-preview-frontend (command)
   "`company-mode' front-end showing the selection as if it had been inserted."
-  (case command
-    (pre-command (company-preview-hide))
-    (post-command (company-preview-show-at-point (point)))
-    (hide (company-preview-hide))))
+  (pcase command
+    (`pre-command (company-preview-hide))
+    (`post-command (company-preview-show-at-point (point)))
+    (`hide (company-preview-hide))))
 
 (defun company-preview-if-just-one-frontend (command)
   "`company-preview-frontend', but only shown for single candidates."
@@ -2440,21 +2433,21 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-echo-frontend (command)
   "`company-mode' front-end showing the candidates in the echo area."
-  (case command
-    (post-command (company-echo-show-soon 'company-echo-format))
-    (hide (company-echo-hide))))
+  (pcase command
+    (`post-command (company-echo-show-soon 'company-echo-format))
+    (`hide (company-echo-hide))))
 
 (defun company-echo-strip-common-frontend (command)
   "`company-mode' front-end showing the candidates in the echo area."
-  (case command
-    (post-command (company-echo-show-soon 'company-echo-strip-common-format))
-    (hide (company-echo-hide))))
+  (pcase command
+    (`post-command (company-echo-show-soon 'company-echo-strip-common-format))
+    (`hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
   "`company-mode' front-end showing the documentation in the echo area."
-  (case command
-    (post-command (company-echo-show-when-idle 'company-fetch-metadata))
-    (hide (company-echo-hide))))
+  (pcase command
+    (`post-command (company-echo-show-when-idle 'company-fetch-metadata))
+    (`hide (company-echo-hide))))
 
 (provide 'company)
 ;;; company.el ends here
