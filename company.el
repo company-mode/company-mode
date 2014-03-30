@@ -1102,7 +1102,7 @@ Keywords and function definition names are ignored."
        (not company-candidates)
        (let ((company-idle-delay t)
              (company-begin-commands t))
-         (condition-case-no-debug err
+         (condition-case-unless-debug err
              (company-begin)
            (error (message "Company: An error occurred in auto-begin")
                   (message "%s" (error-message-string err))
