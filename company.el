@@ -4,10 +4,10 @@
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
+;; URL: http://company-mode.github.io/
 ;; Version: 0.7.3
 ;; Keywords: abbrev, convenience, matching
-;; URL: http://company-mode.github.io/
-;; Compatibility: GNU Emacs 24.x
+;; Package-Requires: ((emacs "24.1"))
 
 ;; This file is part of GNU Emacs.
 
