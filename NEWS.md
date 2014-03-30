@@ -2,6 +2,7 @@
 
 ## Next
 
+* Support for back-end command `crop` dropped (it was never documented).
 * Support for Emacs 23 dropped.
 * New user option `company-abort-manual-when-too-short`.
 

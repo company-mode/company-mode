@@ -983,19 +983,13 @@ can retrieve meta-data for them."
     ;; `company-complete-common'.
     (setq company-common
           (if (cdr company-candidates)
-              (company--safe-candidate
-               (let ((common (try-completion company-prefix company-candidates)))
-                 (if (eq common t)
-                     ;; Mulple equal strings, probably with different
-                     ;; annotations.
-                     company-prefix
-                   common)))
+              (let ((common (try-completion company-prefix company-candidates)))
+                (if (eq common t)
+                    ;; Mulple equal strings, probably with different
+                    ;; annotations.
+                    company-prefix
+                  common))
             (car company-candidates)))))
-
-(defun company--safe-candidate (str)
-  ;; XXX: This feature is deprecated.
-  (or (company-call-backend 'crop str)
-      str))
 
 (defun company-calculate-candidates (prefix)
   (let ((candidates (cdr (assoc prefix company-candidates-cache)))
@@ -1653,8 +1647,6 @@ and invoke the normal binding."
   (interactive)
   (when (company-manual-begin)
     (let ((result (nth company-selection company-candidates)))
-      (when company--auto-completion
-        (setq result (company--safe-candidate result)))
       (company-finish result))))
 
 (defun company-complete-common ()
