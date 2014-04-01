@@ -792,18 +792,6 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
         (car (setq ppss (cdr ppss)))
         (nth 3 ppss))))
 
-(if (fboundp 'locate-dominating-file)
-    (defalias 'company-locate-dominating-file 'locate-dominating-file)
-  (defun company-locate-dominating-file (file name)
-    (catch 'root
-      (let ((dir (file-name-directory file))
-            (prev-dir nil))
-        (while (not (equal dir prev-dir))
-          (when (file-exists-p (expand-file-name name dir))
-            (throw 'root dir))
-          (setq prev-dir dir
-                dir (file-name-directory (directory-file-name dir))))))))
-
 (defun company-call-backend (&rest args)
   (let ((val (apply #'company-call-backend-raw args)))
     (if (not (eq (car-safe val) :async))

@@ -36,7 +36,7 @@
 (defun company-pysmell--available-p ()
   (if (eq company-pysmell--available-p 'unknown)
       (setq company-pysmell--available-p
-            (company-locate-dominating-file buffer-file-name "PYSMELLTAGS"))
+            (locate-dominating-file buffer-file-name "PYSMELLTAGS"))
     company-pysmell--available-p))
 
 (defun company-pysmell--grab-symbol ()

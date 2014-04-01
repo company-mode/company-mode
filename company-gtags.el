@@ -49,7 +49,7 @@
 (defun company-gtags--tags-available-p ()
   (if (eq company-gtags--tags-available-p 'unknown)
       (setq company-gtags--tags-available-p
-            (company-locate-dominating-file buffer-file-name "GTAGS"))
+            (locate-dominating-file buffer-file-name "GTAGS"))
     company-gtags--tags-available-p))
 
 (defun company-gtags-fetch-tags (prefix)

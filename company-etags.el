@@ -51,9 +51,9 @@ buffer automatically."
 (make-variable-buffer-local 'company-etags-buffer-table)
 
 (defun company-etags-find-table ()
-  (let ((file (company-locate-dominating-file (or buffer-file-name
-                                                  default-directory)
-                                              "TAGS")))
+  (let ((file (locate-dominating-file (or buffer-file-name
+                                          default-directory)
+                                      "TAGS")))
     (when file
       (list (expand-file-name file)))))
 
