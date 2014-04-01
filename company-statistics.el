@@ -36,38 +36,12 @@
   "Completion candidates ranking by historical statistics."
   :group 'company)
 
-(defun company-statistics--history-resize (option new-size)
-  (when (and (fboundp 'company-statistics--initialized-p)
-             (company-statistics--initialized-p))
-    ;; hash scoresheet auto-resizes, but history does not
-    (let ((new-hist (make-vector new-size nil))
-          ;; use actual length, so we work for freshly restored history
-          (company-statistics-size (length company-statistics--history)))
-      ;; copy newest entries (possibly nil) to new-hist
-      (dolist (i (number-sequence 0 (1- (min new-size company-statistics-size))))
-        (let ((old-i (mod (+ (- company-statistics--history-replace new-size) i)
-                          company-statistics-size)))
-          (aset new-hist i (aref company-statistics--history old-i))))
-      ;; remove discarded history (when shrinking) from scores
-      (when (< new-size company-statistics-size)
-        (dolist (i (number-sequence
-                    company-statistics--history-replace
-                    (+ company-statistics-size
-                       company-statistics--history-replace
-                       (1- new-size))))
-          (company-statistics--score-down
-           (aref company-statistics--history (mod i company-statistics-size)))))
-      (setq company-statistics--history new-hist)
-      (setq company-statistics--history-replace (if (<= new-size company-statistics-size)
-                                                    0
-                                                  company-statistics-size))))
-  (setq company-statistics-size new-size))
-
 (defcustom company-statistics-size 400
   "Number of completion choices that `company-statistics' keeps track of.
 As this is a global cache, making it too small defeats the purpose."
   :group 'company-statistics
   :type 'integer
+  :initialize (lambda (option init-size) (setq company-statistics-size init-size))
   :set 'company-statistics--history-resize)
 
 (defcustom company-statistics-file
@@ -98,17 +72,41 @@ not been used before."
 (defvar company-statistics--history-replace nil
   "Index into the completion history.")
 
-;;;###autoload
-(defun company-statistics--initialized-p ()
-  (and (boundp 'company-statistics--scores)
-       (hash-table-p company-statistics--scores)))
-
 (defun company-statistics--init ()
-  "(Re-)initialize company-statistics."
+  "Initialize company-statistics."
   (setq company-statistics--scores
         (make-hash-table :test 'equal :size company-statistics-size))
   (setq company-statistics--history (make-vector company-statistics-size nil)
         company-statistics--history-replace 0))
+
+(defun company-statistics--initialized-p ()
+  (hash-table-p company-statistics--scores))
+
+(defun company-statistics--history-resize (option new-size)
+  (when (company-statistics--initialized-p)
+    ;; hash scoresheet auto-resizes, but history does not
+    (let ((new-hist (make-vector new-size nil))
+          ;; use actual length, to also work for freshly restored history
+          (company-statistics-size (length company-statistics--history)))
+      ;; copy newest entries (possibly nil) to new-hist
+      (dolist (i (number-sequence 0 (1- (min new-size company-statistics-size))))
+        (let ((old-i (mod (+ (- company-statistics--history-replace new-size) i)
+                          company-statistics-size)))
+          (aset new-hist i (aref company-statistics--history old-i))))
+      ;; remove discarded history (when shrinking) from scores
+      (when (< new-size company-statistics-size)
+        (dolist (i (number-sequence
+                    company-statistics--history-replace
+                    (+ company-statistics-size
+                       company-statistics--history-replace
+                       (1- new-size))))
+          (company-statistics--score-down
+           (aref company-statistics--history (mod i company-statistics-size)))))
+      (setq company-statistics--history new-hist)
+      (setq company-statistics--history-replace (if (<= new-size company-statistics-size)
+                                                    0
+                                                  company-statistics-size))))
+  (setq company-statistics-size new-size))
 
 (defun company-statistics--save ()
   "Save statistics."
