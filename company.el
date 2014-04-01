@@ -395,7 +395,20 @@ The latter is the case for the `prefix' command.  But if the group contains
 the keyword `:with', the back-ends after it are ignored for this command.
 
 The completions from back-ends in a group are merged (but only from those
-that return the same `prefix')."
+that return the same `prefix').
+
+Asynchronous back-ends:
+
+The return value of each command can also be a cons (:async . FETCHER)
+where FETCHER is a function of one argument, CALLBACK.  When the data
+arrives, FETCHER must call CALLBACK and pass it the appropriate return
+value, as described above.
+
+True asynchronous operation is only supported for command `candidates', and
+only during idle completion.  Other commands will block the user interface,
+even if the back-end uses the asynchronous calling convention.
+
+Grouped back-ends can't work asynchronously (yet)."
   :type `(repeat
           (choice
            :tag "Back-end"
@@ -549,6 +562,13 @@ commands in the `company-' namespace, abort completion."
 (defvar company-end-of-buffer-workaround t
   "Work around a visualization bug when completing at the end of the buffer.
 The work-around consists of adding a newline.")
+
+(defvar company-async-wait 0.03
+  "Pause between checks to see if the value's been set when turning an
+asynchronous call into synchronous.")
+
+(defvar company-async-timeout 2
+  "Maximum wait time for a value to be set during asynchronous call.")
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -785,12 +805,27 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                 dir (file-name-directory (directory-file-name dir))))))))
 
 (defun company-call-backend (&rest args)
+  (let ((val (apply #'company-call-backend-raw args)))
+    (if (not (eq (car-safe val) :async))
+        val
+      (let ((res 'trash)
+            (start (time-to-seconds)))
+        (funcall (cdr val)
+                 (lambda (result) (setq res result)))
+        (while (eq res 'trash)
+          (if (> (- (time-to-seconds) start) company-async-timeout)
+              (error "Company: Back-end %s async timeout with args %s"
+                     company-backend args)
+            (sleep-for company-async-wait)))
+        res))))
+
+(defun company-call-backend-raw (&rest args)
   (condition-case err
       (if (functionp company-backend)
           (apply company-backend args)
-        (apply 'company--multi-backend-adapter company-backend args))
+        (apply #'company--multi-backend-adapter company-backend args))
     (error (error "Company: Back-end %s error \"%s\" with args %s"
-                    company-backend (error-message-string err) args))))
+                  company-backend (error-message-string err) args))))
 
 (defun company--multi-backend-adapter (backends command &rest args)
   (let ((backends (loop for b in backends
@@ -1005,16 +1040,9 @@ can retrieve meta-data for them."
                 (setq candidates (all-completions prefix prev))
                 (return t)))))
         ;; no cache match, call back-end
-        (progn
-          (setq candidates (company-call-backend 'candidates prefix))
-          (when company-candidates-predicate
-            (setq candidates
-                  (company-apply-predicate candidates
-                                           company-candidates-predicate)))
-          (unless (company-call-backend 'sorted)
-            (setq candidates (sort candidates 'string<)))
-          (when (company-call-backend 'duplicates)
-            (company--strip-duplicates candidates))))
+        (setq candidates
+              (company--process-candidates
+               (company--fetch-candidates prefix))))
     (setq candidates (company--transform-candidates candidates))
     (when candidates
       (if (or (cdr candidates)
@@ -1023,6 +1051,47 @@ can retrieve meta-data for them."
           candidates
         ;; Already completed and unique; don't start.
         t))))
+
+(defun company--fetch-candidates (prefix)
+  (let ((c (if company--manual-action
+               (company-call-backend 'candidates prefix)
+             (company-call-backend-raw 'candidates prefix)))
+        res)
+    (if (not (eq (car c) :async))
+        c
+      (let ((buf (current-buffer))
+            (win (selected-window))
+            (tick (buffer-chars-modified-tick))
+            (pt (point))
+            (backend company-backend))
+        (funcall
+         (cdr c)
+         (lambda (candidates)
+           (if (not (and candidates (eq res 'done)))
+               ;; Fetcher called us right back.
+               (setq res candidates)
+             (setq company-backend backend
+                   company-candidates-cache
+                   (list (cons prefix
+                               (company--process-candidates
+                                candidates))))
+             (company-idle-begin buf win tick pt)))))
+      ;; FIXME: Relying on the fact that the callers
+      ;; will interpret nil as "do nothing" is shaky.
+      ;; A throw-catch would be one possible improvement.
+      (or res
+          (progn (setq res 'done) nil)))))
+
+(defun company--process-candidates (candidates)
+  (when company-candidates-predicate
+    (setq candidates
+          (company-apply-predicate candidates
+                                   company-candidates-predicate)))
+  (unless (company-call-backend 'sorted)
+    (setq candidates (sort candidates 'string<)))
+  (when (company-call-backend 'duplicates)
+    (company--strip-duplicates candidates))
+  candidates)
 
 (defun company--strip-duplicates (candidates)
   (let ((c2 candidates))
@@ -1091,7 +1160,6 @@ Keywords and function definition names are ignored."
        (eq win (selected-window))
        (eq tick (buffer-chars-modified-tick))
        (eq pos (point))
-       (not (equal (point) company-point))
        (when (company-auto-begin)
          (when (version< emacs-version "24.3.50")
            (company-input-noop))
@@ -1353,6 +1421,7 @@ Keywords and function definition names are ignored."
             (and (numberp company-idle-delay)
                  (or (eq t company-begin-commands)
                      (memq this-command company-begin-commands))
+                 (not (equal (point) company-point))
                  (setq company-timer
                        (run-with-timer company-idle-delay nil
                                        'company-idle-begin

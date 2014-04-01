@@ -22,11 +22,11 @@ clean:
 	@rm -rf company-*/ company-*.tar company-*.tar.bz2 *.elc ert.el
 
 test:
-	${EMACS} -Q -nw -L . -l company-tests.el \
+	${EMACS} -Q -nw -L . -l company-tests.el -l company-elisp-tests.el \
 	--eval "(let (pop-up-windows) (ert t))"
 
 test-batch:
-	${EMACS} -Q --batch -L . -l company-tests.el \
+	${EMACS} -Q --batch -L . -l company-tests.el -l company-elisp-tests.el \
 	--eval "(ert-run-tests-batch-and-exit '(not (tag interactive)))"
 
 downloads:
