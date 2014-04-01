@@ -63,8 +63,9 @@
                                                   company-statistics-size))))
   (setq company-statistics-size new-size))
 
-(defcustom company-statistics-size 20
-  "Number of completion results that `company-statistics' keeps track of."
+(defcustom company-statistics-size 400
+  "Number of completion choices that `company-statistics' keeps track of.
+As this is a global cache, making it too small defeats the purpose."
   :group 'company-statistics
   :type 'integer
   :set 'company-statistics--history-resize)
