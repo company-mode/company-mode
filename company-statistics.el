@@ -1,5 +1,25 @@
 ;;; company-statistics.el --- history scoring using company-transformers
 
+;; Copyright (C) 2014  Free Software Foundation, Inc.
+
+;; Author: Ingo Lohmar
+
+;; This file is part of GNU Emacs.
+
+;; GNU Emacs is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; GNU Emacs is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
+
+
 ;;; Commentary:
 ;; - backends decide on available candidates --- depends on prefix
 ;; - we store how often a candidate is chosen --- independent of prefixes
@@ -11,8 +31,6 @@
 ;;; Code:
 
 (require 'company)
-
-
 
 (defgroup company-statistics nil
   "Completion candidates ranking by historical statistics."
@@ -67,8 +85,6 @@
 not been used before."
   :group 'company-statistics
   :type 'boolean)
-
-
 
 ;; internal vars, persistence
 
@@ -186,8 +202,6 @@ configuration.  You can customize this behavior with
                  'company-statistics--finished)))
 
 (add-hook 'kill-emacs-hook 'company-statistics--maybe-save)
-
-
 
 (provide 'company-statistics)
 ;;; company-statistics.el ends here
