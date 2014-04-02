@@ -29,7 +29,6 @@
 (require 'ert)
 (require 'company)
 (require 'company-keywords)
-(require 'company-elisp)
 (require 'company-clang)
 
 ;;; Core

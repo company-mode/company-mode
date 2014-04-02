@@ -25,6 +25,8 @@
 
 ;;; Code:
 
+(require 'company-elisp)
+
 (defmacro company-elisp-with-buffer (contents &rest body)
   (declare (indent 0))
   `(with-temp-buffer
