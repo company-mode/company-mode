@@ -791,22 +791,22 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
         (nth 3 ppss))))
 
 (defun company-call-backend (&rest args)
-  (let ((val (apply #'company-call-backend-raw args)))
-    (company--force-sync val company-backend args)))
+  (company--force-sync #'company-call-backend-raw args company-backend))
 
-(defun company--force-sync (value backend args)
-  (if (not (eq (car-safe value) :async))
-      value
-    (let ((res 'trash)
-          (start (time-to-seconds)))
-      (funcall (cdr value)
-               (lambda (result) (setq res result)))
-      (while (eq res 'trash)
-        (if (> (- (time-to-seconds) start) company-async-timeout)
-            (error "Company: Back-end %s async timeout with args %s"
-                   backend args)
-          (sleep-for company-async-wait)))
-      res)))
+(defun company--force-sync (fun args backend)
+  (let ((value (apply fun args)))
+    (if (not (eq (car-safe value) :async))
+        value
+      (let ((res 'trash)
+            (start (time-to-seconds)))
+        (funcall (cdr value)
+                 (lambda (result) (setq res result)))
+        (while (eq res 'trash)
+          (if (> (- (time-to-seconds) start) company-async-timeout)
+              (error "Company: Back-end %s async timeout with args %s"
+                     backend args)
+            (sleep-for company-async-wait)))
+        res))))
 
 (defun company-call-backend-raw (&rest args)
   (condition-case err
@@ -834,8 +834,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
        (let (value)
          (dolist (backend backends)
            (when (setq value (company--force-sync
-                              (apply backend command args)
-                              backend (cons command args)))
+                              backend (cons command args) backend))
              (return value)))))
       (_
        (let ((arg (car args)))
