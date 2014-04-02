@@ -406,9 +406,7 @@ value, as described above.
 
 True asynchronous operation is only supported for command `candidates', and
 only during idle completion.  Other commands will block the user interface,
-even if the back-end uses the asynchronous calling convention.
-
-Grouped back-ends can't work asynchronously (yet)."
+even if the back-end uses the asynchronous calling convention."
   :type `(repeat
           (choice
            :tag "Back-end"
@@ -794,18 +792,21 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 
 (defun company-call-backend (&rest args)
   (let ((val (apply #'company-call-backend-raw args)))
-    (if (not (eq (car-safe val) :async))
-        val
-      (let ((res 'trash)
-            (start (time-to-seconds)))
-        (funcall (cdr val)
-                 (lambda (result) (setq res result)))
-        (while (eq res 'trash)
-          (if (> (- (time-to-seconds) start) company-async-timeout)
-              (error "Company: Back-end %s async timeout with args %s"
-                     company-backend args)
-            (sleep-for company-async-wait)))
-        res))))
+    (company--force-sync val company-backend args)))
+
+(defun company--force-sync (value backend args)
+  (if (not (eq (car-safe value) :async))
+      value
+    (let ((res 'trash)
+          (start (time-to-seconds)))
+      (funcall (cdr value)
+               (lambda (result) (setq res result)))
+      (while (eq res 'trash)
+        (if (> (- (time-to-seconds) start) company-async-timeout)
+            (error "Company: Back-end %s async timeout with args %s"
+                   backend args)
+          (sleep-for company-async-wait)))
+      res)))
 
 (defun company-call-backend-raw (&rest args)
   (condition-case err
@@ -826,22 +827,15 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
             (delq :with backends)))
     (pcase command
       (`candidates
-       ;; Small perf optimization: don't tag the candidates received
-       ;; from the first backend in the group.
-       (append (apply (car backends) 'candidates args)
-               (loop for backend in (cdr backends)
-                     when (equal (funcall backend 'prefix)
-                                 (car args))
-                     append (mapcar
-                             (lambda (str)
-                               (propertize str 'company-backend backend))
-                             (apply backend 'candidates args)))))
+       (company--multi-backend-adapter-candidates backends (car args)))
       (`sorted nil)
       (`duplicates t)
       ((or `prefix `ignore-case `no-cache `require-match)
        (let (value)
          (dolist (backend backends)
-           (when (setq value (apply backend command args))
+           (when (setq value (company--force-sync
+                              (apply backend command args)
+                              backend (cons command args)))
              (return value)))))
       (_
        (let ((arg (car args)))
@@ -849,6 +843,58 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
            (let ((backend (or (get-text-property 0 'company-backend arg)
                               (car backends))))
              (apply backend command args))))))))
+
+(defun company--multi-backend-adapter-candidates (backends prefix)
+  (let ((pairs (loop for backend in (cdr backends)
+                     when (equal (funcall backend 'prefix)
+                                 prefix)
+                     collect (cons (funcall backend 'candidates prefix)
+                                   (lambda (candidates)
+                                     (mapcar
+                                      (lambda (str)
+                                        (propertize str 'company-backend
+                                                    backend))
+                                      candidates))))))
+    (when (equal (funcall (car backends) 'prefix) prefix)
+      ;; Small perf optimization: don't tag the candidates received
+      ;; from the first backend in the group.
+      (push (cons (funcall (car backends) 'candidates prefix)
+                  'identity)
+            pairs))
+    (company--merge-async pairs (lambda (values) (apply #'append values)))))
+
+(defun company--merge-async (pairs merger)
+  (let ((async (loop for (val . mapper) in pairs
+                     thereis
+                     (eq :async (car-safe val)))))
+    (if (not async)
+        (funcall merger (mapcar (lambda (pair)
+                                  (funcall (cdr pair) (car pair)))
+                                pairs))
+      (cons
+       :async
+       (lambda (callback)
+         (let* (lst pending
+                (finisher (lambda ()
+                            (unless pending
+                              (funcall callback
+                                       (funcall merger
+                                                (nreverse lst)))))))
+           (dolist (pair pairs)
+             (let ((val (car pair))
+                   (mapper (cdr pair)))
+               (if (not (eq :async (car-safe val)))
+                   (push (funcall mapper val) lst)
+                 (push nil lst)
+                 (let ((cell lst)
+                       (fetcher (cdr val)))
+                   (push fetcher pending)
+                   (funcall fetcher
+                            (lambda (res)
+                              (setq pending (delq fetcher pending))
+                              (setcar cell (funcall mapper res))
+                              (funcall finisher)))))))
+           (funcall finisher)))))))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

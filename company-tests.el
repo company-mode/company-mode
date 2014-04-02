@@ -594,6 +594,60 @@
         (company-call 'self-insert-command 1))
       (should (equal '("abc") company-candidates)))))
 
+(ert-deftest company-multi-backend-forces-prefix-to-sync ()
+  (with-temp-buffer
+    (let ((company-backend (list 'ignore
+                                 (lambda (command)
+                                   (should (eq command 'prefix))
+                                   (cons :async
+                                         (lambda (cb)
+                                           (run-with-timer
+                                            0.01 nil
+                                            (lambda () (funcall cb nil))))))
+                                 (lambda (command)
+                                   (should (eq command 'prefix))
+                                   "foo"))))
+      (should (equal "foo" (company-call-backend-raw 'prefix))))
+    (let ((company-backend (list (lambda (_command)
+                                   (cons :async
+                                         (lambda (cb)
+                                           (run-with-timer
+                                            0.01 nil
+                                            (lambda () (funcall cb "bar"))))))
+                                 (lambda (_command)
+                                   "foo"))))
+      (should (equal "bar" (company-call-backend-raw 'prefix))))))
+
+(ert-deftest company-multi-backend-merges-deferred-candidates ()
+  (with-temp-buffer
+    (let* ((immediate (lambda (command &optional arg)
+                        (pcase command
+                          (`prefix "foo")
+                          (`candidates
+                           (cons :async
+                                 (lambda (cb) (funcall cb '("f"))))))))
+           (company-backend (list 'ignore
+                                  (lambda (command &optional arg)
+                                    (pcase command
+                                      (`prefix "foo")
+                                      (`candidates
+                                       (should (equal arg "foo"))
+                                       (cons :async
+                                             (lambda (cb)
+                                               (run-with-timer
+                                                0.01 nil
+                                                (lambda () (funcall cb '("a" "b")))))))))
+                                  (lambda (command &optional arg)
+                                    (pcase command
+                                      (`prefix "foo")
+                                      (`candidates '("c" "d" "e"))))
+                                  immediate)))
+      (should (equal :async (car (company-call-backend-raw 'candidates "foo"))))
+      (should (equal '("a" "b" "c" "d" "e" "f")
+                     (company-call-backend 'candidates "foo")))
+      (let ((company-backend (list immediate)))
+        (should (equal '("f") (company-call-backend 'candidates "foo")))))))
+
 ;;; Template
 
 (ert-deftest company-template-removed-after-the-last-jump ()
