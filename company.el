@@ -864,13 +864,12 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
     (company--merge-async pairs (lambda (values) (apply #'append values)))))
 
 (defun company--merge-async (pairs merger)
-  (let ((async (loop for (val . mapper) in pairs
+  (let ((async (loop for pair in pairs
                      thereis
-                     (eq :async (car-safe val)))))
+                     (eq :async (car-safe (car pair))))))
     (if (not async)
-        (funcall merger (mapcar (lambda (pair)
-                                  (funcall (cdr pair) (car pair)))
-                                pairs))
+        (funcall merger (loop for (val . mapper) in pairs
+                              collect (funcall mapper val)))
       (cons
        :async
        (lambda (callback)
@@ -893,8 +892,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                             (lambda (res)
                               (setq pending (delq fetcher pending))
                               (setcar cell (funcall mapper res))
-                              (funcall finisher)))))))
-           (funcall finisher)))))))
+                              (funcall finisher)))))))))))))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
