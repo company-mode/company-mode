@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-clang` fetches completion candidates asynchronously.
 * Added support for asynchronous back-ends (experimental).
 * Support for back-end command `crop` dropped (it was never documented).
 * Support for Emacs 23 dropped.
