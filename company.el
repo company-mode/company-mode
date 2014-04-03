@@ -1,4 +1,4 @@
-;;; company.el --- Modular in-buffer completion framework  -*- lexical-binding: t -*-
+;;; company.el --- Modular text completion framework  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009-2014  Free Software Foundation, Inc.
 
