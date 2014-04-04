@@ -859,12 +859,12 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                      when (equal (funcall backend 'prefix)
                                  prefix)
                      collect (cons (funcall backend 'candidates prefix)
-                                   (lambda (candidates)
-                                     (mapcar
-                                      (lambda (str)
-                                        (propertize str 'company-backend
-                                                    backend))
-                                      candidates))))))
+                                   (let ((b backend))
+                                     (lambda (candidates)
+                                       (mapcar
+                                        (lambda (str)
+                                          (propertize str 'company-backend b))
+                                        candidates)))))))
     (when (equal (funcall (car backends) 'prefix) prefix)
       ;; Small perf optimization: don't tag the candidates received
       ;; from the first backend in the group.

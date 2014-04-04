@@ -102,25 +102,32 @@
 
 (ert-deftest company-multi-backend-remembers-candidate-backend ()
   (let ((company-backend
-         (list (lambda (command &optional arg &rest ignore)
+         (list (lambda (command &optional arg)
                  (case command
                    (ignore-case nil)
                    (annotation "1")
                    (candidates '("a" "c"))
                    (post-completion "13")))
-               (lambda (command &optional arg &rest ignore)
+               (lambda (command &optional arg)
                  (case command
                    (ignore-case t)
                    (annotation "2")
                    (candidates '("b" "d"))
-                   (post-completion "42"))))))
+                   (post-completion "42")))
+               (lambda (command &optional arg)
+                 (case command
+                   (annotation "3")
+                   (candidates '("e"))
+                   (post-completion "74"))))))
     (let ((candidates (company-calculate-candidates nil)))
-      (should (equal candidates '("a" "b" "c" "d")))
+      (should (equal candidates '("a" "b" "c" "d" "e")))
       (should (equal t (company-call-backend 'ignore-case)))
       (should (equal "1" (company-call-backend 'annotation (nth 0 candidates))))
       (should (equal "2" (company-call-backend 'annotation (nth 1 candidates))))
       (should (equal "13" (company-call-backend 'post-completion (nth 2 candidates))))
-      (should (equal "42" (company-call-backend 'post-completion (nth 3 candidates)))))))
+      (should (equal "42" (company-call-backend 'post-completion (nth 3 candidates))))
+      (should (equal "3" (company-call-backend 'annotation (nth 4 candidates))))
+      (should (equal "74" (company-call-backend 'post-completion (nth 4 candidates)))))))
 
 (ert-deftest company-multi-backend-handles-keyword-with ()
   (let ((primo (lambda (command &optional arg)
