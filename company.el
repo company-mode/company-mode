@@ -784,6 +784,17 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
     (unless (and (char-after) (eq (char-syntax (char-after)) ?w))
       "")))
 
+(defun company-grab-symbol-cons (idle-begin-after-re &optional max-len)
+  (let ((symbol (company-grab-symbol)))
+    (when symbol
+      (save-excursion
+        (forward-char (- (length symbol)))
+        (if (looking-back idle-begin-after-re (if max-len
+                                                  (- (point) max-len)
+                                                (line-beginning-position)))
+            (cons symbol t)
+          symbol)))))
+
 (defun company-in-string-or-comment ()
   (let ((ppss (syntax-ppss)))
     (or (car (setq ppss (nthcdr 3 ppss)))

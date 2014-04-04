@@ -237,15 +237,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
          (company-clang--build-complete-args (- (point) (length prefix)))))
 
 (defun company-clang--prefix ()
-  (let ((symbol (company-grab-symbol)))
-    (if symbol
-        (if (and company-clang-begin-after-member-access
-                 (save-excursion
-                   (forward-char (- (length symbol)))
-                   (looking-back "\\.\\|->\\|::" (- (point) 2))))
-            (cons symbol t)
-          symbol)
-      'stop)))
+  (if company-clang-begin-after-member-access
+      (company-grab-symbol-cons "\\.\\|->\\|::" 2)
+    (company-grab-symbol)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -311,7 +305,7 @@ passed via standard input."
                  buffer-file-name
                  company-clang-executable
                  (not (company-in-string-or-comment))
-                 (company-clang--prefix)))
+                 (or (company-clang--prefix) 'stop)))
     (candidates (cons :async
                       (lambda (cb) (company-clang--candidates arg cb))))
     (meta       (company-clang--meta arg))
