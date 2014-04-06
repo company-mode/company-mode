@@ -56,20 +56,23 @@
   (with-temp-buffer
     (let (tags)
       (when (= 0 (call-process company-gtags-executable nil
-                               (list (current-buffer) nil) nil "-c" prefix))
+                               (list (current-buffer) nil) nil "-xGq" (concat "^" prefix)))
         (goto-char (point-min))
-        (split-string (buffer-string) "\n" t)))))
-
-(defun company-gtags-location (tag)
-  (with-temp-buffer
-    (when (= 0 (call-process company-gtags-executable nil
-                             (list (current-buffer) nil) nil "-x" tag))
-        (goto-char (point-min))
-        (when (looking-at (concat (regexp-quote tag)
-                                  "[ \t]+\\([[:digit:]]+\\)"
-                                  "[ \t]+\\([^ \t]+\\)"))
-          (cons (expand-file-name (match-string 2))
-                (string-to-number (match-string 1)))))))
+        (cl-loop while
+                 (re-search-forward (concat
+                                     "^"
+                                     "\\([^ ]*\\)" ;; completion
+                                     "[ \t]+\\([[:digit:]]+\\)" ;; linum
+                                     "[ \t]+\\([^ \t]+\\)" ;; file
+                                     "[ \t]+\\(.*\\)" ;; definition 
+                                     "$"
+                                     ) nil t)
+                 collect
+                 (propertize (match-string 1)
+                             'meta (match-string 4)
+                             'location (cons (expand-file-name (match-string 3))
+                                             (string-to-number (match-string 2)))
+                             ))))))
 
 ;;;###autoload
 (defun company-gtags (command &optional arg &rest ignored)
@@ -84,7 +87,12 @@
                  (or (company-grab-symbol) 'stop)))
     (candidates (company-gtags-fetch-tags arg))
     (sorted t)
-    (location (company-gtags-location arg))))
+    (duplicates t)
+    (annotation (let (annotation)
+                  (when (string-match (concat arg "\\((.*)\\).*") (get-text-property 0 'meta arg))
+                    (match-string 1 (get-text-property 0 'meta arg)))))
+    (meta (get-text-property 0 'meta arg))
+    (location (get-text-property 0 'location arg))))
 
 (provide 'company-gtags)
 ;;; company-gtags.el ends here
