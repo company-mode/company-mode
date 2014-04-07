@@ -244,6 +244,11 @@ The visualized data is stored in `company-prefix', `company-candidates',
 If this many lines are not available, prefer to display the tooltip above."
   :type 'integer)
 
+(defcustom company-tooltip-minimum-width 0
+  "The minimum width of the tooltip's inner area.
+This doesn't include the margins and the scroll bar."
+  :type 'integer)
+
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
   :type 'integer)
@@ -2202,10 +2207,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                          width))))
 
     (setq width (min window-width
-                     (if (and company-show-numbers
-                              (< company-tooltip-offset 10))
-                         (+ 2 width)
-                       width)))
+                     (max company-tooltip-minimum-width
+                          (if (and company-show-numbers
+                                   (< company-tooltip-offset 10))
+                              (+ 2 width)
+                            width))))
 
     ;; number can make tooltip too long
     (when company-show-numbers

@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-tooltip-minimum-width`, by default 0.
 * New function `company-grab-symbol-cons`.
 * `company-clang` fetches completion candidates asynchronously.
 * Added support for asynchronous back-ends (experimental).
