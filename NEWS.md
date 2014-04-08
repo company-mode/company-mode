@@ -2,6 +2,7 @@
 
 ## Next
 
+* Default value of `company-idle-delay` lowered to `0.5`.
 * New user option `company-tooltip-minimum-width`, by default 0.
 * New function `company-grab-symbol-cons`.
 * `company-clang` fetches completion candidates asynchronously.

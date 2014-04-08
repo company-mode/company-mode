@@ -518,7 +518,7 @@ A character that is part of a valid candidate never triggers auto-completion."
                       (const :tag "Generic comment fence." ?!))
                  (function :tag "Predicate function")))
 
-(defcustom company-idle-delay .7
+(defcustom company-idle-delay .5
   "The idle delay in seconds until completion starts automatically.
 A value of nil means no idle completion, t means show candidates
 immediately when a prefix of `company-minimum-prefix-length' is reached."
