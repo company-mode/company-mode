@@ -27,7 +27,7 @@
 
 (require 'company)
 (require 'company-template)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defgroup company-clang nil
   "Completion back-end for Clang."
@@ -115,7 +115,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
              "objective-c" "objective-c++")
        (substring (symbol-name major-mode) 0 -5)))
 
-(defun company-clang--parse-output (prefix objc)
+(defun company-clang--parse-output (prefix _objc)
   (goto-char (point-min))
   (let ((pattern (format company-clang--completion-pattern
                          (regexp-quote prefix)))
@@ -277,7 +277,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
           (if (< (point) end)
               (insert " ")
             (throw 'stop t))
-          (incf cnt))))
+          (cl-incf cnt))))
     (company-template-move-to-first templ)))
 
 (defun company-clang (command &optional arg &rest ignored)
@@ -293,7 +293,7 @@ With Clang versions before 2.9, we have to save the buffer before
 performing completion.  With Clang 2.9 and later, buffer contents are
 passed via standard input."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-clang))
     (init (when (memq major-mode company-clang-modes)
             (unless company-clang-executable

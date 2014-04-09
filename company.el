@@ -7,7 +7,7 @@
 ;; URL: http://company-mode.github.io/
 ;; Version: 0.8.0-cvs
 ;; Keywords: abbrev, convenience, matching
-;; Package-Requires: ((emacs "24.1"))
+;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
 ;; This file is part of GNU Emacs.
 
@@ -69,7 +69,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'newcomment)
 
 ;; FIXME: Use `user-error'.
@@ -295,7 +295,7 @@ This doesn't include the margins and the scroll bar."
               (unless (if (consp backend)
                           (company-safe-backends-p backend)
                         (assq backend company-safe-backends))
-                (return t))))))
+                (cl-return t))))))
 
 (defvar company--include-capf (version< "24.3.50" emacs-version))
 
@@ -624,7 +624,7 @@ asynchronous call into synchronous.")
        (unless (memq backend company--disabled-backends)
          (message "Company back-end '%s' could not be initialized:\n%s"
                   backend (error-message-string err)))
-       (pushnew backend company--disabled-backends)
+       (cl-pushnew backend company--disabled-backends)
        nil)))
    ;; No initialization for lambdas.
    ((functionp backend) t)
@@ -833,10 +833,10 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                   company-backend (error-message-string err) args))))
 
 (defun company--multi-backend-adapter (backends command &rest args)
-  (let ((backends (loop for b in backends
-                        when (not (and (symbolp b)
-                                       (eq 'failed (get b 'company-init))))
-                        collect b)))
+  (let ((backends (cl-loop for b in backends
+                           when (not (and (symbolp b)
+                                          (eq 'failed (get b 'company-init))))
+                           collect b)))
     (setq backends
           (if (eq command 'prefix)
               (butlast backends (length (member :with backends)))
@@ -851,7 +851,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
          (dolist (backend backends)
            (when (setq value (company--force-sync
                               backend (cons command args) backend))
-             (return value)))))
+             (cl-return value)))))
       (_
        (let ((arg (car args)))
          (when (> (length arg) 0)
@@ -860,16 +860,16 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
              (apply backend command args))))))))
 
 (defun company--multi-backend-adapter-candidates (backends prefix)
-  (let ((pairs (loop for backend in (cdr backends)
-                     when (equal (funcall backend 'prefix)
-                                 prefix)
-                     collect (cons (funcall backend 'candidates prefix)
-                                   (let ((b backend))
-                                     (lambda (candidates)
-                                       (mapcar
-                                        (lambda (str)
-                                          (propertize str 'company-backend b))
-                                        candidates)))))))
+  (let ((pairs (cl-loop for backend in (cdr backends)
+                        when (equal (funcall backend 'prefix)
+                                    prefix)
+                        collect (cons (funcall backend 'candidates prefix)
+                                      (let ((b backend))
+                                        (lambda (candidates)
+                                          (mapcar
+                                           (lambda (str)
+                                             (propertize str 'company-backend b))
+                                           candidates)))))))
     (when (equal (funcall (car backends) 'prefix) prefix)
       ;; Small perf optimization: don't tag the candidates received
       ;; from the first backend in the group.
@@ -879,12 +879,12 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
     (company--merge-async pairs (lambda (values) (apply #'append values)))))
 
 (defun company--merge-async (pairs merger)
-  (let ((async (loop for pair in pairs
-                     thereis
-                     (eq :async (car-safe (car pair))))))
+  (let ((async (cl-loop for pair in pairs
+                        thereis
+                        (eq :async (car-safe (car pair))))))
     (if (not async)
-        (funcall merger (loop for (val . mapper) in pairs
-                              collect (funcall mapper val)))
+        (funcall merger (cl-loop for (val . mapper) in pairs
+                                 collect (funcall mapper val)))
       (cons
        :async
        (lambda (callback)
@@ -1048,7 +1048,7 @@ can retrieve meta-data for them."
               company-candidates candidates)
         (when selected
           (while (and candidates (string< (pop candidates) selected))
-            (incf company-selection))
+            (cl-incf company-selection))
           (unless candidates
             ;; Make sure selection isn't out of bounds.
             (setq company-selection (min (1- company-candidates-length)
@@ -1085,7 +1085,7 @@ can retrieve meta-data for them."
               (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
                                            company-candidates-cache)))
                 (setq candidates (all-completions prefix prev))
-                (return t)))))
+                (cl-return t)))))
         ;; no cache match, call back-end
         (setq candidates
               (company--process-candidates
@@ -1173,7 +1173,7 @@ point. The rest of the list is appended unchanged.
 Keywords and function definition names are ignored."
   (let* (occurs
          (noccurs
-          (delete-if
+          (cl-delete-if
            (lambda (candidate)
              (when (or
                     (save-excursion
@@ -1250,7 +1250,7 @@ Keywords and function definition names are ignored."
         (company-cancel)
         (dolist (backend next)
           (when (ignore-errors (company-begin-backend backend))
-            (return t))))
+            (cl-return t))))
     (company-manual-begin))
   (unless company-candidates
     (error "No other back-end")))
@@ -1371,7 +1371,7 @@ Keywords and function definition names are ignored."
             (run-hook-with-args 'company-completion-started-hook
                                 (company-explicit-action-p))
             (company-call-frontends 'show)))
-        (return c)))))
+        (cl-return c)))))
 
 (defun company-begin ()
   (or (and company-candidates (company--continue))
@@ -1498,8 +1498,8 @@ Keywords and function definition names are ignored."
         (i 0))
     (dolist (line lines)
       (when (string-match quoted line (length company-prefix))
-        (return i))
-      (incf i))))
+        (cl-return i))
+      (cl-incf i))))
 
 (defun company-search-printing-char ()
   (interactive)
@@ -1594,10 +1594,10 @@ Keywords and function definition names are ignored."
     (define-key keymap [t] 'company-search-other-char)
     (while (< i ?\s)
       (define-key keymap (make-string 1 i) 'company-search-other-char)
-      (incf i))
+      (cl-incf i))
     (while (< i 256)
       (define-key keymap (vector i) 'company-search-printing-char)
-      (incf i))
+      (cl-incf i))
     (let ((meta-map (make-sparse-keymap)))
       (define-key keymap (char-to-string meta-prefix-char) meta-map)
       (define-key keymap [escape] meta-map))
@@ -1720,10 +1720,10 @@ and invoke the normal binding."
   (let* ((col-row (posn-actual-col-row (event-start event)))
          (col (car col-row))
          (row (cdr col-row)))
-    (incf col (window-hscroll))
+    (cl-incf col (window-hscroll))
     (and header-line-format
          (version< "24" emacs-version)
-         (decf row))
+         (cl-decf row))
     (cons col row)))
 
 (defun company-select-mouse (event)
@@ -1795,7 +1795,7 @@ To show the number next to the candidates in some back-ends, enable
   (when (company-manual-begin)
     (and (< n 1) (> n company-candidates-length)
          (error "No candidate number %d" n))
-    (decf n)
+    (cl-decf n)
     (company-finish (nth n company-candidates))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1976,26 +1976,26 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (make-variable-buffer-local 'company-tooltip-offset)
 
 (defun company-tooltip--lines-update-offset (selection num-lines limit)
-  (decf limit 2)
+  (cl-decf limit 2)
   (setq company-tooltip-offset
         (max (min selection company-tooltip-offset)
              (- selection -1 limit)))
 
   (when (<= company-tooltip-offset 1)
-    (incf limit)
+    (cl-incf limit)
     (setq company-tooltip-offset 0))
 
   (when (>= company-tooltip-offset (- num-lines limit 1))
-    (incf limit)
+    (cl-incf limit)
     (when (= selection (1- num-lines))
-      (decf company-tooltip-offset)
+      (cl-decf company-tooltip-offset)
       (when (<= company-tooltip-offset 1)
         (setq company-tooltip-offset 0)
-        (incf limit))))
+        (cl-incf limit))))
 
   limit)
 
-(defun company-tooltip--simple-update-offset (selection num-lines limit)
+(defun company-tooltip--simple-update-offset (selection _num-lines limit)
   (setq company-tooltip-offset
         (if (< selection company-tooltip-offset)
             selection
@@ -2114,13 +2114,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (length lst)))
 
 (defun company--replacement-string (lines old column nl &optional align-top)
-  (decf column company-tooltip-margin)
+  (cl-decf column company-tooltip-margin)
 
   (let ((width (length (car lines)))
         (remaining-cols (- (+ (company--window-width) (window-hscroll))
                            column)))
     (when (> width remaining-cols)
-      (decf column (- width remaining-cols))))
+      (cl-decf column (- width remaining-cols))))
 
   (let ((offset (and (< column 0) (- column)))
         new)
@@ -2184,14 +2184,14 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
             remainder (when (> remainder 0)
                         (setq remainder (format "...(%d)" remainder))))))
 
-    (decf selection company-tooltip-offset)
+    (cl-decf selection company-tooltip-offset)
     (setq width (max (length previous) (length remainder))
           lines (nthcdr company-tooltip-offset company-candidates)
           len (min limit len)
           lines-copy lines)
 
-    (decf window-width (* 2 company-tooltip-margin))
-    (when scrollbar-bounds (decf window-width))
+    (cl-decf window-width (* 2 company-tooltip-margin))
+    (when scrollbar-bounds (cl-decf window-width))
 
     (dotimes (_ len)
       (let* ((value (pop lines-copy))
@@ -2228,8 +2228,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (right (company-space-string company-tooltip-margin))
                (width width))
           (when (< numbered 10)
-            (decf width 2)
-            (incf numbered)
+            (cl-decf width 2)
+            (cl-incf numbered)
             (setq right (concat (format " %d" (mod numbered 10)) right)))
           (push (concat
                  (company-fill-propertize str annotation
@@ -2366,7 +2366,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-frontend (command)
   "`company-mode' front-end similar to a tooltip but based on overlays."
-  (case command
+  (cl-case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
     (post-command
      (let ((old-height (if (overlayp company-pseudo-tooltip-overlay)
@@ -2497,8 +2497,8 @@ Returns a negative number if the tooltip should be displayed above point."
           (progn
             (setq comp (propertize (format "%d: %s" i comp)
                                    'face 'company-echo))
-            (incf len 3)
-            (incf i)
+            (cl-incf len 3)
+            (cl-incf i)
             (add-text-properties 3 (+ 3 (length company-common))
                                  '(face company-echo-common) comp))
         (setq comp (propertize comp 'face 'company-echo))
@@ -2525,8 +2525,8 @@ Returns a negative number if the tooltip should be displayed above point."
       (when (< i 10)
         ;; Add number.
         (setq comp (format "%s (%d)" comp i))
-        (incf len 4)
-        (incf i))
+        (cl-incf len 4)
+        (cl-incf i))
       (if (>= len limit)
           (setq candidates nil)
         (push (propertize comp 'face 'company-echo) msg)))

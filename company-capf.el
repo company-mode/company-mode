@@ -25,7 +25,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defvar company--capf-data nil)
 (make-variable-buffer-local 'company--capf-data)
@@ -38,10 +38,10 @@
 (defun company--capf-data ()
   ;; Ignore tags-completion-at-point-function because it subverts company-etags
   ;; in the default value of company-backends, where the latter comes later.
-  (letf* (((default-value 'completion-at-point-functions) nil)
-          (data (run-hook-wrapped 'completion-at-point-functions
-                                  ;; Ignore misbehaving functions.
-                                  #'completion--capf-wrapper 'optimist)))
+  (cl-letf* (((default-value 'completion-at-point-functions) nil)
+             (data (run-hook-wrapped 'completion-at-point-functions
+                                     ;; Ignore misbehaving functions.
+                                     #'completion--capf-wrapper 'optimist)))
     (when (and (consp (cdr data)) (numberp (nth 1 data))) data)))
 
 (defun company-capf (command &optional arg &rest _args)

@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defgroup company-gtags nil
   "Completion back-end for GNU Global."
@@ -75,7 +75,7 @@
 (defun company-gtags (command &optional arg &rest ignored)
   "`company-mode' completion back-end for GNU Global."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-gtags))
     (prefix (and company-gtags-executable
                  (memq major-mode company-gtags-modes)

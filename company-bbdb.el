@@ -20,7 +20,7 @@
 ;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (declare-function bbdb-record-get-field "bbdb")
 (declare-function bbdb-records "bbdb")
@@ -31,17 +31,17 @@
 (defun company-bbdb (command &optional arg &rest ignore)
   "`company-mode' completion back-end for `bbdb'."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-bbdb))
     (prefix (and (eq major-mode 'message-mode)
                  (featurep 'bbdb-com)
                  (looking-back "^\\(To\\|Cc\\|Bcc\\):.*"
                                (line-beginning-position))
                  (company-grab-symbol)))
-    (candidates (mapcan (lambda (record)
-                          (mapcar (lambda (mail) (bbdb-dwim-mail record mail))
-                                  (bbdb-record-get-field record 'mail)))
-                        (bbdb-search (bbdb-records) arg nil arg)))
+    (candidates (cl-mapcan (lambda (record)
+                             (mapcar (lambda (mail) (bbdb-dwim-mail record mail))
+                                     (bbdb-record-get-field record 'mail)))
+                           (bbdb-search (bbdb-records) arg nil arg)))
     (sorted t)
     (no-cache t)))
 

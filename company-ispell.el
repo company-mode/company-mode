@@ -26,8 +26,8 @@
 ;;; Code:
 
 (require 'company)
+(require 'cl-lib)
 (require 'ispell)
-(eval-when-compile (require 'cl))
 
 (defgroup company-ispell nil
   "Completion back-end using Ispell."
@@ -56,7 +56,7 @@ If nil, use `ispell-complete-word-dict'."
 (defun company-ispell (command &optional arg &rest ignored)
   "`company-mode' completion back-end using Ispell."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-ispell))
     (prefix (when (company-ispell-available)
               (company-grab-word)))

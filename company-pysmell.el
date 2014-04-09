@@ -27,8 +27,8 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
 (require 'pysmell)
+(require 'cl-lib)
 
 (defvar company-pysmell--available-p 'unknown)
 (make-variable-buffer-local 'company-pysmell--available-p)
@@ -56,7 +56,7 @@
   "`company-mode' completion back-end for pysmell.
 This requires pysmell.el and pymacs.el."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-pysmell))
     (prefix (and (derived-mode-p 'python-mode)
                  buffer-file-name

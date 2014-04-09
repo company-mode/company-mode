@@ -27,7 +27,7 @@
 
 (require 'company)
 (require 'company-dabbrev)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defgroup company-dabbrev-code nil
   "dabbrev-like completion back-end for code."
@@ -80,7 +80,7 @@ See also `company-dabbrev-code-time-limit'."
 The back-end looks for all symbols in the current buffer that aren't in
 comments or strings."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-dabbrev-code))
     (prefix (and (or (eq t company-dabbrev-code-modes)
                      (apply 'derived-mode-p company-dabbrev-code-modes))

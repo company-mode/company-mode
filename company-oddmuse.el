@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (eval-when-compile (require 'yaooddmuse nil t))
 (eval-when-compile (require 'oddmuse nil t))
 
@@ -34,7 +34,7 @@
   "\\(\\<[A-Z][[:alnum:]]*\\>\\)\\|\\[\\[\\([[:alnum:]]+\\>\\|\\)")
 
 (defun company-oddmuse-get-page-table ()
-  (case major-mode
+  (cl-case major-mode
     (yaoddmuse-mode (with-no-warnings
                       (yaoddmuse-get-pagename-table yaoddmuse-wikiname)))
     (oddmuse-mode (with-no-warnings
@@ -44,7 +44,7 @@
 (defun company-oddmuse (command &optional arg &rest ignored)
   "`company-mode' completion back-end for `oddmuse-mode'."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-oddmuse))
     (prefix (let ((case-fold-search nil))
               (and (memq major-mode '(oddmuse-mode yaoddmuse-mode))

@@ -21,7 +21,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defface company-template-field
   '((((background dark)) (:background "yellow" :foreground "black"))
@@ -59,8 +59,8 @@
   (let* ((start (point))
          (templates (company-template-templates-at (point)))
          (minimum (apply 'max (mapcar 'overlay-end templates)))
-         (fields (loop for templ in templates
-                       append (overlay-get templ 'company-template-fields))))
+         (fields (cl-loop for templ in templates
+                          append (overlay-get templ 'company-template-fields))))
     (dolist (pos (mapcar 'overlay-start fields))
       (and pos
            (> pos (point))
@@ -71,9 +71,9 @@
     (company-template-remove-field (company-template-field-at start))))
 
 (defun company-template-field-at (&optional point)
-  (loop for ovl in (overlays-at (or point (point)))
-        when (overlay-get ovl 'company-template-parent)
-        return ovl))
+  (cl-loop for ovl in (overlays-at (or point (point)))
+           when (overlay-get ovl 'company-template-parent)
+           return ovl))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -98,7 +98,7 @@
   "Add new field to template TEMPL at POS, inserting TEXT.
 When DISPLAY is non-nil, set the respective property on the overlay.
 Leave point at the end of the field."
-  (assert templ)
+  (cl-assert templ)
   (goto-char pos)
   (insert text)
   (when (> (point) (overlay-end templ))
@@ -164,7 +164,7 @@ Leave point at the end of the field."
               (save-excursion
                 (company-template-add-field templ (match-beginning 1)
                                             (format "arg%d" cnt) sig))
-              (incf cnt)))
+              (cl-incf cnt)))
           (company-template-move-to-first templ))))))
 
 (provide 'company-template)

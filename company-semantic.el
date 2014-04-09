@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defvar semantic-idle-summary-function)
 (declare-function semantic-documentation-for-tag "semantic/doc" )
@@ -121,7 +121,7 @@ Symbols are chained by \".\" or \"->\"."
 (defun company-semantic (command &optional arg &rest ignored)
   "`company-mode' completion back-end using CEDET Semantic."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-semantic))
     (prefix (and (featurep 'semantic)
                  (semantic-active-p)

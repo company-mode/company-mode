@@ -25,6 +25,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'yasnippet)
 
 (defun company-yasnippet--candidates (prefix)
@@ -74,7 +75,7 @@ shadow back-ends that come after it.  Recommended usages:
   (global-set-key (kbd \"C-c y\") 'company-yasnippet)
 "
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-yasnippet))
     (prefix
      ;; Should probably use `yas--current-key', but that's bound to be slower.

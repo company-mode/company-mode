@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'help-mode)
 (require 'find-func)
 
@@ -131,14 +131,14 @@ first in the candidates list."
                             (when (looking-at "[ \t\n]*(")
                               (down-list 1))
                             (when (looking-at regexp)
-                              (pushnew (match-string-no-properties 1) res)))
+                              (cl-pushnew (match-string-no-properties 1) res)))
                           (forward-sexp))
                       (scan-error nil)))
                    ((unless functions-p
                       (looking-at company-elisp-var-binding-regexp-1))
                     (down-list 1)
                     (when (looking-at regexp)
-                      (pushnew (match-string-no-properties 1) res)))))))))
+                      (cl-pushnew (match-string-no-properties 1) res)))))))))
       (scan-error nil))
     res))
 
@@ -146,9 +146,9 @@ first in the candidates list."
   (let* ((predicate (company-elisp--candidates-predicate prefix))
          (locals (company-elisp--locals prefix (eq predicate 'fboundp)))
          (globals (company-elisp--globals prefix predicate))
-         (locals (loop for local in locals
-                       when (not (member local globals))
-                       collect local)))
+         (locals (cl-loop for local in locals
+                          when (not (member local globals))
+                          collect local)))
     (if company-elisp-show-locals-first
         (append (sort locals 'string<)
                 (sort globals 'string<))
@@ -195,7 +195,7 @@ first in the candidates list."
 (defun company-elisp (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Emacs Lisp."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-elisp))
     (prefix (and (derived-mode-p 'emacs-lisp-mode 'inferior-emacs-lisp-mode)
                  (company-elisp--prefix)))

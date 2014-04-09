@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'tempo)
 
 (defsubst company-tempo-lookup (match)
@@ -50,7 +50,7 @@
 (defun company-tempo (command &optional arg &rest ignored)
   "`company-mode' completion back-end for tempo."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-tempo
                                         'company-tempo-insert))
     (prefix (or (car (tempo-find-match-string tempo-match-finder)) ""))
