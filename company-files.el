@@ -45,7 +45,7 @@
 (defun company-files-grab-existing-name ()
   ;; Grab file names with spaces, only when they include quotes.
   (let (file dir)
-    (and (dolist (regexp company-files-regexps)
+    (and (cl-dolist (regexp company-files-regexps)
            (when (setq file (company-grab-line regexp 1))
              (cl-return file)))
          (setq dir (file-name-directory file))

@@ -114,7 +114,7 @@ If you set this value to nil, you may also want to set
          (symbols (company-dabbrev--search-buffer regexp (point) nil start limit
                                                   ignore-comments)))
     (when other-buffers
-      (dolist (buffer (delq (current-buffer) (buffer-list)))
+      (cl-dolist (buffer (delq (current-buffer) (buffer-list)))
         (and (or (eq other-buffers 'all)
                  (eq (buffer-local-value 'major-mode buffer) major-mode))
              (with-current-buffer buffer

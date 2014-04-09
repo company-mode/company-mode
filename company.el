@@ -291,7 +291,7 @@ This doesn't include the margins and the scroll bar."
 
 (defun company-safe-backends-p (backends)
   (and (consp backends)
-       (not (dolist (backend backends)
+       (not (cl-dolist (backend backends)
               (unless (if (consp backend)
                           (company-safe-backends-p backend)
                         (assq backend company-safe-backends))
@@ -629,7 +629,7 @@ asynchronous call into synchronous.")
    ;; No initialization for lambdas.
    ((functionp backend) t)
    (t ;; Must be a list.
-    (dolist (b backend)
+    (cl-dolist (b backend)
       (unless (keywordp b)
         (company-init-backend b))))))
 
@@ -848,7 +848,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
       (`duplicates t)
       ((or `prefix `ignore-case `no-cache `require-match)
        (let (value)
-         (dolist (backend backends)
+         (cl-dolist (backend backends)
            (when (setq value (company--force-sync
                               backend (cons command args) backend))
              (cl-return value)))))
@@ -1081,7 +1081,7 @@ can retrieve meta-data for them."
           (let ((len (length prefix))
                 (completion-ignore-case ignore-case)
                 prev)
-            (dotimes (i (1+ len))
+            (cl-dotimes (i (1+ len))
               (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
                                            company-candidates-cache)))
                 (setq candidates (all-completions prefix prev))
@@ -1248,7 +1248,7 @@ Keywords and function definition names are ignored."
                        (append before (reverse after))
                      (append after (reverse before)))))
         (company-cancel)
-        (dolist (backend next)
+        (cl-dolist (backend next)
           (when (ignore-errors (company-begin-backend backend))
             (cl-return t))))
     (company-manual-begin))
@@ -1340,10 +1340,10 @@ Keywords and function definition names are ignored."
 
 (defun company--begin-new ()
   (let (prefix c)
-    (dolist (backend (if company-backend
-                         ;; prefer manual override
-                         (list company-backend)
-                       company-backends))
+    (cl-dolist (backend (if company-backend
+                            ;; prefer manual override
+                            (list company-backend)
+                          company-backends))
       (setq prefix
             (if (or (symbolp backend)
                     (functionp backend))
@@ -1496,7 +1496,7 @@ Keywords and function definition names are ignored."
 (defun company-search (text lines)
   (let ((quoted (regexp-quote text))
         (i 0))
-    (dolist (line lines)
+    (cl-dolist (line lines)
       (when (string-match quoted line (length company-prefix))
         (cl-return i))
       (cl-incf i))))

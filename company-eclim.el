@@ -40,7 +40,7 @@
 
 (defun company-eclim-executable-find ()
   (let (file)
-    (dolist (eclipse-root '("/Applications/eclipse" "/usr/lib/eclipse"
+    (cl-dolist (eclipse-root '("/Applications/eclipse" "/usr/lib/eclipse"
                             "/usr/local/lib/eclipse"))
       (and (file-exists-p (setq file (expand-file-name "plugins" eclipse-root)))
            (setq file (car (last (directory-files file t "^org.eclim_"))))
