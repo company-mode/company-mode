@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defun company-files-directory-files (dir prefix)
   (ignore-errors
@@ -47,7 +47,7 @@
   (let (file dir)
     (and (dolist (regexp company-files-regexps)
            (when (setq file (company-grab-line regexp 1))
-             (return file)))
+             (cl-return file)))
          (setq dir (file-name-directory file))
          (not (string-match "//" dir))
          (file-exists-p dir)
@@ -78,7 +78,7 @@
 (defun company-files (command &optional arg &rest ignored)
   "`company-mode' completion back-end existing file names."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-files))
     (prefix (company-files-grab-existing-name))
     (candidates (company-files-complete arg))

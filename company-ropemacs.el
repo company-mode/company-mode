@@ -25,7 +25,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defun company-ropemacs--grab-symbol ()
   (let ((symbol (company-grab-symbol)))
@@ -58,7 +58,7 @@
 Depends on third-party code: Pymacs (both Python and Emacs packages),
 rope, ropemacs and ropemode."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (init (when (and (derived-mode-p 'python-mode)
                      (not (fboundp 'rope-completions)))
             (require 'pymacs)

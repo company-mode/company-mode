@@ -24,7 +24,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defconst company-css-property-alist
   ;; see http://www.w3.org/TR/CSS21/propidx.html
@@ -280,7 +280,7 @@ Returns \"\" if no property found, but feasible at this position."
 (defun company-css (command &optional arg &rest ignored)
   "`company-mode' completion back-end for `css-mode'."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-css))
     (prefix (and (derived-mode-p 'css-mode)
                  (or (company-grab company-css-tag-regexp 1)

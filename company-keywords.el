@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 
 (defun company-keywords-upper-lower (&rest lst)
   ;; Upcase order is different for _.
@@ -218,7 +218,7 @@
 (defun company-keywords (command &optional arg &rest ignored)
   "`company-mode' back-end for programming language keywords."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-keywords))
     (prefix (and (assq major-mode company-keywords-alist)
                  (not (company-in-string-or-comment))

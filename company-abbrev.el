@@ -26,7 +26,7 @@
 ;;; Code:
 
 (require 'company)
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'abbrev)
 
 (defun company-abbrev-insert (match)
@@ -37,7 +37,7 @@
 (defun company-abbrev (command &optional arg &rest ignored)
   "`company-mode' completion back-end for abbrev."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-abbrev
                                         'company-abbrev-insert))
     (prefix (company-grab-symbol))

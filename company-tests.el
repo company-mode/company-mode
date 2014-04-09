@@ -25,7 +25,6 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
 (require 'ert)
 (require 'company)
 (require 'company-keywords)
@@ -62,7 +61,7 @@
     (let (company-frontends
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abc" "abd")))))))
       (company-manual-begin)
@@ -91,11 +90,11 @@
 (ert-deftest company-multi-backend-with-lambdas ()
   (let ((company-backend
          (list (lambda (command &optional arg &rest ignore)
-                 (case command
+                 (cl-case command
                    (prefix "z")
                    (candidates '("a" "b"))))
                (lambda (command &optional arg &rest ignore)
-                 (case command
+                 (cl-case command
                    (prefix "z")
                    (candidates '("c" "d")))))))
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
@@ -103,19 +102,19 @@
 (ert-deftest company-multi-backend-remembers-candidate-backend ()
   (let ((company-backend
          (list (lambda (command &optional arg)
-                 (case command
+                 (cl-case command
                    (ignore-case nil)
                    (annotation "1")
                    (candidates '("a" "c"))
                    (post-completion "13")))
                (lambda (command &optional arg)
-                 (case command
+                 (cl-case command
                    (ignore-case t)
                    (annotation "2")
                    (candidates '("b" "d"))
                    (post-completion "42")))
                (lambda (command &optional arg)
-                 (case command
+                 (cl-case command
                    (annotation "3")
                    (candidates '("e"))
                    (post-completion "74"))))))
@@ -131,11 +130,11 @@
 
 (ert-deftest company-multi-backend-handles-keyword-with ()
   (let ((primo (lambda (command &optional arg)
-                 (case command
+                 (cl-case command
                    (prefix "a")
                    (candidates '("abb" "abc" "abd")))))
         (secundo (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix "a")
                      (candidates '("acc" "acd"))))))
     (let ((company-backend (list 'ignore 'ignore :with secundo)))
@@ -154,7 +153,7 @@
     (let (company-frontends
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix "a")
                      (candidates '("a" "ab" "ac")))))))
       (let (this-command)
@@ -169,7 +168,7 @@
           (company-require-match 'company-explicit-action-p)
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abc" "abd")))))))
       (let (this-command)
@@ -187,7 +186,7 @@
           (company-require-match 'company-explicit-action-p)
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abc" "abd")))))))
       (company-idle-begin (current-buffer) (selected-window)
@@ -205,7 +204,7 @@
           company-begin-commands
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abc" "abd")))))))
       (let ((company-continue-commands nil))
@@ -227,7 +226,7 @@
           company-begin-commands
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abc" "abd")))))))
       (let ((company-continue-commands '(not backward-delete-char)))
@@ -250,7 +249,7 @@
           (company-auto-complete-chars '(? ))
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abcd" "abef")))))))
       (let (this-command)
@@ -268,7 +267,7 @@
           (company-auto-complete-chars '(? ))
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abcd" "abef")))))))
       (company-idle-begin (current-buffer) (selected-window)
@@ -293,7 +292,7 @@
           company-end-of-buffer-workaround
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abcd" "abef"))
                      (ignore-case t))))))
@@ -313,7 +312,7 @@
     (let (company-frontends
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("abcd" "abef"))
                      (ignore-case 'keep-prefix))))))
@@ -330,7 +329,7 @@
           company-end-of-buffer-workaround
           (company-backends
            (list (lambda (command &optional arg)
-                   (case command
+                   (cl-case command
                      (prefix (buffer-substring (point-min) (point)))
                      (candidates '("tea-cup" "teal-color")))))))
       (let (this-command)
@@ -350,7 +349,7 @@
             (company-begin-commands '(self-insert-command))
             (company-backends
              (list (lambda (c &optional arg)
-                     (case c (prefix "") (candidates '("a" "b" "c")))))))
+                     (cl-case c (prefix "") (candidates '("a" "b" "c")))))))
         (let (this-command)
           (company-call 'complete))
         (company-call 'open-line 1)

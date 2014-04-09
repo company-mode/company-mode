@@ -25,8 +25,8 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
 (require 'company)
+(require 'cl-lib)
 (require 'etags)
 
 (defgroup company-etags nil
@@ -76,7 +76,7 @@ buffer automatically."
 (defun company-etags (command &optional arg &rest ignored)
   "`company-mode' completion back-end for etags."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-etags))
     (prefix (and (apply 'derived-mode-p company-etags-modes)
                  (not (company-in-string-or-comment))

@@ -80,14 +80,14 @@
                      (company-elisp-candidates "wh"))))))
 
 (ert-deftest company-elisp-candidates-predicate-binding-without-value ()
-  (loop for (text prefix predicate) in '(("(let (foo|" "foo" boundp)
-                                         ("(let (foo (bar|" "bar" boundp)
-                                         ("(let (foo) (bar|" "bar" fboundp))
-        do
-        (eval `(company-elisp-with-buffer
-                 ,text
-                 (should (eq ',predicate
-                             (company-elisp--candidates-predicate ,prefix)))))))
+  (cl-loop for (text prefix predicate) in '(("(let (foo|" "foo" boundp)
+                                            ("(let (foo (bar|" "bar" boundp)
+                                            ("(let (foo) (bar|" "bar" fboundp))
+           do
+           (eval `(company-elisp-with-buffer
+                   ,text
+                   (should (eq ',predicate
+                               (company-elisp--candidates-predicate ,prefix)))))))
 
 (ert-deftest company-elisp-finds-vars ()
   (let ((obarray [boo bar baz backquote])
