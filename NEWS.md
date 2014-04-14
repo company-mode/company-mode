@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-clang-insert-arguments`, by default t.
 * Default value of `company-idle-delay` lowered to `0.5`.
 * New user option `company-tooltip-minimum-width`, by default 0.
 * New function `company-grab-symbol-cons`.
