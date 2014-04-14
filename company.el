@@ -1241,17 +1241,17 @@ Keywords and function definition names are ignored."
 (defun company-other-backend (&optional backward)
   (interactive (list current-prefix-arg))
   (company-assert-enabled)
-  (if company-backend
-      (let* ((after (cdr (member company-backend company-backends)))
-             (before (cdr (member company-backend (reverse company-backends))))
-             (next (if backward
-                       (append before (reverse after))
-                     (append after (reverse before)))))
-        (company-cancel)
-        (cl-dolist (backend next)
-          (when (ignore-errors (company-begin-backend backend))
-            (cl-return t))))
-    (company-manual-begin))
+  (let* ((after (if company-backend
+                    (cdr (member company-backend company-backends))
+                  company-backends))
+         (before (cdr (member company-backend (reverse company-backends))))
+         (next (if backward
+                   (append before (reverse after))
+                 (append after (reverse before)))))
+    (company-cancel)
+    (cl-dolist (backend next)
+      (when (ignore-errors (company-begin-backend backend))
+        (cl-return t))))
   (unless company-candidates
     (error "No other back-end")))
 
