@@ -297,16 +297,13 @@ This doesn't include the margins and the scroll bar."
                         (assq backend company-safe-backends))
                 (cl-return t))))))
 
-(defvar company--include-capf (version< "24.3.50" emacs-version))
-
-(defcustom company-backends `(,@(unless company--include-capf
+(defcustom company-backends `(,@(unless (version< "24.3.50" emacs-version)
                                   (list 'company-elisp))
                               company-bbdb
                               company-nxml company-css
                               company-eclim company-semantic company-clang
                               company-xcode company-ropemacs company-cmake
-                              ,@(when company--include-capf
-                                  (list 'company-capf))
+                              company-capf
                               (company-dabbrev-code company-gtags company-etags
                                company-keywords)
                               company-oddmuse company-files company-dabbrev)

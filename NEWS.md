@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-capf` is included in `company-backends` in any supported Emacs
+  version (>= 24.1). `company-elisp` goes before it if Emacs version is < 24.4.
 * New user option `company-clang-insert-arguments`, by default t.
 * Default value of `company-idle-delay` lowered to `0.5`.
 * New user option `company-tooltip-minimum-width`, by default 0.

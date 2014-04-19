@@ -45,8 +45,7 @@
     (when (and (consp (cdr data)) (numberp (nth 1 data))) data)))
 
 (defun company-capf (command &optional arg &rest _args)
-  "`company-mode' back-end using `completion-at-point-functions'.
-Requires Emacs 24.1 or newer."
+  "`company-mode' back-end using `completion-at-point-functions'."
   (interactive (list 'interactive))
   (pcase command
     (`interactive (company-begin-backend 'company-capf))
