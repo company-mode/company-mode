@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-04-19 (0.8.0)
 
 * `company-capf` is included in `company-backends` in any supported Emacs
   version (>= 24.1). `company-elisp` goes before it if Emacs version is < 24.4.
