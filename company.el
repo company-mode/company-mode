@@ -599,7 +599,9 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (dotimes (i 10)
       (define-key keymap (vector (+ (aref (kbd "M-0") 0) i))
-        `(lambda () (interactive) (company-complete-number ,i))))
+        `(lambda ()
+           (interactive)
+           (company-complete-number ,(if (zerop i) 10 i)))))
 
     keymap)
   "Keymap that is enabled during an active completion.")
@@ -1790,7 +1792,7 @@ inserted."
 To show the number next to the candidates in some back-ends, enable
 `company-show-numbers'."
   (when (company-manual-begin)
-    (and (< n 1) (> n company-candidates-length)
+    (and (or (< n 1) (> n company-candidates-length))
          (error "No candidate number %d" n))
     (cl-decf n)
     (company-finish (nth n company-candidates))))
