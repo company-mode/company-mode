@@ -145,7 +145,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (let ((meta (company-clang--meta candidate)))
     (cond
      ((null meta) nil)
-     ((string-match ":" meta)
+     ((string-match "[^:]:[^:]" meta)
       (substring meta (match-beginning 0)))
      ((string-match "\\((.*)\\'\\)" meta)
       (match-string 1 meta)))))
@@ -316,9 +316,9 @@ passed via standard input."
     (post-completion (let ((anno (company-clang--annotation arg)))
                        (when (and company-clang-insert-arguments anno)
                          (insert anno)
-                         (if (string-match ":" anno)
+                         (if (string-match "[^:]:[^:]" anno)
                              (company-clang-objc-templatify anno)
-                          (company-template-c-like-templatify anno)))))))
+                           (company-template-c-like-templatify anno)))))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here
