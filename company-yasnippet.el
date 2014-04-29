@@ -82,7 +82,10 @@ shadow back-ends that come after it.  Recommended usages:
      ;; How many trigger keys start with non-symbol characters anyway?
      (and yas-minor-mode
           (company-grab-symbol)))
-    (annotation (concat " -> " (get-text-property 0 'yas-annotation arg)))
+    (annotation
+     (concat
+      (unless company-tooltip-align-annotations " -> ")
+      (get-text-property 0 'yas-annotation arg)))
     (candidates (company-yasnippet--candidates arg))
     (post-completion
      (let ((template (get-text-property 0 'yas-template arg)))
