@@ -2271,16 +2271,19 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (- (nth 3 edges) (nth 1 edges))))
 
 (defsubst company--window-width ()
-  (- (window-width)
-     (cond
-      ((display-graphic-p) 0)
-      ;; Account for the line continuation column.
-      ((version< "24.3.1" emacs-version) 1)
+  (let ((ww (window-width)))
+    ;; Account for the line continuation column.
+    (when (zerop (cadr (window-fringes)))
+      (cl-decf ww))
+    (unless (or (display-graphic-p)
+                (version< "24.3.1" emacs-version))
       ;; Emacs 24.3 and earlier included margins
       ;; in window-width when in TTY.
-      (t (1+ (let ((margins (window-margins)))
-               (+ (or (car margins) 0)
-                  (or (cdr margins) 0))))))))
+      (cl-decf ww
+               (let ((margins (window-margins)))
+                 (+ (or (car margins) 0)
+                    (or (cdr margins) 0)))))
+    ww))
 
 (defun company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
