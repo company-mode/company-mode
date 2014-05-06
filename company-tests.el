@@ -548,6 +548,7 @@
   (with-temp-buffer
     (company-mode)
     (let (company-frontends
+          company-transformers
           (company-backends (list 'company-async-backend)))
       (company-manual-begin)
       (should (equal "foo" company-prefix))
@@ -557,6 +558,7 @@
   (with-temp-buffer
     (company-mode)
     (let (company-frontends
+          company-transformers
           (company-backends (list 'company-async-backend)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
@@ -575,7 +577,6 @@
       (should (null company-candidates))
       (insert "a")
       (sleep-for 0.1)
-      (should (null company-prefix))
       (should (null company-candidates)))))
 
 (ert-deftest company-idle-begin-async-allows-immediate-callbacks ()

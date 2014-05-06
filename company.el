@@ -1176,7 +1176,7 @@ Keywords and function definition names are ignored."
            (lambda (candidate)
              (when (or
                     (save-excursion
-                      (progn (forward-line 0)
+                      (progn (forward-char (- (length company-prefix)))
                              (search-backward candidate (window-start) t)))
                     (save-excursion
                       (search-forward candidate (window-end) t)))
@@ -1354,14 +1354,13 @@ Keywords and function definition names are ignored."
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
         (when (company--good-prefix-p prefix)
-          (setq prefix (or (car-safe prefix) prefix)
+          (setq company-prefix (or (car-safe prefix) prefix)
                 company-backend backend
-                c (company-calculate-candidates prefix))
+                c (company-calculate-candidates company-prefix))
           ;; t means complete/unique.  We don't start, so no hooks.
           (if (not (consp c))
               (when company--manual-action
                 (message "No completion found"))
-            (setq company-prefix prefix)
             (when company--manual-action
               (setq company--manual-prefix prefix))
             (when (symbolp backend)
