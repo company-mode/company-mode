@@ -1602,7 +1602,8 @@ Keywords and function definition names are ignored."
       (define-key keymap [escape] meta-map))
     (define-key keymap (vector meta-prefix-char t) 'company-search-other-char)
     (define-key keymap "\e\e\e" 'company-search-other-char)
-    (define-key keymap  [escape escape escape] 'company-search-other-char)
+    (define-key keymap [escape escape escape] 'company-search-other-char)
+    (define-key keymap (kbd "DEL") 'company-search-other-char)
 
     (define-key keymap "\C-g" 'company-search-abort)
     (define-key keymap "\C-s" 'company-search-repeat-forward)
