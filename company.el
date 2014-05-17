@@ -860,7 +860,8 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 
 (defun company--multi-backend-adapter-candidates (backends prefix)
   (let ((pairs (cl-loop for backend in (cdr backends)
-                        when (equal (funcall backend 'prefix)
+                        when (equal (company--prefix-str
+                                     (funcall backend 'prefix))
                                     prefix)
                         collect (cons (funcall backend 'candidates prefix)
                                       (let ((b backend))
@@ -869,7 +870,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                                            (lambda (str)
                                              (propertize str 'company-backend b))
                                            candidates)))))))
-    (when (equal (funcall (car backends) 'prefix) prefix)
+    (when (equal (company--prefix-str (funcall (car backends) 'prefix)) prefix)
       ;; Small perf optimization: don't tag the candidates received
       ;; from the first backend in the group.
       (push (cons (funcall (car backends) 'candidates prefix)
@@ -907,6 +908,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                               (setq pending (delq fetcher pending))
                               (setcar cell (funcall mapper res))
                               (funcall finisher)))))))))))))
+
+(defun company--prefix-str (prefix)
+  (or (car-safe prefix) prefix))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1187,8 +1191,8 @@ Keywords and function definition names are ignored."
                          (and (not (memq (get-text-property (point) 'face)
                                          '(font-lock-function-name-face
                                            font-lock-keyword-face)))
-                              (let* ((prefix (company-call-backend 'prefix))
-                                     (prefix (or (car-safe prefix) prefix)))
+                              (let ((prefix (company--prefix-str
+                                             (company-call-backend 'prefix))))
                                 (and (stringp prefix)
                                      (= (length prefix) (- end beg))))))
                    (push (cons candidate (if (< beg (point))
@@ -1304,7 +1308,7 @@ Keywords and function definition names are ignored."
      (t (company-cancel)))))
 
 (defun company--good-prefix-p (prefix)
-  (and (stringp (or (car-safe prefix) prefix)) ;excludes 'stop
+  (and (stringp (company--prefix-str prefix)) ;excludes 'stop
        (or (eq (cdr-safe prefix) t)
            (let ((len (or (cdr-safe prefix) (length prefix))))
              (if company--manual-prefix
@@ -1320,7 +1324,7 @@ Keywords and function definition names are ignored."
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (c (when (and (company--good-prefix-p new-prefix)
-                       (setq new-prefix (or (car-safe new-prefix) new-prefix))
+                       (setq new-prefix (company--prefix-str new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
               (company-calculate-candidates new-prefix))))
@@ -1354,7 +1358,7 @@ Keywords and function definition names are ignored."
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
         (when (company--good-prefix-p prefix)
-          (setq company-prefix (or (car-safe prefix) prefix)
+          (setq company-prefix (company--prefix-str prefix)
                 company-backend backend
                 c (company-calculate-candidates company-prefix))
           ;; t means complete/unique.  We don't start, so no hooks.

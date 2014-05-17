@@ -99,6 +99,22 @@
                    (candidates '("c" "d")))))))
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
 
+(ert-deftest company-multi-backend-filters-backends-by-prefix ()
+  (let ((company-backend
+         (list (lambda (command &optional arg &rest ignore)
+                 (cl-case command
+                   (prefix (cons "z" t))
+                   (candidates '("a" "b"))))
+               (lambda (command &optional arg &rest ignore)
+                 (cl-case command
+                   (prefix "t")
+                   (candidates '("c" "d"))))
+               (lambda (command &optional arg &rest ignore)
+                 (cl-case command
+                   (prefix "z")
+                   (candidates '("e" "f")))))))
+    (should (equal (company-call-backend 'candidates "z") '("a" "b" "e" "f")))))
+
 (ert-deftest company-multi-backend-remembers-candidate-backend ()
   (let ((company-backend
          (list (lambda (command &optional arg)
