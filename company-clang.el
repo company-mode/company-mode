@@ -217,14 +217,14 @@ or automatically through a custom `company-clang-prefix-guesser'."
                   t))))))
 
 (defsubst company-clang--build-complete-args (pos)
-  (append '("-cc1" "-fsyntax-only" "-code-completion-macros")
+  (append '("-fsyntax-only" "-Xclang" "-code-completion-macros")
           (unless (company-clang--auto-save-p)
             (list "-x" (company-clang--lang-option)))
           company-clang-arguments
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
-          '("-code-completion-at")
-          (list (company-clang--build-location pos))
+          (list "-Xclang" (format "-code-completion-at=%s"
+                                  (company-clang--build-location pos)))
           (list (if (company-clang--auto-save-p) buffer-file-name "-"))))
 
 (defun company-clang--candidates (prefix callback)
