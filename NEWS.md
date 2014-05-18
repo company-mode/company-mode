@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* `company-clang` uses the standard header search paths by default.
+
 ## 2014-04-19 (0.8.0)
 
 * `company-capf` is included in `company-backends` in any supported Emacs
