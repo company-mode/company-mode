@@ -147,7 +147,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
      ((null meta) nil)
      ((string-match "[^:]:[^:]" meta)
       (substring meta (1+ (match-beginning 0))))
-     ((string-match "\\((.*)\\'\\)" meta)
+     ((string-match "\\((.*)[ a-z]*\\'\\)" meta)
       (match-string 1 meta)))))
 
 (defun company-clang--strip-formatting (text)
