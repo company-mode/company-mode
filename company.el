@@ -1331,7 +1331,9 @@ Keywords and function definition names are ignored."
     (cond
      ((eq c t)
       ;; t means complete/unique.
-      (company-cancel new-prefix))
+      ;; Handle it like completion was aborted, to differentiate from user
+      ;; calling one of Company's commands to insert the candidate.
+      (company-cancel 'unique))
      ((consp c)
       ;; incremental match
       (setq company-prefix new-prefix)
