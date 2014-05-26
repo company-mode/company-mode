@@ -59,17 +59,19 @@
 (defun company-files-complete (prefix)
   (let* ((dir (file-name-directory prefix))
          (file (file-name-nondirectory prefix))
-         candidates)
+         candidates directories)
     (unless (equal dir (car company-files-completion-cache))
       (dolist (file (company-files-directory-files dir file))
         (setq file (concat dir file))
         (push file candidates)
         (when (file-directory-p file)
-          ;; Add one level of children.
-          (dolist (child (company-files-directory-files file ""))
-            (push (concat file
-                          (unless (eq (aref file (1- (length file))) ?/) "/")
-                          child) candidates))))
+          (push file directories)))
+      (dolist (directory (reverse directories))
+        ;; Add one level of children.
+        (dolist (child (company-files-directory-files directory ""))
+          (push (concat directory
+                        (unless (eq (aref directory (1- (length directory))) ?/) "/")
+                        child) candidates)))
       (setq company-files-completion-cache (cons dir (nreverse candidates))))
     (all-completions prefix
                      (cdr company-files-completion-cache))))
