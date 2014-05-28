@@ -264,6 +264,10 @@ This doesn't include the margins and the scroll bar."
   "When non-nil, align annotations to the right tooltip border."
   :type 'boolean)
 
+(defcustom company-tooltip-flip-when-above nil
+  "Whether to flip the tooltip when it's above the current line."
+  :type 'boolean)
+
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
     (company-bbdb . "BBDB")
@@ -2120,6 +2124,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company--replacement-string (lines old column nl &optional align-top)
   (cl-decf column company-tooltip-margin)
+
+  (when (and align-top company-tooltip-flip-when-abovex)
+    (setq lines (reverse lines)))
 
   (let ((width (length (car lines)))
         (remaining-cols (- (+ (company--window-width) (window-hscroll))

@@ -3,6 +3,7 @@
 ## Next
 
 * `company-clang` uses the standard header search paths by default.
+* New user option `company-tooltip-flip-when-above`.
 
 ## 2014-04-19 (0.8.0)
 
