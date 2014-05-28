@@ -2125,7 +2125,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company--replacement-string (lines old column nl &optional align-top)
   (cl-decf column company-tooltip-margin)
 
-  (when (and align-top company-tooltip-flip-when-abovex)
+  (when (and align-top company-tooltip-flip-when-above)
     (setq lines (reverse lines)))
 
   (let ((width (length (car lines)))
