@@ -88,9 +88,9 @@
     (candidates (company-gtags-fetch-tags arg))
     (sorted t)
     (duplicates t)
-    (annotation (let (annotation)
-                  (when (string-match (concat arg "\\((.*)\\).*") (get-text-property 0 'meta arg))
-                    (match-string 1 (get-text-property 0 'meta arg)))))
+    (annotation (let ((meta (get-text-property 0 'meta arg)))
+                  (when (string-match (concat arg "\\((.*)\\).*") meta)
+                    (match-string 1 meta))))
     (meta (get-text-property 0 'meta arg))
     (location (get-text-property 0 'location arg))))
 
