@@ -4,6 +4,7 @@
 
 * `company-clang` uses the standard header search paths by default.
 * New user option `company-tooltip-flip-when-above`.
+* User option `company-dabbrev-code-other-buffers` can have a new value: `code`.
 
 ## 2014-04-19 (0.8.0)
 
