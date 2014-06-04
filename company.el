@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.8.0
+;; Version: 0.8.1-cvs
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -236,7 +236,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (function :tag "custom function" nil))))
 
 (defcustom company-tooltip-limit 10
-  "The maximum number of candidates in the tooltip"
+  "The maximum number of candidates in the tooltip."
   :type 'integer)
 
 (defcustom company-tooltip-minimum 6
@@ -266,7 +266,8 @@ This doesn't include the margins and the scroll bar."
 
 (defcustom company-tooltip-flip-when-above nil
   "Whether to flip the tooltip when it's above the current line."
-  :type 'boolean)
+  :type 'boolean
+  :package-version '(company . "0.8.1"))
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
