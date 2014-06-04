@@ -1516,9 +1516,9 @@ Keywords and function definition names are ignored."
   (setq company-search-string
         (concat (or company-search-string "") (string last-command-event))
         company-search-lighter (concat " Search: \"" company-search-string
-                                        "\""))
+                                       "\""))
   (let ((pos (company-search company-search-string
-                              (nthcdr company-selection company-candidates))))
+                             (nthcdr company-selection company-candidates))))
     (if (null pos)
         (ding)
       (company-set-selection (+ company-selection pos) t))))
@@ -1528,8 +1528,8 @@ Keywords and function definition names are ignored."
   (interactive)
   (company-search-assert-enabled)
   (let ((pos (company-search company-search-string
-                              (cdr (nthcdr company-selection
-                                           company-candidates)))))
+                             (cdr (nthcdr company-selection
+                                          company-candidates)))))
     (if (null pos)
         (ding)
       (company-set-selection (+ company-selection pos 1) t))))
@@ -1539,9 +1539,9 @@ Keywords and function definition names are ignored."
   (interactive)
   (company-search-assert-enabled)
   (let ((pos (company-search company-search-string
-                              (nthcdr (- company-candidates-length
-                                         company-selection)
-                                      (reverse company-candidates)))))
+                             (nthcdr (- company-candidates-length
+                                        company-selection)
+                                     (reverse company-candidates)))))
     (if (null pos)
         (ding)
       (company-set-selection (- company-selection pos 1) t))))
@@ -1956,13 +1956,13 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
     (company-begin-backend
      (lambda (command &optional arg &rest ignored)
        (pcase command
-        (`prefix
-         (when (equal (point) (marker-position begin-marker))
-           (buffer-substring (- (point) (or prefix-length 0)) (point))))
-        (`candidates
-         (all-completions arg candidates))
-        (`require-match
-         require-match)))
+         (`prefix
+          (when (equal (point) (marker-position begin-marker))
+            (buffer-substring (- (point) (or prefix-length 0)) (point))))
+         (`candidates
+          (all-completions arg candidates))
+         (`require-match
+          require-match)))
      callback)))
 
 (defun company-version (&optional show-version)
@@ -2276,7 +2276,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
   (propertize (concat (company-space-string company-tooltip-margin)
                       (company-safe-substring text 0 width)
                       (company-space-string company-tooltip-margin))
-   'face 'company-tooltip))
+              'face 'company-tooltip))
 
 ;; show
 
