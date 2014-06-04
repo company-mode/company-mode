@@ -260,7 +260,8 @@ If this many lines are not available, prefer to display the tooltip above."
 (defcustom company-tooltip-minimum-width 0
   "The minimum width of the tooltip's inner area.
 This doesn't include the margins and the scroll bar."
-  :type 'integer)
+  :type 'integer
+  :package-version '(company . "0.8.0"))
 
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
@@ -275,7 +276,8 @@ This doesn't include the margins and the scroll bar."
 
 (defcustom company-tooltip-align-annotations nil
   "When non-nil, align annotations to the right tooltip border."
-  :type 'boolean)
+  :type 'boolean
+  :package-version '(company . "0.7.1"))
 
 (defcustom company-tooltip-flip-when-above nil
   "Whether to flip the tooltip when it's above the current line."
@@ -480,7 +482,8 @@ back-end, consider using the `post-completion' command instead."
   "If enabled, cancel a manually started completion when the prefix gets
 shorter than both `company-minimum-prefix-length' and the length of the
 prefix it was started from."
-  :type 'boolean)
+  :type 'boolean
+  :package-version '(company . "0.8.0"))
 
 (defcustom company-require-match 'company-explicit-action-p
   "If enabled, disallow non-matching input.

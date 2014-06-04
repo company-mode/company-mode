@@ -61,7 +61,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
   "Major modes which clang may complete.")
 
 (defcustom company-clang-insert-arguments t
-  "When non-nil, insert function arguments as a template after completion.")
+  "When non-nil, insert function arguments as a template after completion."
+  :type 'boolean
+  :package-version '(company . "0.8.0"))
 
 ;; prefix ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
