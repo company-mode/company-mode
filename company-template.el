@@ -35,8 +35,7 @@
     (define-key keymap (kbd "TAB") 'company-template-forward-field)
     keymap))
 
-(defvar company-template--buffer-templates nil)
-(make-variable-buffer-local 'company-template--buffer-templates)
+(defvar-local company-template--buffer-templates nil)
 
 ;; interactive ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

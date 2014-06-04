@@ -41,8 +41,7 @@
   'company-gtags-gnu-global-program-name
   'company-gtags-executable "earlier")
 
-(defvar company-gtags--tags-available-p 'unknown)
-(make-variable-buffer-local 'company-gtags--tags-available-p)
+(defvar-local company-gtags--tags-available-p 'unknown)
 
 (defvar company-gtags-modes '(c-mode c++-mode jde-mode java-mode php-mode))
 
@@ -64,7 +63,7 @@
                                      "\\([^ ]*\\)" ;; completion
                                      "[ \t]+\\([[:digit:]]+\\)" ;; linum
                                      "[ \t]+\\([^ \t]+\\)" ;; file
-                                     "[ \t]+\\(.*\\)" ;; definition 
+                                     "[ \t]+\\(.*\\)" ;; definition
                                      "$"
                                      ) nil t)
                  collect
