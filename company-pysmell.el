@@ -28,10 +28,10 @@
 ;;; Code:
 
 (if t (require 'pysmell))               ;Don't load during compilation.
+(require 'company)
 (require 'cl-lib)
 
-(defvar company-pysmell--available-p 'unknown)
-(make-variable-buffer-local 'company-pysmell--available-p)
+(defvar-local company-pysmell--available-p 'unknown)
 
 (defun company-pysmell--available-p ()
   (if (eq company-pysmell--available-p 'unknown)

@@ -49,9 +49,8 @@
 
 (defvar company-semantic-modes '(c-mode c++-mode jde-mode java-mode))
 
-(defvar company-semantic--current-tags nil
+(defvar-local company-semantic--current-tags nil
   "Tags for the current context.")
-(make-variable-buffer-local 'company-semantic--current-tags)
 
 (defun company-semantic-documentation-for-tag (tag)
   (when (semantic-tag-buffer tag)

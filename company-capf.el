@@ -25,10 +25,10 @@
 
 ;;; Code:
 
+(require 'company)
 (require 'cl-lib)
 
-(defvar company--capf-data nil)
-(make-variable-buffer-local 'company--capf-data)
+(defvar-local company--capf-data nil)
 
 (defun company--capf-clear-data (&optional _ignore)
   (setq company--capf-data nil)

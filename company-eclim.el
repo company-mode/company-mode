@@ -60,11 +60,9 @@ eclim can only complete correctly when the buffer has been saved."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-eclim--project-dir 'unknown)
-(make-variable-buffer-local 'company-eclim--project-dir)
+(defvar-local company-eclim--project-dir 'unknown)
 
-(defvar company-eclim--project-name nil)
-(make-variable-buffer-local 'company-eclim--project-name)
+(defvar-local company-eclim--project-name nil)
 
 (declare-function json-read "json")
 (defvar json-array-type)

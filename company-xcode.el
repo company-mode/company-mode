@@ -62,8 +62,7 @@ valid in most contexts."
               (const "Structure") (const "Type") (const "Union")
               (const "Variable") (const "Function")))
 
-(defvar company-xcode-project 'unknown)
-(make-variable-buffer-local 'company-xcode-project)
+(defvar-local company-xcode-project 'unknown)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
