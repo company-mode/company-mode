@@ -2,9 +2,10 @@
 
 ## Next
 
-* `company-clang` uses the standard header search paths by default.
-* New user option `company-tooltip-flip-when-above`.
+* `company-gtags` supports `meta` and `annotation`.
 * User option `company-dabbrev-code-other-buffers` can have a new value: `code`.
+* New user option `company-tooltip-flip-when-above`.
+* `company-clang` uses the standard header search paths by default.
 
 ## 2014-04-19 (0.8.0)
 
