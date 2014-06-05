@@ -32,7 +32,8 @@
      "center-right" "right" "far-right" "right-side" "behind" "leftwards"
      "rightwards")
     ("background" background-color background-image background-repeat
-     background-attachment background-position)
+     background-attachment background-position
+     background-clip background-origin background-size)
     ("background-attachment" "scroll" "fixed")
     ("background-color" color "transparent")
     ("background-image" uri "none")
@@ -118,7 +119,9 @@
     ("outline-color" color "invert")
     ("outline-style" border-style)
     ("outline-width" border-width)
-    ("overflow" "visible" "hidden" "scroll" "auto")
+    ("overflow" "visible" "hidden" "scroll" "auto"
+     ;; CSS3:
+     "no-display" "no-content")
     ("padding" padding-width)
     ("padding-bottom" padding-width)
     ("padding-left" padding-width)
@@ -162,7 +165,75 @@
     ("widows" integer)
     ("width" length percentage "auto")
     ("word-spacing" "normal" length)
-    ("z-index" "auto" integer))
+    ("z-index" "auto" integer)
+    ;; CSS3
+    ("animation" animation-name animation-duration animation-timing-function
+     animation-delay animation-iteration-count animation-direction
+     animation-fill-mode)
+    ("animation-delay" time)
+    ("animation-direction" "normal" "reverse" "alternate" "alternate-reverse")
+    ("animation-duration" time)
+    ("animation-fill-mode" "none" "forwards" "backwards" "both")
+    ("animation-iteration-count" integer "infinite")
+    ("animation-name" "none")
+    ("animation-play-state" "paused" "running")
+    ("animation-timing-function" transition-timing-function
+     "step-start" "step-end" "steps(,)")
+    ("backface-visibility" "visible" "hidden")
+    ("background-clip" background-origin)
+    ("background-origin" "border-box" "padding-box" "content-box")
+    ("background-size" length percentage "auto" "cover" "contain")
+    ("border-image" border-image-outset border-image-repeat border-image-source
+     border-image-slice border-image-width)
+    ("border-image-outset" length)
+    ("border-image-repeat" "stretch" "repeat" "round" "space")
+    ("border-image-source" uri "none")
+    ("border-image-slice" length)
+    ("border-image-width" length percentage)
+    ("border-radius" length)
+    ("border-top-left-radius" length)
+    ("border-top-right-radius" length)
+    ("border-bottom-left-radius" length)
+    ("border-bottom-right-radius" length)
+    ("box-decoration-break" "slice" "clone")
+    ("box-shadow" length color)
+    ("box-sizing" "content-box" "border-box")
+    ("break-after" "auto" "always" "avoid" "left" "right" "page" "column"
+     "avoid-page" "avoid-column")
+    ("break-before" break-after)
+    ("break-inside" "avoid" "auto")
+    ("columns" column-width column-count)
+    ("column-count" integer)
+    ("column-fill" "auto" "balance")
+    ("column-gap" length "normal")
+    ("column-rule" column-rule-width column-rule-style column-rule-color)
+    ("column-rule-color" color)
+    ("column-rule-style" border-style)
+    ("column-rule-width" border-width)
+    ("column-span" "all" "none")
+    ("column-width" length "auto")
+    ("marquee-direction" "forward" "reverse")
+    ("marquee-play-count" integer "infinite")
+    ("marquee-speed" "slow" "normal" "fast")
+    ("marquee-style" "scroll" "slide" "alternate")
+    ("opacity" number)
+    ("overflow-x" overflow)
+    ("overflow-y" overflow)
+    ("overflow-style" "auto" "marquee-line" "marquee-block")
+    ("perspective" "none" length)
+    ("perspective-origin" percentage length "left" "center" "right" "top" "bottom")
+    ("text-overflow" "clip" "ellipsis" "'.'" "','")
+    ("transform" "matrix(,,,,,)" "translate(,)" "translateX()" "translateY()"
+     "scale()" "scaleX()" "scaleY()" "rotate()" "skewX()" "skewY()" "none")
+    ("transform-origin" perspective-origin)
+    ("transform-style" "flat" "preserve-3d")
+    ("transition" transition-property transition-duration
+     transition-timing-function transition-delay)
+    ("transition-delay" time)
+    ("transition-duration" time)
+    ("transition-timing-function"
+     "ease" "linear" "ease-in" "ease-out" "ease-in-out" "cubic-bezier(,,,)")
+    ("transition-property" "none" "all" identifier))
   "A list of CSS properties and their possible values.")
 
 (defconst company-css-value-classes

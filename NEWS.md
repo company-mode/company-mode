@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-css` knows about CSS3.
 * `company-gtags` supports `meta` and `annotation`.
 * User option `company-dabbrev-code-other-buffers` can have a new value: `code`.
 * New user option `company-tooltip-flip-when-above`.
