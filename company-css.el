@@ -1,6 +1,6 @@
 ;;; company-css.el --- company-mode completion back-end for css-mode
 
-;; Copyright (C) 2009, 2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2014  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -170,6 +170,7 @@
                    "xx-large")
     (border-style "none" "hidden" "dotted" "dashed" "solid" "double" "groove"
                   "ridge" "inset" "outset")
+    (border-width "thick" "medium" "thin")
     (color "aqua" "black" "blue" "fuchsia" "gray" "green" "lime" "maroon" "navy"
            "olive" "orange" "purple" "red" "silver" "teal" "white" "yellow")
     (counter "counter(,)")
