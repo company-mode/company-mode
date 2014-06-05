@@ -1,4 +1,4 @@
-;;; company-css.el --- company-mode completion back-end for css-mode
+;;; company-css.el --- company-mode completion back-end for css-mode  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009, 2011, 2014  Free Software Foundation, Inc.
 
@@ -214,8 +214,8 @@
               (dolist (child (or (cdr (assoc value company-css-value-classes))
                                  (company-css-property-values
                                   (symbol-name value))))
-                (add-to-list 'results child))
-            (add-to-list 'results value)))
+                (push child results))
+            (push value results)))
         (setq results (sort results 'string<))
         (puthash attribute results company-css-property-cache)
         results)))
