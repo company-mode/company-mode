@@ -41,6 +41,11 @@
   'company-gtags-gnu-global-program-name
   'company-gtags-executable "earlier")
 
+(defcustom company-gtags-insert-arguments t
+  "When non-nil, insert function arguments as a template after completion."
+  :type 'boolean
+  :package-version '(company . "0.8.1"))
+
 (defvar-local company-gtags--tags-available-p 'unknown)
 
 (defvar company-gtags-modes '(c-mode c++-mode jde-mode java-mode php-mode))
@@ -51,7 +56,7 @@
             (locate-dominating-file buffer-file-name "GTAGS"))
     company-gtags--tags-available-p))
 
-(defun company-gtags-fetch-tags (prefix)
+(defun company-gtags--fetch-tags (prefix)
   (with-temp-buffer
     (let (tags)
       (when (= 0 (call-process company-gtags-executable nil
@@ -73,6 +78,11 @@
                                              (string-to-number (match-string 2)))
                              ))))))
 
+(defun company-gtags--annotation (arg)
+  (let ((meta (get-text-property 0 'meta arg)))
+    (when (string-match (concat arg "\\((.*)\\).*") meta)
+      (match-string 1 meta))))
+
 ;;;###autoload
 (defun company-gtags (command &optional arg &rest ignored)
   "`company-mode' completion back-end for GNU Global."
@@ -84,14 +94,16 @@
                  (not (company-in-string-or-comment))
                  (company-gtags--tags-available-p)
                  (or (company-grab-symbol) 'stop)))
-    (candidates (company-gtags-fetch-tags arg))
+    (candidates (company-gtags--fetch-tags arg))
     (sorted t)
     (duplicates t)
-    (annotation (let ((meta (get-text-property 0 'meta arg)))
-                  (when (string-match (concat arg "\\((.*)\\).*") meta)
-                    (match-string 1 meta))))
+    (annotation (company-gtags--annotation arg))
     (meta (get-text-property 0 'meta arg))
-    (location (get-text-property 0 'location arg))))
+    (location (get-text-property 0 'location arg))
+    (post-completion (let ((anno (company-gtags--annotation arg)))
+                       (when (and company-gtags-insert-arguments anno)
+                         (insert anno)
+                         (company-template-c-like-templatify anno))))))
 
 (provide 'company-gtags)
 ;;; company-gtags.el ends here

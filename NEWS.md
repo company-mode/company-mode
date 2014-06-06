@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-gtags-insert-arguments`, t by default.
 * `company-css` knows about CSS3.
 * `company-gtags` supports `meta` and `annotation`.
 * User option `company-dabbrev-code-other-buffers` can have a new value: `code`.
