@@ -88,11 +88,12 @@
     ("float" "left" "right" "none")
     ("font" font-style font-variant font-weight font-size "/" line-height
      font-family "caption" "icon" "menu" "message-box" "small-caption"
-     "status-bar")
+     "status-bar" "normal" "small-caps"
+     ;; CSS3
+     font-stretch)
     ("font-family" family-name generic-family)
     ("font-size" absolute-size relative-size length percentage)
     ("font-style" "normal" "italic" "oblique")
-    ("font-variant" "normal" "small-caps")
     ("font-weight" "normal" "bold" "bolder" "lighter" "100" "200" "300" "400"
      "500" "600" "700" "800" "900")
     ("height" length percentage "auto")
@@ -149,7 +150,6 @@
     ("stress" number)
     ("table-layout" "auto" "fixed")
     ("text-align" "left" "right" "center" "justify")
-    ("text-decoration" "none" "underline" "overline" "line-through" "blink")
     ("text-indent" length percentage)
     ("text-transform" "capitalize" "uppercase" "lowercase" "none")
     ("top" length percentage "auto")
@@ -167,6 +167,9 @@
     ("word-spacing" "normal" length)
     ("z-index" "auto" integer)
     ;; CSS3
+    ("align-content" align-stretch "space-between" "space-around")
+    ("align-items" align-stretch "baseline")
+    ("align-self" align-items "auto")
     ("animation" animation-name animation-duration animation-timing-function
      animation-delay animation-iteration-count animation-direction
      animation-fill-mode)
@@ -212,17 +215,64 @@
     ("column-rule-width" border-width)
     ("column-span" "all" "none")
     ("column-width" length "auto")
+    ("filter" url "blur()" "brightness()" "contrast()" "drop-shadow()"
+     "grayscale()" "hue-rotate()" "invert()" "opacity()" "saturate()" "sepia()")
+    ("flex" flex-grow flex-shrink flex-basis)
+    ("flex-basis" percentage length "auto")
+    ("flex-direction" "row" "row-reverse" "column" "column-reverse")
+    ("flex-flow" flex-direction flex-wrap)
+    ("flex-grow" number)
+    ("flex-shrink" number)
+    ("flex-wrap" "nowrap" "wrap" "wrap-reverse")
+    ("font-feature-setting" normal string number)
+    ("font-kerning" "auto" "normal" "none")
+    ("font-language-override" "normal" string)
+    ("font-size-adjust" "none" number)
+    ("font-stretch" "normal" "ultra-condensed" "extra-condensed" "condensed"
+     "semi-condensed" "semi-expanded" "expanded" "extra-expanded" "ultra-expanded")
+    ("font-synthesis" "none" "weight" "style")
+    ("font-variant" font-variant-alternates font-variant-caps
+     font-variant-east-asian font-variant-ligatures font-variant-numeric
+     font-variant-position)
+    ("font-variant-alternates" "normal" "historical-forms" "stylistic()"
+     "styleset()" "character-variant()" "swash()" "ornaments()" "annotation()")
+    ("font-variant-caps" "normal" "small-caps" "all-small-caps" "petite-caps"
+     "all-petite-caps" "unicase" "titling-caps")
+    ("font-variant-east-asian" "jis78" "jis83" "jis90" "jis04" "simplified"
+     "traditional" "full-width" "proportional-width" "ruby")
+    ("font-variant-ligatures" "normal" "none" "common-ligatures"
+     "no-common-ligatures" "discretionary-ligatures" "no-discretionary-ligatures"
+     "historical-ligatures" "no-historical-ligatures" "contextual" "no-contextual")
+    ("font-variant-numeric" "normal" "ordinal" "slashed-zero"
+     "lining-nums" "oldstyle-nums" "proportional-nums" "tabular-nums"
+     "diagonal-fractions" "stacked-fractions")
+    ("font-variant-position" "normal" "sub" "super")
+    ("hyphens" "none" "manual" "auto")
+    ("justify-content" align-common "space-between" "space-around")
+    ("line-break" "auto" "loose" "normal" "strict")
     ("marquee-direction" "forward" "reverse")
     ("marquee-play-count" integer "infinite")
     ("marquee-speed" "slow" "normal" "fast")
     ("marquee-style" "scroll" "slide" "alternate")
     ("opacity" number)
+    ("order" number)
+    ("outline-offset" length)
     ("overflow-x" overflow)
     ("overflow-y" overflow)
     ("overflow-style" "auto" "marquee-line" "marquee-block")
+    ("overflow-wrap" "normal" "break-word")
     ("perspective" "none" length)
     ("perspective-origin" percentage length "left" "center" "right" "top" "bottom")
-    ("text-overflow" "clip" "ellipsis" "'.'" "','")
+    ("resize" "none" "both" "horizontal" "vertical")
+    ("tab-size" integer length)
+    ("text-align-last" "auto" "start" "end" "left" "right" "center" "justify")
+    ("text-decoration" text-decoration-color text-decoration-line text-decoration-style)
+    ("text-decoration-color" color)
+    ("text-decoration-line" "none" "underline" "overline" "line-through" "blink")
+    ("text-decoration-style" "solid" "double" "dotted" "dashed" "wavy")
+    ("text-overflow" "clip" "ellipsis")
+    ("text-shadow" color length)
+    ("text-underline-position" "auto" "under" "left" "right")
     ("transform" "matrix(,,,,,)" "translate(,)" "translateX()" "translateY()"
      "scale()" "scaleX()" "scaleY()" "rotate()" "skewX()" "skewY()" "none")
     ("transform-origin" perspective-origin)
@@ -233,12 +283,16 @@
     ("transition-duration" time)
     ("transition-timing-function"
      "ease" "linear" "ease-in" "ease-out" "ease-in-out" "cubic-bezier(,,,)")
-    ("transition-property" "none" "all" identifier))
+    ("transition-property" "none" "all" identifier)
+    ("word-wrap" overflow-wrap)
+    ("word-break" "normal" "break-all" "keep-all"))
   "A list of CSS properties and their possible values.")
 
 (defconst company-css-value-classes
   '((absolute-size "xx-small" "x-small" "small" "medium" "large" "x-large"
                    "xx-large")
+    (align-common "flex-start" "flex-end" "center")
+    (align-stretch align-common "stretch")
     (border-style "none" "hidden" "dotted" "dashed" "solid" "double" "groove"
                   "ridge" "inset" "outset")
     (border-width "thick" "medium" "thin")
@@ -266,7 +320,10 @@
     "li" "link" "map" "menu" "meta" "noframes" "noscript" "object" "ol"
     "optgroup" "option" "p" "param" "pre" "q" "s" "samp" "script" "select"
     "small" "span" "strike" "strong" "style" "sub" "sup" "table" "tbody" "td"
-    "textarea" "tfoot" "th" "thead" "title" "tr" "tt" "u" "ul" "var")
+    "textarea" "tfoot" "th" "thead" "title" "tr" "tt" "u" "ul" "var"
+    ;; HTML5
+    "section" "article" "aside" "header" "footer" "nav" "figure" "figcaption"
+    "time" "mark" "main")
   "A list of HTML tags for use in CSS completion.")
 
 (defconst company-css-pseudo-classes
