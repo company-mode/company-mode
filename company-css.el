@@ -86,7 +86,7 @@
     ("elevation" angle "below" "level" "above" "higher" "lower")
     ("empty-cells" "show" "hide")
     ("float" "left" "right" "none")
-    ("font" font-style font-variant font-weight font-size "/" line-height
+    ("font" font-style font-weight font-size "/" line-height
      font-family "caption" "icon" "menu" "message-box" "small-caption"
      "status-bar" "normal" "small-caps"
      ;; CSS3
