@@ -392,6 +392,24 @@
         (should (string= (overlay-get ov 'company-after)
                          "  123 \nc 45  c\nddd\n")))))))
 
+(ert-deftest company-pseudo-tooltip-edit-updates-width ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (set-window-buffer nil (current-buffer))
+    (let ((company-candidates-length 5)
+          (company-candidates '("123" "45" "67" "89" "1011"))
+          (company-backend 'ignore)
+          (company-tooltip-limit 4)
+          (company-tooltip-offset-display 'scrollbar))
+      (company-pseudo-tooltip-show (company--row)
+                                   (company--column)
+                                   0)
+      (should (eq (overlay-get company-pseudo-tooltip-overlay 'company-width)
+                  6))
+      (company-pseudo-tooltip-edit 4)
+      (should (eq (overlay-get company-pseudo-tooltip-overlay 'company-width)
+                  7)))))
+
 (ert-deftest company-preview-show-with-annotations ()
   :tags '(interactive)
   (with-temp-buffer

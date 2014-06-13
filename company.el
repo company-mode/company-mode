@@ -2340,10 +2340,13 @@ Returns a negative number if the tooltip should be displayed above point."
     (company-pseudo-tooltip-show (1+ row) col company-selection)))
 
 (defun company-pseudo-tooltip-edit (selection)
-  (let ((height (overlay-get company-pseudo-tooltip-overlay 'company-height)))
+  (let* ((height (overlay-get company-pseudo-tooltip-overlay 'company-height))
+         (lines  (company--create-lines selection (abs height))))
+    (overlay-put company-pseudo-tooltip-overlay 'company-width
+                 (string-width (car lines)))
     (overlay-put company-pseudo-tooltip-overlay 'company-after
                  (apply 'company--replacement-string
-                        (company--create-lines selection (abs height))
+                        lines
                         (overlay-get company-pseudo-tooltip-overlay
                                      'company-replacement-args)))))
 
