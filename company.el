@@ -1037,9 +1037,19 @@ can retrieve meta-data for them."
             (mod selection company-candidates-length)
           (max 0 (min (1- company-candidates-length) selection))))
   (when (or force-update (not (equal selection company-selection)))
+    (company-update-group-lighter (nth selection company-candidates))
     (setq company-selection selection
           company-selection-changed t)
     (company-call-frontends 'update)))
+
+(defun company-update-group-lighter (candidate)
+  (when (listp company-backend)
+    (let ((backend (or (get-text-property 0 'company-backend candidate)
+                       (car company-backend))))
+      (when (and backend (symbolp backend))
+        (let ((name (replace-regexp-in-string "company-\\|-company" ""
+                                              (symbol-name backend))))
+          (setq company-lighter (format " company-<%s>" name)))))))
 
 (defun company-apply-predicate (candidates predicate)
   (let (new)
@@ -1375,8 +1385,9 @@ Keywords and function definition names are ignored."
                 (message "No completion found"))
             (when company--manual-action
               (setq company--manual-prefix prefix))
-            (when (symbolp backend)
-              (setq company-lighter (concat " " (symbol-name backend))))
+            (if (symbolp backend)
+                (setq company-lighter (concat " " (symbol-name backend)))
+              (company-update-group-lighter (car c)))
             (company-update-candidates c)
             (run-hook-with-args 'company-completion-started-hook
                                 (company-explicit-action-p))
