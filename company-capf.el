@@ -36,9 +36,12 @@
   (remove-hook 'company-completion-finished-hook 'company--capf-clear-data t))
 
 (defun company--capf-data ()
-  ;; Ignore tags-completion-at-point-function because it subverts company-etags
-  ;; in the default value of company-backends, where the latter comes later.
-  (cl-letf* (((default-value 'completion-at-point-functions) nil)
+  (cl-letf* (((default-value 'completion-at-point-functions)
+              ;; Ignore tags-completion-at-point-function because it subverts
+              ;; company-etags in the default value of company-backends, where
+              ;; the latter comes later.
+              (remove 'tags-completion-at-point-function
+                      (default-value 'completion-at-point-functions)))
              (data (run-hook-wrapped 'completion-at-point-functions
                                      ;; Ignore misbehaving functions.
                                      #'completion--capf-wrapper 'optimist)))
