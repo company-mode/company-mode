@@ -452,6 +452,7 @@ Each function gets called with the return value of the previous one."
   :type '(choice
           (const :tag "None" nil)
           (const :tag "Sort by occurrence" (company-sort-by-occurrence))
+          (const :tag "Sort by occurrence - prefer length 1" (company-sort-by-occurrence company-sort-length-1-prefered))
           (repeat :tag "User defined" (function))))
 
 (defcustom company-completion-started-hook nil
@@ -1210,6 +1211,14 @@ Keywords and function definition names are ignored."
     (nconc
      (mapcar #'car (sort occurs (lambda (e1 e2) (<= (cdr e1) (cdr e2)))))
      noccurs)))
+
+(defun company-sort-length-1-prefered (candidates)
+  "Sort CANDIDATES by moving candidates with length 1 at the first places. This can be helpful
+when you have enabled company-sort-by-occurrence but want to keep single char vars like
+i,x,y,z as first completion candidates. Enable this by adding it to the company-transformers."
+  (sort candidates (lambda (e1 e2)
+                     (and (= (length e1) 1)
+                          (> (length e2) 1)))))
 
 (defun company-idle-begin (buf win tick pos)
   (and (eq buf (current-buffer))
