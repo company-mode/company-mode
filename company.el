@@ -452,6 +452,8 @@ Each function gets called with the return value of the previous one."
   :type '(choice
           (const :tag "None" nil)
           (const :tag "Sort by occurrence" (company-sort-by-occurrence))
+          (const :tag "Sort by back-end importance"
+                 (company-sort-by-backend-importance))
           (repeat :tag "User defined" (function))))
 
 (defcustom company-completion-started-hook nil
@@ -1220,6 +1222,24 @@ Keywords and function definition names are ignored."
     (nconc
      (mapcar #'car (sort occurs (lambda (e1 e2) (<= (cdr e1) (cdr e2)))))
      noccurs)))
+
+(defun company-sort-by-backend-importance (candidates)
+  "Sort CANDIDATES as two priority groups.
+If `company-backend' is a function, do nothing.  If it's a list, move
+candidates from back-ends before keyword `:with' to the front.  Candidates
+from the rest of the back-ends in the group, if any, will be left at the end."
+  (if (functionp company-backend)
+      candidates
+    (let ((low-priority (cdr (memq :with company-backend))))
+      (if (null low-priority)
+          candidates
+        (sort candidates
+              (lambda (c1 c2)
+                (and
+                 (let ((b2 (get-text-property 0 'company-backend c2)))
+                   (and b2 (memq b2 low-priority)))
+                 (let ((b1 (get-text-property 0 'company-backend c1)))
+                   (or (not b1) (not (memq b1 low-priority)))))))))))
 
 (defun company-idle-begin (buf win tick pos)
   (and (eq buf (current-buffer))

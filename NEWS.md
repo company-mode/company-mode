@@ -2,6 +2,7 @@
 
 ## Next
 
+* New transformer, `company-sort-by-backend-importance`.
 * When grouped back-ends are used, the back-end of the current candidate is
   indicated in the mode-line, enclosed in angle brackets.
 * New user option `company-gtags-insert-arguments`, t by default.
