@@ -1136,7 +1136,7 @@ can retrieve meta-data for them."
          (cdr c)
          (lambda (candidates)
            (if (not (and candidates (eq res 'done)))
-               ;; Fetcher called us right back.
+               ;; Fetcher called us back right away.
                (setq res candidates)
              (setq company-backend backend
                    company-candidates-cache
