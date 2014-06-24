@@ -548,8 +548,8 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
 
 (defcustom company-begin-commands '(self-insert-command org-self-insert-command)
   "A list of commands after which idle completion is allowed.
-If this is t, it can show completions after any command.  See
-`company-idle-delay'.
+If this is t, it can show completions after any command except those in the
+`company-' namespace.  See `company-idle-delay'.
 
 Alternatively, any command with a non-nil `company-begin' property is
 treated as if it was on this list."
@@ -1006,16 +1006,17 @@ can retrieve meta-data for them."
     candidate))
 
 (defun company--should-complete ()
-  (and (not (or buffer-read-only overriding-terminal-local-map
+  (and (eq company-idle-delay t)
+       (not (or buffer-read-only overriding-terminal-local-map
                 overriding-local-map))
        ;; Check if in the middle of entering a key combination.
        (or (equal (this-command-keys-vector) [])
            (not (keymapp (key-binding (this-command-keys-vector)))))
-       (eq company-idle-delay t)
-       (or (eq t company-begin-commands)
-           (memq this-command company-begin-commands)
-           (and (symbolp this-command) (get this-command 'company-begin)))
        (not (and transient-mark-mode mark-active))))
+
+(defsubst company--this-command-p ()
+  (and (symbolp this-command)
+       (string-match-p "\\`company-" (symbol-name this-command))))
 
 (defun company--should-continue ()
   (or (eq t company-begin-commands)
@@ -1024,7 +1025,7 @@ can retrieve meta-data for them."
           (not (memq this-command (cdr company-continue-commands)))
         (or (memq this-command company-begin-commands)
             (memq this-command company-continue-commands)
-            (string-match-p "\\`company-" (symbol-name this-command))))))
+            (company--this-command-p)))))
 
 (defun company-call-frontends (command)
   (dolist (frontend company-frontends)
@@ -1254,10 +1255,9 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-auto-begin ()
   (and company-mode
        (not company-candidates)
-       (let ((company-idle-delay t)
-             (company-begin-commands t))
+       (let ((company-idle-delay t))
          (condition-case-unless-debug err
-             (company-begin)
+             (company--perform)
            (error (message "Company: An error occurred in auto-begin")
                   (message "%s" (error-message-string err))
                   (company-cancel))
@@ -1414,7 +1414,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
             (company-call-frontends 'show)))
         (cl-return c)))))
 
-(defun company-begin ()
+(defun company--perform ()
   (or (and company-candidates (company--continue))
       (and (company--should-complete) (company--begin-new)))
   (when company-candidates
@@ -1470,15 +1470,11 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defun company-abort ()
   (interactive)
-  (company-cancel t)
-  ;; Don't start again, unless started manually.
-  (setq company-point (point)))
+  (company-cancel t))
 
 (defun company-finish (result)
   (company--insert-candidate result)
-  (company-cancel result)
-  ;; Don't start again, unless started manually.
-  (setq company-point (point)))
+  (company-cancel result))
 
 (defsubst company-keep (command)
   (and (symbolp command) (get command 'company-keep)))
@@ -1503,13 +1499,11 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (condition-case err
         (progn
           (unless (equal (point) company-point)
-            (company-begin))
+            (company--perform))
           (if company-candidates
               (company-call-frontends 'post-command)
             (and (numberp company-idle-delay)
-                 (or (eq t company-begin-commands)
-                     (memq this-command company-begin-commands))
-                 (not (equal (point) company-point))
+                 (company--should-idle-begin)
                  (setq company-timer
                        (run-with-timer company-idle-delay nil
                                        'company-idle-begin
@@ -1519,6 +1513,15 @@ from the rest of the back-ends in the group, if any, will be left at the end."
              (message "%s" (error-message-string err))
              (company-cancel))))
   (company-install-map))
+
+(defun company--should-idle-begin ()
+  (if (eq t company-begin-commands)
+      ;; Cheap check against starting after `company-abort',
+      ;; `company-complete-selection', etc.
+      (not (company--this-command-p))
+    (or
+     (memq this-command company-begin-commands)
+     (and (symbolp this-command) (get this-command 'company-begin)))))
 
 ;;; search ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
