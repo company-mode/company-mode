@@ -210,6 +210,7 @@
     ;; aliases
     (js2-mode . javascript-mode)
     (espresso-mode . javascript-mode)
+    (js-mode . javascript-mode)
     (cperl-mode . perl-mode)
     (jde-mode . java-mode))
   "Alist mapping major-modes to sorted keywords for `company-keywords'.")
