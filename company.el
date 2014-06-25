@@ -548,8 +548,8 @@ immediately when a prefix of `company-minimum-prefix-length' is reached."
 
 (defcustom company-begin-commands '(self-insert-command org-self-insert-command)
   "A list of commands after which idle completion is allowed.
-If this is t, it can show completions after any command except those in the
-`company-' namespace.  See `company-idle-delay'.
+If this is t, it can show completions after any command except a few from a
+pre-defined list.  See `company-idle-delay'.
 
 Alternatively, any command with a non-nil `company-begin' property is
 treated as if it was on this list."
@@ -1014,10 +1014,6 @@ can retrieve meta-data for them."
            (not (keymapp (key-binding (this-command-keys-vector)))))
        (not (and transient-mark-mode mark-active))))
 
-(defsubst company--this-command-p ()
-  (and (symbolp this-command)
-       (string-match-p "\\`company-" (symbol-name this-command))))
-
 (defun company--should-continue ()
   (or (eq t company-begin-commands)
       (eq t company-continue-commands)
@@ -1025,7 +1021,8 @@ can retrieve meta-data for them."
           (not (memq this-command (cdr company-continue-commands)))
         (or (memq this-command company-begin-commands)
             (memq this-command company-continue-commands)
-            (company--this-command-p)))))
+            (and (symbolp this-command)
+                 (string-match-p "\\`company-" (symbol-name this-command)))))))
 
 (defun company-call-frontends (command)
   (dolist (frontend company-frontends)
@@ -1514,11 +1511,18 @@ from the rest of the back-ends in the group, if any, will be left at the end."
              (company-cancel))))
   (company-install-map))
 
+(defvar company--begin-inhibit-commands '(company-abort
+                                          company-complete-mouse
+                                          company-complete
+                                          company-complete-common
+                                          company-complete-selection
+                                          company-complete-number)
+  "List of commands after which idle completion is (still) disabled when
+`company-begin-commands' is t.")
+
 (defun company--should-idle-begin ()
   (if (eq t company-begin-commands)
-      ;; Cheap check against starting after `company-abort',
-      ;; `company-complete-selection', etc.
-      (not (company--this-command-p))
+      (not (memq this-command company--begin-inhibit-commands))
     (or
      (memq this-command company-begin-commands)
      (and (symbolp this-command) (get this-command 'company-begin)))))
