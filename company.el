@@ -1496,11 +1496,14 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (condition-case err
         (progn
           (unless (equal (point) company-point)
-            (company--perform))
+            (let ((company-idle-delay (and (eq company-idle-delay t)
+                                           (company--should-begin)
+                                           t)))
+              (company--perform)))
           (if company-candidates
               (company-call-frontends 'post-command)
             (and (numberp company-idle-delay)
-                 (company--should-idle-begin)
+                 (company--should-begin)
                  (setq company-timer
                        (run-with-timer company-idle-delay nil
                                        'company-idle-begin
@@ -1520,7 +1523,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   "List of commands after which idle completion is (still) disabled when
 `company-begin-commands' is t.")
 
-(defun company--should-idle-begin ()
+(defun company--should-begin ()
   (if (eq t company-begin-commands)
       (not (memq this-command company--begin-inhibit-commands))
     (or
