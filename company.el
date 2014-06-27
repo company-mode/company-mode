@@ -1435,33 +1435,34 @@ from the rest of the back-ends in the group, if any, will be left at the end."
        ;; Only set unmodified when tick remained the same since insert,
        ;; and the buffer wasn't modified before.
        (set-buffer-modified-p nil))
-  (when company-prefix
-    (if (stringp result)
-        (progn
-          (company-call-backend 'pre-completion result)
-          (run-hook-with-args 'company-completion-finished-hook result)
-          (company-call-backend 'post-completion result))
-      (run-hook-with-args 'company-completion-cancelled-hook result)))
-  (setq company-added-newline nil
-        company-backend nil
-        company-prefix nil
-        company-candidates nil
-        company-candidates-length nil
-        company-candidates-cache nil
-        company-candidates-predicate nil
-        company-common nil
-        company-selection 0
-        company-selection-changed nil
-        company--manual-action nil
-        company--manual-prefix nil
-        company-lighter company-default-lighter
-        company--point-max nil
-        company-point nil)
-  (when company-timer
-    (cancel-timer company-timer))
-  (company-search-mode 0)
-  (company-call-frontends 'hide)
-  (company-enable-overriding-keymap nil)
+  (unwind-protect
+      (when company-prefix
+        (if (stringp result)
+            (progn
+              (company-call-backend 'pre-completion result)
+              (run-hook-with-args 'company-completion-finished-hook result)
+              (company-call-backend 'post-completion result))
+          (run-hook-with-args 'company-completion-cancelled-hook result)))
+    (setq company-added-newline nil
+          company-backend nil
+          company-prefix nil
+          company-candidates nil
+          company-candidates-length nil
+          company-candidates-cache nil
+          company-candidates-predicate nil
+          company-common nil
+          company-selection 0
+          company-selection-changed nil
+          company--manual-action nil
+          company--manual-prefix nil
+          company-lighter company-default-lighter
+          company--point-max nil
+          company-point nil)
+    (when company-timer
+      (cancel-timer company-timer))
+    (company-search-mode 0)
+    (company-call-frontends 'hide)
+    (company-enable-overriding-keymap nil))
   ;; Make return value explicit.
   nil)
 
