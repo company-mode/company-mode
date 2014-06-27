@@ -1336,8 +1336,10 @@ from the rest of the back-ends in the group, if any, will be left at the end."
       (message "Matching input is required")
       company-candidates)
      ((equal company-prefix (car company-candidates))
-      ;; last input was actually success
-      (company-cancel company-prefix))
+      ;; Last input was a success,
+      ;; but we're treating it as an abort + input anyway,
+      ;; like the `unique' case below.
+      (company-cancel 'non-unique))
      (t (company-cancel)))))
 
 (defun company--good-prefix-p (prefix)
@@ -1365,7 +1367,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
      ((eq c t)
       ;; t means complete/unique.
       ;; Handle it like completion was aborted, to differentiate from user
-      ;; calling one of Company's commands to insert the candidate.
+      ;; calling one of Company's commands to insert the candidate,
+      ;; not to trigger template expansion, etc.
       (company-cancel 'unique))
      ((consp c)
       ;; incremental match
@@ -1468,7 +1471,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defun company-abort ()
   (interactive)
-  (company-cancel t))
+  (company-cancel 'abort))
 
 (defun company-finish (result)
   (company--insert-candidate result)
