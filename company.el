@@ -329,6 +329,11 @@ This doesn't include the margins and the scroll bar."
                               company-oddmuse company-files company-dabbrev)
   "The list of active back-ends (completion engines).
 
+Only one back-end is used at a time.  The choice depends on the order of
+the items in this list, and on the values they return in response to the
+`prefix' command (see below).  But a back-end can also be a \"grouped\"
+one (see below).
+
 `company-begin-backend' can be used to start a specific back-end,
 `company-other-backend' will skip to the next matching back-end in the list.
 
@@ -339,7 +344,7 @@ of the following:
 `prefix': The back-end should return the text to be completed.  It must be
 text immediately before point.  Returning nil passes control to the next
 back-end.  The function should return `stop' if it should complete but
-cannot \(e.g. if it is in the middle of a string\).  Instead of a string,
+cannot (e.g. if it is in the middle of a string).  Instead of a string,
 the back-end may return a cons where car is the prefix and cdr is used in
 `company-minimum-prefix-length' test.  It must be either number or t, and
 in the latter case the test automatically succeeds.
