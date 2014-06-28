@@ -199,6 +199,7 @@
     (insert "ab")
     (company-mode)
     (let (company-frontends
+          (company-minimum-prefix-length 2)
           (company-require-match 'company-explicit-action-p)
           (company-backends
            (list (lambda (command &optional arg)
@@ -207,9 +208,33 @@
                      (candidates '("abc" "abd")))))))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
+      (should (eq 2 company-candidates-length))
       (let ((last-command-event ?e))
         (company-call 'self-insert-command 1))
       (should (eq nil company-candidates-length))
+      (should (eq 4 (point))))))
+
+(ert-deftest company-dont-require-match-if-old-prefix-ended-and-was-a-match ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          (company-require-match 'company-explicit-action-p)
+          (company-backends
+           (list (lambda (command &optional arg)
+                   (cl-case command
+                     (prefix (company-grab-word))
+                     (candidates '("abc" "ab" "abd"))
+                     (sorted t))))))
+      (let (this-command)
+        (company-complete))
+      (let ((last-command-event ?e))
+        (company-call 'self-insert-command 1))
+      (should (eq 3 company-candidates-length))
+      (should (eq 3 (point)))
+      (let ((last-command-event ? ))
+        (company-call 'self-insert-command 1))
+      (should (null company-candidates-length))
       (should (eq 4 (point))))))
 
 (ert-deftest company-should-complete-whitelist ()
@@ -281,6 +306,7 @@
     (let (company-frontends
           (company-auto-complete 'company-explicit-action-p)
           (company-auto-complete-chars '(? ))
+          (company-minimum-prefix-length 2)
           (company-backends
            (list (lambda (command &optional arg)
                    (cl-case command

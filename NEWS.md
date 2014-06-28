@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-require-match` is not in effect when the new input doesn't continue
+  the previous prefix, and that prefix was a match.
 * The meaning of `company-begin-commands` value t has slightly changed.
 * New transformer, `company-sort-by-backend-importance`.
 * When grouped back-ends are used, the back-end of the current candidate is

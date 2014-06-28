@@ -1319,7 +1319,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
                                 company-point)
               company-prefix)))
 
-(defun company--continue-failed ()
+(defun company--continue-failed (new-prefix)
   (let ((input (buffer-substring-no-properties (point) company-point)))
     (cond
      ((company-auto-complete-p input)
@@ -1329,17 +1329,21 @@ from the rest of the back-ends in the group, if any, will be left at the end."
         (let ((company--auto-completion t))
           (company-complete-selection))
         nil))
-     ((company-require-match-p)
-      ;; wrong incremental input, but required match
-      (delete-char (- (length input)))
-      (ding)
-      (message "Matching input is required")
-      company-candidates)
-     ((equal company-prefix (car company-candidates))
+     ((and (or (not (company-require-match-p))
+               ;; Don't require match if the new prefix
+               ;; doesn't continue the old one, and the latter was a match.
+               (<= (length new-prefix) (length company-prefix)))
+           (member company-prefix company-candidates))
       ;; Last input was a success,
       ;; but we're treating it as an abort + input anyway,
       ;; like the `unique' case below.
       (company-cancel 'non-unique))
+     ((company-require-match-p)
+      ;; Wrong incremental input, but required match.
+      (delete-char (- (length input)))
+      (ding)
+      (message "Matching input is required")
+      company-candidates)
      (t (company-cancel)))))
 
 (defun company--good-prefix-p (prefix)
@@ -1377,7 +1381,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
       c)
      ((not (company--incremental-p))
       (company-cancel))
-     (t (company--continue-failed)))))
+     (t (company--continue-failed new-prefix)))))
 
 (defun company--begin-new ()
   (let (prefix c)
