@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-07-01 (0.8.1)
 
 * `company-require-match` is not in effect when the new input doesn't continue
   the previous prefix, and that prefix was a match.
