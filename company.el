@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.8.1
+;; Version: 0.9.0-cvs
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -193,23 +193,22 @@ buffer-local wherever it is set."
   "Face used for the common part of completions in the echo area.")
 
 (defun company-frontends-set (variable value)
-  ;; uniquify
-  (let ((remainder value))
-    (setcdr remainder (delq (car remainder) (cdr remainder))))
-  (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
-       (memq 'company-pseudo-tooltip-frontend value)
-       (error "Pseudo tooltip frontend cannot be used twice"))
-  (and (memq 'company-preview-if-just-one-frontend value)
-       (memq 'company-preview-frontend value)
-       (error "Preview frontend cannot be used twice"))
-  (and (memq 'company-echo value)
-       (memq 'company-echo-metadata-frontend value)
-       (error "Echo area cannot be used twice"))
-  ;; preview must come last
-  (dolist (f '(company-preview-if-just-one-frontend company-preview-frontend))
-    (when (memq f value)
-      (setq value (append (delq f value) (list f)))))
-  (set variable value))
+  ;; Uniquify.
+  (let ((value (delete-dups (copy-sequence value))))
+    (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
+         (memq 'company-pseudo-tooltip-frontend value)
+         (error "Pseudo tooltip frontend cannot be used twice"))
+    (and (memq 'company-preview-if-just-one-frontend value)
+         (memq 'company-preview-frontend value)
+         (error "Preview frontend cannot be used twice"))
+    (and (memq 'company-echo value)
+         (memq 'company-echo-metadata-frontend value)
+         (error "Echo area cannot be used twice"))
+    ;; Preview must come last.
+    (dolist (f '(company-preview-if-just-one-frontend company-preview-frontend))
+      (when (cdr (memq f value))
+        (setq value (append (delq f value) (list f)))))
+    (set variable value)))
 
 (defcustom company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
                                company-preview-if-just-one-frontend
