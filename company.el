@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.9.0-cvs
+;; Version: 0.8.2-cvs
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -2429,8 +2429,9 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-guard ()
   (list
    (save-excursion (beginning-of-visual-line))
-   (buffer-substring-no-properties
-    (point) (overlay-start company-pseudo-tooltip-overlay))))
+   (let ((ov company-pseudo-tooltip-overlay))
+     (when (>= (overlay-get ov 'company-height) 0)
+       (buffer-substring-no-properties (point) (overlay-start ov))))))
 
 (defun company-pseudo-tooltip-frontend (command)
   "`company-mode' front-end similar to a tooltip but based on overlays."
