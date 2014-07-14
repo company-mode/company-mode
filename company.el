@@ -2435,20 +2435,20 @@ Returns a negative number if the tooltip should be displayed above point."
   (cl-case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
     (post-command
-     (let ((old-height (if (overlayp company-pseudo-tooltip-overlay)
-                           (overlay-get company-pseudo-tooltip-overlay
-                                        'company-height)
-                         0))
-           (new-height (company--pseudo-tooltip-height)))
-       (unless (and (>= (* old-height new-height) 0)
-                    (>= (abs old-height) (abs new-height))
-                    (equal (company-pseudo-tooltip-guard)
-                           (overlay-get company-pseudo-tooltip-overlay
-                                        'company-guard)))
-         ;; Redraw needed.
-         (company-pseudo-tooltip-show-at-point (point) (length company-prefix))
-         (overlay-put company-pseudo-tooltip-overlay
-                      'company-guard (company-pseudo-tooltip-guard))))
+     (unless (and
+              (overlayp company-pseudo-tooltip-overlay)
+              (let* ((ov company-pseudo-tooltip-overlay)
+                     (old-height (overlay-get ov 'company-height))
+                     (new-height (company--pseudo-tooltip-height)))
+                (and
+                 (>= (* old-height new-height) 0)
+                 (>= (abs old-height) (abs new-height))
+                 (equal (company-pseudo-tooltip-guard)
+                        (overlay-get ov 'company-guard)))))
+       ;; Redraw needed.
+       (company-pseudo-tooltip-show-at-point (point) (length company-prefix))
+       (overlay-put company-pseudo-tooltip-overlay
+                    'company-guard (company-pseudo-tooltip-guard)))
      (company-pseudo-tooltip-unhide))
     (hide (company-pseudo-tooltip-hide)
           (setq company-tooltip-offset 0))
