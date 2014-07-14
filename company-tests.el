@@ -461,7 +461,7 @@
                                  (cdr (assoc arg '(("123" . "(4)")))))))
             (company-candidates '("123" "45"))
             company-tooltip-align-annotations)
-        (company-pseudo-tooltip-show-at-point (point))
+        (company-pseudo-tooltip-show-at-point (point) 0)
         (let ((ov company-pseudo-tooltip-overlay))
           ;; With margins.
           (should (eq (overlay-get ov 'company-width) 8))
@@ -482,7 +482,7 @@
                                                    ("67" . "(891011)")))))))
             (company-candidates '("123" "45" "67"))
             (company-tooltip-align-annotations t))
-        (company-pseudo-tooltip-show-at-point (point))
+        (company-pseudo-tooltip-show-at-point (point) 0)
         (let ((ov company-pseudo-tooltip-overlay))
           ;; With margins.
           (should (eq (overlay-get ov 'company-width) 13))
