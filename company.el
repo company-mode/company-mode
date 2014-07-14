@@ -2427,8 +2427,10 @@ Returns a negative number if the tooltip should be displayed above point."
     (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))
 
 (defun company-pseudo-tooltip-guard ()
-  (buffer-substring-no-properties
-   (point) (overlay-start company-pseudo-tooltip-overlay)))
+  (list
+   (save-excursion (beginning-of-visual-line))
+   (buffer-substring-no-properties
+    (point) (overlay-start company-pseudo-tooltip-overlay))))
 
 (defun company-pseudo-tooltip-frontend (command)
   "`company-mode' front-end similar to a tooltip but based on overlays."
