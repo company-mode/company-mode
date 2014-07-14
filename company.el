@@ -2438,8 +2438,7 @@ Returns a negative number if the tooltip should be displayed above point."
   (cl-case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
     (post-command
-     (unless (and
-              (overlayp company-pseudo-tooltip-overlay)
+     (unless (when (overlayp company-pseudo-tooltip-overlay)
               (let* ((ov company-pseudo-tooltip-overlay)
                      (old-height (overlay-get ov 'company-height))
                      (new-height (company--pseudo-tooltip-height)))
