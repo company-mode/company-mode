@@ -1191,11 +1191,31 @@ can retrieve meta-data for them."
       (setq c (funcall tr c)))
     c))
 
+(defcustom company-occurrence-weight-function
+  #'company-occurrence-prefer-closest-above
+  "Function to weigh matches in `company-sort-by-occurrence'.
+It's called with two arguments: the beginning and the end of the match."
+  :type '(choice
+          (const :tag "First above point, then below point"
+                 company-occurrence-prefer-closest-above)
+          (const :tag "Prefer closest in any direction"
+                 company-occurrence-prefer-any-closest)))
+
+(defun company-occurrence-prefer-closest-above (match-beg match-end)
+  "Give priority to the matches above point, then those below point."
+  (if (< match-beg (point))
+      (- (point) match-end)
+    (- match-beg (window-start))))
+
+(defun company-occurrence-prefer-any-closest (_match-beg match-end)
+  "Give priority to the matches closest to the point."
+  (abs (- (point) match-end)))
+
 (defun company-sort-by-occurrence (candidates)
   "Sort CANDIDATES according to their occurrences.
 Searches for each in the currently visible part of the current buffer and
-gives priority to the closest ones above point, then closest ones below
-point. The rest of the list is appended unchanged.
+prioritizes the matches according to `company-occurrence-weight-function'.
+The rest of the list is appended unchanged.
 Keywords and function definition names are ignored."
   (let* (occurs
          (noccurs
@@ -1203,8 +1223,8 @@ Keywords and function definition names are ignored."
            (lambda (candidate)
              (when (or
                     (save-excursion
-                      (progn (forward-char (- (length company-prefix)))
-                             (search-backward candidate (window-start) t)))
+                      (forward-char (- (length company-prefix)))
+                      (search-backward candidate (window-start) t))
                     (save-excursion
                       (search-forward candidate (window-end) t)))
                (let ((beg (match-beginning 0))
@@ -1218,10 +1238,10 @@ Keywords and function definition names are ignored."
                                              (company-call-backend 'prefix))))
                                 (and (stringp prefix)
                                      (= (length prefix) (- end beg))))))
-                   (push (cons candidate (if (< beg (point))
-                                             (- (point) end)
-                                           (- beg (window-start))))
-                         occurs)
+                   (push
+                    (cons candidate
+                          (funcall company-occurrence-weight-function beg end))
+                    occurs)
                    t))))
            candidates)))
     (nconc
