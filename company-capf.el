@@ -28,13 +28,6 @@
 (require 'company)
 (require 'cl-lib)
 
-(defvar-local company--capf-data nil)
-
-(defun company--capf-clear-data (&optional _ignore)
-  (setq company--capf-data nil)
-  (remove-hook 'company-completion-cancelled-hook 'company--capf-clear-data t)
-  (remove-hook 'company-completion-finished-hook 'company--capf-clear-data t))
-
 (defun company--capf-data ()
   (cl-letf* (((default-value 'completion-at-point-functions)
               ;; Ignore tags-completion-at-point-function because it subverts
@@ -57,12 +50,9 @@
        (when res
          (if (> (nth 2 res) (point))
              'stop
-           (setq company--capf-data res)
-           (add-hook 'company-completion-cancelled-hook 'company--capf-clear-data nil t)
-           (add-hook 'company-completion-finished-hook 'company--capf-clear-data nil t)
            (buffer-substring-no-properties (nth 1 res) (point))))))
     (`candidates
-     (let ((res company--capf-data))
+     (let ((res (company--capf-data)))
        (when res
          (let* ((table (nth 3 res))
                 (pred (plist-get (nthcdr 4 res) :predicate))
@@ -84,7 +74,7 @@
                          candidates))
              candidates)))))
     (`sorted
-     (let ((res company--capf-data))
+     (let ((res (company--capf-data)))
        (when res
          (let ((meta (completion-metadata
                       (buffer-substring (nth 1 res) (nth 2 res))
@@ -107,28 +97,34 @@
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.
     (`meta
-     (let ((f (plist-get (nthcdr 4 company--capf-data) :company-docsig)))
+     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-docsig)))
        (when f (funcall f arg))))
     (`doc-buffer
-     (let ((f (plist-get (nthcdr 4 company--capf-data) :company-doc-buffer)))
+     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-doc-buffer)))
        (when f (funcall f arg))))
     (`location
-     (let ((f (plist-get (nthcdr 4 company--capf-data) :company-location)))
+     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-location)))
        (when f (funcall f arg))))
     (`annotation
      (save-excursion
        ;; FIXME: `company-begin' sets `company-point' after calling
        ;; `company--begin-new'.  We shouldn't rely on `company-point' here,
-       ;; better to cache the capf-data value instead.
+       ;; better to cache the capf-data value instead.  However: we can't just
+       ;; save the last capf-data value in `prefix', because that command can
+       ;; get called more often than `candidates', and at any point in the
+       ;; buffer (https://github.com/company-mode/company-mode/issues/153).
+       ;; We could try propertizing the returned prefix string, but it's not
+       ;; passed to `annotation', and `company-prefix' is set only after
+       ;; `company--strip-duplicates' is called.
        (when company-point
          (goto-char company-point))
-       (let ((f (plist-get (nthcdr 4 company--capf-data) :annotation-function)))
+       (let ((f (plist-get (nthcdr 4 (company--capf-data)) :annotation-function)))
          (when f (funcall f arg)))))
     (`require-match
-     (plist-get (nthcdr 4 company--capf-data) :company-require-match))
+     (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
     (`post-completion
-     (let* ((res company--capf-data)
+     (let* ((res (company--capf-data))
             (exit-function (plist-get (nthcdr 4 res) :exit-function)))
        (if exit-function
            (funcall exit-function arg 'finished))))
