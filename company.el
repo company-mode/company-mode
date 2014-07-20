@@ -1217,36 +1217,45 @@ Searches for each in the currently visible part of the current buffer and
 prioritizes the matches according to `company-occurrence-weight-function'.
 The rest of the list is appended unchanged.
 Keywords and function definition names are ignored."
-  (let* (occurs
+  (let* ((w-start (window-start))
+         (w-end (window-end))
+         (start-point (point))
+         occurs
          (noccurs
-          (cl-delete-if
-           (lambda (candidate)
-             (when (or
-                    (save-excursion
-                      (forward-char (- (length company-prefix)))
-                      (search-backward candidate (window-start) t))
-                    (save-excursion
-                      (search-forward candidate (window-end) t)))
-               (let ((beg (match-beginning 0))
-                     (end (match-end 0)))
-                 (when (save-excursion
-                         (goto-char end)
-                         (and (not (memq (get-text-property (point) 'face)
-                                         '(font-lock-function-name-face
-                                           font-lock-keyword-face)))
-                              (let ((prefix (company--prefix-str
-                                             (company-call-backend 'prefix))))
-                                (and (stringp prefix)
-                                     (= (length prefix) (- end beg))))))
-                   (push
-                    (cons candidate
-                          (funcall company-occurrence-weight-function beg end))
-                    occurs)
-                   t))))
-           candidates)))
+          (save-excursion
+            (cl-delete-if
+             (lambda (candidate)
+               (when (catch 'done
+                       (goto-char w-start)
+                       (while (search-forward candidate w-end t)
+                         (when (and (not (eq (point) start-point))
+                                    (save-match-data
+                                      (company--occurrence-predicate)))
+                           (throw 'done t))))
+                 (push
+                  (cons candidate
+                        (funcall company-occurrence-weight-function
+                                 (match-beginning 0)
+                                 (match-end 0)))
+                  occurs)
+                 t))
+             candidates))))
     (nconc
      (mapcar #'car (sort occurs (lambda (e1 e2) (<= (cdr e1) (cdr e2)))))
      noccurs)))
+
+(defun company--occurrence-predicate ()
+  (let ((beg (match-beginning 0))
+        (end (match-end 0)))
+    (save-excursion
+      (goto-char end)
+      (and (not (memq (get-text-property (1- (point)) 'face)
+                      '(font-lock-function-name-face
+                        font-lock-keyword-face)))
+           (let ((prefix (company--prefix-str
+                          (company-call-backend 'prefix))))
+             (and (stringp prefix)
+                  (= (length prefix) (- end beg))))))))
 
 (defun company-sort-by-backend-importance (candidates)
   "Sort CANDIDATES as two priority groups.
