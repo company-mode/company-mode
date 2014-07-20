@@ -544,10 +544,10 @@ A character that is part of a valid candidate never triggers auto-completion."
 
 (defcustom company-idle-delay .5
   "The idle delay in seconds until completion starts automatically.
-A value of nil means no idle completion, t means show candidates
-immediately when a prefix of `company-minimum-prefix-length' is reached."
+The prefix still has to satisfy `company-minimum-prefix-length' before that
+happens.  The value of nil means no idle completion."
   :type '(choice (const :tag "never (nil)" nil)
-                 (const :tag "immediate (t)" t)
+                 (const :tag "immediate (0)" 0)
                  (number :tag "seconds")))
 
 (defcustom company-begin-commands '(self-insert-command org-self-insert-command)
@@ -692,6 +692,9 @@ keymap during active completions (`company-active-map'):
   nil company-lighter company-mode-map
   (if company-mode
       (progn
+        (when (eq company-idle-delay t)
+          (setq company-idle-delay 0)
+          (warn "Setting `company-idle-delay' to t is deprecated.  Set it to 0 instead."))
         (add-hook 'pre-command-hook 'company-pre-command nil t)
         (add-hook 'post-command-hook 'company-post-command nil t)
         (mapc 'company-init-backend company-backends))
@@ -1010,7 +1013,7 @@ can retrieve meta-data for them."
     candidate))
 
 (defun company--should-complete ()
-  (and (eq company-idle-delay t)
+  (and (eq company-idle-delay 'now)
        (not (or buffer-read-only overriding-terminal-local-map
                 overriding-local-map))
        ;; Check if in the middle of entering a key combination.
@@ -1256,7 +1259,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-auto-begin ()
   (and company-mode
        (not company-candidates)
-       (let ((company-idle-delay t))
+       (let ((company-idle-delay 'now))
          (condition-case-unless-debug err
              (company--perform)
            (error (message "Company: An error occurred in auto-begin")
@@ -1508,9 +1511,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (condition-case err
         (progn
           (unless (equal (point) company-point)
-            (let ((company-idle-delay (and (eq company-idle-delay t)
-                                           (company--should-begin)
-                                           t)))
+            (let (company-idle-delay) ; Against misbehavior while debugging.
               (company--perform)))
           (if company-candidates
               (company-call-frontends 'post-command)

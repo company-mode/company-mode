@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* Setting `company-idle-delay` to `t` is deprecated. Use the value 0 instead.
+
 ## 2014-07-01 (0.8.1)
 
 * `company-require-match` is not in effect when the new input doesn't continue
