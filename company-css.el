@@ -345,7 +345,11 @@
                 (push child results))
             (push value results)))
         (setq results (sort results 'string<))
-        (puthash attribute results company-css-property-cache)
+        (puthash attribute
+                 (if (fboundp 'delete-consecutive-dups)
+                     (delete-consecutive-dups results)
+                   (delete-dups results))
+                 company-css-property-cache)
         results)))
 
 ;;; bracket detection
