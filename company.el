@@ -1194,22 +1194,23 @@ can retrieve meta-data for them."
 (defcustom company-occurrence-weight-function
   #'company-occurrence-prefer-closest-above
   "Function to weigh matches in `company-sort-by-occurrence'.
-It's called with two arguments: the beginning and the end of the match."
+It's called with three arguments: cursor position, the beginning and the
+end of the match."
   :type '(choice
           (const :tag "First above point, then below point"
                  company-occurrence-prefer-closest-above)
           (const :tag "Prefer closest in any direction"
                  company-occurrence-prefer-any-closest)))
 
-(defun company-occurrence-prefer-closest-above (match-beg match-end)
+(defun company-occurrence-prefer-closest-above (pos match-beg match-end)
   "Give priority to the matches above point, then those below point."
-  (if (< match-beg (point))
-      (- (point) match-end)
+  (if (< match-beg pos)
+      (- pos match-end)
     (- match-beg (window-start))))
 
-(defun company-occurrence-prefer-any-closest (_match-beg match-end)
+(defun company-occurrence-prefer-any-closest (pos _match-beg match-end)
   "Give priority to the matches closest to the point."
-  (abs (- (point) match-end)))
+  (abs (- pos match-end)))
 
 (defun company-sort-by-occurrence (candidates)
   "Sort CANDIDATES according to their occurrences.
@@ -1235,6 +1236,7 @@ Keywords and function definition names are ignored."
                  (push
                   (cons candidate
                         (funcall company-occurrence-weight-function
+                                 start-point
                                  (match-beginning 0)
                                  (match-end 0)))
                   occurs)
