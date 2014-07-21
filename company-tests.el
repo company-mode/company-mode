@@ -718,35 +718,39 @@
 
 (ert-deftest company-occurrence-prefer-closest-above ()
   (with-temp-buffer
-    (insert "foo0
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (insert "foo0
 foo1
 ")
-    (save-excursion
-      (insert "
+      (save-excursion
+        (insert "
 foo3
 foo2"))
-    (let ((company-backend 'company-dabbrev)
-          (company-occurrence-weight-function
-           'company-occurrence-prefer-closest-above))
-      (should (equal '("foo1" "foo0" "foo3" "foo2" "foo4")
-                     (company-sort-by-occurrence
-                      '("foo0" "foo1" "foo2" "foo3" "foo4")))))))
+      (let ((company-backend 'company-dabbrev)
+            (company-occurrence-weight-function
+             'company-occurrence-prefer-closest-above))
+        (should (equal '("foo1" "foo0" "foo3" "foo2" "foo4")
+                       (company-sort-by-occurrence
+                        '("foo0" "foo1" "foo2" "foo3" "foo4"))))))))
 
 (ert-deftest company-occurrence-prefer-any-closest ()
   (with-temp-buffer
-    (insert "foo0
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (insert "foo0
 foo1
 ")
-    (save-excursion
-      (insert "
+      (save-excursion
+        (insert "
 foo3
 foo2"))
-    (let ((company-backend 'company-dabbrev)
-          (company-occurrence-weight-function
-           'company-occurrence-prefer-any-closest))
-      (should (equal '("foo1" "foo3" "foo0" "foo2" "foo4")
-                     (company-sort-by-occurrence
-                      '("foo0" "foo1" "foo2" "foo3" "foo4")))))))
+      (let ((company-backend 'company-dabbrev)
+            (company-occurrence-weight-function
+             'company-occurrence-prefer-any-closest))
+        (should (equal '("foo1" "foo3" "foo0" "foo2" "foo4")
+                       (company-sort-by-occurrence
+                        '("foo0" "foo1" "foo2" "foo3" "foo4"))))))))
 
 ;;; Template
 
