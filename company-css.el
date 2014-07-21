@@ -402,7 +402,7 @@ Returns \"\" if no property found, but feasible at this position."
 
 ;;; values
 (defconst company-css-property-value-regexp
-  "\\_<\\([[:alpha:]-]+\\):\\(?:[^};]*[[:space:]]+\\)?\\([^};]*\\_>\\|\\)\\="
+  "\\_<\\([[:alpha:]-]+\\):\\(?:[^{};]*[[:space:]]+\\)?\\([^{};]*\\_>\\|\\)\\="
   "A regular expression matching CSS tags.")
 
 ;;;###autoload
