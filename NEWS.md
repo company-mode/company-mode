@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-07-26 (0.8.2)
 
 * New user option `company-occurrence-weight-function`, allowing to tweak the
   behavior of the transformer `company-sort-by-occurrence`.
