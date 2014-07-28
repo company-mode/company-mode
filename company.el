@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.8.2
+;; Version: 0.8.3-cvs
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -2110,8 +2110,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
-         (common (+ (or (company-call-backend 'match value)
-                        (length company-common)) margin))
+         (common (or (company-call-backend 'match value)
+                     (length company-common)))
          (ann-ralign company-tooltip-align-annotations)
          (ann-truncate (< width
                           (+ (length value) (length annotation)
@@ -2135,6 +2135,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                                   (- width (length annotation)))
                           annotation))
                        right)))
+    (setq common (+ (min common width) margin))
     (setq width (+ width margin (length right)))
 
     (add-text-properties 0 width '(face company-tooltip

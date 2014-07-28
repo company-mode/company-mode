@@ -522,6 +522,39 @@
                            (format " %s " (make-string (- ww 2) ?4)))
                      (company--create-lines 0 999))))))
 
+(ert-deftest company-create-lines-truncates-common-part ()
+  (let* ((ww (company--window-width))
+         (company-candidates-length 2)
+         (company-tooltip-margin 1)
+         (company-backend #'ignore))
+    (let* ((company-common (make-string (- ww 3) ?1))
+           (company-candidates `(,(concat company-common "2")
+                                 ,(concat company-common "3"))))
+      (should (equal (list (format " %s2 " (make-string (- ww 3) ?1))
+                           (format " %s3 " (make-string (- ww 3) ?1)))
+                     (company--create-lines 0 999))))
+    (let* ((company-common (make-string (- ww 2) ?1))
+           (company-candidates `(,(concat company-common "2")
+                                 ,(concat company-common "3"))))
+      (should (equal (list (format " %s " company-common)
+                           (format " %s " company-common))
+                     (company--create-lines 0 999))))
+    (let* ((company-common (make-string ww ?1))
+           (company-candidates `(,(concat company-common "2")
+                                 ,(concat company-common "3")))
+           (res (company--create-lines 0 999)))
+      (should (equal (list (format " %s " (make-string (- ww 2) ?1))
+                           (format " %s " (make-string (- ww 2) ?1)))
+                     res))
+      (should (eq 'company-tooltip-common-selection
+                    (get-text-property (- ww 2) 'face
+                                       (car res))))
+      (should (eq 'company-tooltip-selection
+                  (get-text-property (1- ww) 'face
+                                     (car res))))
+
+)))
+
 (ert-deftest company-column-with-composition ()
   (with-temp-buffer
     (insert "lambda ()")
