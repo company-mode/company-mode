@@ -63,9 +63,11 @@ Any other value means downcase.
 If you set this value to nil, you may also want to set
 `company-dabbrev-ignore-case' to any value other than `keep-prefix'.")
 
-(defcustom company-dabbrev-minimum-length (1+ company-minimum-prefix-length)
-  "The minimum length for the string to be included."
-  :type 'integer)
+(defcustom company-dabbrev-minimum-length 4
+  "The minimum length for the completion candidate to be included.
+This variable affects both `company-dabbrev' and `company-dabbrev-code'."
+  :type 'integer
+  :package-version '(company . "0.8.3"))
 
 (defmacro company-dabrev--time-limit-while (test start limit &rest body)
   (declare (indent 3) (debug t))

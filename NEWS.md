@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+# Next
+
+* The default value of `company-dabbrev-minimum-length` is set to 4, independent
+  of what `company-minimum-prefix-length` is set to.
+
 ## 2014-07-26 (0.8.2)
 
 * New user option `company-occurrence-weight-function`, allowing to tweak the
