@@ -95,7 +95,7 @@ If you set this value to nil, you may also want to set
           start limit
         (setq match (match-string-no-properties 0))
         (if (and ignore-comments (company-in-string-or-comment))
-            (re-search-backward "\\s<\\|\\s!\\|\\s\"\\|\\s|" nil t)
+            (goto-char (nth 8 (syntax-ppss)))
           (when (>= (length match) company-dabbrev-minimum-length)
             (push match symbols))))
       (goto-char (or pos (point-min)))
