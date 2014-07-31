@@ -19,8 +19,5 @@ install:
         sudo apt-get install -qq emacs-snapshot;
     fi
 
-before_script:
-  make downloads
-
 script:
   make test-batch EMACS=${EMACS}

@@ -1,6 +1,4 @@
 EMACS=emacs
-CURL=curl --silent
-ERT_URL=http://git.savannah.gnu.org/cgit/emacs.git/plain/lisp/emacs-lisp/ert.el?h=emacs-24.3
 
 .PHONY: ert test test-batch
 
@@ -28,10 +26,6 @@ test:
 test-batch:
 	${EMACS} -Q --batch -L . -l company-tests.el -l company-elisp-tests.el \
 	--eval "(ert-run-tests-batch-and-exit '(not (tag interactive)))"
-
-downloads:
-	${EMACS} -Q --batch -l ert || \
-	${CURL} ${ERT_URL} > ert.el
 
 compile:
 	${EMACS} -Q --batch -L . -f batch-byte-compile company.el company-*.el
