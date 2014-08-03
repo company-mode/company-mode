@@ -2364,7 +2364,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (- (nth 3 edges) (nth 1 edges))))
 
 (defsubst company--window-width ()
-  (let ((ww (window-width)))
+  (let ((ww (window-body-width)))
     ;; Account for the line continuation column.
     (when (zerop (cadr (window-fringes)))
       (cl-decf ww))
@@ -2579,7 +2579,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-echo-format ()
 
-  (let ((limit (window-width (minibuffer-window)))
+  (let ((limit (window-body-width (minibuffer-window)))
         (len -1)
         ;; Roll to selection.
         (candidates (nthcdr company-selection company-candidates))
@@ -2609,7 +2609,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-echo-strip-common-format ()
 
-  (let ((limit (window-width (minibuffer-window)))
+  (let ((limit (window-body-width (minibuffer-window)))
         (len (+ (length company-prefix) 2))
         ;; Roll to selection.
         (candidates (nthcdr company-selection company-candidates))
