@@ -117,6 +117,10 @@ buffer-local wherever it is set."
     (t (:background "green")))
   "Face used for the selection in the tooltip.")
 
+(defface company-tooltip-search
+  '((default :inherit company-tooltip-selection))
+  "Face used for the search string in the tooltip.")
+
 (defface company-tooltip-mouse
   '((default :inherit highlight))
   "Face used for the tooltip item under the mouse.")
@@ -2156,7 +2160,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                              (length company-prefix)))
           (let ((beg (+ margin (match-beginning 0)))
                 (end (+ margin (match-end 0))))
-            (add-text-properties beg end '(face company-tooltip-selection)
+            (add-text-properties beg end '(face company-tooltip-search)
                                  line)
             (when (< beg common)
               (add-text-properties beg common
