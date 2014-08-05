@@ -2,6 +2,7 @@
 
 # Next
 
+* New face `company-tooltip-search`, used for the search string in the tooltip.
 * The default value of `company-dabbrev-minimum-length` is set to 4, independent
   of what `company-minimum-prefix-length` is set to.
 
