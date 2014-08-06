@@ -2363,6 +2363,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 ;; show
 
+(defsubst company--window-height ()
+  (if (fboundp 'window-screen-lines)
+      (floor (window-screen-lines))
+    (window-body-height)))
+
 (defsubst company--window-width ()
   (let ((ww (window-body-width)))
     ;; Account for the line continuation column.
@@ -2382,7 +2387,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
   "Calculate the appropriate tooltip height.
 Returns a negative number if the tooltip should be displayed above point."
   (let* ((lines (company--row))
-         (below (- (window-body-height) 1 lines)))
+         (below (- (company--window-height) 1 lines)))
     (if (and (< below (min company-tooltip-minimum company-candidates-length))
              (> lines below))
         (- (max 3 (min company-tooltip-limit lines)))
