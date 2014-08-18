@@ -598,6 +598,7 @@
            "-*-foobar")))
 
 (ert-deftest company-buffer-lines-with-lines-folded ()
+  :tags '(interactive)
   (with-temp-buffer
     (insert (propertize "aaa\nbbb\nccc\nddd\n" 'display "aaa+\n"))
     (insert "eee\nfff\nggg")
@@ -605,6 +606,7 @@
                    '("aaa" "eee" "fff" "ggg")))))
 
 (ert-deftest company-buffer-lines-with-multiline-display ()
+  :tags '(interactive)
   (with-temp-buffer
     (insert (propertize "a" 'display "bbb\nccc\ndddd\n"))
     (insert "eee\nfff\nggg")
