@@ -768,7 +768,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 ;; Hack:
 ;; Emacs calculates the active keymaps before reading the event.  That means we
 ;; cannot change the keymap from a timer.  So we send a bogus command.
-;; XXX: Seems not to be needed anymore in Emacs 24.4
+;; XXX: Even in Emacs 24.4, seems to be needed in the terminal.
 (defun company-ignore ()
   (interactive)
   (setq this-command last-command))
@@ -1284,8 +1284,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
        (eq tick (buffer-chars-modified-tick))
        (eq pos (point))
        (when (company-auto-begin)
-         (when (version< emacs-version "24.3.50")
-           (company-input-noop))
+         (company-input-noop)
          (company-post-command))))
 
 (defun company-auto-begin ()
