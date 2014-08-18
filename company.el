@@ -2408,7 +2408,7 @@ Returns a negative number if the tooltip should be displayed above point."
         (overlay-put ov 'company-replacement-args args)
 
         (let ((lines (company--create-lines selection (abs height))))
-          (overlay-put ov 'company-after
+          (overlay-put ov 'company-display
                        (apply 'company--replacement-string lines args))
           (overlay-put ov 'company-width (string-width (car lines))))
 
@@ -2426,7 +2426,7 @@ Returns a negative number if the tooltip should be displayed above point."
          (lines  (company--create-lines selection (abs height))))
     (overlay-put company-pseudo-tooltip-overlay 'company-width
                  (string-width (car lines)))
-    (overlay-put company-pseudo-tooltip-overlay 'company-after
+    (overlay-put company-pseudo-tooltip-overlay 'company-display
                  (apply 'company--replacement-string
                         lines
                         (overlay-get company-pseudo-tooltip-overlay
@@ -2439,19 +2439,17 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-hide-temporarily ()
   (when (overlayp company-pseudo-tooltip-overlay)
-    (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
     (overlay-put company-pseudo-tooltip-overlay 'line-prefix nil)
-    (overlay-put company-pseudo-tooltip-overlay 'after-string nil)))
+    (overlay-put company-pseudo-tooltip-overlay 'display nil)))
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
-    (overlay-put company-pseudo-tooltip-overlay 'invisible t)
     ;; Beat outline's folding overlays, at least.
     (overlay-put company-pseudo-tooltip-overlay 'priority 1)
     ;; No (extra) prefix for the first line.
     (overlay-put company-pseudo-tooltip-overlay 'line-prefix "")
-    (overlay-put company-pseudo-tooltip-overlay 'after-string
-                 (overlay-get company-pseudo-tooltip-overlay 'company-after))
+    (overlay-put company-pseudo-tooltip-overlay 'display
+                 (overlay-get company-pseudo-tooltip-overlay 'company-display))
     (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))
 
 (defun company-pseudo-tooltip-guard ()
