@@ -778,22 +778,19 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company-input-noop ()
   (push 31415926 unread-command-events))
 
-(defun company--column (&optional pos)
-  (save-excursion
-    (when pos (goto-char pos))
-    (save-restriction
-      (+ (save-excursion
-           (vertical-motion 0)
-           (narrow-to-region (point) (point-max))
-           (let ((prefix (get-text-property (point) 'line-prefix)))
-             (if prefix (length prefix) 0)))
-         (current-column)))))
+(defun company--posn-col-row (pos)
+  (let* ((col-row (posn-actual-col-row pos))
+         (col (car col-row))
+         (row (cdr col-row)))
+    (when header-line-format
+      (cl-decf row))
+    (cons (+ col (window-hscroll)) row)))
+
+(defun company--col-row (&optional pos)
+  (company--posn-col-row (posn-at-point pos)))
 
 (defun company--row (&optional pos)
-  (save-excursion
-    (when pos (goto-char pos))
-    (count-screen-lines (window-start)
-                        (progn (vertical-motion 0) (point)))))
+  (cdr (company--col-row pos)))
 
 ;;; backends ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1813,14 +1810,7 @@ and invoke the normal binding."
                 (>= evt-row (+ row height)))))))
 
 (defun company--event-col-row (event)
-  (let* ((col-row (posn-actual-col-row (event-start event)))
-         (col (car col-row))
-         (row (cdr col-row)))
-    (cl-incf col (window-hscroll))
-    (and header-line-format
-         (version< "24" emacs-version)
-         (cl-decf row))
-    (cons col row)))
+  (company--posn-col-row (event-start event)))
 
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
@@ -2426,10 +2416,10 @@ Returns a negative number if the tooltip should be displayed above point."
         (overlay-put ov 'company-height height)))))
 
 (defun company-pseudo-tooltip-show-at-point (pos column-offset)
-  (let ((row (company--row pos))
-        (col (- (company--column pos) column-offset)))
+  (let* ((col-row (company--col-row pos))
+         (col (- (car col-row) column-offset)))
     (when (< col 0) (setq col 0))
-    (company-pseudo-tooltip-show (1+ row) col company-selection)))
+    (company-pseudo-tooltip-show (1+ (cdr col-row)) col company-selection)))
 
 (defun company-pseudo-tooltip-edit (selection)
   (let* ((height (overlay-get company-pseudo-tooltip-overlay 'company-height))
