@@ -597,6 +597,20 @@
            (company-plainify (propertize "foobar" 'line-prefix "-*-"))
            "-*-foobar")))
 
+(ert-deftest company-buffer-lines-with-lines-folded ()
+  (with-temp-buffer
+    (insert (propertize "aaa\nbbb\nccc\nddd\n" 'display "aaa+\n"))
+    (insert "eee\nfff\nggg")
+    (should (equal (company-buffer-lines (point-min) (point-max))
+                   '("aaa" "eee" "fff" "ggg")))))
+
+(ert-deftest company-buffer-lines-with-multiline-display ()
+  (with-temp-buffer
+    (insert (propertize "a" 'display "bbb\nccc\ndddd\n"))
+    (insert "eee\nfff\nggg")
+    (should (equal (company-buffer-lines (point-min) (point-max))
+                   '("" "" "" "eee" "fff" "ggg")))))
+
 (ert-deftest company-modify-line ()
   (let ((str "-*-foobar"))
     (should (equal-including-properties

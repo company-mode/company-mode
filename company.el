@@ -2169,8 +2169,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company-buffer-lines (beg end)
   (goto-char beg)
-  (let (lines)
-    (while (and (= 1 (vertical-motion 1))
+  (let (lines lines-moved)
+    (while (and (> (setq lines-moved (vertical-motion 1)) 0)
                 (<= (point) end))
       (let ((bound (min end (1- (point)))))
         ;; A visual line can contain several physical lines (e.g. with outline's
@@ -2181,6 +2181,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                   (re-search-forward "$" bound 'move)
                                   (point)))
               lines))
+      ;; One physical line can be displayed as several visual ones as well:
+      ;; add empty strings to the list, to even the count.
+      (dotimes (_ (1- lines-moved))
+        (push "" lines))
       (setq beg (point)))
     (unless (eq beg end)
       (push (buffer-substring beg end) lines))
