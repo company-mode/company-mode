@@ -2456,6 +2456,8 @@ Returns a negative number if the tooltip should be displayed above point."
       (overlay-put ov 'line-prefix "")
       (if (/= (overlay-start ov) (overlay-end ov))
           (overlay-put ov 'display disp)
+        ;; `display' is usually better (http://debbugs.gnu.org/18285),
+        ;; but it doesn't work when the overlay is empty.
         (overlay-put ov 'after-string disp))
       (overlay-put ov 'window (selected-window)))))
 
