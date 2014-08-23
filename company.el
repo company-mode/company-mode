@@ -2447,13 +2447,14 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
-    ;; Beat outline's folding overlays, at least.
-    (overlay-put company-pseudo-tooltip-overlay 'priority 1)
-    ;; No (extra) prefix for the first line.
-    (overlay-put company-pseudo-tooltip-overlay 'line-prefix "")
-    (overlay-put company-pseudo-tooltip-overlay 'display
-                 (overlay-get company-pseudo-tooltip-overlay 'company-display))
-    (overlay-put company-pseudo-tooltip-overlay 'window (selected-window))))
+    (let* ((ov company-pseudo-tooltip-overlay)
+           (disp (overlay-get ov 'company-display)))
+      ;; Beat outline's folding overlays, at least.
+      (overlay-put ov 'priority 1)
+      ;; No (extra) prefix for the first line.
+      (overlay-put ov 'line-prefix "")
+      (overlay-put ov 'display disp)
+      (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
   (list
