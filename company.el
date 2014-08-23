@@ -2443,7 +2443,8 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-hide-temporarily ()
   (when (overlayp company-pseudo-tooltip-overlay)
     (overlay-put company-pseudo-tooltip-overlay 'line-prefix nil)
-    (overlay-put company-pseudo-tooltip-overlay 'display nil)))
+    (overlay-put company-pseudo-tooltip-overlay 'display nil)
+    (overlay-put company-pseudo-tooltip-overlay 'after-string nil)))
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
@@ -2453,7 +2454,9 @@ Returns a negative number if the tooltip should be displayed above point."
       (overlay-put ov 'priority 1)
       ;; No (extra) prefix for the first line.
       (overlay-put ov 'line-prefix "")
-      (overlay-put ov 'display disp)
+      (if (/= (overlay-start ov) (overlay-end ov))
+          (overlay-put ov 'display disp)
+        (overlay-put ov 'after-string disp))
       (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
