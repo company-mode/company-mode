@@ -28,7 +28,20 @@
 (require 'company)
 (require 'cl-lib)
 
+(defvar company--capf-cache nil)
+
 (defun company--capf-data ()
+  (let ((cache company--capf-cache))
+    (if (and (equal (current-buffer) (car cache))
+             (equal (point) (car (setq cache (cdr cache))))
+             (equal (buffer-chars-modified-tick) (car (setq cache (cdr cache)))))
+        (cadr cache)
+      (let ((data (company--capf-data-real)))
+        (setq company--capf-cache
+              (list (current-buffer) (point) (buffer-chars-modified-tick) data))
+        data))))
+
+(defun company--capf-data-real ()
   (cl-letf* (((default-value 'completion-at-point-functions)
               ;; Ignore tags-completion-at-point-function because it subverts
               ;; company-etags in the default value of company-backends, where
