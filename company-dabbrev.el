@@ -137,14 +137,15 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     (interactive (company-begin-backend 'company-dabbrev))
     (prefix (company-grab-word))
     (candidates
-     (let ((words (company-dabbrev--search (company-dabbrev--make-regexp arg)
-                                           company-dabbrev-time-limit
-                                           (pcase company-dabbrev-other-buffers
-                                             (`t (list major-mode))
-                                             (`all `all))))
-           (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
-                           case-replace
-                         company-dabbrev-downcase)))
+     (let* ((case-fold-search company-dabbrev-ignore-case)
+            (words (company-dabbrev--search (company-dabbrev--make-regexp arg)
+                                            company-dabbrev-time-limit
+                                            (pcase company-dabbrev-other-buffers
+                                              (`t (list major-mode))
+                                              (`all `all))))
+            (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
+                            case-replace
+                          company-dabbrev-downcase)))
        (if downcase-p
            (mapcar 'downcase words)
          words)))
