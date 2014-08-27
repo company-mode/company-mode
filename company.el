@@ -2552,7 +2552,8 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company--show-inline-p ()
   (and (not (cdr company-candidates))
        company-common
-       (string-prefix-p company-prefix company-common)))
+       (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
+           (string-prefix-p company-prefix company-common))))
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
