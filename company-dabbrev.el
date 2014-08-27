@@ -51,7 +51,9 @@ See also `company-dabbrev-time-limit'."
   :type 'regexp)
 
 (defcustom company-dabbrev-ignore-case 'keep-prefix
-  "The value of `ignore-case' returned by `company-dabbrev'.")
+  "Non-nil to ignore case when collecting completion candidates.
+When it's `keep-prefix', the text before point will remain unchanged after
+candidate is inserted, even some of its characters have different case.")
 
 (defcustom company-dabbrev-downcase 'case-replace
   "Whether to downcase the returned candidates.
