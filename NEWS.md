@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-# Next
+## 2014-08-27 (0.8.3)
 
 * On Emacs 24.4 or newer, tooltip positioning takes line-spacing into account.
 * New face `company-tooltip-search`, used for the search string in the tooltip.
