@@ -66,7 +66,7 @@ See also `company-dabbrev-code-time-limit'."
   :type 'boolean)
 
 (defcustom company-dabbrev-code-ignore-case nil
-  "Non-nil to ignore case in completion candidates."
+  "Non-nil to ignore case when collecting completion candidates."
   :type 'boolean)
 
 (defsubst company-dabbrev-code--make-regexp (prefix)
