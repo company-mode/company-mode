@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.8.3
+;; Version: 0.8.4-cvs
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -554,7 +554,12 @@ happens.  The value of nil means no idle completion."
                  (const :tag "immediate (0)" 0)
                  (number :tag "seconds")))
 
-(defcustom company-begin-commands '(self-insert-command org-self-insert-command)
+(defcustom company-begin-commands '(self-insert-command
+                                    org-self-insert-command
+                                    c-scope-operator
+                                    c-electric-colon
+                                    c-electric-lt-gt
+                                    c-electric-slash)
   "A list of commands after which idle completion is allowed.
 If this is t, it can show completions after any command except a few from a
 pre-defined list.  See `company-idle-delay'.
@@ -563,7 +568,8 @@ Alternatively, any command with a non-nil `company-begin' property is
 treated as if it was on this list."
   :type '(choice (const :tag "Any command" t)
                  (const :tag "Self insert command" '(self-insert-command))
-                 (repeat :tag "Commands" function)))
+                 (repeat :tag "Commands" function))
+  :package-version '(company . "0.8.4"))
 
 (defcustom company-continue-commands '(not save-buffer save-some-buffers
                                            save-buffers-kill-terminal

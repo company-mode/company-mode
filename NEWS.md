@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* `company-begin-commands` includes several `cc-mode` commands.
+
 ## 2014-08-27 (0.8.3)
 
 * On Emacs 24.4 or newer, tooltip positioning takes line-spacing into account.
