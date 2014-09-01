@@ -789,7 +789,8 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
          (col (car col-row))
          (row (cdr col-row)))
     (when header-line-format
-      (cl-decf row))
+      ;; http://debbugs.gnu.org/18384
+      (cl-incf row))
     (cons (+ col (window-hscroll)) row)))
 
 (defun company--col-row (&optional pos)
