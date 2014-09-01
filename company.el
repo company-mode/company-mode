@@ -785,7 +785,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (push 31415926 unread-command-events))
 
 (defun company--posn-col-row (pos)
-  (let* ((col-row (posn-actual-col-row pos))
+  (let* ((col-row (posn-col-row pos))
          (col (car col-row))
          (row (cdr col-row)))
     (when header-line-format

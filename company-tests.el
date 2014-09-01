@@ -586,6 +586,15 @@
       (put-text-property (point-min) (point-max) 'line-prefix "  ")
       (should (= (company--column) 2)))))
 
+(ert-deftest company-column-with-tabs ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (insert "|\t|\t|\t(")
+      (let ((tab-width 8))
+        (should (= (company--column) 25))))))
+
 (ert-deftest company-plainify ()
   (let ((tab-width 8))
     (should (equal-including-properties
