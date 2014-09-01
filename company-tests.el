@@ -595,6 +595,15 @@
       (let ((tab-width 8))
         (should (= (company--column) 25))))))
 
+(ert-deftest company-row-with-header-line-format ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (should (= (company--row) 0))
+      (setq header-line-format "aaaaaaa")
+      (should (= (company--row) 0)))))
+
 (ert-deftest company-plainify ()
   (let ((tab-width 8))
     (should (equal-including-properties
