@@ -788,7 +788,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (let* ((col-row (posn-col-row pos))
          (col (car col-row))
          (row (cdr col-row)))
-    (when header-line-format
+    (when (and header-line-format (version< emacs-version "24.3.93.2"))
       ;; http://debbugs.gnu.org/18384
       (cl-incf row))
     (cons (+ col (window-hscroll)) row)))
