@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-end-of-buffer-workaround` is not used anymore.
 * `company-begin-commands` includes several `cc-mode` commands.
 
 ## 2014-08-27 (0.8.3)

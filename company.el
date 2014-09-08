@@ -58,11 +58,6 @@
 ;; enrich gtags with dabbrev-code results (to emulate local variables).
 ;; To do this, add a list with both back-ends as an element in company-backends.
 ;;
-;; Known Issues:
-;; When point is at the very end of the buffer, the pseudo-tooltip appears very
-;; wrong, unless company is allowed to temporarily insert a fake newline.
-;; This behavior is enabled by `company-end-of-buffer-workaround'.
-;;
 ;;; Change Log:
 ;;
 ;; See NEWS.md in the repository.
@@ -596,10 +591,6 @@ commands in the `company-' namespace, abort completion."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
-(defvar company-end-of-buffer-workaround t
-  "Work around a visualization bug when completing at the end of the buffer.
-The work-around consists of adding a newline.")
-
 (defvar company-async-wait 0.03
   "Pause between checks to see if the value's been set when turning an
 asynchronous call into synchronous.")
@@ -980,8 +971,6 @@ Controlled by `company-auto-complete'.")
 (defvar-local company-point nil)
 
 (defvar company-timer nil)
-
-(defvar-local company-added-newline nil)
 
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
@@ -1467,11 +1456,6 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (or (and company-candidates (company--continue))
       (and (company--should-complete) (company--begin-new)))
   (when company-candidates
-    (let ((modified (buffer-modified-p)))
-      (when (and company-end-of-buffer-workaround (eobp))
-        (save-excursion (insert "\n"))
-        (setq company-added-newline
-              (or modified (buffer-chars-modified-tick)))))
     (setq company-point (point)
           company--point-max (point-max))
     (company-ensure-emulation-alist)
@@ -1479,14 +1463,6 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (company-call-frontends 'update)))
 
 (defun company-cancel (&optional result)
-  (and company-added-newline
-       (> (point-max) (point-min))
-       (let ((tick (buffer-chars-modified-tick)))
-         (delete-region (1- (point-max)) (point-max))
-         (equal tick company-added-newline))
-       ;; Only set unmodified when tick remained the same since insert,
-       ;; and the buffer wasn't modified before.
-       (set-buffer-modified-p nil))
   (unwind-protect
       (when company-prefix
         (if (stringp result)
@@ -1495,8 +1471,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
               (run-hook-with-args 'company-completion-finished-hook result)
               (company-call-backend 'post-completion result))
           (run-hook-with-args 'company-completion-cancelled-hook result)))
-    (setq company-added-newline nil
-          company-backend nil
+    (setq company-backend nil
           company-prefix nil
           company-candidates nil
           company-candidates-length nil
@@ -2237,10 +2212,12 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (company--offset-line (pop lines) offset))
             new))
 
-    (let ((str (concat (when nl "\n")
+    (let ((str (concat (when nl " ")
+                       "\n"
                        (mapconcat 'identity (nreverse new) "\n")
                        "\n")))
       (font-lock-append-text-property 0 (length str) 'face 'default str)
+      (when nl (put-text-property 0 1 'cursor t str))
       str)))
 
 (defun company--offset-line (line offset)
@@ -2409,7 +2386,7 @@ Returns a negative number if the tooltip should be displayed above point."
              (end (save-excursion
                     (move-to-window-line (+ row (abs height)))
                     (point)))
-             (ov (make-overlay beg end))
+             (ov (make-overlay (if nl beg (1- beg)) end))
              (args (list (mapcar 'company-plainify
                                  (company-buffer-lines beg end))
                          column nl above)))
@@ -2449,8 +2426,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-hide-temporarily ()
   (when (overlayp company-pseudo-tooltip-overlay)
-    (overlay-put company-pseudo-tooltip-overlay 'line-prefix nil)
-    (overlay-put company-pseudo-tooltip-overlay 'display nil)
+    (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
     (overlay-put company-pseudo-tooltip-overlay 'after-string nil)))
 
 (defun company-pseudo-tooltip-unhide ()
@@ -2459,13 +2435,12 @@ Returns a negative number if the tooltip should be displayed above point."
            (disp (overlay-get ov 'company-display)))
       ;; Beat outline's folding overlays, at least.
       (overlay-put ov 'priority 1)
-      ;; No (extra) prefix for the first line.
-      (overlay-put ov 'line-prefix "")
-      (if (/= (overlay-start ov) (overlay-end ov))
-          (overlay-put ov 'display disp)
-        ;; `display' is usually better (http://debbugs.gnu.org/18285),
-        ;; but it doesn't work when the overlay is empty.
-        (overlay-put ov 'after-string disp))
+      ;; `display' could be better (http://debbugs.gnu.org/18285), but it
+      ;; doesn't work when the overlay is empty, which is what happens at eob.
+      ;; It also seems to interact badly with `cursor'.
+      ;; We deal with priorities by having the overlay start before the newline.
+      (overlay-put ov 'after-string disp)
+      (overlay-put ov 'invisible t)
       (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
@@ -2512,7 +2487,7 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-preview-show-at-point (pos)
   (company-preview-hide)
 
-  (setq company-preview-overlay (make-overlay pos (1+ pos)))
+  (setq company-preview-overlay (make-overlay pos pos))
 
   (let ((completion (nth company-selection company-candidates)))
     (setq completion (propertize completion 'face 'company-preview))
@@ -2533,10 +2508,9 @@ Returns a negative number if the tooltip should be displayed above point."
          (not (equal completion ""))
          (add-text-properties 0 1 '(cursor t) completion))
 
-    (overlay-put company-preview-overlay 'display
-                 (concat completion (unless (eq pos (point-max))
-                                      (buffer-substring pos (1+ pos)))))
-    (overlay-put company-preview-overlay 'window (selected-window))))
+    (let ((ov company-preview-overlay))
+      (overlay-put ov 'after-string completion)
+      (overlay-put ov 'window (selected-window)))))
 
 (defun company-preview-hide ()
   (when company-preview-overlay
