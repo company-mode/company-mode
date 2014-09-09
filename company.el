@@ -627,12 +627,8 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (dotimes (i 10)
-      (define-key keymap (vector (+ (aref (kbd "M-0") 0) i))
-        `(lambda ()
-           (interactive)
-           (company-complete-number ,(if (zerop i) 10 i)))))
-
-    keymap)
+      (define-key keymap (kbd (format "M-%d" i)) 'company-complete-number))
+     keymap)
   "Keymap that is enabled during an active completion.")
 
 (defvar company--disabled-backends nil)
@@ -1857,7 +1853,11 @@ inserted."
 (defun company-complete-number (n)
   "Insert the Nth candidate.
 To show the number next to the candidates in some back-ends, enable
-`company-show-numbers'."
+`company-show-numbers'.  When called interactively, uses the last typed
+character, stripping the modifiers.  That character must be a digit."
+  (interactive
+   (list (let ((n (- (event-basic-type last-command-event) ?0)))
+           (if (zerop n) 10 n))))
   (when (company-manual-begin)
     (and (or (< n 1) (> n company-candidates-length))
          (error "No candidate number %d" n))
