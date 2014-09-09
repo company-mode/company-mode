@@ -775,13 +775,12 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company-input-noop ()
   (push 31415926 unread-command-events))
 
-(defun company--posn-col-row (pos)
-  (let* ((col-row (posn-col-row pos))
-         (col (car col-row))
-         (row (cdr col-row)))
-    (when (and header-line-format (version< emacs-version "24.3.93.2"))
+(defun company--posn-col-row (posn)
+  (let ((col (car (posn-col-row posn)))
+        (row (cdr (posn-actual-col-row posn))))
+    (when (and header-line-format (version< emacs-version "24.3.93.3"))
       ;; http://debbugs.gnu.org/18384
-      (cl-incf row))
+      (cl-decf row))
     (cons (+ col (window-hscroll)) row)))
 
 (defun company--col-row (&optional pos)
