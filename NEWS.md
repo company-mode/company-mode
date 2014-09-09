@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-gtags` is enabled in all `prog-mode` derivatives by default.
 * `company-end-of-buffer-workaround` is not used anymore.
 * `company-begin-commands` includes several `cc-mode` commands.
 

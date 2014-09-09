@@ -48,7 +48,12 @@
 
 (defvar-local company-gtags--tags-available-p 'unknown)
 
-(defvar company-gtags-modes '(c-mode c++-mode jde-mode java-mode php-mode))
+(defcustom company-gtags-modes '(prog-mode jde-mode)
+  "Modes that use `company-gtags'.
+In all these modes (and their derivatives) `company-gtags' will perform
+completion."
+  :type '(repeat (symbol :tag "Major mode"))
+  :package-version '(company . "0.8.4"))
 
 (defun company-gtags--tags-available-p ()
   (if (eq company-gtags--tags-available-p 'unknown)
@@ -90,7 +95,7 @@
   (cl-case command
     (interactive (company-begin-backend 'company-gtags))
     (prefix (and company-gtags-executable
-                 (memq major-mode company-gtags-modes)
+                 (apply #'derived-mode-p company-gtags-modes)
                  (not (company-in-string-or-comment))
                  (company-gtags--tags-available-p)
                  (or (company-grab-symbol) 'stop)))
