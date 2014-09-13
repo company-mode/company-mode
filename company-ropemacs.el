@@ -1,6 +1,6 @@
 ;;; company-ropemacs.el --- company-mode completion back-end for ropemacs
 
-;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2014  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -56,15 +56,11 @@
   "`company-mode' completion back-end for ropemacs.
 
 Depends on third-party code: Pymacs (both Python and Emacs packages),
-rope, ropemacs and ropemode."
+rope, ropemacs and ropemode.  Requires `ropemacs-mode' to be on."
   (interactive (list 'interactive))
   (cl-case command
-    (init (when (and (derived-mode-p 'python-mode)
-                     (not (fboundp 'rope-completions)))
-            (require 'pymacs)
-            (pymacs-load "ropemacs" "rope-")))
     (interactive (company-begin-backend 'company-ropemacs))
-    (prefix (and (derived-mode-p 'python-mode)
+    (prefix (and (bound-and-true-p ropemacs-mode)
                  (not (company-in-string-or-comment))
                  (company-ropemacs--grab-symbol)))
     (candidates (mapcar (lambda (element) (concat arg element))
