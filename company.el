@@ -989,7 +989,8 @@ can retrieve meta-data for them."
      (company--insert-candidate ,candidate)
      (unwind-protect
          (progn ,@body)
-       (delete-region company-point (point)))))
+       (delete-region company-point (point))
+       (set-buffer-modified-p modified-p))))
 
 (defun company-explicit-action-p ()
   "Return whether explicit completion action was taken by the user."
