@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-08-13 (0.8.4)
 
 * `company-ropemacs` is only used when `ropemacs-mode` is on.
 * `company-gtags` is enabled in all `prog-mode` derivatives by default.
