@@ -2446,11 +2446,15 @@ Returns a negative number if the tooltip should be displayed above point."
       (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
-  (list
+  (cons
    (save-excursion (beginning-of-visual-line))
-   (let ((ov company-pseudo-tooltip-overlay))
+   (let ((ov company-pseudo-tooltip-overlay)
+         (overhang (save-excursion (end-of-visual-line)
+                                   (- (line-end-position) (point)))))
      (when (>= (overlay-get ov 'company-height) 0)
-       (buffer-substring-no-properties (point) (overlay-start ov))))))
+       (cons
+        (buffer-substring-no-properties (point) (overlay-start ov))
+        (when (>= overhang 0) overhang))))))
 
 (defun company-pseudo-tooltip-frontend (command)
   "`company-mode' front-end similar to a tooltip but based on overlays."
