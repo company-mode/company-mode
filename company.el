@@ -978,7 +978,7 @@ Controlled by `company-auto-complete'.")
   (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
       (insert (company-strip-prefix candidate))
     (delete-region (- (point) (length company-prefix)) (point))
-    (insert candidate)))
+    (insert-before-markers candidate)))
 
 (defmacro company-with-candidate-inserted (candidate &rest body)
   "Evaluate BODY with CANDIDATE temporarily inserted.
