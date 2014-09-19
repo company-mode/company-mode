@@ -779,6 +779,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
     (when (and header-line-format (version< emacs-version "24.3.93.3"))
       ;; http://debbugs.gnu.org/18384
       (cl-decf row))
+    (message "foo foo foo\nfoo foo foo")
     (cons (+ col (window-hscroll)) row)))
 
 (defun company--col-row (&optional pos)
