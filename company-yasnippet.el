@@ -25,11 +25,17 @@
 
 ;;; Code:
 
+(require 'company)
 (require 'cl-lib)
-(require 'yasnippet)
+
+(declare-function yas--table-hash "yasnippet")
+(declare-function yas--get-snippet-tables "yasnippet")
+(declare-function yas-expand-snippet "yasnippet")
+(declare-function yas--template-content "yasnippet")
+(declare-function yas--template-expand-env "yasnippet")
 
 (defun company-yasnippet--candidates (prefix)
-  (mapcan
+  (cl-mapcan
    (lambda (table)
      (let ((keyhash (yas--table-hash table))
            res)
@@ -80,7 +86,7 @@ shadow back-ends that come after it.  Recommended usages:
     (prefix
      ;; Should probably use `yas--current-key', but that's bound to be slower.
      ;; How many trigger keys start with non-symbol characters anyway?
-     (and yas-minor-mode
+     (and (bound-and-true-p yas-minor-mode)
           (company-grab-symbol)))
     (annotation
      (concat
