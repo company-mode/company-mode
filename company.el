@@ -627,7 +627,7 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (dotimes (i 10)
-      (define-key keymap (kbd (format "M-%d" i)) 'company-complete-number))
+      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
      keymap)
   "Keymap that is enabled during an active completion.")
 
