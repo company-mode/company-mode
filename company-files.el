@@ -35,9 +35,10 @@
       (file-name-all-completions prefix dir))))
 
 (defvar company-files-regexps
-  (let ((begin (if (eq system-type 'windows-nt)
-                   "[a-z][A-Z]\\"
-                 "~?/")))
+  (let* ((begin (if (eq system-type 'windows-nt)
+                   "[[:alpha:]]:/"
+		  "/"))
+	 (begin (concat "\\(?:\\.\\{1,2\\}\\|~/\\|" begin " \\)")))
     (list (concat "\"\\(" begin "[^\"\n]*\\)")
           (concat "\'\\(" begin "[^\'\n]*\\)")
           (concat "\\(?:[ \t]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
@@ -78,7 +79,9 @@
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
-  "`company-mode' completion back-end existing file names."
+  "`company-mode' completion back-end existing file names.
+Completions are triggered when the text inside quotes starts with any of 
+the following: ./, ../, ~/, or root drive"
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-files))
