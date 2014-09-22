@@ -978,7 +978,7 @@ Controlled by `company-auto-complete'.")
   (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
       (insert (company-strip-prefix candidate))
     (delete-region (- (point) (length company-prefix)) (point))
-    (insert-before-markers candidate)))
+    (insert candidate)))
 
 (defmacro company-with-candidate-inserted (candidate &rest body)
   "Evaluate BODY with CANDIDATE temporarily inserted.
@@ -2388,7 +2388,7 @@ Returns a negative number if the tooltip should be displayed above point."
              (end (save-excursion
                     (move-to-window-line (+ row (abs height)))
                     (point)))
-             (ov (make-overlay (if nl beg (1- beg)) end nil t))
+             (ov (make-overlay (if nl beg (1- beg)) end nil t t))
              (args (list (mapcar 'company-plainify
                                  (company-buffer-lines beg end))
                          column nl above)))
