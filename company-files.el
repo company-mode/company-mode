@@ -57,15 +57,12 @@
 
 (defvar company-files-completion-cache nil)
 
-(defvar company-files-current-dir nil)
-
 (defun company-files-complete (prefix)
   (let* ((dir (file-name-directory prefix))
          (dir-exp (expand-file-name dir))
          (file (file-name-nondirectory prefix))
          candidates directories)
-    (unless (equal dir-exp company-files-current-dir)
-      (setq company-files-current-dir dir-exp)
+    (unless (equal dir-exp (car company-files-completion-cache))
       (dolist (file (company-files-directory-files dir file))
         (setq file (concat dir file))
         (push file candidates)
@@ -77,7 +74,7 @@
           (push (concat directory
                         (unless (eq (aref directory (1- (length directory))) ?/) "/")
                         child) candidates)))
-      (setq company-files-completion-cache (cons dir (nreverse candidates))))
+      (setq company-files-completion-cache  (cons dir-exp (nreverse candidates))))
     (all-completions prefix
                      (cdr company-files-completion-cache))))
 
