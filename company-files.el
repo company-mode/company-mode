@@ -38,7 +38,7 @@
   (let* ((begin (if (eq system-type 'windows-nt)
                    "[[:alpha:]]:/"
 		  "/"))
-	 (begin (concat "\\(?:\\.\\{1,2\\}\\|~/\\|" begin " \\)")))
+	 (begin (concat "\\(?:\\.\\{1,2\\}\\|~/\\|" begin "\\)")))
     (list (concat "\"\\(" begin "[^\"\n]*\\)")
           (concat "\'\\(" begin "[^\'\n]*\\)")
           (concat "\\(?:[ \t]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
