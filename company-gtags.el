@@ -95,6 +95,7 @@ completion."
   (cl-case command
     (interactive (company-begin-backend 'company-gtags))
     (prefix (and company-gtags-executable
+                 buffer-file-name
                  (apply #'derived-mode-p company-gtags-modes)
                  (not (company-in-string-or-comment))
                  (company-gtags--tags-available-p)
