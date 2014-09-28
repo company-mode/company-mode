@@ -1607,13 +1607,9 @@ from the rest of the back-ends in the group, if any, will be left at the end."
       (company-set-selection (- company-selection pos 1) t))))
 
 (defun company-create-match-predicate ()
-  (setq company-candidates-predicate
-        `(lambda (candidate)
-           ,(if company-candidates-predicate
-                `(and (string-match ,company-search-string candidate)
-                      (funcall ,company-candidates-predicate
-                               candidate))
-              `(string-match ,company-search-string candidate))))
+  (let ((ss company-search-string))
+    (setq company-candidates-predicate
+          (when ss (lambda (candidate) (string-match ss candidate)))))
   (company-update-candidates
    (company-apply-predicate company-candidates company-candidates-predicate))
   ;; Invalidate cache.
