@@ -60,11 +60,12 @@
 
 (defun company-files--complete (prefix)
   (let* ((dir (file-name-directory prefix))
-         (key (cons (expand-file-name dir)
+         (key (list (file-name-nondirectory prefix)
+                    (expand-file-name dir)
                     (nth 5 (file-attributes dir))))
          (file (file-name-nondirectory prefix))
          candidates directories)
-    (unless (equal key (car company-files--completion-cache))
+    (unless (company-file--keys-match-p key (car company-files--completion-cache))
       (dolist (file (company-files--directory-files dir file))
         (setq file (concat dir file))
         (push file candidates)
@@ -79,6 +80,10 @@
       (setq company-files--completion-cache (cons key (nreverse candidates))))
     (all-completions prefix
                      (cdr company-files--completion-cache))))
+
+(defun company-file--keys-match-p (new old)
+  (and (string-prefix-p (car old) (car new))
+       (equal (cdr old) (cdr new))))
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
