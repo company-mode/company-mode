@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* `company-files` checks directory's last modification time.
+* `company-files` supports relative paths and Windows drive letters.
+
 ## 2014-08-13 (0.8.4)
 
 * `company-ropemacs` is only used when `ropemacs-mode` is on.
