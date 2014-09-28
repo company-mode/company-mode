@@ -28,13 +28,13 @@
 (require 'company)
 (require 'cl-lib)
 
-(defun company-files-directory-files (dir prefix)
+(defun company-files--directory-files (dir prefix)
   (ignore-errors
     (if (equal prefix "")
         (directory-files dir nil "\\`[^.]\\|\\`.[^.]")
       (file-name-all-completions prefix dir))))
 
-(defvar company-files-regexps
+(defvar company-files--regexps
   (let* ((root (if (eq system-type 'windows-nt)
                    "[a-zA-Z]:/"
                  "/"))
@@ -43,11 +43,11 @@
           (concat "\'\\(" begin "[^\'\n]*\\)")
           (concat "\\(?:[ \t]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
 
-(defun company-files-grab-existing-name ()
+(defun company-files--grab-existing-name ()
   ;; Grab the file name.
   ;; When surrounded with quotes, it can include spaces.
   (let (file dir)
-    (and (cl-dolist (regexp company-files-regexps)
+    (and (cl-dolist (regexp company-files--regexps)
            (when (setq file (company-grab-line regexp 1))
              (cl-return file)))
          (setq dir (file-name-directory file))
@@ -56,29 +56,29 @@
          (file-name-all-completions (file-name-nondirectory file) dir)
          file)))
 
-(defvar company-files-completion-cache nil)
+(defvar company-files--completion-cache nil)
 
-(defun company-files-complete (prefix)
+(defun company-files--complete (prefix)
   (let* ((dir (file-name-directory prefix))
          (key (cons (expand-file-name dir)
                     (nth 5 (file-attributes dir))))
          (file (file-name-nondirectory prefix))
          candidates directories)
-    (unless (equal key (car company-files-completion-cache))
-      (dolist (file (company-files-directory-files dir file))
+    (unless (equal key (car company-files--completion-cache))
+      (dolist (file (company-files--directory-files dir file))
         (setq file (concat dir file))
         (push file candidates)
         (when (file-directory-p file)
           (push file directories)))
       (dolist (directory (reverse directories))
         ;; Add one level of children.
-        (dolist (child (company-files-directory-files directory ""))
+        (dolist (child (company-files--directory-files directory ""))
           (push (concat directory
                         (unless (eq (aref directory (1- (length directory))) ?/) "/")
                         child) candidates)))
-      (setq company-files-completion-cache (cons key (nreverse candidates))))
+      (setq company-files--completion-cache (cons key (nreverse candidates))))
     (all-completions prefix
-                     (cdr company-files-completion-cache))))
+                     (cdr company-files--completion-cache))))
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
@@ -88,8 +88,8 @@ File paths with spaces are only supported inside strings."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-files))
-    (prefix (company-files-grab-existing-name))
-    (candidates (company-files-complete arg))
+    (prefix (company-files--grab-existing-name))
+    (candidates (company-files--complete arg))
     (location (cons (dired-noselect
                      (file-name-directory (directory-file-name arg))) 1))
     (sorted t)
