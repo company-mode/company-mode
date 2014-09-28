@@ -1575,14 +1575,12 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-printing-char ()
   (interactive)
   (company-search-assert-enabled)
-  (setq company-search-string
-        (concat (or company-search-string "") (string last-command-event))
-        company-search-lighter (concat " Search: \"" company-search-string
-                                       "\""))
-  (let ((pos (company-search company-search-string
-                             (nthcdr company-selection company-candidates))))
+  (let* ((ss (concat company-search-string (string last-command-event)))
+         (pos (company-search ss (nthcdr company-selection company-candidates))))
     (if (null pos)
         (ding)
+      (setq company-search-string ss
+            company-search-lighter (concat " Search: \"" ss "\""))
       (company-set-selection (+ company-selection pos) t))))
 
 (defun company-search-repeat-forward ()
