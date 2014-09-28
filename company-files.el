@@ -35,9 +35,10 @@
       (file-name-all-completions prefix dir))))
 
 (defvar company-files-regexps
-  (let ((begin (if (eq system-type 'windows-nt)
-                   "[a-z][A-Z]\\"
-                 "~?/")))
+  (let* ((begin (if (eq system-type 'windows-nt)
+                   "[[:alpha:]]:/"
+		  "/"))
+	 (begin (concat "\\(?:\\.\\{1,2\\}/\\|~/\\|" begin "\\)")))
     (list (concat "\"\\(" begin "[^\"\n]*\\)")
           (concat "\'\\(" begin "[^\'\n]*\\)")
           (concat "\\(?:[ \t]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
@@ -58,9 +59,14 @@
 
 (defun company-files-complete (prefix)
   (let* ((dir (file-name-directory prefix))
+         (cf-completion-cache-id (concat (expand-file-name dir)
+                                           (file-name-nondirectory prefix)
+                                           (mapconcat  'number-to-string
+                                                       (nth 5 (file-attributes dir))
+                                                       "")))
          (file (file-name-nondirectory prefix))
          candidates directories)
-    (unless (equal dir (car company-files-completion-cache))
+    (unless (equal cf-completion-cache-id (car company-files-completion-cache))
       (dolist (file (company-files-directory-files dir file))
         (setq file (concat dir file))
         (push file candidates)
@@ -72,13 +78,15 @@
           (push (concat directory
                         (unless (eq (aref directory (1- (length directory))) ?/) "/")
                         child) candidates)))
-      (setq company-files-completion-cache (cons dir (nreverse candidates))))
+      (setq company-files-completion-cache  (cons cf-completion-cache-id (nreverse candidates))))
     (all-completions prefix
                      (cdr company-files-completion-cache))))
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
-  "`company-mode' completion back-end existing file names."
+  "`company-mode' completion back-end existing file names.
+Completions are triggered when the text inside quotes starts with any of 
+the following: ./, ../, ~/, or root drive"
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-files))
