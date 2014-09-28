@@ -1279,7 +1279,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
        (eq pos (point))
        (when (company-auto-begin)
          (company-input-noop)
-         (company-post-command))))
+         (let ((this-command 'company-idle-begin))
+           (company-post-command)))))
 
 (defun company-auto-begin ()
   (and company-mode
@@ -1518,6 +1519,13 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (company-uninstall-map))
 
 (defun company-post-command ()
+  (when (null this-command)
+    ;; Happens when the user presses `C-g' while inside
+    ;; `flyspell-post-command-hook', for example.
+    ;; Or any other `post-command-hook' function that can call `sit-for',
+    ;; or any quittable timer function.
+    (company-abort)
+    (setq this-command 'company-abort))
   (unless (company-keep this-command)
     (condition-case err
         (progn
