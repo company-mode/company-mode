@@ -44,7 +44,8 @@
           (concat "\\(?:[ \t]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
 
 (defun company-files-grab-existing-name ()
-  ;; Grab file names with spaces, only when they include quotes.
+  ;; Grab the file name.
+  ;; When surrounded with quotes, it can include spaces.
   (let (file dir)
     (and (cl-dolist (regexp company-files-regexps)
            (when (setq file (company-grab-line regexp 1))
