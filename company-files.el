@@ -1,6 +1,6 @@
-;;; company-files.el --- company-mode completion back-end for file names
+;;; company-files.el --- company-mode completion back-end for file paths
 
-;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -35,10 +35,10 @@
       (file-name-all-completions prefix dir))))
 
 (defvar company-files-regexps
-  (let* ((begin (if (eq system-type 'windows-nt)
-                    "[a-zA-Z]:/"
-                  "/"))
-         (begin (concat "\\(?:\\.\\{1,2\\}/\\|~/\\|" begin "\\)")))
+  (let* ((root (if (eq system-type 'windows-nt)
+                   "[a-zA-Z]:/"
+                 "/"))
+         (begin (concat "\\(?:\\.\\{1,2\\}/\\|~/\\|" root "\\)")))
     (list (concat "\"\\(" begin "[^\"\n]*\\)")
           (concat "\'\\(" begin "[^\'\n]*\\)")
           (concat "\\(?:[ \t]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
@@ -81,8 +81,8 @@
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
   "`company-mode' completion back-end existing file names.
-Completions are triggered when the text inside quotes starts with any of 
-the following: ./, ../, ~/, or root drive"
+Completions works for proper absolute and relative files paths.
+File paths with spaces are only supported inside strings."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-files))
