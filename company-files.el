@@ -82,8 +82,8 @@
                      (cdr company-files--completion-cache))))
 
 (defun company-file--keys-match-p (new old)
-  (and (string-prefix-p (car old) (car new))
-       (equal (cdr old) (cdr new))))
+  (and (equal (cdr old) (cdr new))
+       (string-prefix-p (car old) (car new))))
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
