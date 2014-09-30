@@ -551,6 +551,7 @@ happens.  The value of nil means no idle completion."
 
 (defcustom company-begin-commands '(self-insert-command
                                     org-self-insert-command
+                                    orgtbl-self-insert-command
                                     c-scope-operator
                                     c-electric-colon
                                     c-electric-lt-gt
