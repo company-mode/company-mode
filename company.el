@@ -1029,7 +1029,7 @@ can retrieve meta-data for them."
 
 (defun company-call-frontends (command)
   (dolist (frontend company-frontends)
-    (condition-case err
+    (condition-case-unless-debug err
         (funcall frontend command)
       (error (error "Company: Front-end %s error \"%s\" on command %s"
                     frontend (error-message-string err) command)))))
@@ -1506,7 +1506,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defun company-pre-command ()
   (unless (company-keep this-command)
-    (condition-case err
+    (condition-case-unless-debug err
         (when company-candidates
           (company-call-frontends 'pre-command)
           (unless (company--should-continue)
@@ -1528,7 +1528,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (company-abort)
     (setq this-command 'company-abort))
   (unless (company-keep this-command)
-    (condition-case err
+    (condition-case-unless-debug err
         (progn
           (unless (equal (point) company-point)
             (let (company-idle-delay) ; Against misbehavior while debugging.
