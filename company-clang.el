@@ -51,7 +51,7 @@ and `c-electric-colon', for automatic completion right after \">\" and
   "Additional arguments to pass to clang when completing.
 Prefix files (-include ...) can be selected with `company-clang-set-prefix'
 or automatically through a custom `company-clang-prefix-guesser'."
-  :type '(repeat (string :tag "Argument" nil)))
+  :type '(repeat (string :tag "Argument")))
 
 (defcustom company-clang-prefix-guesser 'company-clang-guess-prefix
   "A function to determine the prefix file for the current buffer."
