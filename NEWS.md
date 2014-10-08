@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-dabbrev` always ignores "uninteresting" buffers.
 * `company-files` checks directory's last modification time.
 * `company-files` supports relative paths and Windows drive letters.
 

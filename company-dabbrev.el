@@ -121,8 +121,9 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     (when other-buffer-modes
       (cl-dolist (buffer (delq (current-buffer) (buffer-list)))
         (with-current-buffer buffer
-          (when (or (eq other-buffer-modes 'all)
-                    (apply #'derived-mode-p other-buffer-modes))
+          (when (if (eq other-buffer-modes 'all)
+                    (not (string-match-p "\\`[ *]" (buffer-name)))
+                  (apply #'derived-mode-p other-buffer-modes))
             (setq symbols
                   (company-dabbrev--search-buffer regexp nil symbols start
                                                   limit ignore-comments))))
