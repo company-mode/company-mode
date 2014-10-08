@@ -2091,7 +2091,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
          (common (or (company-call-backend 'match value)
-                     (string-width company-common)))
+                     (if company-common
+                         (string-width company-common)
+                       0)))
          (ann-ralign company-tooltip-align-annotations)
          (value (company--clean-string value))
          (ann-truncate (< width
