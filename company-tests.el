@@ -560,6 +560,7 @@
       )))
 
 (ert-deftest company-create-lines-clears-out-non-printables ()
+  :tags '(interactive)
   (let (company-show-numbers
         (company-candidates (list
                              (decode-coding-string "avalis\351e" 'utf-8)
@@ -571,6 +572,7 @@
                    (company--create-lines 0 999)))))
 
 (ert-deftest company-create-lines-handles-multiple-width ()
+  :tags '(interactive)
   (let (company-show-numbers
         (company-candidates '("蛙蛙蛙蛙" "蛙abc"))
         (company-candidates-length 2)
