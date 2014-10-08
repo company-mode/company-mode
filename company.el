@@ -2093,6 +2093,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
          (common (or (company-call-backend 'match value)
                      (length company-common)))
          (ann-ralign company-tooltip-align-annotations)
+         (value (company--clean-string value))
          (ann-truncate (< width
                           (+ (length value) (length annotation)
                              (if ann-ralign 1 0))))
@@ -2150,6 +2151,25 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                mouse-face company-tooltip-selection)
                              line)))
     line))
+
+(defun company--clean-string (str)
+  (replace-regexp-in-string
+   "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]"
+   (lambda (match)
+     (cond
+      ((match-beginning 1)
+       ;; FIXME: Better char for 'non-printable'?
+       ;; We shouldn't get any of these, but sometimes we might.
+       "\u2017")
+      ((match-beginning 2)
+       ;; Zero-width non-breakable space.
+       "")
+      ((> (string-width match) 1)
+       (concat
+        (make-string (1- (string-width match)) ?\ufeff)
+        match))
+      (t match)))
+   str))
 
 ;;; replace
 
@@ -2278,7 +2298,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           ;; `lisp-completion-at-point' adds a space.
           (setq annotation (comment-string-strip annotation t nil)))
         (push (cons value annotation) items)
-        (setq width (max (+ (length value)
+        (setq width (max (+ (string-width value)
                             (if (and annotation company-tooltip-align-annotations)
                                 (1+ (length annotation))
                               (length annotation)))

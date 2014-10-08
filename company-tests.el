@@ -557,8 +557,27 @@
       (should (eq 'company-tooltip-selection
                   (get-text-property (1- ww) 'face
                                      (car res))))
+      )))
 
-)))
+(ert-deftest company-create-lines-clears-out-non-printables ()
+  (let (company-show-numbers
+        (company-candidates (list
+                             (decode-coding-string "avalis\351e" 'utf-8)
+                             "avatar"))
+        (company-candidates-length 2)
+        (company-backend 'ignore))
+    (should (equal '(" avalis‗e    "
+                     " avatar      ")
+                   (company--create-lines 0 999)))))
+
+(ert-deftest company-create-lines-handles-multiple-width ()
+  (let (company-show-numbers
+        (company-candidates '("蛙蛙蛙蛙" "蛙abc"))
+        (company-candidates-length 2)
+        (company-backend 'ignore))
+    (should (equal '(" ﻿蛙﻿蛙﻿蛙﻿蛙 "
+                     " ﻿蛙abc    ")
+                   (company--create-lines 0 999)))))
 
 (ert-deftest company-column-with-composition ()
   :tags '(interactive)
