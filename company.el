@@ -849,7 +849,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
         res))))
 
 (defun company-call-backend-raw (&rest args)
-  (condition-case err
+  (condition-case-unless-debug err
       (if (functionp company-backend)
           (apply company-backend args)
         (apply #'company--multi-backend-adapter company-backend args))
