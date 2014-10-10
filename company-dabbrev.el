@@ -34,12 +34,15 @@
 
 (defcustom company-dabbrev-other-buffers 'all
   "Determines whether `company-dabbrev' should search other buffers.
-If `all', search all other buffers.  If t, search buffers with the same
-major mode.
-See also `company-dabbrev-time-limit'."
+If `all', search all other buffers, except the ignored ones.  If t, search
+buffers with the same major mode.  See also `company-dabbrev-time-limit'."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "Same major mode" t)
                  (const :tag "All" all)))
+
+(defcustom company-dabbrev-ignore-buffers "\\`[ *]"
+  "Regexp matching the names of buffers to ignore."
+  :type 'regexp)
 
 (defcustom company-dabbrev-time-limit .1
   "Determines how many seconds `company-dabbrev' should look for matches."
@@ -122,7 +125,8 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
       (cl-dolist (buffer (delq (current-buffer) (buffer-list)))
         (with-current-buffer buffer
           (when (if (eq other-buffer-modes 'all)
-                    (not (string-match-p "\\`[ *]" (buffer-name)))
+                    (not (string-match-p company-dabbrev-ignore-buffers
+                                         (buffer-name)))
                   (apply #'derived-mode-p other-buffer-modes))
             (setq symbols
                   (company-dabbrev--search-buffer regexp nil symbols start

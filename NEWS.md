@@ -2,7 +2,8 @@
 
 ## Next
 
-* `company-dabbrev` always ignores "uninteresting" buffers.
+* `company-dabbrev` ignores "uninteresting" buffers by default. Depends on the
+  new user option, `company-dabbrev-ignore-buffers`.
 * `company-files` checks directory's last modification time.
 * `company-files` supports relative paths and Windows drive letters.
 
