@@ -27,6 +27,12 @@
 (declare-function bbdb-dwim-mail "bbdb-com")
 (declare-function bbdb-search "bbdb-com")
 
+(defun company-bbdb--candidates (arg)
+  (cl-mapcan (lambda (record)
+               (mapcar (lambda (mail) (bbdb-dwim-mail record mail))
+                       (bbdb-record-get-field record 'mail)))
+             (eval '(bbdb-search (bbdb-records) arg nil arg))))
+
 ;;;###autoload
 (defun company-bbdb (command &optional arg &rest ignore)
   "`company-mode' completion back-end for `bbdb'."
@@ -38,10 +44,7 @@
                  (looking-back "^\\(To\\|Cc\\|Bcc\\):.*"
                                (line-beginning-position))
                  (company-grab-symbol)))
-    (candidates (cl-mapcan (lambda (record)
-                             (mapcar (lambda (mail) (bbdb-dwim-mail record mail))
-                                     (bbdb-record-get-field record 'mail)))
-                           (bbdb-search (bbdb-records) arg nil arg)))
+    (candidates (company-bbdb--candidates arg))
     (sorted t)
     (no-cache t)))
 
