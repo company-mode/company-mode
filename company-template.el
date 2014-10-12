@@ -1,6 +1,6 @@
 ;;; company-template.el
 
-;; Copyright (C) 2009, 2010, 2013 Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2010, 2014 Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -149,22 +149,49 @@ Leave point at the end of the field."
 (defun company-template-c-like-templatify (call)
   (let* ((end (point-marker))
          (beg (- (point) (length call)))
-         (cnt 0))
-    (when (re-search-backward ")" beg t)
-      (delete-region (match-end 0) end))
-    (goto-char beg)
-    (when (search-forward "(" end 'move)
-      (if (eq (char-after) ?\))
+         (cnt 0)
+         (templ (company-template-declare-template beg end))
+         paren-open paren-close)
+    (with-syntax-table (make-char-table 'syntax-table nil)
+      (modify-syntax-entry ?\( "(")
+      (modify-syntax-entry ?\) ")")
+      (modify-syntax-entry ?< "(")
+      (modify-syntax-entry ?> ")")
+      (when (search-backward ")" beg t)
+        (setq paren-close (point-marker))
+        (forward-char 1)
+        (delete-region (point) end)
+        (backward-sexp)
+        (forward-char 1)
+        (setq paren-open (point-marker)))
+      (when (search-backward ">" beg t)
+        (let ((angle-close (point-marker)))
           (forward-char 1)
-        (let ((templ (company-template-declare-template beg end)))
-          (while (re-search-forward (concat " *\\([^,)]*\\)[,)]") end t)
-            (let ((sig (match-string 1)))
-              (delete-region (match-beginning 1) (match-end 1))
-              (save-excursion
-                (company-template-add-field templ (match-beginning 1)
-                                            (format "arg%d" cnt) sig))
-              (cl-incf cnt)))
-          (company-template-move-to-first templ))))))
+          (backward-sexp)
+          (forward-char)
+          (setq cnt (company-template--c-like-args templ angle-close
+                                                   cnt))))
+      (when paren-open
+        (goto-char paren-open)
+        (company-template--c-like-args templ paren-close cnt)))
+    (if (overlay-get templ 'company-template-fields)
+        (company-template-move-to-first templ)
+      (company-template-remove-template templ)
+      (goto-char end))))
+
+(defun company-template--c-like-args (templ end counter)
+  (let ((last-pos (point)))
+    (while (re-search-forward "\\([^,]+\\),?" end 'move)
+      (when (zerop (car (parse-partial-sexp last-pos (point))))
+        (let ((sig (buffer-substring-no-properties last-pos (match-end 1))))
+          (save-excursion
+            (company-template-add-field templ last-pos
+                                        (format "arg%d" counter) sig)
+            (delete-region (point) (+ (point) (length sig))))
+          (skip-chars-forward " ")
+          (setq last-pos (point))
+          (cl-incf counter)))))
+  counter)
 
 (provide 'company-template)
 ;;; company-template.el ends here

@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-clang` and `company-template-c-like-templatify` support templated
+  functions and arguments.
 * `company-dabbrev` ignores "uninteresting" buffers by default. Depends on the
   new user option, `company-dabbrev-ignore-buffers`.
 * `company-files` checks directory's last modification time.

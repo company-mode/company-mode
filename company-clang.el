@@ -110,7 +110,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
 ;; TODO: Handle Pattern (syntactic hints would be neat).
 ;; Do we ever see OVERLOAD (or OVERRIDE)?
 (defconst company-clang--completion-pattern
-  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:]*\\)\\(?: : \\(.*\\)$\\)?$")
+  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:<>]*\\)\\(?: : \\(.*\\)$\\)?$")
 
 (defconst company-clang--error-buffer-name "*clang-error*")
 
@@ -320,7 +320,8 @@ passed via standard input."
                          (insert anno)
                          (if (string-match "\\`:[^:]" anno)
                              (company-clang-objc-templatify anno)
-                           (company-template-c-like-templatify anno)))))))
+                           (company-template-c-like-templatify
+                            (concat arg anno))))))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here

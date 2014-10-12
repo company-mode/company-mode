@@ -920,6 +920,19 @@ foo2"))
       (should (equal "foo(arg0, arg1)" (buffer-string)))
       (should (looking-at "arg0")))))
 
+(ert-deftest company-template-c-like-templatify-generics ()
+  (with-temp-buffer
+    (let ((text "foo<TKey, TValue>(int i, Dict<TKey, TValue>, long l)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (should (equal "foo<arg0, arg1>(arg2, arg3, arg4)" (buffer-string)))
+      (should (looking-at "arg0"))
+      (should (equal "TKey" (overlay-get (company-template-field-at) 'display)))
+      (search-forward "arg3")
+      (forward-char -1)
+      (should (equal "Dict<TKey, TValue>"
+                     (overlay-get (company-template-field-at) 'display))))))
+
 ;;; Clang
 
 (ert-deftest company-clang-objc-templatify ()
