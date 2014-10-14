@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2014-10-15 (0.8.6)
 
 * `company-clang` and `company-template-c-like-templatify` support templated
   functions and arguments.
