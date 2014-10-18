@@ -1,6 +1,6 @@
 ;;; company-xcode.el --- company-mode completion back-end for Xcode projects
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -80,7 +80,7 @@ valid in most contexts."
                             "\t[^\t\n]*\t[^\t\n]*"))
             candidates)
         (while (re-search-forward regexp nil t)
-          (add-to-list 'candidates (match-string 1)))
+          (cl-pushnew (match-string 1) candidates :test #'equal))
         (message "Retrieving dump from %s...done" project-bundle)
         candidates))))
 

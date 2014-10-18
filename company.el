@@ -2208,6 +2208,26 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       limit
     (length lst)))
 
+(defsubst company--window-height ()
+  (if (fboundp 'window-screen-lines)
+      (floor (window-screen-lines))
+    (window-body-height)))
+
+(defsubst company--window-width ()
+  (let ((ww (window-body-width)))
+    ;; Account for the line continuation column.
+    (when (zerop (cadr (window-fringes)))
+      (cl-decf ww))
+    (unless (or (display-graphic-p)
+                (version< "24.3.1" emacs-version))
+      ;; Emacs 24.3 and earlier included margins
+      ;; in window-width when in TTY.
+      (cl-decf ww
+               (let ((margins (window-margins)))
+                 (+ (or (car margins) 0)
+                    (or (cdr margins) 0)))))
+    ww))
+
 (defun company--replacement-string (lines old column nl &optional align-top)
   (cl-decf column company-tooltip-margin)
 
@@ -2232,7 +2252,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (while old
       (push (company-modify-line (pop old)
                                  (company--offset-line (pop lines) offset)
-                                 column) new))
+                                 column)
+            new))
     ;; Append whole new lines.
     (while lines
       (push (concat (company-space-string column)
@@ -2366,26 +2387,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
               'face 'company-tooltip))
 
 ;; show
-
-(defsubst company--window-height ()
-  (if (fboundp 'window-screen-lines)
-      (floor (window-screen-lines))
-    (window-body-height)))
-
-(defsubst company--window-width ()
-  (let ((ww (window-body-width)))
-    ;; Account for the line continuation column.
-    (when (zerop (cadr (window-fringes)))
-      (cl-decf ww))
-    (unless (or (display-graphic-p)
-                (version< "24.3.1" emacs-version))
-      ;; Emacs 24.3 and earlier included margins
-      ;; in window-width when in TTY.
-      (cl-decf ww
-               (let ((margins (window-margins)))
-                 (+ (or (car margins) 0)
-                    (or (cdr margins) 0)))))
-    ww))
 
 (defun company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
