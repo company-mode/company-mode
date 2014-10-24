@@ -152,7 +152,7 @@ Leave point at the end of the field."
          (cnt 0)
          (templ (company-template-declare-template beg end))
          paren-open paren-close)
-    (with-syntax-table (make-char-table 'syntax-table nil)
+    (with-syntax-table (make-syntax-table (syntax-table))
       (modify-syntax-entry ?\( "(")
       (modify-syntax-entry ?\) ")")
       (modify-syntax-entry ?< "(")
