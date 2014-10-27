@@ -153,8 +153,6 @@ Leave point at the end of the field."
          (templ (company-template-declare-template beg end))
          paren-open paren-close)
     (with-syntax-table (make-syntax-table (syntax-table))
-      (modify-syntax-entry ?\( "(")
-      (modify-syntax-entry ?\) ")")
       (modify-syntax-entry ?< "(")
       (modify-syntax-entry ?> ")")
       (when (search-backward ")" beg t)
