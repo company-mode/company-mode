@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013  Free Software Foundation, Inc.
 
 ;; Author: Chen Bin <chenbin DOT sh AT gmail>
-;; Version: 0.1
+;; Version: 0.2
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -45,48 +45,128 @@
 They affect which types of symbols we get completion candidates for.")
 
 (defvar company-cmake--completion-pattern
-  "^\\(%s[a-zA-Z0-9_]%s\\)$"
+  "^\\(%s[a-zA-Z0-9_<>]%s\\)$"
   "Regexp to match the candidates.")
 
 (defvar company-cmake-modes '(cmake-mode)
   "Major modes in which cmake may complete.")
 
+(defvar company-cmake-candidates-cache nil
+  "Cache for the raw candidates.")
+
+(defvar company-cmake-candidates-cache-life-seconds 600
+  "Life of candidates cache in seconds.")
+
 (defvar company-cmake--meta-command-cache nil
   "Cache for command arguments to retrieve descriptions for the candidates.")
 
-(defun company-cmake--parse-output (prefix cmd)
-  "Analyze the temp buffer and collect lines."
-  (goto-char (point-min))
-  (let ((pattern (format company-cmake--completion-pattern
-                         (regexp-quote prefix)
-                         (if (zerop (length prefix)) "+" "*")))
-        (case-fold-search nil)
-        lines match)
-    (while (re-search-forward pattern nil t)
-      (setq match (match-string-no-properties 1))
-      (puthash match cmd company-cmake--meta-command-cache)
-      (push match lines))
-    lines))
+(defvar company-cmake--timestamp-touch-candidates-cache nil
+  "When will the candidates cache be touched?")
 
-(defun company-cmake--candidates (prefix)
-  (let ((res 0)
-        results
-        cmd)
-    (setq company-cmake--meta-command-cache (make-hash-table :test 'equal))
-    (dolist (arg company-cmake-executable-arguments)
+(defun company-cmake--replace-tags (rlt)
+  (setq rlt (replace-regexp-in-string "\\(.*\\)<LANG>\\(.*\\)"
+                                      (mapconcat 'identity '("\\1CXX\\2" "\\1C\\2" "\\1Fortran\\2") "\n")
+                                      rlt))
+  (setq rlt (replace-regexp-in-string "\\(.*\\)<CONFIG>\\(.*\\)"
+                                      (mapconcat 'identity '("\\1DEBUG\\2" "\\1RELEASE\\2" "\\1RELWITHDEBINFO\\2" "\\1MINSIZEREL\\2") "\n")
+                                      rlt))
+  rlt)
+
+(defun company-cmake--fill-candidates-cache (arg)
+  "Fill candidates cache if needed."
+  (let (rlt)
+    ;; first time to set the timestamp
+    (if (not company-cmake--timestamp-touch-candidates-cache)
+        (setq company-cmake--timestamp-touch-candidates-cache (current-time)))
+
+    ;; clear the cache if cache is idle for certain minutes
+    (if (> (float-time (time-subtract (current-time) company-cmake--timestamp-touch-candidates-cache))
+           company-cmake-candidates-cache-life-seconds)
+        (setq company-cmake-candidates-cache nil))
+
+    (unless company-cmake-candidates-cache
+      (setq company-cmake-candidates-cache (make-hash-table :test 'equal)))
+
+    ;; if hash is empty fill it
+    (unless (gethash arg company-cmake-candidates-cache)
       (with-temp-buffer
         (setq res (call-process company-cmake-executable nil t nil arg))
         (unless (eq 0 res)
           (message "cmake executable exited with error=%d" res))
-        (setq cmd (replace-regexp-in-string "-list$" "" arg) )
-        (setq results (nconc results (company-cmake--parse-output prefix cmd)))))
+        (setq rlt (buffer-string)))
+      (setq rlt (company-cmake--replace-tags rlt))
+      (puthash arg rlt company-cmake-candidates-cache))
+    ))
+
+(defun company-cmake-find-match (pattern line)
+  (let (match)
+     ;; General Flags
+     (if (string-match pattern line)
+      (if (setq match (match-string 1 line))
+        (puthash match cmd company-cmake--meta-command-cache)))
+    match))
+
+(defun company-cmake-parse (prefix content cmd)
+  (let ((start 0)
+        (pattern (format company-cmake--completion-pattern
+                         (regexp-quote prefix)
+                         (if (zerop (length prefix)) "+" "*")))
+        (lines (split-string content "\n"))
+        (lang-patterns ())
+        match
+        rlt)
+    (dolist (line lines)
+      (if (setq match (company-cmake-find-match pattern line))
+          (push match rlt)))
+    rlt))
+
+(defun company-cmake--candidates (prefix)
+  (let ((res 0)
+        results
+        cmd-opts
+        str)
+
+    (unless company-cmake--meta-command-cache
+      (setq company-cmake--meta-command-cache (make-hash-table :test 'equal)))
+
+    (dolist (arg company-cmake-executable-arguments)
+      (company-cmake--fill-candidates-cache arg)
+      (setq cmd-opts (replace-regexp-in-string "-list$" "" arg) )
+
+      (setq str (gethash arg company-cmake-candidates-cache))
+      (if str
+        (setq results (nconc results (company-cmake-parse prefix str cmd-opts)))
+        ))
     results))
 
-(defun company-cmake--meta (prefix)
-  (let ((cmd-opts (gethash prefix company-cmake--meta-command-cache))
+(defun company-cmake--unexpand-candidate (candidate)
+  (cond
+   ((string-match "^CMAKE_\\(C\\|CXX\\|Fortran\\)\\(_.*\\)$" candidate)
+    (setq candidate (concat "CMAKE_<LANG>_" (match-string 2 candidate))))
+
+   ;; C flags
+   ((string-match "^\\(.*_\\)IS_GNU\\(C\\|CXX\\|Fortran\\)$" candidate)
+    (setq candidate (concat (match-string 1 candidate) "IS_GNU<LANG>")))
+
+   ;; C flags
+   ((string-match "^\\(.*_\\)OVERRIDE_\\(C\\|CXX\\|Fortran\\)$" candidate)
+    (setq candidate (concat (match-string 1 candidate) "OVERRIDE_<LANG>")))
+
+   ((string-match "^\\(.*\\)\\(_DEBUG\\|_RELEASE\\|_RELWITHDEBINFO\\|_MINSIZEREL\\)\\(.*\\)$" candidate)
+    (setq candidate (concat (match-string 1 candidate)
+                            "_<CONFIG>"
+                            (match-string 3 candidate)))))
+  candidate)
+
+(defun company-cmake--meta (candidate)
+  (let ((cmd-opts (gethash candidate company-cmake--meta-command-cache))
         result)
+    (setq candidate (company-cmake--unexpand-candidate candidate))
+
+    ;; Don't cache the documentation of every candidate (command)
+    ;; Cache in this case will cost too much memory.
     (with-temp-buffer
-      (call-process company-cmake-executable nil t nil cmd-opts prefix)
+      (call-process company-cmake-executable nil t nil cmd-opts candidate)
       ;; Go to the third line, trim it and return the result.
       ;; Tested with cmake 2.8.9.
       (goto-char (point-min))
@@ -96,10 +176,12 @@ They affect which types of symbols we get completion candidates for.")
       (setq result (replace-regexp-in-string "^[ \t\n\r]+" "" result))
       result)))
 
-(defun company-cmake--doc-buffer (prefix)
-  (let ((cmd-opts (gethash prefix company-cmake--meta-command-cache)))
+(defun company-cmake--doc-buffer (candidate)
+  (let ((cmd-opts (gethash candidate company-cmake--meta-command-cache)))
+
+    (setq candidate (company-cmake--unexpand-candidate candidate))
     (with-temp-buffer
-      (call-process company-cmake-executable nil t nil cmd-opts prefix)
+      (call-process company-cmake-executable nil t nil cmd-opts candidate)
       ;; Go to the third line, trim it and return the doc buffer.
       ;; Tested with cmake 2.8.9.
       (goto-char (point-min))
