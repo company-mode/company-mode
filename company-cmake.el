@@ -124,7 +124,7 @@ They affect which types of symbols we get completion candidates for.")
 (defun company-cmake--unexpand-candidate (candidate)
   (cond
    ((string-match "^CMAKE_\\(C\\|CXX\\|G77\\)\\(_.*\\)$" candidate)
-    (setq candidate (concat "CMAKE_<LANG>_" (match-string 2 candidate))))
+    (setq candidate (concat "CMAKE_<LANG>" (match-string 2 candidate))))
 
    ;; C flags
    ((string-match "^\\(.*_\\)IS_GNU\\(C\\|CXX\\|G77\\)$" candidate)
