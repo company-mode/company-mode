@@ -59,9 +59,14 @@ They affect which types of symbols we get completion candidates for.")
 
 (defun company-cmake--replace-tags (rlt)
   (setq rlt (replace-regexp-in-string
-             "\\(.*\\)<LANG>\\(.*\\)"
-             (mapconcat 'identity '("\\1CXX\\2" "\\1C\\2" "\\1G77\\2") "\n")
-             rlt))
+             "\\(.*?\\(IS_GNU\\)?\\)<LANG>\\(.*\\)"
+             (lambda (_match)
+               (mapconcat 'identity
+                          (if (match-beginning 2)
+                              '("\\1CXX\\3" "\\1C\\3" "\\1G77\\3")
+                            '("\\1CXX\\3" "\\1C\\3" "\\1Fortran\\3"))
+                          "\n"))
+             rlt t))
   (setq rlt (replace-regexp-in-string
              "\\(.*\\)<CONFIG>\\(.*\\)"
              (mapconcat 'identity '("\\1DEBUG\\2" "\\1RELEASE\\2"
@@ -123,7 +128,7 @@ They affect which types of symbols we get completion candidates for.")
 
 (defun company-cmake--unexpand-candidate (candidate)
   (cond
-   ((string-match "^CMAKE_\\(C\\|CXX\\|G77\\)\\(_.*\\)$" candidate)
+   ((string-match "^CMAKE_\\(C\\|CXX\\|Fortran\\)\\(_.*\\)$" candidate)
     (setq candidate (concat "CMAKE_<LANG>" (match-string 2 candidate))))
 
    ;; C flags
@@ -131,7 +136,7 @@ They affect which types of symbols we get completion candidates for.")
     (setq candidate (concat (match-string 1 candidate) "IS_GNU<LANG>")))
 
    ;; C flags
-   ((string-match "^\\(.*_\\)OVERRIDE_\\(C\\|CXX\\|G77\\)$" candidate)
+   ((string-match "^\\(.*_\\)OVERRIDE_\\(C\\|CXX\\|Fortran\\)$" candidate)
     (setq candidate (concat (match-string 1 candidate) "OVERRIDE_<LANG>")))
 
    ((string-match "^\\(.*\\)\\(_DEBUG\\|_RELEASE\\|_RELWITHDEBINFO\\|_MINSIZEREL\\)\\(.*\\)$" candidate)
