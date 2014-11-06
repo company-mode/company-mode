@@ -51,36 +51,40 @@ They affect which types of symbols we get completion candidates for.")
 (defvar company-cmake-modes '(cmake-mode)
   "Major modes in which cmake may complete.")
 
-(defvar company-cmake-candidates-cache nil
+(defvar company-cmake--candidates-cache nil
   "Cache for the raw candidates.")
 
 (defvar company-cmake--meta-command-cache nil
   "Cache for command arguments to retrieve descriptions for the candidates.")
 
 (defun company-cmake--replace-tags (rlt)
-  (setq rlt (replace-regexp-in-string "\\(.*\\)<LANG>\\(.*\\)"
-                                      (mapconcat 'identity '("\\1CXX\\2" "\\1C\\2" "\\1Fortran\\2") "\n")
-                                      rlt))
-  (setq rlt (replace-regexp-in-string "\\(.*\\)<CONFIG>\\(.*\\)"
-                                      (mapconcat 'identity '("\\1DEBUG\\2" "\\1RELEASE\\2" "\\1RELWITHDEBINFO\\2" "\\1MINSIZEREL\\2") "\n")
-                                      rlt))
+  (setq rlt (replace-regexp-in-string
+             "\\(.*\\)<LANG>\\(.*\\)"
+             (mapconcat 'identity '("\\1CXX\\2" "\\1C\\2" "\\1Fortran\\2") "\n")
+             rlt))
+  (setq rlt (replace-regexp-in-string
+             "\\(.*\\)<CONFIG>\\(.*\\)"
+             (mapconcat 'identity '("\\1DEBUG\\2" "\\1RELEASE\\2"
+                                    "\\1RELWITHDEBINFO\\2" "\\1MINSIZEREL\\2")
+                        "\n")
+             rlt))
   rlt)
 
 (defun company-cmake--fill-candidates-cache (arg)
   "Fill candidates cache if needed."
   (let (rlt)
-    (unless company-cmake-candidates-cache
-      (setq company-cmake-candidates-cache (make-hash-table :test 'equal)))
+    (unless company-cmake--candidates-cache
+      (setq company-cmake--candidates-cache (make-hash-table :test 'equal)))
 
     ;; If hash is empty, fill it.
-    (unless (gethash arg company-cmake-candidates-cache)
+    (unless (gethash arg company-cmake--candidates-cache)
       (with-temp-buffer
         (setq res (call-process company-cmake-executable nil t nil arg))
         (unless (eq 0 res)
           (message "cmake executable exited with error=%d" res))
         (setq rlt (buffer-string)))
       (setq rlt (company-cmake--replace-tags rlt))
-      (puthash arg rlt company-cmake-candidates-cache))
+      (puthash arg rlt company-cmake--candidates-cache))
     ))
 
 (defun company-cmake-find-match (pattern line)
@@ -91,7 +95,7 @@ They affect which types of symbols we get completion candidates for.")
         (puthash match cmd company-cmake--meta-command-cache)))
     match))
 
-(defun company-cmake-parse (prefix content cmd)
+(defun company-cmake--parse (prefix content cmd)
   (let ((start 0)
         (pattern (format company-cmake--completion-pattern
                          (regexp-quote prefix)
@@ -118,10 +122,10 @@ They affect which types of symbols we get completion candidates for.")
       (company-cmake--fill-candidates-cache arg)
       (setq cmd-opts (replace-regexp-in-string "-list$" "" arg) )
 
-      (setq str (gethash arg company-cmake-candidates-cache))
-      (if str
-        (setq results (nconc results (company-cmake-parse prefix str cmd-opts)))
-        ))
+      (setq str (gethash arg company-cmake--candidates-cache))
+      (when str
+        (setq results (nconc results
+                             (company-cmake--parse prefix str cmd-opts)))))
     results))
 
 (defun company-cmake--unexpand-candidate (candidate)
