@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* `company-cmake` supports expansion of `<LANG>` and `<CONFIG>` placeholders
+  inside of variable names.
+
 ## 2014-10-15 (0.8.6)
 
 * `company-clang` and `company-template-c-like-templatify` support templated
