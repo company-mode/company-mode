@@ -88,14 +88,6 @@ They affect which types of symbols we get completion candidates for.")
       (puthash arg rlt company-cmake--candidates-cache))
     ))
 
-(defun company-cmake--find-match (pattern line cmd)
-  (let (match)
-     ;; General Flags
-     (if (string-match pattern line)
-      (if (setq match (match-string 1 line))
-        (puthash match cmd company-cmake--meta-command-cache)))
-    match))
-
 (defun company-cmake--parse (prefix content cmd)
   (let ((start 0)
         (pattern (format company-cmake--completion-pattern
@@ -105,8 +97,11 @@ They affect which types of symbols we get completion candidates for.")
         match
         rlt)
     (dolist (line lines)
-      (if (setq match (company-cmake--find-match pattern line cmd))
-          (push match rlt)))
+      (when (string-match pattern line)
+        (let ((match (match-string 1 line)))
+          (when match
+            (puthash match cmd company-cmake--meta-command-cache)
+            (push match rlt)))))
     rlt))
 
 (defun company-cmake--candidates (prefix)
