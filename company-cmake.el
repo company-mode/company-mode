@@ -1,6 +1,6 @@
 ;;; company-cmake.el --- company-mode completion back-end for CMake
 
-;; Copyright (C) 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2014  Free Software Foundation, Inc.
 
 ;; Author: Chen Bin <chenbin DOT sh AT gmail>
 ;; Version: 0.2
