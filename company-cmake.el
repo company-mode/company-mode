@@ -79,15 +79,16 @@ They affect which types of symbols we get completion candidates for.")
     ;; If hash is empty, fill it.
     (unless (gethash arg company-cmake--candidates-cache)
       (with-temp-buffer
-        (setq res (call-process company-cmake-executable nil t nil arg))
-        (unless (eq 0 res)
-          (message "cmake executable exited with error=%d" res))
+        (let ((res 0))
+          (setq res (call-process company-cmake-executable nil t nil arg))
+          (unless (eq 0 res)
+            (message "cmake executable exited with error=%d" res)))
         (setq rlt (buffer-string)))
       (setq rlt (company-cmake--replace-tags rlt))
       (puthash arg rlt company-cmake--candidates-cache))
     ))
 
-(defun company-cmake-find-match (pattern line)
+(defun company-cmake--find-match (pattern line cmd)
   (let (match)
      ;; General Flags
      (if (string-match pattern line)
@@ -101,17 +102,15 @@ They affect which types of symbols we get completion candidates for.")
                          (regexp-quote prefix)
                          (if (zerop (length prefix)) "+" "*")))
         (lines (split-string content "\n"))
-        (lang-patterns ())
         match
         rlt)
     (dolist (line lines)
-      (if (setq match (company-cmake-find-match pattern line))
+      (if (setq match (company-cmake--find-match pattern line cmd))
           (push match rlt)))
     rlt))
 
 (defun company-cmake--candidates (prefix)
-  (let ((res 0)
-        results
+  (let (results
         cmd-opts
         str)
 
