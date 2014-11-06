@@ -79,9 +79,8 @@ They affect which types of symbols we get completion candidates for.")
     ;; If hash is empty, fill it.
     (unless (gethash arg company-cmake--candidates-cache)
       (with-temp-buffer
-        (let ((res 0))
-          (setq res (call-process company-cmake-executable nil t nil arg))
-          (unless (eq 0 res)
+        (let ((res (call-process company-cmake-executable nil t nil arg)))
+          (unless (zerop res)
             (message "cmake executable exited with error=%d" res)))
         (setq rlt (buffer-string)))
       (setq rlt (company-cmake--replace-tags rlt))
