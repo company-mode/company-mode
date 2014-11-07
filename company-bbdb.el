@@ -41,9 +41,9 @@
     (interactive (company-begin-backend 'company-bbdb))
     (prefix (and (eq major-mode 'message-mode)
                  (featurep 'bbdb-com)
-                 (looking-back "^\\(To\\|Cc\\|Bcc\\):.*"
+                 (looking-back "^\\(To\\|Cc\\|Bcc\\): *\\(.*\\)"
                                (line-beginning-position))
-                 (company-grab-symbol)))
+                 (match-string-no-properties 2)))
     (candidates (company-bbdb--candidates arg))
     (sorted t)
     (no-cache t)))
