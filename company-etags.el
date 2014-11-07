@@ -54,7 +54,7 @@ buffer automatically."
   (let ((file (locate-dominating-file (or buffer-file-name
                                           default-directory)
                                       "TAGS")))
-    (when file
+    (when (and file (file-regular-p file))
       (list (expand-file-name file)))))
 
 (defun company-etags-buffer-table ()
