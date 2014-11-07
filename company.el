@@ -261,6 +261,15 @@ This doesn't include the margins and the scroll bar."
   :type 'integer
   :package-version '(company . "0.8.0"))
 
+(defcustom company-tooltip-candidates-maximum-width-limit 0
+  "The maximum width of the tooltip's inner area,
+provided the line of no currently shown candidate exceeds it.  This doesn't
+include the margins and the scroll bar.  Default is 0 to always use the
+smallest tooltip width.  Set to large integer to always make it wide enough
+to show all candidates."
+  :type 'integer
+  :package-version '(company . "0.8.7"))
+
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
   :type 'integer)
@@ -1061,6 +1070,9 @@ can retrieve meta-data for them."
         (push c new)))
     (nreverse new)))
 
+(defvar company-tooltip-candidates-maximum-width 0
+  "Maximum inner width of all candidates' tooltip lines (shown or not).")
+
 (defun company-update-candidates (candidates)
   (setq company-candidates-length (length candidates))
   (if (> company-selection 0)
@@ -1079,6 +1091,27 @@ can retrieve meta-data for them."
           company-candidates candidates))
   ;; Save in cache:
   (push (cons company-prefix company-candidates) company-candidates-cache)
+  ;; Find maximum tooltip-width that can occur (here -> only once):
+  (when (or (memq 'company-pseudo-tooltip-frontend company-frontends)
+            (memq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
+    (setq company-tooltip-candidates-maximum-width 0)
+    (let ((lines-copy company-candidates)
+          len)
+      (while (and lines-copy
+                  (< company-tooltip-candidates-maximum-width
+                     company-tooltip-candidates-maximum-width-limit))
+        (let* ((value (pop lines-copy))
+               (annotation (company-call-backend 'annotation value)))
+          (when (and annotation company-tooltip-align-annotations)
+            ;; `lisp-completion-at-point' adds a space.
+            (setq annotation (comment-string-strip annotation t nil)))
+          (setq len (+ (length value)
+                       (if (and annotation company-tooltip-align-annotations)
+                           (1+ (length annotation))
+                         (length annotation))))
+          (setq company-tooltip-candidates-maximum-width
+                (max len
+                     company-tooltip-candidates-maximum-width))))))
   ;; Calculate common.
   (let ((completion-ignore-case (company-call-backend 'ignore-case)))
     ;; We want to support non-prefix completion, so filtering is the
@@ -2329,6 +2362,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
     (setq width (min window-width
                      (max company-tooltip-minimum-width
+                          company-tooltip-candidates-maximum-width
                           (if (and company-show-numbers
                                    (< company-tooltip-offset 10))
                               (+ 2 width)
