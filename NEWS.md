@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-complete-number` can be bound to keypad numbers directly, with or
+  without modifiers.
 * `company-cmake` supports expansion of `<LANG>` and `<CONFIG>` placeholders
   inside of variable names.
 

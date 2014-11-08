@@ -1862,7 +1862,13 @@ To show the number next to the candidates in some back-ends, enable
 `company-show-numbers'.  When called interactively, uses the last typed
 character, stripping the modifiers.  That character must be a digit."
   (interactive
-   (list (let ((n (- (event-basic-type last-command-event) ?0)))
+   (list (let* ((type (event-basic-type last-command-event))
+                (char (if (characterp type)
+                          ;; Number on the main row.
+                          type
+                        ;; Keypad number, if bound directly.
+                        (car (last (string-to-list (symbol-name type))))))
+                (n (- char ?0)))
            (if (zerop n) 10 n))))
   (when (company-manual-begin)
     (and (or (< n 1) (> n company-candidates-length))
