@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-show-numbers` and `company-complete-number` now use visual numbering
+  of the candidates, taking into account only the ones currently displayed.
 * `company-complete-number` can be bound to keypad numbers directly, with or
   without modifiers.
 * `company-cmake` supports expansion of `<LANG>` and `<CONFIG>` placeholders

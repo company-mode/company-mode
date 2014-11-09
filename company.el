@@ -1857,7 +1857,7 @@ inserted."
       (setq this-command 'company-complete-common))))
 
 (defun company-complete-number (n)
-  "Insert the Nth candidate.
+  "Insert the Nth candidate visible in the tooltip.
 To show the number next to the candidates in some back-ends, enable
 `company-show-numbers'.  When called interactively, uses the last typed
 character, stripping the modifiers.  That character must be a digit."
@@ -1871,10 +1871,12 @@ character, stripping the modifiers.  That character must be a digit."
                 (n (- char ?0)))
            (if (zerop n) 10 n))))
   (when (company-manual-begin)
-    (and (or (< n 1) (> n company-candidates-length))
+    (and (or (< n 1) (> n (- company-candidates-length
+                             company-tooltip-offset)))
          (error "No candidate number %d" n))
     (cl-decf n)
-    (company-finish (nth n company-candidates))))
+    (company-finish (nth (+ n company-tooltip-offset)
+                         company-candidates))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -2281,7 +2283,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company--create-lines (selection limit)
   (let ((len company-candidates-length)
-        (numbered 99999)
         (window-width (company--window-width))
         lines
         width
@@ -2335,16 +2336,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
     (setq width (min window-width
                      (max company-tooltip-minimum-width
-                          (if (and company-show-numbers
-                                   (< company-tooltip-offset 10))
+                          (if company-show-numbers
                               (+ 2 width)
                             width))))
 
-    ;; number can make tooltip too long
-    (when company-show-numbers
-      (setq numbered company-tooltip-offset))
-
-    (let ((items (nreverse items)) new)
+    (let ((items (nreverse items))
+          (numbered (if company-show-numbers 0 99999))
+          new)
       (when previous
         (push (company--scrollpos-line previous width) new))
 
