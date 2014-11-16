@@ -567,8 +567,8 @@
                              "avatar"))
         (company-candidates-length 2)
         (company-backend 'ignore))
-    (should (equal '(" avalis‗e    "
-                     " avatar      ")
+    (should (equal '(" avalis‗e "
+                     " avatar   ")
                    (company--create-lines 0 999)))))
 
 (ert-deftest company-create-lines-handles-multiple-width ()
@@ -579,6 +579,18 @@
         (company-backend 'ignore))
     (should (equal '(" ﻿蛙﻿蛙﻿蛙﻿蛙 "
                      " ﻿蛙abc    ")
+                   (company--create-lines 0 999)))))
+
+(ert-deftest company-create-lines-handles-multiple-width-in-annotation ()
+  (let* (company-show-numbers
+         (alist '(("a" . " ︸") ("b" . " ︸︸")))
+         (company-candidates (mapcar #'car alist))
+         (company-candidates-length 2)
+         (company-backend (lambda (c &optional a)
+                            (when (eq c 'annotation)
+                              (assoc-default a alist)))))
+    (should (equal '(" a ﻿︸   "
+                     " b ﻿︸﻿︸ ")
                    (company--create-lines 0 999)))))
 
 (ert-deftest company-column-with-composition ()

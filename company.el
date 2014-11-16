@@ -2103,7 +2103,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                          (string-width company-common)
                        0)))
          (ann-ralign company-tooltip-align-annotations)
-         (value (company--clean-string value))
          (ann-truncate (< width
                           (+ (length value) (length annotation)
                              (if ann-ralign 1 0))))
@@ -2324,11 +2323,14 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (dotimes (_ len)
       (let* ((value (pop lines-copy))
              (annotation (company-call-backend 'annotation value)))
-        (when (and annotation company-tooltip-align-annotations)
-          ;; `lisp-completion-at-point' adds a space.
-          (setq annotation (comment-string-strip annotation t nil)))
+        (setq value (company--clean-string value))
+        (when annotation
+          (when company-tooltip-align-annotations
+            ;; `lisp-completion-at-point' adds a space.
+            (setq annotation (comment-string-strip annotation t nil)))
+          (setq annotation (company--clean-string annotation)))
         (push (cons value annotation) items)
-        (setq width (max (+ (string-width value)
+        (setq width (max (+ (length value)
                             (if (and annotation company-tooltip-align-annotations)
                                 (1+ (length annotation))
                               (length annotation)))
