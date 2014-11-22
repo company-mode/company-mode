@@ -64,6 +64,7 @@
                     (expand-file-name dir)
                     (nth 5 (file-attributes dir))))
          (file (file-name-nondirectory prefix))
+         (completion-ignore-case read-file-name-completion-ignore-case)
          candidates directories)
     (unless (company-file--keys-match-p key (car company-files--completion-cache))
       (dolist (file (company-files--directory-files dir file))
