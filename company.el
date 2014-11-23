@@ -1088,7 +1088,8 @@ can retrieve meta-data for them."
     (setq company-common
           (if (cdr company-candidates)
               (let ((common (try-completion "" company-candidates)))
-                (when (string-prefix-p company-prefix common)
+                (when (string-prefix-p company-prefix common
+                                       completion-ignore-case)
                   common))
             (car company-candidates)))))
 
