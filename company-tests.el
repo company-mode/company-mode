@@ -90,6 +90,20 @@
       (should (eq t (company--good-prefix-p "abc")))
       (should (eq t (company--good-prefix-p '("bar" . t)))))))
 
+(ert-deftest company-common-with-non-prefix-completion ()
+  (let ((company-backend #'ignore)
+        (company-prefix "abc")
+        company-candidates
+        company-candidates-length
+        company-candidates-cache
+        company-common)
+    (company-update-candidates '("abc" "def-abc"))
+    (should (null company-common))
+    (company-update-candidates '("abc" "abe-c"))
+    (should (null company-common))
+    (company-update-candidates '("abcd" "abcde" "abcdf"))
+    (should (equal "abcd" company-common))))
+
 (ert-deftest company-multi-backend-with-lambdas ()
   (let ((company-backend
          (list (lambda (command &optional arg &rest ignore)
