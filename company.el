@@ -1084,7 +1084,7 @@ can retrieve meta-data for them."
     ;; We want to support non-prefix completion, so filtering is the
     ;; responsibility of each respective backend, not ours.
     ;; On the other hand, we don't want to replace non-prefix input in
-    ;; `company-complete-common', unless it's the sole candidate.
+    ;; `company-complete-common', unless there's only one candidate.
     (setq company-common
           (if (cdr company-candidates)
               (let ((common (try-completion "" company-candidates)))
