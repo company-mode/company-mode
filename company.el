@@ -767,10 +767,10 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (interactive)
   (setq this-command last-command))
 
-(global-set-key '[31415926] 'company-ignore)
+(global-set-key '[company-dummy-event] 'company-ignore)
 
 (defun company-input-noop ()
-  (push 31415926 unread-command-events))
+  (push 'company-dummy-event unread-command-events))
 
 (defun company--posn-col-row (posn)
   (let ((col (car (posn-col-row posn)))
