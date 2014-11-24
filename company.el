@@ -352,8 +352,8 @@ return value should be a list of candidates that match the prefix.
 
 Non-prefix matches are also supported (candidates that don't start with the
 prefix, but match it in some backend-defined way).  Backends that use this
-feature must disable cache (return t to `no-cache') and should also respond
-to `match'.
+feature must disable cache (return t to `no-cache') and might also want to
+respond to `match'.
 
 Optional commands:
 
@@ -384,10 +384,10 @@ be kept if they have different annotations.  For that to work properly,
 backends should store the related information on candidates using text
 properties.
 
-`match': The second argument is a completion candidate.  Backends that
-provide non-prefix completions should return the position of the end of
-text in the candidate that matches `prefix'.  It will be used when
-rendering the popup.
+`match': The second argument is a completion candidate.  Return the index
+after the end of text matching `prefix' within the candidate string.  It
+will be used when rendering the popup.  This command only makes sense for
+backends that provide non-prefix completion.
 
 `require-match': If this returns t, the user is not allowed to enter
 anything not offered as a candidate.  Use with care!  The default value nil
