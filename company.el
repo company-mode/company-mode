@@ -146,17 +146,17 @@ buffer-local wherever it is set."
 
 (defface company-scrollbar-fg
   '((((background light))
-     :background "darkred")
+     :background "darkred" :foreground "darkred")
     (((background dark))
-     :background "red"))
+     :background "red" :foreground "red"))
   "Face used for the tooltip scrollbar thumb.")
 
 (defface company-scrollbar-bg
   '((default :inherit company-tooltip)
     (((background light))
-     :background "wheat")
+     :background "wheat" :foreground "wheat")
     (((background dark))
-     :background "gold"))
+     :background "gold" :foreground "gold"))
   "Face used for the tooltip scrollbar background.")
 
 (defface company-preview
@@ -1891,7 +1891,7 @@ character, stripping the modifiers.  That character must be a digit."
       (aref company-space-strings len)
     (make-string len ?\ )))
 
-(defun company-safe-substring (str from &optional to)
+(defun company-safe-substring (str from &optional to propertize-padding)
   (if (> from (string-width str))
       ""
     (with-temp-buffer
@@ -1904,7 +1904,8 @@ character, stripping the modifiers.  That character must be a digit."
               (concat (buffer-substring beg (point))
                       (let ((padding (- to (current-column))))
                         (when (> padding 0)
-                          (company-space-string padding)))))
+                          (funcall (or propertize-padding 'identity)
+                           (company-space-string padding))))))
           (buffer-substring beg (point-max)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2096,6 +2097,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
+         (value-end (+ margin (string-width value)))
+         (tooltip-bg (face-attribute 'company-tooltip :background nil t))
+         (selection-bg (face-attribute 'company-tooltip-selection
+                                       :background nil t))
          (common (or (company-call-backend 'match value)
                      (if company-common
                          (string-width company-common)
@@ -2125,9 +2130,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                        right)))
     (setq common (+ (min common width) margin))
     (setq width (+ width margin (length right)))
+    (setq value-end (min value-end width))
 
-    (add-text-properties 0 width '(face company-tooltip
-                                   mouse-face company-tooltip-mouse)
+    (add-text-properties 0 width `(face ((:foreground ,tooltip-bg)
+                                         company-tooltip))
+                         line)
+    (add-text-properties margin value-end '(face company-tooltip
+                                            mouse-face company-tooltip-mouse)
                          line)
     (add-text-properties margin common
                          '(face company-tooltip-common
@@ -2150,8 +2159,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
               (add-text-properties beg common
                                    '(face company-tooltip-common-selection)
                                    line)))
-        (add-text-properties 0 width '(face company-tooltip-selection
-                                       mouse-face company-tooltip-selection)
+        (add-text-properties 0 width `(face ((:foreground ,selection-bg)
+                                             company-tooltip-selection))
+                             line)
+        (add-text-properties margin value-end '(face company-tooltip-selection
+                                                mouse-face company-tooltip-selection)
                              line)
         (add-text-properties margin common
                              '(face company-tooltip-common-selection
@@ -2203,8 +2215,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (push (buffer-substring beg end) lines))
     (nreverse lines)))
 
-(defun company-modify-line (old new offset)
-  (concat (company-safe-substring old 0 offset)
+(defun company-modify-line (old new offset &optional propertize-padding)
+  (concat (company-safe-substring old 0 offset propertize-padding)
           new
           (company-safe-substring old (+ offset (length new)))))
 
@@ -2245,8 +2257,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (when (> width remaining-cols)
       (cl-decf column (- width remaining-cols))))
 
-  (let ((offset (and (< column 0) (- column)))
-        new)
+  (let* ((offset (and (< column 0) (- column)))
+         (default-bg (face-attribute 'default :background nil t))
+         (propertize-padding (lambda (s)
+                               (propertize s 'face `(:foreground ,default-bg))))
+         new)
     (when offset
       (setq column 0))
     (when align-top
@@ -2257,11 +2272,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (while old
       (push (company-modify-line (pop old)
                                  (company--offset-line (pop lines) offset)
-                                 column)
+                                 column propertize-padding)
             new))
     ;; Append whole new lines.
     (while lines
-      (push (concat (company-space-string column)
+      (push (concat (funcall propertize-padding (company-space-string column))
                     (company--offset-line (pop lines) offset))
             new))
 
