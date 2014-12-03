@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option, `company-bbdb-modes`.
 * `company-show-numbers` and `company-complete-number` now use visual numbering
   of the candidates, taking into account only the ones currently displayed.
 * `company-complete-number` can be bound to keypad numbers directly, with or

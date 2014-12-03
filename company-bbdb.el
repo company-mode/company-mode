@@ -27,6 +27,11 @@
 (declare-function bbdb-dwim-mail "bbdb-com")
 (declare-function bbdb-search "bbdb-com")
 
+(defcustom company-bbdb-modes '(message-mode)
+  "Major modes in which `company-bbdb' may complete."
+  :type '(repeat (symbol :tag "Major mode"))
+  :package-version '(company . "0.8.8"))
+
 (defun company-bbdb--candidates (arg)
   (cl-mapcan (lambda (record)
                (mapcar (lambda (mail) (bbdb-dwim-mail record mail))
@@ -39,7 +44,7 @@
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-bbdb))
-    (prefix (and (eq major-mode 'message-mode)
+    (prefix (and (memq major-mode company-bbdb-modes)
                  (featurep 'bbdb-com)
                  (looking-back "^\\(To\\|Cc\\|Bcc\\): *\\(.*\\)"
                                (line-beginning-position))
