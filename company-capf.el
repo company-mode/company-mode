@@ -145,7 +145,7 @@
            ;; Follow the example of `completion--done'.
            (funcall exit-function arg
                     (if (eq (try-completion arg table pred) t)
-                        'finished 'exact)))))
+                        'finished 'sole)))))
     ))
 
 (provide 'company-capf)
