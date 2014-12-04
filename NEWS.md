@@ -7,8 +7,8 @@
   of the candidates, taking into account only the ones currently displayed.
 * `company-complete-number` can be bound to keypad numbers directly, with or
   without modifiers.
-* `company-cmake` supports expansion of `<LANG>` and `<CONFIG>` placeholders
-  inside of variable names.
+* `company-cmake` expands `<LANG>` and `<CONFIG>` placeholders inside variable
+  names.
 
 ## 2014-10-15 (0.8.6)
 
@@ -24,7 +24,7 @@
 * `company-ropemacs` is only used when `ropemacs-mode` is on.
 * `company-gtags` is enabled in all `prog-mode` derivatives by default.
 * `company-end-of-buffer-workaround` is not used anymore.
-* `company-begin-commands` includes several `cc-mode` commands.
+* `company-begin-commands` includes some of `cc-mode` commands.
 
 ## 2014-08-27 (0.8.3)
 
