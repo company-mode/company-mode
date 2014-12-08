@@ -2218,7 +2218,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (floor (window-screen-lines))
     (window-body-height)))
 
-(defsubst company--window-width ()
+(defun company--window-width ()
   (let ((ww (window-body-width)))
     ;; Account for the line continuation column.
     (when (zerop (cadr (window-fringes)))
