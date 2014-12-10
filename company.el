@@ -2231,6 +2231,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (let ((margins (window-margins)))
                  (+ (or (car margins) 0)
                     (or (cdr margins) 0)))))
+    (when (and word-wrap
+               (version< emacs-version "24.4.51.5"))
+      ;; http://debbugs.gnu.org/18384
+      (cl-decf ww))
     ww))
 
 (defun company--replacement-string (lines old column nl &optional align-top)
