@@ -27,6 +27,10 @@
 (declare-function bbdb-dwim-mail "bbdb-com")
 (declare-function bbdb-search "bbdb-com")
 
+(defgroup company-bbdb nil
+  "Completion back-end for `bbdb'"
+  :group 'company)
+
 (defcustom company-bbdb-modes '(message-mode)
   "Major modes in which `company-bbdb' may complete."
   :type '(repeat (symbol :tag "Major mode"))
