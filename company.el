@@ -978,8 +978,9 @@ Controlled by `company-auto-complete'.")
   ;; XXX: Return value we check here is subject to change.
   (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
       (insert (company-strip-prefix candidate))
-    (delete-region (- (point) (length company-prefix)) (point))
-    (insert candidate)))
+    (unless (equal company-prefix candidate)
+      (delete-region (- (point) (length company-prefix)) (point))
+      (insert candidate))))
 
 (defmacro company-with-candidate-inserted (candidate &rest body)
   "Evaluate BODY with CANDIDATE temporarily inserted.
