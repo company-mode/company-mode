@@ -99,6 +99,14 @@
       (push tag company-semantic--current-tags)))
   (delete "" (mapcar 'semantic-tag-name company-semantic--current-tags)))
 
+(defun company-semantic-annotation (argument tags)
+  (let* ((tag (assoc argument tags))
+         (kind (when tag (elt tag 1))))
+    (cl-case kind
+      (function (let* ((prototype (semantic-format-tag-prototype tag nil nil))
+                       (par-pos (string-match "(" prototype)))
+                  (when par-pos (substring prototype par-pos)))))))
+
 (defun company-semantic--pre-prefix-length (prefix-length)
   "Sum up the length of all chained symbols before POS.
 Symbols are chained by \".\" or \"->\"."
@@ -133,6 +141,8 @@ Symbols are chained by \".\" or \"->\"."
                   (company-semantic-completions arg)))
     (meta (funcall company-semantic-metadata-function
                    (assoc arg company-semantic--current-tags)))
+    (annotation (company-semantic-annotation arg
+                                             company-semantic--current-tags))
     (doc-buffer (company-semantic-doc-buffer
                  (assoc arg company-semantic--current-tags)))
     ;; Because "" is an empty context and doesn't return local variables.
