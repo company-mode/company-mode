@@ -2,7 +2,7 @@
 
 ## Next
 
-* `company-semantic` displays function arguments is annotations.
+* `company-semantic` displays function arguments as annotations.
 * New user option, `company-bbdb-modes`.
 * `company-show-numbers` and `company-complete-number` now use visual numbering
   of the candidates, taking into account only the ones currently displayed.
