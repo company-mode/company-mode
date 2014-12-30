@@ -2528,8 +2528,6 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-preview-show-at-point (pos)
   (company-preview-hide)
 
-  (setq company-preview-overlay (make-overlay pos pos))
-
   (let ((completion (nth company-selection company-candidates)))
     (setq completion (propertize completion 'face 'company-preview))
     (add-text-properties 0 (length company-common)
@@ -2547,11 +2545,25 @@ Returns a negative number if the tooltip should be displayed above point."
 
     (and (equal pos (point))
          (not (equal completion ""))
-         (add-text-properties 0 1 '(cursor t) completion))
+         (add-text-properties 0 1 '(cursor 1) completion))
 
-    (let ((ov company-preview-overlay))
-      (overlay-put ov 'after-string completion)
-      (overlay-put ov 'window (selected-window)))))
+    (let ((beg pos)
+          (ptf-workaround (and
+                           company-pseudo-tooltip-overlay
+                           (char-before pos)
+                           (eq ?\n (char-after pos)))))
+      ;; Try to accomodate for the pseudo-tooltip overlay,
+      ;; which may start at the same position if it's at eol.
+      (when ptf-workaround
+        (cl-decf beg)
+        (setq completion (concat (buffer-substring beg pos) completion)))
+
+      (setq company-preview-overlay (make-overlay beg pos))
+
+      (let ((ov company-preview-overlay))
+        (overlay-put ov (if ptf-workaround 'display 'after-string)
+                     completion)
+        (overlay-put ov 'window (selected-window))))))
 
 (defun company-preview-hide ()
   (when company-preview-overlay
