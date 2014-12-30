@@ -2423,7 +2423,7 @@ Returns a negative number if the tooltip should be displayed above point."
              (end (save-excursion
                     (move-to-window-line (+ row (abs height)))
                     (point)))
-             (ov (make-overlay (if nl beg (1- beg)) end nil t t))
+             (ov (make-overlay (if nl beg (1- beg)) end nil t))
              (args (list (mapcar 'company-plainify
                                  (company-buffer-lines beg end))
                          column nl above)))
@@ -2547,11 +2547,12 @@ Returns a negative number if the tooltip should be displayed above point."
          (not (equal completion ""))
          (add-text-properties 0 1 '(cursor 1) completion))
 
-    (let ((beg pos)
-          (ptf-workaround (and
-                           company-pseudo-tooltip-overlay
-                           (char-before pos)
-                           (eq ?\n (char-after pos)))))
+    (let* ((beg pos)
+           (pto company-pseudo-tooltip-overlay)
+           (ptf-workaround (and
+                            pto
+                            (char-before pos)
+                            (eq pos (overlay-start pto)))))
       ;; Try to accomodate for the pseudo-tooltip overlay,
       ;; which may start at the same position if it's at eol.
       (when ptf-workaround

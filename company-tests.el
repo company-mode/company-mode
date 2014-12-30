@@ -465,7 +465,7 @@
         (let* ((ov company-preview-overlay)
                (str (overlay-get ov 'after-string)))
           (should (string= str "123"))
-          (should (eq (get-text-property 0 'cursor str) t)))))))
+          (should (eq (get-text-property 0 'cursor str) 1)))))))
 
 (ert-deftest company-pseudo-tooltip-show-with-annotations ()
   :tags '(interactive)
