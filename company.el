@@ -1136,7 +1136,8 @@ can retrieve meta-data for them."
          (cdr c)
          (lambda (candidates)
            (if (not (and candidates (eq res 'done)))
-               ;; Fetcher called us back right away.
+               ;; There's no completions to display,
+               ;; or the fetcher called us back right away.
                (setq res candidates)
              (setq company-backend backend
                    company-candidates-cache
@@ -1287,15 +1288,14 @@ from the rest of the back-ends in the group, if any, will be left at the end."
        (not company-candidates)
        (let ((company-idle-delay 'now))
          (condition-case-unless-debug err
-             (company--perform)
+             (progn
+               (company--perform)
+               ;; Return non-nil if active.
+               company-candidates)
            (error (message "Company: An error occurred in auto-begin")
                   (message "%s" (error-message-string err))
                   (company-cancel))
-           (quit (company-cancel)))))
-  (unless company-candidates
-    (setq company-backend nil))
-  ;; Return non-nil if active.
-  company-candidates)
+           (quit (company-cancel))))))
 
 (defun company-manual-begin ()
   (interactive)
@@ -1303,7 +1303,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (setq company--manual-action t)
   (unwind-protect
       (let ((company-minimum-prefix-length 0))
-        (company-auto-begin))
+        (or company-candidates
+            (company-auto-begin)))
     (unless company-candidates
       (setq company--manual-action nil))))
 
@@ -1454,7 +1455,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company--perform ()
   (or (and company-candidates (company--continue))
       (and (company--should-complete) (company--begin-new)))
-  (when company-candidates
+  (if (not company-candidates)
+      (setq company-backend nil)
     (setq company-point (point)
           company--point-max (point-max))
     (company-ensure-emulation-alist)
