@@ -1,6 +1,6 @@
-;;; company-tests.el --- company-mode test helpers  -*- lexical-binding: t -*-
+;;; all-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2011, 2013-2014  Free Software Foundation, Inc.
+;; Copyright (C) 2015  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
@@ -19,18 +19,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'company)
+(defvar company-test-path
+  (file-name-directory (or load-file-name buffer-file-name)))
 
-(defun company--column (&optional pos)
-  (car (company--col-row pos)))
+(require 'ert)
 
-(defun company-call (name &rest args)
-  (let* ((maybe (intern (format "company-%s" name)))
-         (command (if (fboundp maybe) maybe name)))
-    (let ((this-command command))
-      (run-hooks 'pre-command-hook))
-    (apply command args)
-    (let ((this-command command))
-      (run-hooks 'post-command-hook))))
-
-(provide 'company-tests)
+(dolist (test-file (directory-files company-test-path t "-tests.el$"))
+  (load test-file nil t))
