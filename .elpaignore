@@ -1,0 +1,5 @@
+.travis.yml
+.gitignore
+Makefile
+test/
+company-tests.el
