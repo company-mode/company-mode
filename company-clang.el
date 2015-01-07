@@ -150,7 +150,13 @@ or automatically through a custom `company-clang-prefix-guesser'."
      ((string-match "[^:]:[^:]" meta)
       (substring meta (1+ (match-beginning 0))))
      ((string-match "\\((.*)[ a-z]*\\'\\)" meta)
-      (match-string 1 meta)))))
+      (let ((paren (match-beginning 1)))
+        (if (not (eq (aref meta (1- paren)) ?>))
+            (match-string 1 meta)
+          (with-temp-buffer
+            (insert meta)
+            (goto-char paren)
+            (substring meta (1- (search-backward "<"))))))))))
 
 (defun company-clang--strip-formatting (text)
   (replace-regexp-in-string
