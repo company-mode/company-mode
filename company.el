@@ -1583,6 +1583,12 @@ from the rest of the back-ends in the group, if any, will be left at the end."
         (cl-return i))
       (cl-incf i))))
 
+(defun company-search-keypad ()
+  (interactive)
+  (let* ((name (symbol-name last-command-event))
+         (last-command-event (aref name (1- (length name)))))
+    (company-search-printing-char)))
+
 (defun company-search-printing-char ()
   (interactive)
   (company-search-assert-enabled)
@@ -1674,6 +1680,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (while (< i 256)
       (define-key keymap (vector i) 'company-search-printing-char)
       (cl-incf i))
+    (dotimes (i 10)
+      (define-key keymap (read (format "[kp-%s]" i)) 'company-search-keypad))
     (let ((meta-map (make-sparse-keymap)))
       (define-key keymap (char-to-string meta-prefix-char) meta-map)
       (define-key keymap [escape] meta-map))
