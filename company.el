@@ -1366,6 +1366,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
      ((and (or (not (company-require-match-p))
                ;; Don't require match if the new prefix
                ;; doesn't continue the old one, and the latter was a match.
+               (not (stringp new-prefix))
                (<= (length new-prefix) (length company-prefix)))
            (member company-prefix company-candidates))
       ;; Last input was a success,

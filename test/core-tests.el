@@ -207,12 +207,12 @@
       (should (eq nil company-candidates-length))
       (should (eq 4 (point))))))
 
-(ert-deftest company-dont-require-match-if-old-prefix-ended-and-was-a-match ()
+(ert-deftest company-dont-require-match-if-was-a-match-and-old-prefix-ended ()
   (with-temp-buffer
     (insert "ab")
     (company-mode)
     (let (company-frontends
-          (company-require-match 'company-explicit-action-p)
+          (company-require-match t)
           (company-backends
            (list (lambda (command &optional _)
                    (cl-case command
@@ -229,6 +229,26 @@
         (company-call 'self-insert-command 1))
       (should (null company-candidates-length))
       (should (eq 4 (point))))))
+
+(ert-deftest company-dont-require-match-if-was-a-match-and-new-prefix-is-stop ()
+  (with-temp-buffer
+    (company-mode)
+    (insert "c")
+    (let (company-frontends
+          (company-require-match t)
+          (company-backends
+           (list (lambda (command &optional _)
+                   (cl-case command
+                     (prefix (if (> (point) 2)
+                                 'stop
+                               (buffer-substring (point-min) (point))))
+                     (candidates '("a" "b" "c")))))))
+      (let (this-command)
+        (company-complete))
+      (should (eq 3 company-candidates-length))
+      (let ((last-command-event ?e))
+        (company-call 'self-insert-command 1))
+      (should (not company-candidates)))))
 
 (ert-deftest company-should-complete-whitelist ()
   (with-temp-buffer
