@@ -1592,12 +1592,15 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-printing-char ()
   (interactive)
   (company-search-assert-enabled)
-  (let* ((ss (concat company-search-string (string last-command-event)))
-         (pos (company-search ss (nthcdr company-selection company-candidates))))
+  (company-search--update-string (concat company-search-string
+                                         (string last-command-event))))
+
+(defun company-search--update-string (new)
+  (let* ((pos (company-search new (nthcdr company-selection company-candidates))))
     (if (null pos)
         (ding)
-      (setq company-search-string ss
-            company-search-lighter (concat " Search: \"" ss "\""))
+      (setq company-search-string new
+            company-search-lighter (concat " Search: \"" new "\""))
       (company-set-selection (+ company-selection pos) t))))
 
 (defun company-search-repeat-forward ()
@@ -1660,6 +1663,12 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (company-search-mode 0)
   (company--unread-last-input))
 
+(defun company-search-delete-char ()
+  (interactive)
+  (company-search-assert-enabled)
+  (when (cl-plusp (length company-search-string))
+    (company-search--update-string (substring company-search-string 0 -1))))
+
 (defvar company-search-map
   (let ((i 0)
         (keymap (make-keymap)))
@@ -1688,8 +1697,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (define-key keymap (vector meta-prefix-char t) 'company-search-other-char)
     (define-key keymap "\e\e\e" 'company-search-other-char)
     (define-key keymap [escape escape escape] 'company-search-other-char)
-    (define-key keymap (kbd "DEL") 'company-search-other-char)
-
+    (define-key keymap (kbd "DEL") 'company-search-delete-char)
+    (define-key keymap [backspace] 'company-search-delete-char)
     (define-key keymap "\C-g" 'company-search-abort)
     (define-key keymap "\C-s" 'company-search-repeat-forward)
     (define-key keymap "\C-r" 'company-search-repeat-backward)

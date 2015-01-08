@@ -2,6 +2,8 @@
 
 ## Next
 
+* Pressing `backspace` in the search mode deletes the character at the end of
+  the search string.
 * `company-semantic` displays function arguments as annotations.
 * New user option, `company-bbdb-modes`.
 * `company-show-numbers` and `company-complete-number` now use visual numbering
