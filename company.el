@@ -1571,8 +1571,6 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defvar-local company-search-lighter " Search: \"\"")
 
-(defvar-local company-search-old-map nil)
-
 (defvar-local company-search-old-selection 0)
 
 (defun company-search (text lines)
