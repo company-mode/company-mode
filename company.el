@@ -1571,9 +1571,9 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defvar-local company-search-lighter " Search: \"\"")
 
-(defvar-local company-search-old-selection 0)
+(defvar-local company--search-old-selection 0)
 
-(defun company-search (text lines)
+(defun company--search (text lines)
   (let ((quoted (regexp-quote text))
         (i 0))
     (cl-dolist (line lines)
@@ -1589,30 +1589,30 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defun company-search-printing-char ()
   (interactive)
-  (company-search-assert-enabled)
-  (company-search--update-string (concat company-search-string
+  (company--search-assert-enabled)
+  (company--search-update-string (concat company-search-string
                                          (string last-command-event))))
 
-(defun company-search--update-string (new)
-  (let* ((pos (company-search new (nthcdr company-selection company-candidates))))
+(defun company--search-update-string (new)
+  (let* ((pos (company--search new (nthcdr company-selection company-candidates))))
     (if (null pos)
         (ding)
       (setq company-search-string new
             company-search-lighter (concat " Search: \"" new "\""))
       (company-set-selection (+ company-selection pos) t))))
 
-(defun company-search--assert-input ()
-  (company-search-assert-enabled)
+(defun company--search-assert-input ()
+  (company--search-assert-enabled)
   (unless (cl-plusp (length company-search-string))
     (error "Empty search string")))
 
 (defun company-search-repeat-forward ()
   "Repeat the incremental search in completion candidates forward."
   (interactive)
-  (company-search--assert-input)
-  (let ((pos (company-search company-search-string
-                             (cdr (nthcdr company-selection
-                                          company-candidates)))))
+  (company--search-assert-input)
+  (let ((pos (company--search company-search-string
+                              (cdr (nthcdr company-selection
+                                           company-candidates)))))
     (if (null pos)
         (ding)
       (company-set-selection (+ company-selection pos 1) t))))
@@ -1620,16 +1620,16 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-repeat-backward ()
   "Repeat the incremental search in completion candidates backwards."
   (interactive)
-  (company-search--assert-input)
-  (let ((pos (company-search company-search-string
-                             (nthcdr (- company-candidates-length
-                                        company-selection)
-                                     (reverse company-candidates)))))
+  (company--search-assert-input)
+  (let ((pos (company--search company-search-string
+                              (nthcdr (- company-candidates-length
+                                         company-selection)
+                                      (reverse company-candidates)))))
     (if (null pos)
         (ding)
       (company-set-selection (- company-selection pos 1) t))))
 
-(defun company-create-match-predicate ()
+(defun company--search-create-predicate ()
   (let ((ss company-search-string))
     (setq company-candidates-predicate
           (when ss (lambda (candidate) (string-match ss candidate)))))
@@ -1640,7 +1640,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defun company-filter-printing-char ()
   (interactive)
-  (company-search-assert-enabled)
+  (company--search-assert-enabled)
   (company-search-printing-char)
   (company-create-match-predicate)
   (company-call-frontends 'update))
@@ -1648,7 +1648,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-kill-others ()
   "Limit the completion candidates to the ones matching the search string."
   (interactive)
-  (company-search-assert-enabled)
+  (company--search-assert-enabled)
   (company-create-match-predicate)
   (company-search-mode 0)
   (company-call-frontends 'update))
@@ -1656,21 +1656,21 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-abort ()
   "Abort searching the completion candidates."
   (interactive)
-  (company-search-assert-enabled)
-  (company-set-selection company-search-old-selection t)
+  (company--search-assert-enabled)
+  (company-set-selection company--search-old-selection t)
   (company-search-mode 0))
 
 (defun company-search-other-char ()
   (interactive)
-  (company-search-assert-enabled)
+  (company--search-assert-enabled)
   (company-search-mode 0)
   (company--unread-last-input))
 
 (defun company-search-delete-char ()
   (interactive)
-  (company-search-assert-enabled)
+  (company--search-assert-enabled)
   (when (cl-plusp (length company-search-string))
-    (company-search--update-string (substring company-search-string 0 -1))))
+    (company--search-update-string (substring company-search-string 0 -1))))
 
 (defvar company-search-map
   (let ((i 0)
@@ -1717,15 +1717,15 @@ Don't start this directly, use `company-search-candidates' or
   (if company-search-mode
       (if (company-manual-begin)
           (progn
-            (setq company-search-old-selection company-selection)
+            (setq company--search-old-selection company-selection)
             (company-call-frontends 'update))
         (setq company-search-mode nil))
     (kill-local-variable 'company-search-string)
     (kill-local-variable 'company-search-lighter)
-    (kill-local-variable 'company-search-old-selection)
+    (kill-local-variable 'company--search-old-selection)
     (company-enable-overriding-keymap company-active-map)))
 
-(defun company-search-assert-enabled ()
+(defun company--search-assert-enabled ()
   (company-assert-enabled)
   (unless company-search-mode
     (company-uninstall-map)
