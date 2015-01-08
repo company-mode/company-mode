@@ -1603,10 +1603,15 @@ from the rest of the back-ends in the group, if any, will be left at the end."
             company-search-lighter (concat " Search: \"" new "\""))
       (company-set-selection (+ company-selection pos) t))))
 
+(defun company-search--assert-input ()
+  (company-search-assert-enabled)
+  (unless (cl-plusp (length company-search-string))
+    (error "Empty search string")))
+
 (defun company-search-repeat-forward ()
   "Repeat the incremental search in completion candidates forward."
   (interactive)
-  (company-search-assert-enabled)
+  (company-search--assert-input)
   (let ((pos (company-search company-search-string
                              (cdr (nthcdr company-selection
                                           company-candidates)))))
@@ -1617,7 +1622,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-repeat-backward ()
   "Repeat the incremental search in completion candidates backwards."
   (interactive)
-  (company-search-assert-enabled)
+  (company-search--assert-input)
   (let ((pos (company-search company-search-string
                              (nthcdr (- company-candidates-length
                                         company-selection)
