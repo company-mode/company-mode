@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-search-toggle-filtering` replaced `company-search-kill-others`.
+* Quitting the search mode resets the filtering.
 * Pressing `backspace` in the search mode deletes the character at the end of
   the search string.
 * `company-semantic` displays function arguments as annotations.
