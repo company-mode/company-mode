@@ -2,6 +2,8 @@
 
 ## Next
 
+* New command `company-complete-common-or-cycle`. No default binding, so one
+  would have to set it up to use it.
 * `company-search-toggle-filtering` replaced `company-search-kill-others`.
 * Quitting the search mode resets the filtering.
 * Pressing `backspace` in the search mode deletes the character at the end of

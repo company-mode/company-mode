@@ -1870,6 +1870,16 @@ and invoke the normal binding."
       (when company-common
         (company--insert-candidate company-common)))))
 
+(defun company-complete-common-or-cycle ()
+  "Insert the common part of all candidates, or select the next one."
+  (interactive)
+  (when (company-manual-begin)
+    (let ((tick (buffer-chars-modified-tick)))
+      (call-interactively 'company-complete-common)
+      (when (eq tick (buffer-chars-modified-tick))
+        (let ((company-selection-wrap-around t))
+          (call-interactively 'company-select-next))))))
+
 (defun company-complete ()
   "Insert the common part of all candidates or the current selection.
 The first time this is called, the common part is inserted, the second
