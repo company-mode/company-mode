@@ -3,8 +3,7 @@
 ## Next
 
 * Pressing `M-n` or `M-p` doesn't quit the search mode.
-* New command `company-complete-common-or-cycle`. No default binding, so one
-  would have to set it up to use it.
+* New command `company-complete-common-or-cycle`. No default binding.
 * `company-search-toggle-filtering` replaced `company-search-kill-others`.
 * Quitting the search mode resets the filtering.
 * Pressing `backspace` in the search mode deletes the character at the end of
