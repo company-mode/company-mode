@@ -2184,11 +2184,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           (let ((beg (+ margin (match-beginning 0)))
                 (end (+ margin (match-end 0))))
             (add-text-properties beg end '(face company-tooltip-search)
-                                 line)
-            (when (< beg common)
-              (add-text-properties beg common
-                                   '(face company-tooltip-common-selection)
-                                   line)))
+                                 line))
         (add-text-properties 0 width '(face company-tooltip-selection
                                        mouse-face company-tooltip-selection)
                              line)
