@@ -1078,8 +1078,6 @@ can retrieve meta-data for them."
                                          company-selection)))))
     (setq company-selection 0
           company-candidates candidates))
-  ;; Save in cache:
-  (push (cons company-prefix company-candidates) company-candidates-cache)
   ;; Calculate common.
   (let ((completion-ignore-case (company-call-backend 'ignore-case)))
     ;; We want to support non-prefix completion, so filtering is the
@@ -1107,11 +1105,12 @@ can retrieve meta-data for them."
                                            company-candidates-cache)))
                 (setq candidates (all-completions prefix prev))
                 (cl-return t)))))
-        ;; no cache match, call back-end
-        (setq candidates
-              (company--process-candidates
-               (company--fetch-candidates prefix))))
-    (setq candidates (company--transform-candidates candidates))
+        (progn
+          ;; No cache match, call the backend.
+          (setq candidates (company--fetch-candidates prefix))
+          ;; Save in cache (without the predicate applied).
+          (push (cons prefix candidates) company-candidates-cache)))
+    (setq candidates (company--process-candidates candidates))
     (when candidates
       (if (or (cdr candidates)
               (not (eq t (compare-strings (car candidates) nil nil
@@ -1140,10 +1139,7 @@ can retrieve meta-data for them."
                ;; or the fetcher called us back right away.
                (setq res candidates)
              (setq company-backend backend
-                   company-candidates-cache
-                   (list (cons prefix
-                               (company--process-candidates
-                                candidates))))
+                   company-candidates-cache (list (cons prefix candidates)))
              (company-idle-begin buf win tick pt)))))
       ;; FIXME: Relying on the fact that the callers
       ;; will interpret nil as "do nothing" is shaky.
@@ -1157,10 +1153,10 @@ can retrieve meta-data for them."
           (company-apply-predicate candidates
                                    company-candidates-predicate)))
   (unless (company-call-backend 'sorted)
-    (setq candidates (sort candidates 'string<)))
+    (setq candidates (sort (copy-sequence candidates) 'string<)))
   (when (company-call-backend 'duplicates)
     (company--strip-duplicates candidates))
-  candidates)
+  (company--transform-candidates candidates))
 
 (defun company--strip-duplicates (candidates)
   (let ((c2 candidates))
@@ -1567,9 +1563,12 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 ;;; search ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar-local company-search-string nil)
+(defvar-local company-search-string "")
 
 (defvar-local company-search-lighter " Search: \"\"")
+
+(defvar-local company-search-filtering nil
+  "Non-nil to filter the completion candidates by the search string")
 
 (defvar-local company--search-old-selection 0)
 
@@ -1590,15 +1589,30 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-printing-char ()
   (interactive)
   (company--search-assert-enabled)
-  (company--search-update-string (concat company-search-string
-                                         (string last-command-event))))
+  (let ((ss (concat company-search-string (string last-command-event))))
+    (when company-search-filtering
+      (company--search-update-predicate ss))
+    (company--search-update-string ss)))
+
+(defun company--search-update-predicate (&optional ss)
+  (or ss (setq ss company-search-string))
+  (let* ((company-candidates-predicate
+          (when company-search-filtering
+            (lambda (candidate) (string-match ss candidate))))
+         (cc (company-calculate-candidates company-prefix)))
+    (unless cc (error "No match"))
+    (company-update-candidates cc)))
 
 (defun company--search-update-string (new)
   (let* ((pos (company--search new (nthcdr company-selection company-candidates))))
     (if (null pos)
         (ding)
       (setq company-search-string new
-            company-search-lighter (concat " Search: \"" new "\""))
+            company-search-lighter (format " %s: \"%s\""
+                                           (if company-search-filtering
+                                               "Filter"
+                                             "Search")
+                                           new))
       (company-set-selection (+ company-selection pos) t))))
 
 (defun company--search-assert-input ()
@@ -1629,34 +1643,20 @@ from the rest of the back-ends in the group, if any, will be left at the end."
         (ding)
       (company-set-selection (- company-selection pos 1) t))))
 
-(defun company--search-create-predicate ()
+(defun company-search-toggle-filtering ()
+  "Toggle `company-search-filtering'."
+  (interactive)
+  (company--search-assert-enabled)
+  (setq company-search-filtering (not company-search-filtering))
   (let ((ss company-search-string))
-    (setq company-candidates-predicate
-          (when ss (lambda (candidate) (string-match ss candidate)))))
-  (company-update-candidates
-   (company-apply-predicate company-candidates company-candidates-predicate))
-  ;; Invalidate cache.
-  (setq company-candidates-cache (cons company-prefix company-candidates)))
-
-(defun company-filter-printing-char ()
-  (interactive)
-  (company--search-assert-enabled)
-  (company-search-printing-char)
-  (company-create-match-predicate)
-  (company-call-frontends 'update))
-
-(defun company-search-kill-others ()
-  "Limit the completion candidates to the ones matching the search string."
-  (interactive)
-  (company--search-assert-enabled)
-  (company-create-match-predicate)
-  (company-search-mode 0)
-  (company-call-frontends 'update))
+    (company--search-update-predicate ss)
+    (company--search-update-string ss)))
 
 (defun company-search-abort ()
   "Abort searching the completion candidates."
   (interactive)
   (company--search-assert-enabled)
+  (company--search-update-predicate "")
   (company-set-selection company--search-old-selection t)
   (company-search-mode 0))
 
@@ -1670,7 +1670,10 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (interactive)
   (company--search-assert-enabled)
   (when (cl-plusp (length company-search-string))
-    (company--search-update-string (substring company-search-string 0 -1))))
+    (let ((ss (substring company-search-string 0 -1)))
+      (when company-search-filtering
+        (company--search-update-predicate ss))
+      (company--search-update-string ss))))
 
 (defvar company-search-map
   (let ((i 0)
@@ -1705,7 +1708,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (define-key keymap "\C-g" 'company-search-abort)
     (define-key keymap "\C-s" 'company-search-repeat-forward)
     (define-key keymap "\C-r" 'company-search-repeat-backward)
-    (define-key keymap "\C-o" 'company-search-kill-others)
+    (define-key keymap "\C-o" 'company-search-toggle-filtering)
     keymap)
   "Keymap used for incrementally searching the completion candidates.")
 
@@ -1722,6 +1725,7 @@ Don't start this directly, use `company-search-candidates' or
         (setq company-search-mode nil))
     (kill-local-variable 'company-search-string)
     (kill-local-variable 'company-search-lighter)
+    (kill-local-variable 'company-search-filtering)
     (kill-local-variable 'company--search-old-selection)
     (company-enable-overriding-keymap company-active-map)))
 
@@ -1738,11 +1742,12 @@ Don't start this directly, use `company-search-candidates' or
 - `company-search-repeat-forward' (\\[company-search-repeat-forward])
 - `company-search-repeat-backward' (\\[company-search-repeat-backward])
 - `company-search-abort' (\\[company-search-abort])
+- `company-search-delete-char' (\\[company-search-delete-char])
 
 Regular characters are appended to the search string.
 
-The command `company-search-kill-others' (\\[company-search-kill-others])
-uses the search string to limit the completion candidates."
+The command `company-search-toggle-filtering' (\\[company-search-toggle-filtering])
+uses the search string to filter the completion candidates."
   (interactive)
   (company-search-mode 1)
   (company-enable-overriding-keymap company-search-map))
@@ -1758,10 +1763,10 @@ uses the search string to limit the completion candidates."
 (defun company-filter-candidates ()
   "Start filtering the completion candidates incrementally.
 This works the same way as `company-search-candidates' immediately
-followed by `company-search-kill-others' after each input."
+followed by `company-search-toggle-filtering'."
   (interactive)
   (company-search-mode 1)
-  (company-enable-overriding-keymap company-filter-map))
+  (setq company-search-filtering t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -2163,7 +2168,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                              mouse-face company-tooltip-mouse)
                            line))
     (when selected
-      (if (and company-search-string
+      (if (and (cl-plusp (length company-search-string))
                (string-match (regexp-quote company-search-string) value
                              (length company-prefix)))
           (let ((beg (+ margin (match-beginning 0)))
