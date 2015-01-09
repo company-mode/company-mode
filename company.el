@@ -1701,6 +1701,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
       (define-key keymap (char-to-string meta-prefix-char) meta-map)
       (define-key keymap [escape] meta-map))
     (define-key keymap (vector meta-prefix-char t) 'company-search-other-char)
+    (define-key keymap (kbd "M-n") 'company-select-next)
+    (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap "\e\e\e" 'company-search-other-char)
     (define-key keymap [escape escape escape] 'company-search-other-char)
     (define-key keymap (kbd "DEL") 'company-search-delete-char)

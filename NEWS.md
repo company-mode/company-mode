@@ -2,6 +2,7 @@
 
 ## Next
 
+* Pressing `M-n` or `M-p` doesn't quit the search mode.
 * New command `company-complete-common-or-cycle`. No default binding, so one
   would have to set it up to use it.
 * `company-search-toggle-filtering` replaced `company-search-kill-others`.
