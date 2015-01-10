@@ -212,6 +212,7 @@
     (insert "ab")
     (company-mode)
     (let (company-frontends
+          company-auto-complete
           (company-require-match t)
           (company-backends
            (list (lambda (command &optional _)
