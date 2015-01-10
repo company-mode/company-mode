@@ -267,6 +267,15 @@
     (should (equal (company-buffer-lines (point-min) (point-max))
                    '("" "" "" "eee" "fff" "ggg")))))
 
+(ert-deftest company-buffer-lines-with-multiline-after-string-at-eob ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (insert "a\nb\nc\n")
+    (let ((ov (make-overlay (point-max) (point-max) nil t t)))
+      (overlay-put ov 'after-string "~\n~\n~"))
+    (should (equal (company-buffer-lines (point-min) (point-max))
+                   '("a" "b" "c")))))
+
 (ert-deftest company-modify-line ()
   (let ((str "-*-foobar"))
     (should (equal-including-properties
