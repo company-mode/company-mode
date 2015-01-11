@@ -1656,9 +1656,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   "Abort searching the completion candidates."
   (interactive)
   (company--search-assert-enabled)
-  (company--search-update-predicate "")
-  (company-set-selection company--search-old-selection t)
-  (company-search-mode 0))
+  (company-search-mode 0)
+  (company-set-selection company--search-old-selection t))
 
 (defun company-search-other-char ()
   (interactive)
@@ -1729,6 +1728,9 @@ Don't start this directly, use `company-search-candidates' or
     (kill-local-variable 'company-search-lighter)
     (kill-local-variable 'company-search-filtering)
     (kill-local-variable 'company--search-old-selection)
+    (when company-backend
+      (company--search-update-predicate "")
+      (company-call-frontends 'update))
     (company-enable-overriding-keymap company-active-map)))
 
 (defun company--search-assert-enabled ()
