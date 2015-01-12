@@ -1668,7 +1668,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-delete-char ()
   (interactive)
   (company--search-assert-enabled)
-  (unless (string= company-search-string "")
+  (if (string= company-search-string "")
+      (ding)
     (let ((ss (substring company-search-string 0 -1)))
       (when company-search-filtering
         (company--search-update-predicate ss))
