@@ -449,9 +449,11 @@ even if the back-end uses the asynchronous calling convention."
 (put 'company-backends 'safe-local-variable 'company-safe-backends-p)
 
 (defcustom company-transformers nil
-  "Functions to change the list of candidates received from backends,
-after sorting and removal of duplicates (if appropriate).
-Each function gets called with the return value of the previous one."
+  "Functions to change the list of candidates received from backends.
+
+Each function gets called with the return value of the previous one.
+The first one gets passed the list of candidates, already sorted and
+without duplicates."
   :type '(choice
           (const :tag "None" nil)
           (const :tag "Sort by occurrence" (company-sort-by-occurrence))
@@ -1055,13 +1057,6 @@ can retrieve meta-data for them."
                                               (symbol-name backend))))
           (setq company-lighter (format " company-<%s>" name)))))))
 
-(defun company-apply-predicate (candidates predicate)
-  (let (new)
-    (dolist (c candidates)
-      (when (funcall predicate c)
-        (push c new)))
-    (nreverse new)))
-
 (defun company-update-candidates (candidates)
   (setq company-candidates-length (length candidates))
   (if (> company-selection 0)
@@ -1107,10 +1102,12 @@ can retrieve meta-data for them."
                 (cl-return t)))))
         (progn
           ;; No cache match, call the backend.
-          (setq candidates (company--fetch-candidates prefix))
-          ;; Save in cache (without the predicate applied).
+          (setq candidates (company--preprocess-candidates
+                            (company--fetch-candidates prefix)))
+          ;; Save in cache.
           (push (cons prefix candidates) company-candidates-cache)))
-    (setq candidates (company--process-candidates candidates))
+    ;; Only now apply the predicate and transformers.
+    (setq candidates (company--postprocess-candidates candidates))
     (when candidates
       (if (or (cdr candidates)
               (not (eq t (compare-strings (car candidates) nil nil
@@ -1139,7 +1136,9 @@ can retrieve meta-data for them."
                ;; or the fetcher called us back right away.
                (setq res candidates)
              (setq company-backend backend
-                   company-candidates-cache (list (cons prefix candidates)))
+                   company-candidates-cache
+                   (list (cons prefix
+                               (company--preprocess-candidates candidates))))
              (company-idle-begin buf win tick pt)))))
       ;; FIXME: Relying on the fact that the callers
       ;; will interpret nil as "do nothing" is shaky.
@@ -1147,15 +1146,18 @@ can retrieve meta-data for them."
       (or res
           (progn (setq res 'done) nil)))))
 
-(defun company--process-candidates (candidates)
-  (when company-candidates-predicate
-    (setq candidates
-          (company-apply-predicate candidates
-                                   company-candidates-predicate)))
+(defun company--preprocess-candidates (candidates)
   (unless (company-call-backend 'sorted)
-    (setq candidates (sort (copy-sequence candidates) 'string<)))
+    (setq candidates (sort candidates 'string<)))
   (when (company-call-backend 'duplicates)
     (company--strip-duplicates candidates))
+  candidates)
+
+(defun company--postprocess-candidates (candidates)
+  (when (or company-candidates-predicate company-transformers)
+    (setq candidates (copy-sequence candidates)))
+  (when company-candidates-predicate
+    (setq candidates (cl-delete-if-not company-candidates-predicate candidates)))
   (company--transform-candidates candidates))
 
 (defun company--strip-duplicates (candidates)
