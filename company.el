@@ -1595,10 +1595,10 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (company--search-update-string ss)))
 
 (defun company--search-update-predicate (&optional ss)
-  (or ss (setq ss company-search-string))
   (let* ((company-candidates-predicate
-          (when company-search-filtering
-            (lambda (candidate) (string-match ss candidate))))
+          (and (not (string= ss ""))
+               company-search-filtering
+               (lambda (candidate) (string-match ss candidate))))
          (cc (company-calculate-candidates company-prefix)))
     (unless cc (error "No match"))
     (company-update-candidates cc)))
@@ -1617,7 +1617,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defun company--search-assert-input ()
   (company--search-assert-enabled)
-  (unless (cl-plusp (length company-search-string))
+  (when (string= company-search-string "")
     (error "Empty search string")))
 
 (defun company-search-repeat-forward ()
@@ -1668,7 +1668,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 (defun company-search-delete-char ()
   (interactive)
   (company--search-assert-enabled)
-  (when (cl-plusp (length company-search-string))
+  (unless (string= company-search-string "")
     (let ((ss (substring company-search-string 0 -1)))
       (when company-search-filtering
         (company--search-update-predicate ss))
@@ -2182,7 +2182,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                              mouse-face company-tooltip-mouse)
                            line))
     (when selected
-      (if (and (cl-plusp (length company-search-string))
+      (if (and (not (string= company-search-string ""))
                (string-match (regexp-quote company-search-string) value
                              (length company-prefix)))
           (let ((beg (+ margin (match-beginning 0)))
