@@ -392,6 +392,46 @@
       (company-complete-selection)
       (should (string= "tea-cup" (buffer-string))))))
 
+(defvar ct-sorted nil)
+
+(defun ct-equal-including-properties (list1 list2)
+  (or (and (not list1) (not list2))
+      (and (ert-equal-including-properties (car list1) (car list2))
+           (ct-equal-including-properties (cdr list1) (cdr list2)))))
+
+(ert-deftest company-strips-duplicates-within-groups ()
+  (let* ((kvs '(("a" . "b")
+                ("a" . nil)
+                ("a" . "b")
+                ("a" . "c")
+                ("a" . "b")
+                ("b" . "c")
+                ("b" . nil)
+                ("a" . "b")))
+         (fn (lambda (kvs)
+               (mapcar (lambda (kv) (propertize (car kv) 'ann (cdr kv)))
+                       kvs)))
+         (company-backend
+          (lambda (command &optional arg)
+            (pcase command
+              (`prefix "")
+              (`sorted ct-sorted)
+              (`duplicates t)
+              (`annotation (get-text-property 0 'ann arg)))))
+         (reference '(("a" . "b")
+                      ("a" . nil)
+                      ("a" . "c")
+                      ("b" . "c")
+                      ("b" . nil)
+                      ("a" . "b"))))
+    (let ((ct-sorted t))
+      (should (ct-equal-including-properties
+               (company--preprocess-candidates (funcall fn kvs))
+               (funcall fn reference))))
+    (should (ct-equal-including-properties
+             (company--preprocess-candidates (funcall fn kvs))
+             (funcall fn (butlast reference))))))
+
 ;;; Row and column
 
 (ert-deftest company-column-with-composition ()
