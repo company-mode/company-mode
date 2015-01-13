@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2015-01-13 (0.8.8)
 
 * Pressing `M-n` or `M-p` doesn't quit the search mode.
 * New command `company-complete-common-or-cycle`. No default binding.
