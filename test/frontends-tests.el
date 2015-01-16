@@ -231,6 +231,20 @@
                      " b ﻿︸﻿︸ ")
                    (company--create-lines 0 999)))))
 
+(ert-deftest company-create-lines-with-multiple-width-and-keep-prefix ()
+  :tags '(interactive)
+  (let* (company-show-numbers
+         (company-candidates '("MIRAI発売1カ月"
+                               "MIRAI発売2カ月"))
+         (company-candidates-length 2)
+         (company-prefix "MIRAI発")
+         (company-backend (lambda (c &optional _arg)
+                            (pcase c
+                              (`ignore-case 'keep-prefix)))))
+    (should (equal '(" MIRAI﻿発﻿売1﻿カ﻿月 "
+                     " MIRAI﻿発﻿売2﻿カ﻿月 ")
+                   (company--create-lines 0 999)))))
+
 (ert-deftest company-column-with-composition ()
   :tags '(interactive)
   (with-temp-buffer

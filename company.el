@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.8.8
+;; Version: 0.8.9-cvs
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -2372,7 +2372,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (dotimes (_ len)
       (let* ((value (pop lines-copy))
              (annotation (company-call-backend 'annotation value)))
-        (setq value (company--clean-string value))
+        (setq value (company--clean-string (company-reformat value)))
         (when annotation
           (when company-tooltip-align-annotations
             ;; `lisp-completion-at-point' adds a space.
@@ -2399,7 +2399,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
       (dotimes (i len)
         (let* ((item (pop items))
-               (str (company-reformat (car item)))
+               (str (car item))
                (annotation (cdr item))
                (right (company-space-string company-tooltip-margin))
                (width width))
