@@ -614,6 +614,8 @@ asynchronous call into synchronous.")
     (define-key keymap (kbd "M-p") 'company-select-previous)
     (define-key keymap (kbd "<down>") 'company-select-next-or-abort)
     (define-key keymap (kbd "<up>") 'company-select-previous-or-abort)
+    (define-key keymap [remap scroll-up-command] 'company-next-page)
+    (define-key keymap [remap scroll-down-command] 'company-previous-page)
     (define-key keymap [down-mouse-1] 'ignore)
     (define-key keymap [down-mouse-3] 'ignore)
     (define-key keymap [mouse-1] 'company-complete-mouse)
@@ -1810,6 +1812,20 @@ and invoke the normal binding."
       (company-select-previous)
     (company-abort)
     (company--unread-last-input)))
+
+(defun company-next-page ()
+  "Select the candidate one page further."
+  (interactive)
+  (when (company-manual-begin)
+    (company-set-selection (+ company-selection
+                              company-tooltip-limit))))
+
+(defun company-previous-page ()
+  "Select the candidate one page earlier."
+  (interactive)
+  (when (company-manual-begin)
+    (company-set-selection (- company-selection
+                              company-tooltip-limit))))
 
 (defvar company-pseudo-tooltip-overlay)
 

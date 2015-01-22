@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## 2015-01-23 (0.8.9)
+
+* New commands `company-next-page` and `company-previous-page`, remapping
+  `scroll-up-command` and `scroll-down-command` during completion.
+
 ## 2015-01-13 (0.8.8)
 
 * Pressing `M-n` or `M-p` doesn't quit the search mode.
