@@ -60,8 +60,15 @@ If nil, use `ispell-complete-word-dict'."
     (interactive (company-begin-backend 'company-ispell))
     (prefix (when (company-ispell-available)
               (company-grab-word)))
-    (candidates (lookup-words arg (or company-ispell-dictionary
-                                      ispell-complete-word-dict)))
+    (candidates
+     (let ((words (lookup-words arg (or company-ispell-dictionary
+                                        ispell-complete-word-dict)))
+           (completion-ignore-case t))
+       (if (string= arg "")
+           ;; Small optimization.
+           words
+         ;; Work around issue #284.
+         (all-completions arg words))))
     (sorted t)
     (ignore-case 'keep-prefix)))
 
