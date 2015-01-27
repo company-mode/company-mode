@@ -80,6 +80,149 @@ or automatically through a custom `company-clang-prefix-guesser'."
     (insert-file-contents-literally file nil beg end)
     (buffer-string)))
 
+;; The option "-code-completion-brief-comments" works since Clang
+;; version 3.2.  The options "-ast-dump -ast-dump-filter" are part of
+;; Clang since version 3.2, but can parse comments starting from
+;; version 3.3.
+(defconst company-clang-parse-comments-min-version 3.3
+  "Starting from version 3.3 Clang's AST can parse comments.")
+
+(defcustom company-clang-parse-system-headers-comments nil
+  "Parse completions' documentation comments of system headers."
+  :type 'boolean)
+
+(defcustom company-clang-documentation-fill-column 70
+  "Column beyond which automatic line-wrapping should happen."
+  :type 'integer)
+
+(defcustom company-clang-documentation-justify 'full
+  "Specifies which kind of justification to do."
+  :type '(choice (const :tag "Full" full)
+                 (const :tag "Left" left)
+                 (const :tag "Right" right)
+                 (const :tag "Center" center)
+                 (const :tag "None" nil)))
+
+;; The function
+;;  /** This is a comment. */
+;;  int foobar(int a, float b){return 0;}
+;; is expressed by Clang's AST version 3.3 as follows:
+;;
+;;  Dumping foobar:
+;;  FunctionDecl 0x2d7b210 <./test.h:5:1, col:37> col:5 foobar 'int (int, float)'
+;;  |-ParmVarDecl 0x2d7b0d0 <col:12, col:16> col:16 a 'int'
+;;  |-ParmVarDecl 0x2d7b140 <col:19, col:25> col:25 b 'float'
+;;  |-CompoundStmt 0x2d7b328 <col:27, col:37>
+;;  | `-ReturnStmt 0x2d7b2e0 <col:28, col:35>
+;;  |   `-IntegerLiteral 0x2d7b2c0 <col:35> 'int' 0
+;;  `-FullComment 0x3d5aad0 <line:4:4, col:23>
+;;    `-ParagraphComment 0x3d5aaa0 <col:4, col:23>
+;;        `-TextComment 0x3d5aa70 <col:4, col:23> Text=" This is a comment. "
+(defun company-clang--strip-meta (candidate)
+  "Retrun CANDIDATE's meta stripped from prefix and args."
+  (let* ((prefix (regexp-quote candidate))
+         (meta (company-clang--meta candidate))
+         (strip-prefix (format "\\(%s\\).*\\'" prefix))
+         (strip-args "\\( [a-zA-Z0-9_:]+\\)\\(?:,\\|)\\)"))
+    (replace-regexp-in-string
+     strip-args ""
+     (replace-regexp-in-string
+      strip-prefix "" meta nil nil 1) nil nil 1)))
+
+(defun company-clang--parse-AST (candidate)
+  "Return the CANDIDATE's AST.
+
+Resolve function overloads by searching the candidate's meta in
+the Clang's AST."
+  (goto-char (point-min))
+  (let* ((prefix (regexp-quote candidate))
+         (meta (company-clang--strip-meta candidate))
+         (head (format "^Dumping %s:$" prefix))
+         (decl (format "^.* %s '\\(.*\\)'$" prefix))
+         (abort nil)
+         proto head-beg head-end empty-line)
+    (while (not abort)
+      (if (not (re-search-forward head nil t))
+          (setq abort t)
+        (setq head-beg (match-beginning 0))
+        (setq head-end (match-end 0))
+        (if (not (re-search-forward "^$" nil t))
+            (setq abort t)
+          (setq empty-line (match-end 0))
+          (goto-char (+ head-end 1))
+          (when (re-search-forward decl empty-line t)
+            (setq proto (match-string-no-properties 1))
+            (when (string= proto meta)
+              (setq abort 'ok))))))
+    (when (eq abort 'ok)
+      (buffer-substring head-beg empty-line))))
+
+(defun company-clang--can-parse-comments nil
+  "Verify that the version of Clang in use can parse comments."
+  (>= company-clang--version
+      company-clang-parse-comments-min-version))
+
+(defun company-clang--get-candidate-doc (candidate)
+  "Extract the documentation of a CANDIDATE."
+  (let (doc ast)
+    (when (company-clang--can-parse-comments)
+      (setq ast (company-clang--AST-process candidate))
+      (setq doc (company-clang--get-ast-doc ast)))
+    doc))
+
+(defun company-clang--get-ast-doc (ast)
+  "Get the AST's comments.
+
+Return the AST's comments."
+  (let (doc)
+    (when (stringp ast)
+      (with-temp-buffer
+        (insert ast)
+        (goto-char (point-min))
+        (while (re-search-forward "TextComment.*Text=\"\\(.*\\)\"$" nil t)
+          (when doc
+            (setq doc (concat doc "\n")))
+          (setq doc (concat doc (match-string-no-properties 1))))))
+    doc))
+
+(defun company-clang--doc-buffer (candidate)
+  "Create the documentation buffer for a CANDIDATE."
+  (let ((meta (company-clang--meta candidate))
+        (doc (company-clang--get-candidate-doc candidate))
+        (emptylines "\n\n"))
+    (unless (and doc meta)
+      (setq emptylines ""))
+    (when (or doc meta)
+      (company-doc-buffer
+       (concat meta
+               emptylines
+               (company-clang-string-to-paragraph
+                doc
+                company-clang-documentation-fill-column
+                company-clang-documentation-justify))))))
+
+(defun company-clang-string-to-paragraph (str &optional len justify)
+  "Convert STR to a paragraph.
+
+LEN controls the width.
+
+JUSTIFY specifies which kind of justification to do: `full',
+`left', `right', `center', or `none' (equivalent to nil).  A
+value of t means handle each paragraph as specified by its text
+properties."
+  (when str
+    (if (or (eq justify 'full)
+            (eq justify 'left)
+            (eq justify 'right)
+            (eq justify 'center))
+        (with-temp-buffer
+          (insert str)
+          (when len
+            (setq fill-column len))
+          (fill-region (point-min) (point-max) justify)
+          (buffer-string))
+      str)))
+
 (defun company-clang-guess-prefix ()
   "Try to guess the prefix file for the current buffer."
   ;; Prefixes seem to be called .pch.  Pre-compiled headers do, too.
@@ -186,14 +329,42 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (setq buffer-read-only t)
         (goto-char (point-min))))))
 
+(defun company-clang--AST-process (candidate)
+  "Process the CANDIDATE's AST synchronously.
+
+Return the CANDIDATE's AST."
+  ;; NOTE: build the args while in the original buffer.
+  (let* ((prefix (regexp-quote candidate))
+         (args (company-clang--build-AST-args prefix))
+         (buf (get-buffer-create "*clang-ast*"))
+         (process-adaptive-read-buffering nil))
+    (unless (get-buffer-process buf)
+      (with-current-buffer buf
+        (buffer-disable-undo)
+        (erase-buffer))
+      ;; NOTE: start the process while in the original buffer.
+      (let (process)
+        (setq process
+              (apply #'call-process-region (point-min) (point-max)
+                     company-clang-executable
+                     nil (list buf nil) nil args))
+        (with-current-buffer buf
+          ;; FIXME: `company-clang--handle-error' seems to
+          ;; create troubles some time, we should suppress
+          ;; Clang's errors, in the meantime do not consider
+          ;; the return code 1 as an error.
+          (unless (or (eq 0 process) (eq 1 process))
+            (company-clang--handle-error process args))
+          (company-clang--parse-AST candidate))))))
+
 (defun company-clang--start-process (prefix callback &rest args)
   (let ((objc (derived-mode-p 'objc-mode))
         (buf (get-buffer-create "*clang-output*"))
         ;; Looks unnecessary in Emacs 25.1 and later.
         (process-adaptive-read-buffering nil))
     (with-current-buffer buf
-      (erase-buffer)
-      (setq buffer-undo-list t))
+      (buffer-disable-undo)
+      (erase-buffer))
     (if (get-buffer-process buf)
         (funcall callback nil)
       (let ((process (apply #'start-process "company-clang" buf
@@ -210,16 +381,14 @@ or automatically through a custom `company-clang-prefix-guesser'."
                     (company-clang--handle-error res args))
                   ;; Still try to get any useful input.
                   (company-clang--parse-output prefix objc)))))))
-        (unless (company-clang--auto-save-p)
-          (send-region process (point-min) (point-max))
-          (send-string process "\n")
-          (process-send-eof process))))))
+        (send-region process (point-min) (point-max))
+        (send-string process "\n")
+        (process-send-eof process)))))
 
 (defsubst company-clang--build-location (pos)
   (save-excursion
     (goto-char pos)
-    (format "%s:%d:%d"
-            (if (company-clang--auto-save-p) buffer-file-name "-")
+    (format "-:%d:%d"
             (line-number-at-pos)
             (1+ (length
                  (encode-coding-region
@@ -228,20 +397,32 @@ or automatically through a custom `company-clang-prefix-guesser'."
                   'utf-8
                   t))))))
 
+(defun company-clang--build-AST-args (prefix)
+  "Return Clang's args to dump the AST filtering by PREFIX"
+  (append '("-fno-color-diagnostics" "-fsyntax-only" "-w"
+            "-Xclang" "-ast-dump" "-Xclang" "-ast-dump-filter"
+            "-Xclang")
+          (list prefix)
+          (when company-clang-parse-system-headers-comments
+            (list "-Xclang" "--no-system-header-prefix="))
+          (list "-x" (company-clang--lang-option))
+          company-clang-arguments
+          (when (stringp company-clang--prefix)
+            (list "-include" (expand-file-name company-clang--prefix)))
+          (list "-")))
+
 (defsubst company-clang--build-complete-args (pos)
   (append '("-fsyntax-only" "-Xclang" "-code-completion-macros")
-          (unless (company-clang--auto-save-p)
-            (list "-x" (company-clang--lang-option)))
+          (list "-x" (company-clang--lang-option))
           company-clang-arguments
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
           (list "-Xclang" (format "-code-completion-at=%s"
                                   (company-clang--build-location pos)))
-          (list (if (company-clang--auto-save-p) buffer-file-name "-"))))
+          (list "-")))
 
 (defun company-clang--candidates (prefix callback)
-  (and (company-clang--auto-save-p)
-       (buffer-modified-p)
+  (and (buffer-modified-p)
        (basic-save-buffer))
   (when (null company-clang--prefix)
     (company-clang-set-prefix (or (funcall company-clang-prefix-guesser)
@@ -258,12 +439,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconst company-clang-required-version 1.1)
+(defconst company-clang-required-version 2.9)
 
 (defvar company-clang--version nil)
-
-(defun company-clang--auto-save-p ()
-  (< company-clang--version 2.9))
 
 (defsubst company-clang-version ()
   "Return the version of `company-clang-executable'."
@@ -297,7 +475,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 (defun company-clang (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Clang.
-Clang is a parser for C and ObjC.  Clang version 1.1 or newer is required.
+Clang is a parser for C and ObjC.  Clang version 2.9 or newer is required.
 
 Additional command line arguments can be specified in
 `company-clang-arguments'.  Prefix files (-include ...) can be selected
@@ -315,7 +493,7 @@ passed via standard input."
               (error "Company found no clang executable"))
             (setq company-clang--version (company-clang-version))
             (when (< company-clang--version company-clang-required-version)
-              (error "Company requires clang version 1.1"))))
+              (error "Company requires clang version 2.9"))))
     (prefix (and (memq major-mode company-clang-modes)
                  buffer-file-name
                  company-clang-executable
@@ -325,6 +503,9 @@ passed via standard input."
                       (lambda (cb) (company-clang--candidates arg cb))))
     (meta       (company-clang--meta arg))
     (annotation (company-clang--annotation arg))
+    (doc-buffer (unless (company-clang--can-parse-comments)
+                  (error "The current version of Clang cannot parse comments"))
+                (company-clang--doc-buffer arg))
     (post-completion (let ((anno (company-clang--annotation arg)))
                        (when (and company-clang-insert-arguments anno)
                          (insert anno)
