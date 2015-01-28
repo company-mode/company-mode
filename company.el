@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.8.9
+;; Version: 0.8.9-cvs
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -1573,7 +1573,11 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defvar-local company-search-string "")
 
-(defvar-local company-search-lighter " Search: \"\"")
+(defvar company-search-lighter '(" "
+                                 (company-search-filtering "Filter" "Search")
+                                 ": \""
+                                 company-search-string
+                                 "\""))
 
 (defvar-local company-search-filtering nil
   "Non-nil to filter the completion candidates by the search string")
@@ -1615,12 +1619,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (let* ((pos (company--search new (nthcdr company-selection company-candidates))))
     (if (null pos)
         (ding)
-      (setq company-search-string new
-            company-search-lighter (format " %s: \"%s\""
-                                           (if company-search-filtering
-                                               "Filter"
-                                             "Search")
-                                           new))
+      (setq company-search-string new)
       (company-set-selection (+ company-selection pos) t))))
 
 (defun company--search-assert-input ()
@@ -1731,10 +1730,10 @@ Don't start this directly, use `company-search-candidates' or
       (if (company-manual-begin)
           (progn
             (setq company--search-old-selection company-selection)
-            (company-call-frontends 'update))
+            (company-call-frontends 'update)
+            (company-enable-overriding-keymap company-search-map))
         (setq company-search-mode nil))
     (kill-local-variable 'company-search-string)
-    (kill-local-variable 'company-search-lighter)
     (kill-local-variable 'company-search-filtering)
     (kill-local-variable 'company--search-old-selection)
     (when company-backend
@@ -1762,8 +1761,7 @@ Regular characters are appended to the search string.
 The command `company-search-toggle-filtering' (\\[company-search-toggle-filtering])
 uses the search string to filter the completion candidates."
   (interactive)
-  (company-search-mode 1)
-  (company-enable-overriding-keymap company-search-map))
+  (company-search-mode 1))
 
 (defvar company-filter-map
   (let ((keymap (make-keymap)))
