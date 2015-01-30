@@ -189,6 +189,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
 (defun company-clang--start-process (prefix callback &rest args)
   (let ((objc (derived-mode-p 'objc-mode))
         (buf (get-buffer-create "*clang-output*"))
+        ;; Looks unnecessary in Emacs 25.1 and later.
         (process-adaptive-read-buffering nil))
     (with-current-buffer buf (erase-buffer))
     (if (get-buffer-process buf)
