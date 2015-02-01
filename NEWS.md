@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* Pressing `<up>` or `<down>` doesn't quit the search mode.
+
 ## 2015-01-23 (0.8.9)
 
 * New commands `company-next-page` and `company-previous-page`, remapping
