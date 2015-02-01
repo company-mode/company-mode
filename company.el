@@ -1061,18 +1061,22 @@ can retrieve meta-data for them."
 
 (defun company-update-candidates (candidates)
   (setq company-candidates-length (length candidates))
-  (if (> company-selection 0)
+  (if company-selection-changed
       ;; Try to restore the selection
       (let ((selected (nth company-selection company-candidates)))
         (setq company-selection 0
               company-candidates candidates)
         (when selected
-          (while (and candidates (string< (pop candidates) selected))
-            (cl-incf company-selection))
-          (unless candidates
-            ;; Make sure selection isn't out of bounds.
-            (setq company-selection (min (1- company-candidates-length)
-                                         company-selection)))))
+          (catch 'found
+            (while candidates
+              (let ((candidate (pop candidates)))
+                (when (and (string= candidate selected)
+                           (equal (company-call-backend 'annotation candidate)
+                                  (company-call-backend 'annotation selected)))
+                  (throw 'found t)))
+              (cl-incf company-selection))
+            (setq company-selection 0
+                  company-selection-changed nil))))
     (setq company-selection 0
           company-candidates candidates))
   ;; Calculate common.
@@ -1584,6 +1588,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
 
 (defvar-local company--search-old-selection 0)
 
+(defvar-local company--search-old-changed nil)
+
 (defun company--search (text lines)
   (let ((quoted (regexp-quote text))
         (i 0))
@@ -1664,7 +1670,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (interactive)
   (company--search-assert-enabled)
   (company-search-mode 0)
-  (company-set-selection company--search-old-selection t))
+  (company-set-selection company--search-old-selection t)
+  (setq company-selection-changed company--search-old-changed))
 
 (defun company-search-other-char ()
   (interactive)
@@ -1731,13 +1738,15 @@ Don't start this directly, use `company-search-candidates' or
   (if company-search-mode
       (if (company-manual-begin)
           (progn
-            (setq company--search-old-selection company-selection)
+            (setq company--search-old-selection company-selection
+                  company--search-old-changed company-selection-changed)
             (company-call-frontends 'update)
             (company-enable-overriding-keymap company-search-map))
         (setq company-search-mode nil))
     (kill-local-variable 'company-search-string)
     (kill-local-variable 'company-search-filtering)
     (kill-local-variable 'company--search-old-selection)
+    (kill-local-variable 'company--search-old-changed)
     (when company-backend
       (company--search-update-predicate "")
       (company-call-frontends 'update))

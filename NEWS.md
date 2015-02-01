@@ -2,6 +2,7 @@
 
 ## Next
 
+* Better tracking of the current selection.
 * Pressing `<up>` or `<down>` doesn't quit the search mode.
 
 ## 2015-01-23 (0.8.9)
