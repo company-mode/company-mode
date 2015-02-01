@@ -1727,6 +1727,8 @@ from the rest of the back-ends in the group, if any, will be left at the end."
     (define-key keymap "\C-s" 'company-search-repeat-forward)
     (define-key keymap "\C-r" 'company-search-repeat-backward)
     (define-key keymap "\C-o" 'company-search-toggle-filtering)
+    (dotimes (i 10)
+      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
     keymap)
   "Keymap used for incrementally searching the completion candidates.")
 

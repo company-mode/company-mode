@@ -3,6 +3,7 @@
 ## Next
 
 * Better tracking of the current selection.
+* Pressing `M-0`...`M-9` works in the search mode.
 * Pressing `<up>` or `<down>` doesn't quit the search mode.
 
 ## 2015-01-23 (0.8.9)
