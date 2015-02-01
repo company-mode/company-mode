@@ -662,9 +662,8 @@ asynchronous call into synchronous.")
       (unless (keywordp b)
         (company-init-backend b))))))
 
-(defvar company-default-lighter " company")
-
-(defvar-local company-lighter company-default-lighter)
+(defcustom company-lighter " company" "Default lighter string.")
+(defvar-local company-buffer-lighter company-lighter)
 
 ;;;###autoload
 (define-minor-mode company-mode
@@ -691,7 +690,7 @@ regular keymap (`company-mode-map'):
 keymap during active completions (`company-active-map'):
 
 \\{company-active-map}"
-  nil company-lighter company-mode-map
+  nil company-buffer-lighter company-mode-map
   (if company-mode
       (progn
         (when (eq company-idle-delay t)
@@ -1057,7 +1056,7 @@ can retrieve meta-data for them."
       (when (and backend (symbolp backend))
         (let ((name (replace-regexp-in-string "company-\\|-company" ""
                                               (symbol-name backend))))
-          (setq company-lighter (format " company-<%s>" name)))))))
+          (setq company-buffer-lighter (format " %s-<%s>" company-lighter name)))))))
 
 (defun company-update-candidates (candidates)
   (setq company-candidates-length (length candidates))
@@ -1453,7 +1452,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
             (when company--manual-action
               (setq company--manual-prefix prefix))
             (if (symbolp backend)
-                (setq company-lighter (concat " " (symbol-name backend)))
+                (setq company-buffer-lighter (concat " " (symbol-name backend)))
               (company--update-group-lighter (car c)))
             (company-update-candidates c)
             (run-hook-with-args 'company-completion-started-hook
@@ -1492,7 +1491,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
           company-selection-changed nil
           company--manual-action nil
           company--manual-prefix nil
-          company-lighter company-default-lighter
+          company-buffer-lighter company-lighter
           company--point-max nil
           company-point nil)
     (when company-timer
