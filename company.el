@@ -671,9 +671,9 @@ asynchronous call into synchronous.")
                           (company-backend
                            (:eval
                             (if (consp company-backend)
-                                (company--group-lighter
-                                 (nth company-selection
-                                      company-candidates))
+                                (company--group-lighter (nth company-selection
+                                                             company-candidates)
+                                                        company-lighter-base)
                               (symbol-name company-backend)))
                            company-lighter-base))
   "Mode line lighter for Company.
@@ -1066,13 +1066,13 @@ can retrieve meta-data for them."
           company-selection-changed t)
     (company-call-frontends 'update)))
 
-(defun company--group-lighter (candidate)
+(defun company--group-lighter (candidate base)
   (let ((backend (or (get-text-property 0 'company-backend candidate)
                      (car company-backend))))
     (when (and backend (symbolp backend))
       (let ((name (replace-regexp-in-string "company-\\|-company" ""
                                             (symbol-name backend))))
-        (format "%s-<%s>" company-lighter-base name)))))
+        (format "%s-<%s>" base name)))))
 
 (defun company-update-candidates (candidates)
   (setq company-candidates-length (length candidates))
