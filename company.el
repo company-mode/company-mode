@@ -662,9 +662,26 @@ asynchronous call into synchronous.")
       (unless (keywordp b)
         (company-init-backend b))))))
 
-(defvar company-default-lighter " company")
+(defcustom company-lighter-base "company"
+  "Base string to use for the `company-mode' lighter."
+  :type 'string
+  :package-version '(company . "0.8.10"))
 
-(defvar-local company-lighter company-default-lighter)
+(defvar company-lighter '(" "
+                          (company-backend
+                           (:eval
+                            (if (consp company-backend)
+                                (company--group-lighter
+                                 (nth company-selection
+                                      company-candidates))
+                              (symbol-name company-backend)))
+                           company-lighter-base))
+  "Mode line lighter for Company.
+
+The value of this variable is a mode line template as in
+`mode-line-format'.")
+
+(put 'company-lighter 'risky-local-variable t)
 
 ;;;###autoload
 (define-minor-mode company-mode
@@ -1045,19 +1062,17 @@ can retrieve meta-data for them."
             (mod selection company-candidates-length)
           (max 0 (min (1- company-candidates-length) selection))))
   (when (or force-update (not (equal selection company-selection)))
-    (company--update-group-lighter (nth selection company-candidates))
     (setq company-selection selection
           company-selection-changed t)
     (company-call-frontends 'update)))
 
-(defun company--update-group-lighter (candidate)
-  (when (listp company-backend)
-    (let ((backend (or (get-text-property 0 'company-backend candidate)
-                       (car company-backend))))
-      (when (and backend (symbolp backend))
-        (let ((name (replace-regexp-in-string "company-\\|-company" ""
-                                              (symbol-name backend))))
-          (setq company-lighter (format " company-<%s>" name)))))))
+(defun company--group-lighter (candidate)
+  (let ((backend (or (get-text-property 0 'company-backend candidate)
+                     (car company-backend))))
+    (when (and backend (symbolp backend))
+      (let ((name (replace-regexp-in-string "company-\\|-company" ""
+                                            (symbol-name backend))))
+        (format "%s-<%s>" company-lighter-base name)))))
 
 (defun company-update-candidates (candidates)
   (setq company-candidates-length (length candidates))
@@ -1452,9 +1467,6 @@ from the rest of the back-ends in the group, if any, will be left at the end."
                 (message "No completion found"))
             (when company--manual-action
               (setq company--manual-prefix prefix))
-            (if (symbolp backend)
-                (setq company-lighter (concat " " (symbol-name backend)))
-              (company--update-group-lighter (car c)))
             (company-update-candidates c)
             (run-hook-with-args 'company-completion-started-hook
                                 (company-explicit-action-p))
@@ -1492,7 +1504,6 @@ from the rest of the back-ends in the group, if any, will be left at the end."
           company-selection-changed nil
           company--manual-action nil
           company--manual-prefix nil
-          company-lighter company-default-lighter
           company--point-max nil
           company-point nil)
     (when company-timer
