@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2015-02-02 (0.8.10)
 
 * New variable `company-lighter-base`.
 * Better tracking of the current selection.
