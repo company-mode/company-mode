@@ -2231,9 +2231,12 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (string-match (regexp-quote company-search-string) value
                              (length company-prefix)))
           (let ((beg (+ margin (match-beginning 0)))
-                (end (+ margin (match-end 0))))
-            (add-text-properties beg end '(face company-tooltip-search)
-                                 line))
+                (end (+ margin (match-end 0)))
+                (width (- width (length right))))
+            (when (< beg width)
+              (add-text-properties beg (min end width)
+                                   '(face company-tooltip-search)
+                                   line)))
         (add-text-properties 0 width '(face company-tooltip-selection
                                        mouse-face company-tooltip-selection)
                              line)
