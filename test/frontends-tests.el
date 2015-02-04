@@ -245,6 +245,26 @@
                      " MIRAI﻿発﻿売2﻿カ﻿月 ")
                    (company--create-lines 0 999)))))
 
+(ert-deftest company-fill-propertize-truncates-search-highlight ()
+  (let ((company-search-string "foo")
+        (company-backend #'ignore)
+        (company-prefix ""))
+    (should (equal-including-properties
+             (company-fill-propertize "barfoo" nil 6 t nil nil)
+             #("barfoo"
+               0 3 (face company-tooltip mouse-face company-tooltip-mouse)
+               3 6 (face company-tooltip-search mouse-face company-tooltip-mouse))))
+    (should (equal-including-properties
+             (company-fill-propertize "barfoo" nil 5 t "" " ")
+             #("barfo "
+               0 3 (face company-tooltip mouse-face company-tooltip-mouse)
+               3 5 (face company-tooltip-search mouse-face company-tooltip-mouse)
+               5 6 (face company-tooltip mouse-face company-tooltip-mouse))))
+    (should (equal-including-properties
+             (company-fill-propertize "barfoo" nil 3 t " " " ")
+             #(" bar "
+               0 5 (face company-tooltip mouse-face company-tooltip-mouse))))))
+
 (ert-deftest company-column-with-composition ()
   :tags '(interactive)
   (with-temp-buffer

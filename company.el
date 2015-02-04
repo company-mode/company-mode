@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.8.10
+;; Version: 0.8.11
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.1") (cl-lib "0.5"))
 
@@ -2231,9 +2231,12 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (string-match (regexp-quote company-search-string) value
                              (length company-prefix)))
           (let ((beg (+ margin (match-beginning 0)))
-                (end (+ margin (match-end 0))))
-            (add-text-properties beg end '(face company-tooltip-search)
-                                 line))
+                (end (+ margin (match-end 0)))
+                (width (- width (length right))))
+            (when (< beg width)
+              (add-text-properties beg (min end width)
+                                   '(face company-tooltip-search)
+                                   line)))
         (add-text-properties 0 width '(face company-tooltip-selection
                                        mouse-face company-tooltip-selection)
                              line)
