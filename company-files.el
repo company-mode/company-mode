@@ -1,6 +1,6 @@
 ;;; company-files.el --- company-mode completion back-end for file paths
 
-;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2014-2015  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -50,6 +50,8 @@
     (and (cl-dolist (regexp company-files--regexps)
            (when (setq file (company-grab-line regexp 1))
              (cl-return file)))
+         (or (not (file-remote-p file))
+             (file-remote-p file nil t))
          (setq dir (file-name-directory file))
          (not (string-match "//" dir))
          (file-exists-p dir)
