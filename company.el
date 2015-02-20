@@ -2131,6 +2131,39 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
         (message "Company version: %s" (lm-version))
       (lm-version))))
 
+(defun company-diag ()
+  (interactive)
+  "Pop a buffer with information about completions at point."
+  (let* ((bb company-backends)
+         backend
+         (prefix (cl-loop for b in bb
+                          thereis (let ((company-backend b))
+                                    (setq backend b)
+                                    (company-call-backend 'prefix))))
+         cc)
+    (when (stringp prefix)
+      (setq cc (let ((company-backend backend))
+                 (company-call-backend 'candidates prefix))))
+    (pop-to-buffer (get-buffer-create "*company-diag*"))
+    (setq buffer-read-only nil)
+    (erase-buffer)
+    (insert "company-backends: " (pp-to-string bb))
+    (insert "\n")
+    (insert "Used backend: " (pp-to-string backend))
+    (insert "\n")
+    (insert "Prefix: " (pp-to-string prefix))
+    (insert "\n")
+    (insert (message  "Completions:"))
+    (unless cc (insert " none"))
+    (save-excursion
+      (let ((company-backend backend))
+        (dolist (c cc)
+          (insert "\n  " (prin1-to-string c))
+          (let ((ann (company-call-backend 'annotation)))
+            (when ann
+              (insert " " (prin1-to-string ann))))))
+      (special-mode))))
+
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar-local company-pseudo-tooltip-overlay nil)

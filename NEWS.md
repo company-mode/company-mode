@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* New command `company-diag`. Use it in bug reports.
+
 ## 2015-02-02 (0.8.10)
 
 * New variable `company-lighter-base`.
