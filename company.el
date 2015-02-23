@@ -315,7 +315,7 @@ This doesn't include the margins and the scroll bar."
                         (assq backend company-safe-backends))
                 (cl-return t))))))
 
-(defcustom company-backends `(,@(unless (version< "24.3.50" emacs-version)
+(defcustom company-backends `(,@(unless (version< "24.3.51" emacs-version)
                                   (list 'company-elisp))
                               company-bbdb
                               company-nxml company-css
