@@ -2,6 +2,7 @@
 
 ## Next
 
+* The documentation buffer window can be scrolled with the mouse wheel.
 * New command `company-diag`. Use it in bug reports.
 
 ## 2015-02-02 (0.8.10)

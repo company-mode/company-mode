@@ -2015,7 +2015,7 @@ character, stripping the modifiers.  That character must be a digit."
     (current-buffer)))
 
 (defvar company--electric-commands
-  '(scroll-other-window scroll-other-window-down)
+  '(scroll-other-window scroll-other-window-down mwheel-scroll)
   "List of Commands that won't break out of electric commands.")
 
 (defmacro company--electric-do (&rest body)
@@ -2029,9 +2029,12 @@ character, stripping the modifiers.  That character must be a digit."
          (and (< (window-height) height)
               (< (- (window-height) row 2) company-tooltip-limit)
               (recenter (- (window-height) row 2)))
-         (while (memq (setq cmd (key-binding (vector (list (read-event)))))
+         (while (memq (setq cmd (key-binding (read-key-sequence-vector nil)))
                       company--electric-commands)
-           (call-interactively cmd))
+           (condition-case err
+               (call-interactively cmd)
+             ((beginning-of-buffer end-of-buffer)
+              (message (error-message-string err)))))
          (company--unread-last-input)))))
 
 (defun company--unread-last-input ()
