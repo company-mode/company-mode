@@ -2045,11 +2045,11 @@ character, stripping the modifiers.  That character must be a digit."
 (defun company-show-doc-buffer ()
   "Temporarily show the documentation buffer for the selection."
   (interactive)
-  (let* ((selected (nth company-selection company-candidates))
-         (doc-buffer (or (company-call-backend 'doc-buffer selected)
-                         (error "No documentation available")))
-         (other-window-scroll-buffer (get-buffer doc-buffer)))
-    (company--electric-do
+  (company--electric-do
+    (let* ((selected (nth company-selection company-candidates))
+           (doc-buffer (or (company-call-backend 'doc-buffer selected)
+                           (error "No documentation available")))
+           (other-window-scroll-buffer (get-buffer doc-buffer)))
       (with-current-buffer doc-buffer
         (goto-char (point-min)))
       (display-buffer doc-buffer t))))
