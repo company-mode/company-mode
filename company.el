@@ -2058,12 +2058,13 @@ character, stripping the modifiers.  That character must be a digit."
 (defun company-show-location ()
   "Temporarily display a buffer showing the selected candidate in context."
   (interactive)
-  (company--electric-do
-    (let* ((selected (nth company-selection company-candidates))
-           (location (company-call-backend 'location selected))
-           (pos (or (cdr location) (error "No location available")))
-           (buffer (or (and (bufferp (car location)) (car location))
-                       (find-file-noselect (car location) t))))
+  (let* ((selected (nth company-selection company-candidates))
+         (location (company-call-backend 'location selected))
+         (pos (or (cdr location) (error "No location available")))
+         (buffer (or (and (bufferp (car location)) (car location))
+                     (find-file-noselect (car location) t)))
+         (other-window-scroll-buffer buffer))
+    (company--electric-do
       (with-selected-window (display-buffer buffer t)
         (save-restriction
           (widen)
