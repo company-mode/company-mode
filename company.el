@@ -2059,20 +2059,22 @@ character, stripping the modifiers.  That character must be a digit."
 (defun company-show-location ()
   "Temporarily display a buffer showing the selected candidate in context."
   (interactive)
-  (company--electric-do
-    (let* ((selected (nth company-selection company-candidates))
-           (location (company-call-backend 'location selected))
-           (pos (or (cdr location) (error "No location available")))
-           (buffer (or (and (bufferp (car location)) (car location))
-                       (find-file-noselect (car location) t))))
-      (with-selected-window (display-buffer buffer t)
-        (save-restriction
-          (widen)
-          (if (bufferp (car location))
-              (goto-char pos)
-            (goto-char (point-min))
-            (forward-line (1- pos))))
-        (set-window-start nil (point))))))
+  (let (other-window-scroll-buffer)
+    (company--electric-do
+      (let* ((selected (nth company-selection company-candidates))
+             (location (company-call-backend 'location selected))
+             (pos (or (cdr location) (error "No location available")))
+             (buffer (or (and (bufferp (car location)) (car location))
+                         (find-file-noselect (car location) t))))
+        (setq other-window-scroll-buffer (get-buffer buffer))
+        (with-selected-window (display-buffer buffer t)
+          (save-restriction
+            (widen)
+            (if (bufferp (car location))
+                (goto-char pos)
+              (goto-char (point-min))
+              (forward-line (1- pos))))
+          (set-window-start nil (point)))))))
 (put 'company-show-location 'company-keep t)
 
 ;;; package functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
