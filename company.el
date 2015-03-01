@@ -2154,6 +2154,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (pop-to-buffer (get-buffer-create "*company-diag*"))
     (setq buffer-read-only nil)
     (erase-buffer)
+    (insert (format "Emacs %s (%s) of %s on %s"
+                    emacs-version system-configuration
+                    (format-time-string "%Y-%m-%d" emacs-build-time)
+                    emacs-build-system))
+    (insert "\nCompany " (company-version) "\n\n")
     (insert "company-backends: " (pp-to-string bb))
     (insert "\n")
     (insert "Used backend: " (pp-to-string backend))
