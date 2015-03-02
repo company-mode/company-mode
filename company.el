@@ -2171,7 +2171,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (let ((company-backend backend))
         (dolist (c cc)
           (insert "\n  " (prin1-to-string c))
-          (let ((ann (company-call-backend 'annotation)))
+          (let ((ann (company-call-backend 'annotation c)))
             (when ann
               (insert " " (prin1-to-string ann))))))
       (special-mode))))
