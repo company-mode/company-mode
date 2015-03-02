@@ -2147,10 +2147,15 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                           thereis (let ((company-backend b))
                                     (setq backend b)
                                     (company-call-backend 'prefix))))
-         cc)
+         (buf (current-buffer))
+         cc annotations)
     (when (stringp prefix)
-      (setq cc (let ((company-backend backend))
-                 (company-call-backend 'candidates prefix))))
+      (let ((company-backend backend))
+        (setq cc (company-call-backend 'candidates prefix)
+              annotations
+              (mapcar
+               (lambda (c) (cons c (company-call-backend 'annotation c)))
+               cc))))
     (pop-to-buffer (get-buffer-create "*company-diag*"))
     (setq buffer-read-only nil)
     (erase-buffer)
@@ -2168,13 +2173,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (insert (message  "Completions:"))
     (unless cc (insert " none"))
     (save-excursion
-      (let ((company-backend backend))
-        (dolist (c cc)
-          (insert "\n  " (prin1-to-string c))
-          (let ((ann (company-call-backend 'annotation c)))
-            (when ann
-              (insert " " (prin1-to-string ann))))))
-      (special-mode))))
+      (dolist (c annotations)
+        (insert "\n  " (prin1-to-string (car c)))
+        (when (cdr c)
+          (insert " " (prin1-to-string (cdr c))))))
+    (special-mode)))
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
