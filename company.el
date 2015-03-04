@@ -934,26 +934,26 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
       (cons
        :async
        (lambda (callback)
-         (let* (lst pending
+         (let* (lst
+                (pending (mapcar #'car pairs))
                 (finisher (lambda ()
                             (unless pending
                               (funcall callback
                                        (funcall merger
                                                 (nreverse lst)))))))
            (dolist (pair pairs)
-             (let ((val (car pair))
-                   (mapper (cdr pair)))
+             (push nil lst)
+             (let* ((cell lst)
+                    (val (car pair))
+                    (mapper (cdr pair))
+                    (this-finisher (lambda (res)
+                                     (setq pending (delq val pending))
+                                     (setcar cell (funcall mapper res))
+                                     (funcall finisher))))
                (if (not (eq :async (car-safe val)))
-                   (push (funcall mapper val) lst)
-                 (push nil lst)
-                 (let ((cell lst)
-                       (fetcher (cdr val)))
-                   (push fetcher pending)
-                   (funcall fetcher
-                            (lambda (res)
-                              (setq pending (delq fetcher pending))
-                              (setcar cell (funcall mapper res))
-                              (funcall finisher)))))))))))))
+                   (funcall this-finisher val)
+                 (let ((fetcher (cdr val)))
+                   (funcall fetcher this-finisher)))))))))))
 
 (defun company--prefix-str (prefix)
   (or (car-safe prefix) prefix))
