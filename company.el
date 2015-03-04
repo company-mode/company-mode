@@ -2147,7 +2147,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                           thereis (let ((company-backend b))
                                     (setq backend b)
                                     (company-call-backend 'prefix))))
-         (buf (current-buffer))
          cc annotations)
     (when (stringp prefix)
       (let ((company-backend backend))
