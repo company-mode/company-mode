@@ -88,7 +88,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
   "Starting from version 3.3 Clang's AST can parse comments.")
 
 (defcustom company-clang-parse-system-headers-comments nil
-  "Parse completions' documentation comments of system headers."
+  "Parse completions' documentation comments of system headers.
+
+Clang can parse only comments wrote in Doxygen style."
   :type 'boolean)
 
 (defcustom company-clang-documentation-fill-column 70
