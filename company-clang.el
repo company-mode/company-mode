@@ -138,7 +138,7 @@ the Clang's AST."
   (let* ((prefix (regexp-quote candidate))
          (meta (company-clang--strip-meta candidate))
          (head (format "^Dumping %s:$" prefix))
-         (decl (format "^.* %s '\\(.*\\)'$" prefix))
+         (decl (format "^.* %s '\\(.*\\)'.*$" prefix))
          (abort nil)
          proto head-beg head-end empty-line)
     (while (not abort)
