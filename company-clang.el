@@ -173,19 +173,86 @@ the Clang's AST."
       (setq doc (company-clang--get-ast-doc ast)))
     doc))
 
+;; This is our target file.c:
+;; // file.c
+;; /**
+;;  *This is a comment,
+;;  *this is another line.
+;;  *
+;;  *
+;;  * 2 empty lines above.
+;;  */
+;; int foobar_1(int a, float b){return 0;}
+;;
+;; /** Single comment. */
+;; int foobar_2(int c, float d){return 0;}
+;; // file.c ends here
+;;
+;; Clang 3.5.0 produces the following AST for the file.c:
+;; Dumping foobar_1:
+;; FunctionDecl 0x315f3f0 <<stdin>:9:1, col:39> col:5 foobar_1 'int (int, float)'
+;; |-ParmVarDecl 0x315f2b0 <col:14, col:18> col:18 a 'int'
+;; |-ParmVarDecl 0x315f320 <col:21, col:27> col:27 b 'float'
+;; |-CompoundStmt 0x315f508 <col:29, col:39>
+;; | `-ReturnStmt 0x315f4c0 <col:30, col:37>
+;; |   `-IntegerLiteral 0x315f4a0 <col:37> 'int' 0
+;; `-FullComment 0x319c270 <line:3:3, line:7:23>
+;;   |-ParagraphComment 0x319c1f0 <line:3:3, line:4:23>
+;;     | |-TextComment 0x319c1a0 <line:3:3, col:20> Text="This is a comment,"
+;;       | `-TextComment 0x319c1c0 <line:4:3, col:23> Text="this is another line."
+;;         `-ParagraphComment 0x319c240 <line:7:3, col:23>
+;;             `-TextComment 0x319c210 <col:3, col:23> Text=" 2 empty lines above."
+;;
+;; Dumping foobar_2:
+;; FunctionDecl 0x319c050 <<stdin>:12:1, col:39> col:5 foobar_2 'int (int, float)'
+;; |-ParmVarDecl 0x315f540 <col:14, col:18> col:18 c 'int'
+;; |-ParmVarDecl 0x315f5b0 <col:21, col:27> col:27 d 'float'
+;; |-CompoundStmt 0x319c140 <col:29, col:39>
+;; | `-ReturnStmt 0x319c120 <col:30, col:37>
+;; |   `-IntegerLiteral 0x319c100 <col:37> 'int' 0
+;; `-FullComment 0x319c340 <line:11:4, col:20>
+;;   `-ParagraphComment 0x319c310 <col:4, col:20>
+;;       `-TextComment 0x319c2e0 <col:4, col:20> Text=" Single comment. "
+;;
 (defun company-clang--get-ast-doc (ast)
   "Get the AST's comments.
 
 Return the AST's comments."
-  (let (doc)
+  (let (doc last-line line-begin line-end empty-lines)
     (when (stringp ast)
       (with-temp-buffer
         (insert ast)
         (goto-char (point-min))
-        (while (re-search-forward "TextComment.*Text=\"\\(.*\\)\"$" nil t)
-          (when doc
-            (setq doc (concat doc "\n")))
-          (setq doc (concat doc (match-string-no-properties 1))))))
+        ;; Search a paragraph.
+        (while (re-search-forward "^.*ParagraphComment.*<\\(?:\\(?:line:\\([0-9]+\\)\\)?.*\\(?:line:\\([0-9]+\\)\\)\\)?.*$" nil t)
+          (setq line-begin (match-string-no-properties 1))
+          (setq line-end (match-string-no-properties 2))
+          (when line-begin
+            (setq line-begin (string-to-number line-begin)))
+          (when line-end
+            (setq line-end (string-to-number line-end)))
+          ;; If both `line-begin' and `line-end' are nil, there is a
+          ;; only single paragraph at all. If `line-begin' is nil, but
+          ;; `line-end' is non-nil, this is a single line
+          ;; paragraph. If both `line-begin' and `line-end' are
+          ;; non-nil, this is a multi-line paragraph.
+          (unless line-begin
+            (setq line-begin line-end))
+          ;; Calculate the number of empty lines between two paragraphs.
+          (when (and last-line line-end)
+            (setq empty-lines (- line-begin last-line 1)))
+          ;; Insert empty lines between two paragraphs.
+          (while (and empty-lines (> empty-lines 0))
+            (setq doc (concat doc "\n"))
+            (setq empty-lines (- empty-lines 1)))
+          (setq last-line line-end)
+          (goto-char (+ (match-end 0) 1))
+          ;; Search the comments line by line.
+          (while (re-search-forward "TextComment.*Text=\"\\(.*\\)\"$" (point-at-eol) t)
+            (when doc
+              (setq doc (concat doc "\n")))
+            (setq doc (concat doc (match-string-no-properties 1)))
+            (goto-char (+ (match-end 0) 1))))))
     doc))
 
 (defun company-clang--doc-buffer (candidate)
