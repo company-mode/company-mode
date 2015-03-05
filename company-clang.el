@@ -124,10 +124,11 @@ or automatically through a custom `company-clang-prefix-guesser'."
          (meta (company-clang--meta candidate))
          (strip-prefix (format "\\(%s\\).*\\'" prefix))
          (strip-args "\\( [a-zA-Z0-9_:]+\\)\\(?:,\\|)\\)"))
-    (replace-regexp-in-string
-     strip-args ""
-     (replace-regexp-in-string
-      strip-prefix "" meta nil nil 1) nil nil 1)))
+    (when meta
+      (replace-regexp-in-string
+       strip-args ""
+       (replace-regexp-in-string
+        strip-prefix "" meta nil nil 1) nil nil 1))))
 
 (defun company-clang--parse-AST (candidate)
   "Return the CANDIDATE's AST.
