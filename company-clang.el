@@ -105,32 +105,54 @@ Clang can parse only comments wrote in Doxygen style."
                  (const :tag "Center" center)
                  (const :tag "None" nil)))
 
-;; The function
-;;  /** This is a comment. */
-;;  int foobar(int a, float b){return 0;}
-;; is expressed by Clang's AST version 3.3 as follows:
+;; This is our target file.c:
+;; // file.c
+;; /** This is a comment. */
+;; extern int foobar(int a, const char *__restrict b);
+;; /** This is another comment. */
+;; int foobar(int a, char* b);
+;; // file.c ends here
 ;;
-;;  Dumping foobar:
-;;  FunctionDecl 0x2d7b210 <./test.h:5:1, col:37> col:5 foobar 'int (int, float)'
-;;  |-ParmVarDecl 0x2d7b0d0 <col:12, col:16> col:16 a 'int'
-;;  |-ParmVarDecl 0x2d7b140 <col:19, col:25> col:25 b 'float'
-;;  |-CompoundStmt 0x2d7b328 <col:27, col:37>
-;;  | `-ReturnStmt 0x2d7b2e0 <col:28, col:35>
-;;  |   `-IntegerLiteral 0x2d7b2c0 <col:35> 'int' 0
-;;  `-FullComment 0x3d5aad0 <line:4:4, col:23>
-;;    `-ParagraphComment 0x3d5aaa0 <col:4, col:23>
-;;        `-TextComment 0x3d5aa70 <col:4, col:23> Text=" This is a comment. "
+;; Clang 3.5.0 produces the following AST for the file.c:
+;; Dumping foobar_1:
+;; FunctionDecl 0x384b460 <<stdin>:3:1, col:52> col:12 foobar_1 'int (int, const char *restrict)' extern
+;; |-ParmVarDecl 0x384b2b0 <col:21, col:25> col:25 a 'int'
+;; |-ParmVarDecl 0x384b350 <col:28, col:51> col:51 b 'const char *restrict'
+;; `-FullComment 0x3888190 <line:2:4, col:23>
+;;   `-ParagraphComment 0x3888160 <col:4, col:23>
+;;       `-TextComment 0x3888130 <col:4, col:23> Text=" This is a comment. "
+;;
+;; Dumping foobar_2:
+;; FunctionDecl 0x3888040 <<stdin>:5:1, col:28> col:5 foobar_2 'int (int, char *)'
+;; |-ParmVarDecl 0x384b550 <col:14, col:18> col:18 a 'int'
+;; |-ParmVarDecl 0x384b5f0 <col:21, col:27> col:27 b 'char *'
+;; `-FullComment 0x3888260 <line:4:4, col:29>
+;;   `-ParagraphComment 0x3888230 <col:4, col:29>
+;;       `-TextComment 0x3888200 <col:4, col:29> Text=" This is another comment. "
+;;
 (defun company-clang--strip-meta (candidate)
   "Retrun CANDIDATE's meta stripped from prefix and args."
-  (let* ((prefix (regexp-quote candidate))
+  (let* (stripped-meta
+         (prefix (regexp-quote candidate))
          (meta (company-clang--meta candidate))
          (strip-prefix (format "\\(%s\\).*\\'" prefix))
+         (strip-pointers "\*\\([a-zA-Z0-9_:]+\\)\\(?:,\\|)\\)")
          (strip-args "\\( [a-zA-Z0-9_:]+\\)\\(?:,\\|)\\)"))
     (when meta
-      (replace-regexp-in-string
-       strip-args ""
-       (replace-regexp-in-string
-        strip-prefix "" meta nil nil 1) nil nil 1))))
+      ;; Strip the prefix first.
+      (setq stripped-meta
+            (replace-regexp-in-string
+             strip-prefix "" meta nil nil 1))
+      ;; Always strip pointers before regular arguments, this will
+      ;; disambiguate between a real pointer and a keyword.
+      (setq stripped-meta
+            (replace-regexp-in-string
+             strip-pointers "" stripped-meta nil nil 1))
+      ;; Finally, strip regular arguments.
+      (setq stripped-meta
+            (replace-regexp-in-string
+             strip-args "" stripped-meta nil nil 1))
+      stripped-meta)))
 
 (defun company-clang--parse-AST (candidate)
   "Return the CANDIDATE's AST.
