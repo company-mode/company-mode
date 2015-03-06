@@ -259,16 +259,87 @@ Return the AST's comments."
             (setq empty-lines (- line-begin last-line 1)))
           ;; Insert empty lines between two paragraphs.
           (while (and empty-lines (> empty-lines 0))
-            (setq doc (concat doc "\n"))
+            (setq doc (concat doc "\n\n"))
             (setq empty-lines (- empty-lines 1)))
-          (setq last-line line-end)
+          (setq last-line (or line-end last-line))
           (goto-char (+ (match-end 0) 1))
           ;; Search the comments line by line.
-          (while (re-search-forward "TextComment.*Text=\"\\(.*\\)\"$" (point-at-eol) t)
-            (when doc
-              (setq doc (concat doc "\n")))
-            (setq doc (concat doc (match-string-no-properties 1)))
-            (goto-char (+ (match-end 0) 1))))))
+          (let ((search-comments t)
+                (previous-pos (point))
+                (previous-line line-begin)
+                current-line comment next-pos key value)
+            ;; Generic comment line parsing.
+            (while (and search-comments
+                        (re-search-forward
+                         "^[^a-zA-Z]*\\([a-zA-Z]+Comment\\)[^<]+\\(.*\\)$"
+                         (point-at-eol) t))
+              (setq comment nil)
+              (setq next-pos (+ (match-end 0) 1))
+              (setq key (match-string-no-properties 1))
+              (setq value (match-string-no-properties 2))
+              ;; If `current-line' is nil, we stay on the same line.
+              (when (string-match "^<line:\\([0-9]+\\)" value)
+                (setq current-line
+                      (string-to-number (match-string 1 value))))
+              (cond
+               ((string= key "ParagraphComment")
+                ;; We reached a new paragraph, it's time to switch to
+                ;; this new paragraph. There are no more comments to
+                ;; parse for now.
+                (setq search-comments nil)
+                (goto-char previous-pos))
+               ((string= key "TextComment")
+                ;; We are parsing something like:
+                ;; 'Text=" Create the DOCUMENT-START event."'
+                (string-match "Text=\"\\(.*\\)\"$" value)
+                (setq comment (match-string 1 value)))
+               ((string= key "InlineCommandComment")
+                ;; We are parsing something like:
+                ;; 'Name="c" RenderMonospaced Arg[0]="NULL."'
+                ;; The comment should be after 'Arg[0]='.
+                (string-match "Arg\\[0\\]=\"\\(.*\\)\"$" value)
+                (setq comment (match-string 1 value)))
+               ((string= key "BlockCommandComment")
+                ;; We are parsing something like:
+                ;; 'Name="returns"'
+                ;; A comment block begins, so we force a new-line.
+                (when (string-match "Name=\"\\(.*\\)\"$" value)
+                  (setq comment (concat (match-string 1 value) "\n"))))
+               ((string= key "ParamCommandComment")
+                ;; We are parsing something like:
+                ;; '[out] explicitly Param="event" ParamIndex=0'
+                ;; Each comment could be grouped under the same
+                ;; comment block, 'ParamIndex=0' expresses the
+                ;; position in the block.
+                (when (string-match
+                       "^<[^>]*> \\([^ ]+ \\).*Param=\"\\(.*\\)\".*$" value)
+                  ;; Add a gap (spaces) of the same length of the
+                  ;; string '@param' between the two captured groups.
+                  (setq comment (concat (match-string 1 value)
+                                        "      "
+                                        (match-string 2 value)))))
+               (t
+                ;; We are dealing with an unknown `key', it is better
+                ;; to write a stub.
+                (when (string-match "^<[^>]*> \\(.*\\)$" value)
+                  (setq comment
+                        (concat "STUB[" (match-string 1 value) "]")))))
+              (when search-comments
+                ;; FIXME: we need to add missing spaces to the in-line
+                ;; comments reading the 'col' values.
+                ;;
+                ;; Handles new-lines and in-line comments.
+                (when (and current-line doc)
+                  (when (or (not previous-line)
+                            (> current-line previous-line))
+                    (setq doc (concat doc "\n"))))
+                (setq previous-line (or current-line previous-line))
+                (if comment
+                    (setq doc (concat doc comment))
+                  ;; Unhandled sistuation.
+                  (setq doc (concat doc "[FIXME: COMMENT_PARSING_ERROR]")))
+                (setq previous-pos next-pos)
+                (goto-char next-pos)))))))
     doc))
 
 (defun company-clang--doc-buffer (candidate)
