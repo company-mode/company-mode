@@ -93,18 +93,6 @@ or automatically through a custom `company-clang-prefix-guesser'."
 Clang can parse only comments wrote in Doxygen style."
   :type 'boolean)
 
-(defcustom company-clang-documentation-fill-column 70
-  "Column beyond which automatic line-wrapping should happen."
-  :type 'integer)
-
-(defcustom company-clang-documentation-justify 'full
-  "Specifies which kind of justification to do."
-  :type '(choice (const :tag "Full" full)
-                 (const :tag "Left" left)
-                 (const :tag "Right" right)
-                 (const :tag "Center" center)
-                 (const :tag "None" nil)))
-
 ;; This is our target file.c:
 ;; // file.c
 ;; /** This is a comment. */
@@ -291,34 +279,7 @@ Return the AST's comments."
         (doc (company-clang--get-candidate-doc candidate)))
     (when doc
       (company-doc-buffer
-       (concat meta
-               "\n\n"
-               (company-clang-string-to-paragraph
-                doc
-                company-clang-documentation-fill-column
-                company-clang-documentation-justify))))))
-
-(defun company-clang-string-to-paragraph (str &optional len justify)
-  "Convert STR to a paragraph.
-
-LEN controls the width.
-
-JUSTIFY specifies which kind of justification to do: `full',
-`left', `right', `center', or `none' (equivalent to nil).  A
-value of t means handle each paragraph as specified by its text
-properties."
-  (when str
-    (if (or (eq justify 'full)
-            (eq justify 'left)
-            (eq justify 'right)
-            (eq justify 'center))
-        (with-temp-buffer
-          (insert str)
-          (when len
-            (setq fill-column len))
-          (fill-region (point-min) (point-max) justify)
-          (buffer-string))
-      str)))
+       (concat meta "\n\n" doc)))))
 
 (defun company-clang-guess-prefix ()
   "Try to guess the prefix file for the current buffer."
