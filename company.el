@@ -1805,33 +1805,40 @@ followed by `company-search-toggle-filtering'."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun company-select-next ()
-  "Select the next candidate in the list."
-  (interactive)
-  (when (company-manual-begin)
-    (company-set-selection (1+ company-selection))))
+(defun company-select-next (&optional arg)
+  "Select the next candidate in the list.
 
-(defun company-select-previous ()
-  "Select the previous candidate in the list."
-  (interactive)
+With ARG, move by that many elements."
+  (interactive "p")
   (when (company-manual-begin)
-    (company-set-selection (1- company-selection))))
+    (company-set-selection (+ (or arg 1) company-selection))))
 
-(defun company-select-next-or-abort ()
+(defun company-select-previous (&optional arg)
+  "Select the previous candidate in the list.
+
+With ARG, move by that many elements."
+  (interactive "p")
+  (company-select-next (if arg (- arg) -1)))
+
+(defun company-select-next-or-abort (&optional arg)
   "Select the next candidate if more than one, else abort
-and invoke the normal binding."
-  (interactive)
+and invoke the normal binding.
+
+With ARG, move by that many elements."
+  (interactive "p")
   (if (> company-candidates-length 1)
-      (company-select-next)
+      (company-select-next arg)
     (company-abort)
     (company--unread-last-input)))
 
-(defun company-select-previous-or-abort ()
+(defun company-select-previous-or-abort (&optional arg)
   "Select the previous candidate if more than one, else abort
-and invoke the normal binding."
-  (interactive)
+and invoke the normal binding.
+
+With ARG, move by that many elements."
+  (interactive "p")
   (if (> company-candidates-length 1)
-      (company-select-previous)
+      (company-select-previous arg)
     (company-abort)
     (company--unread-last-input)))
 
@@ -1919,14 +1926,17 @@ and invoke the normal binding."
       (when company-common
         (company--insert-candidate company-common)))))
 
-(defun company-complete-common-or-cycle ()
-  "Insert the common part of all candidates, or select the next one."
-  (interactive)
+(defun company-complete-common-or-cycle (&optional arg)
+  "Insert the common part of all candidates, or select the next one.
+
+With ARG, move by that many elements."
+  (interactive "p")
   (when (company-manual-begin)
     (let ((tick (buffer-chars-modified-tick)))
       (call-interactively 'company-complete-common)
       (when (eq tick (buffer-chars-modified-tick))
-        (let ((company-selection-wrap-around t))
+        (let ((company-selection-wrap-around t)
+              (current-prefix-arg arg))
           (call-interactively 'company-select-next))))))
 
 (defun company-complete ()

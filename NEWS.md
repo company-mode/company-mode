@@ -2,6 +2,9 @@
 
 ## Next
 
+* `company-select-next`, `company-select-previous`,
+  `company-select-next-or-abort`, `company-select-previous-or-abort` and
+  `company-complete-common-or-cycle` accept a numeric argument.
 * The documentation buffer window can be scrolled with the mouse wheel.
 * New command `company-diag`. Use it in bug reports.
 
