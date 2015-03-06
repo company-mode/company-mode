@@ -192,44 +192,50 @@ the Clang's AST."
 
 ;; This is our target file.c:
 ;; // file.c
-;; /**
-;;  *This is a comment,
-;;  *this is another line.
-;;  *
-;;  *
-;;  * 2 empty lines above.
-;;  */
-;; int foobar_1(int a, float b){return 0;}
+;; // Dump Clang's AST with:
+;; // $ cat file.c | clang -fno-color-diagnostics -fsyntax-only -w -Xclang -ast-dump -Xclang -ast-dump-filter -Xclang foobar -x c -
 ;;
-;; /** Single comment. */
-;; int foobar_2(int c, float d){return 0;}
+;; /**
+;;  * Append @a postfix to @a string.
+;;  *
+;;  * @param[in,out]   string      A string object.
+;;  * @param[in]       postfix     The string postfix.
+;;  *
+;;  * @returns @c 1 if the function succeeded, @c 0 on error.
+;;  */
+;;
+;; int foobar(char *string, char *postfix);
 ;; // file.c ends here
 ;;
 ;; Clang 3.5.0 produces the following AST for the file.c:
-;; Dumping foobar_1:
-;; FunctionDecl 0x315f3f0 <<stdin>:9:1, col:39> col:5 foobar_1 'int (int, float)'
-;; |-ParmVarDecl 0x315f2b0 <col:14, col:18> col:18 a 'int'
-;; |-ParmVarDecl 0x315f320 <col:21, col:27> col:27 b 'float'
-;; |-CompoundStmt 0x315f508 <col:29, col:39>
-;; | `-ReturnStmt 0x315f4c0 <col:30, col:37>
-;; |   `-IntegerLiteral 0x315f4a0 <col:37> 'int' 0
-;; `-FullComment 0x319c270 <line:3:3, line:7:23>
-;;   |-ParagraphComment 0x319c1f0 <line:3:3, line:4:23>
-;;     | |-TextComment 0x319c1a0 <line:3:3, col:20> Text="This is a comment,"
-;;       | `-TextComment 0x319c1c0 <line:4:3, col:23> Text="this is another line."
-;;         `-ParagraphComment 0x319c240 <line:7:3, col:23>
-;;             `-TextComment 0x319c210 <col:3, col:23> Text=" 2 empty lines above."
-;;
-;; Dumping foobar_2:
-;; FunctionDecl 0x319c050 <<stdin>:12:1, col:39> col:5 foobar_2 'int (int, float)'
-;; |-ParmVarDecl 0x315f540 <col:14, col:18> col:18 c 'int'
-;; |-ParmVarDecl 0x315f5b0 <col:21, col:27> col:27 d 'float'
-;; |-CompoundStmt 0x319c140 <col:29, col:39>
-;; | `-ReturnStmt 0x319c120 <col:30, col:37>
-;; |   `-IntegerLiteral 0x319c100 <col:37> 'int' 0
-;; `-FullComment 0x319c340 <line:11:4, col:20>
-;;   `-ParagraphComment 0x319c310 <col:4, col:20>
-;;       `-TextComment 0x319c2e0 <col:4, col:20> Text=" Single comment. "
+;; Dumping foobar:
+;; FunctionDecl 0x273c420 <<stdin>:14:1, col:39> col:5 foobar 'int (char *, char *)'
+;; |-ParmVarDecl 0x273c2e0 <col:12, col:18> col:18 string 'char *'
+;; |-ParmVarDecl 0x273c350 <col:26, col:32> col:32 postfix 'char *'
+;; `-FullComment 0x2779460 <line:6:3, line:11:58>
+;;   |-ParagraphComment 0x273c610 <line:6:3, col:26>
+;;   | |-TextComment 0x273c510 <col:3, col:10> Text=" Append "
+;;   | |-InlineCommandComment 0x273c560 <col:11, col:12> Name="a" RenderEmphasized Arg[0]="postfix"
+;;   | |-TextComment 0x273c580 <col:21, col:24> Text=" to "
+;;   | `-InlineCommandComment 0x273c5d0 <col:25, col:26> Name="a" RenderEmphasized Arg[0]="string."
+;;   |-ParagraphComment 0x273c660 <line:8:3>
+;;   | `-TextComment 0x273c630 <col:3> Text=" "
+;;   |-ParamCommandComment 0x273c680 <col:4, line:9:3> [in,out] explicitly Param="string" ParamIndex=0
+;;   | `-ParagraphComment 0x2779190 <line:8:27, line:9:3>
+;;   |   |-TextComment 0x2779140 <line:8:27, col:48> Text="      A string object."
+;;   |   `-TextComment 0x2779160 <line:9:3> Text=" "
+;;   |-ParamCommandComment 0x27791b0 <col:4, col:51> [in] explicitly Param="postfix" ParamIndex=1
+;;   | `-ParagraphComment 0x2779240 <col:28, col:51>
+;;   |   `-TextComment 0x2779210 <col:28, col:51> Text="     The string postfix."
+;;   |-ParagraphComment 0x2779290 <line:11:3>
+;;   | `-TextComment 0x2779260 <col:3> Text=" "
+;;   `-BlockCommandComment 0x27792b0 <col:4, col:58> Name="returns"
+;;     `-ParagraphComment 0x2779410 <col:12, col:58>
+;;       |-TextComment 0x27792e0 <col:12> Text=" "
+;;       |-InlineCommandComment 0x2779330 <col:13, col:14> Name="c" RenderMonospaced Arg[0]="1"
+;;       |-TextComment 0x2779350 <col:17, col:44> Text=" if the function succeeded, "
+;;       |-InlineCommandComment 0x27793a0 <col:45, col:46> Name="c" RenderMonospaced Arg[0]="0"
+;;       `-TextComment 0x27793c0 <col:49, col:58> Text=" on error."
 ;;
 (defun company-clang--get-ast-doc (ast)
   "Get the AST's comments.
