@@ -246,20 +246,19 @@ Return the AST's comments."
         (insert ast)
         (goto-char (point-min))
         ;; Search a paragraph.
-        (while (re-search-forward "^.*ParagraphComment.*<\\(?:\\(?:line:\\([0-9]+\\)\\)?.*\\(?:line:\\([0-9]+\\)\\)\\)?.*$" nil t)
+        (while (re-search-forward "^.*ParagraphComment[^<]+<\\(?:\\(?:line:\\([0-9]+\\)\\)[^l]*\\(?:line:\\([0-9]+\\)\\)?\\)?.*$" nil t)
           (setq line-begin (match-string-no-properties 1))
           (setq line-end (match-string-no-properties 2))
           (when line-begin
             (setq line-begin (string-to-number line-begin)))
-          (when line-end
-            (setq line-end (string-to-number line-end)))
-          ;; If both `line-begin' and `line-end' are nil, there is
-          ;; only a single paragraph at all. If `line-begin' is nil,
-          ;; but `line-end' is non-nil, this is a single line
-          ;; paragraph. If both `line-begin' and `line-end' are
-          ;; non-nil, this is a multi-line paragraph.
-          (unless line-begin
-            (setq line-begin line-end))
+          ;; If `line-end' is nil, this is a single line paragraph
+          ;; independently from the value of `line-begin'. If both
+          ;; `line-begin' and `line-end' are non-nil, this is a
+          ;; multi-line paragraph.
+          (if line-end
+              (setq line-end (string-to-number line-end))
+            ;; Single line paragraph.
+            (setq line-end line-begin))
           ;; Calculate the number of empty lines between two paragraphs.
           (when (and last-line line-end)
             (setq empty-lines (- line-begin last-line 1)))
