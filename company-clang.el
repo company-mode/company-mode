@@ -151,8 +151,10 @@ Clang can parse only comments wrote in Doxygen style."
       ;; Finally, strip regular arguments.
       (setq stripped-meta
             (replace-regexp-in-string
-             strip-args "" stripped-meta nil nil 1))
-      stripped-meta)))
+             strip-args "" stripped-meta nil nil 1)))
+    ;; If there is no meta, the candidate could be a type, so we use
+    ;; the prefix as meta.
+    (or stripped-meta prefix)))
 
 (defun company-clang--parse-AST (candidate)
   "Return the CANDIDATE's AST.
@@ -162,6 +164,7 @@ the Clang's AST."
   (goto-char (point-min))
   (let* ((prefix (regexp-quote candidate))
          (meta (company-clang--strip-meta candidate))
+         (type (string-match "^[^()]+$" meta))
          (head (format "^Dumping %s:$" prefix))
          (decl (format "^.* %s '\\(.*\\)'.*$" prefix))
          (abort nil)
@@ -177,7 +180,11 @@ the Clang's AST."
           (goto-char (+ head-end 1))
           (when (re-search-forward decl empty-line t)
             (setq proto (match-string-no-properties 1))
-            (when (string= proto meta)
+            ;; If `meta' is a type declaration, `proto' must be a type
+            ;; declaration too.  Otherwise `proto' and `meta' should
+            ;; match.
+            (when (or (and type (string-match "^[^()]+$" proto))
+                      (string= proto meta))
               (setq abort 'ok))))))
     (when (eq abort 'ok)
       (buffer-substring head-beg empty-line))))
@@ -278,15 +285,14 @@ Return the AST's comments."
 
 (defun company-clang--doc-buffer (candidate)
   "Create the documentation buffer for a CANDIDATE."
-  (let ((meta (company-clang--meta candidate))
-        (doc (company-clang--get-candidate-doc candidate))
-        (emptylines "\n\n"))
-    (unless (and doc meta)
-      (setq emptylines ""))
-    (when (or doc meta)
+  ;; If there isn't a candidate's meta, the candidate could be a type.
+  ;; In this case, use the candidate's prefix as `meta'.
+  (let ((meta (or (company-clang--meta candidate) (regexp-quote candidate)))
+        (doc (company-clang--get-candidate-doc candidate)))
+    (when doc
       (company-doc-buffer
        (concat meta
-               emptylines
+               "\n\n"
                (company-clang-string-to-paragraph
                 doc
                 company-clang-documentation-fill-column
