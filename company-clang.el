@@ -253,9 +253,9 @@ Return the AST's comments."
             (setq line-begin (string-to-number line-begin)))
           (when line-end
             (setq line-end (string-to-number line-end)))
-          ;; If both `line-begin' and `line-end' are nil, there is a
-          ;; only single paragraph at all. If `line-begin' is nil, but
-          ;; `line-end' is non-nil, this is a single line
+          ;; If both `line-begin' and `line-end' are nil, there is
+          ;; only a single paragraph at all. If `line-begin' is nil,
+          ;; but `line-end' is non-nil, this is a single line
           ;; paragraph. If both `line-begin' and `line-end' are
           ;; non-nil, this is a multi-line paragraph.
           (unless line-begin
