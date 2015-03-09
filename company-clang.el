@@ -252,7 +252,8 @@ the Clang's AST."
   "Get the AST's comments.
 
 Return the AST's comments."
-  (let (doc last-line line-begin line-end empty-lines)
+  (let (doc last-line line-begin line-end empty-lines
+            col-begin last-string missing-spaces)
     (when (stringp ast)
       (with-temp-buffer
         (insert ast)
@@ -284,7 +285,8 @@ Return the AST's comments."
           (let ((search-comments t)
                 (previous-pos (point))
                 (previous-line line-begin)
-                current-line comment next-pos key value)
+                current-line comment next-pos key value
+                current-col col-diff string-length spaces-diff)
             ;; Generic comment line parsing.
             (while (and search-comments
                         (re-search-forward
@@ -298,6 +300,12 @@ Return the AST's comments."
               (when (string-match "^<line:\\([0-9]+\\)" value)
                 (setq current-line
                       (string-to-number (match-string 1 value))))
+              ;; Find the current column.
+              (when (or (string-match "^<line:[0-9]+:\\([0-9]+\\)" value)
+                        (string-match "^<col:\\([0-9]+\\)" value))
+                (setq current-col (string-to-number (match-string 1 value))))
+              (unless col-begin
+                (setq col-begin current-col))
               (cond
                ((string= key "ParagraphComment")
                 ;; We reached a new paragraph, it's time to switch to
@@ -329,12 +337,18 @@ Return the AST's comments."
                 ;; comment block, 'ParamIndex=0' expresses the
                 ;; position in the block.
                 (when (string-match
-                       "^<[^>]*> \\([^ ]+ \\).*Param=\"\\(.*\\)\".*$" value)
-                  ;; Add a gap (spaces) of the same length of the
-                  ;; string '@param' between the two captured groups.
-                  (setq comment (concat (match-string 1 value)
-                                        "      "
-                                        (match-string 2 value)))))
+                       "^<[^>]*> \\([^ ]+\\) .*Param=\"\\(.*\\)\".*$" value)
+                  (setq missing-spaces 'pending)
+                  ;; @param[dir] parameter-name parameter-description
+                  ;; Possible values of 'dir' are 'in', 'out', and
+                  ;; 'in,out'. So, we align the value of 'Param' to
+                  ;; '[in,out] '.
+                  (setq comment (match-string 1 value))
+                  (setq spaces-diff (- (length "[in,out] ") (length comment)))
+                  (while (> spaces-diff 0)
+                    (setq comment (concat comment " "))
+                    (setq spaces-diff (- spaces-diff 1)))
+                  (setq comment (concat comment (match-string 2 value)))))
                (t
                 ;; We are dealing with an unknown `key', it is better
                 ;; to write a stub.
@@ -342,15 +356,29 @@ Return the AST's comments."
                   (setq comment
                         (concat "STUB[" (match-string 1 value) "]")))))
               (when search-comments
-                ;; FIXME: we need to add missing spaces to the in-line
-                ;; comments reading the 'col' values.
-                ;;
                 ;; Handles new-lines and in-line comments.
                 (when (and current-line doc)
                   (when (or (not previous-line)
                             (> current-line previous-line))
+                    (setq missing-spaces nil)
+                    (setq col-begin current-col)
                     (setq doc (concat doc "\n"))))
                 (setq previous-line (or current-line previous-line))
+                ;; Add missing spaces to the in-line comment.
+                (when (and last-string comment)
+                  (cond
+                   ((equal missing-spaces 'pending)
+                    (setq missing-spaces 'do))
+                   ((equal missing-spaces 'do)
+                    (setq col-diff (- current-col col-begin))
+                    (setq string-length (length last-string))
+                    (setq spaces-diff (- col-diff string-length))
+                    (while (> spaces-diff 0)
+                      (setq comment (concat " " comment))
+                      (setq spaces-diff (- spaces-diff 1)))
+                    (setq missing-spaces nil)))
+                  (setq col-begin current-col))
+                (setq last-string comment)
                 ;; Unhandled sistuation.
                 (unless comment
                   (setq comment "[FIXME: COMMENT_PARSING_ERROR]"))
