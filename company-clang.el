@@ -207,7 +207,8 @@ the Clang's AST."
 ;; /**
 ;;  * Append @a postfix to @a string.
 ;;  *
-;;  * @param[in,out]   string      A string object.
+;;  * @param[in,out]   string      A string object
+;;  *                              to read and update.
 ;;  * @param[in]       postfix     The string postfix.
 ;;  *
 ;;  * @returns @c 1 if the function succeeded, @c 0 on error.
@@ -218,33 +219,34 @@ the Clang's AST."
 ;;
 ;; Clang 3.5.0 produces the following AST for the file.c:
 ;; Dumping foobar:
-;; FunctionDecl 0x273c420 <<stdin>:14:1, col:39> col:5 foobar 'int (char *, char *)'
-;; |-ParmVarDecl 0x273c2e0 <col:12, col:18> col:18 string 'char *'
-;; |-ParmVarDecl 0x273c350 <col:26, col:32> col:32 postfix 'char *'
-;; `-FullComment 0x2779460 <line:6:3, line:11:58>
-;;   |-ParagraphComment 0x273c610 <line:6:3, col:26>
-;;   | |-TextComment 0x273c510 <col:3, col:10> Text=" Append "
-;;   | |-InlineCommandComment 0x273c560 <col:11, col:12> Name="a" RenderEmphasized Arg[0]="postfix"
-;;   | |-TextComment 0x273c580 <col:21, col:24> Text=" to "
-;;   | `-InlineCommandComment 0x273c5d0 <col:25, col:26> Name="a" RenderEmphasized Arg[0]="string."
-;;   |-ParagraphComment 0x273c660 <line:8:3>
-;;   | `-TextComment 0x273c630 <col:3> Text=" "
-;;   |-ParamCommandComment 0x273c680 <col:4, line:9:3> [in,out] explicitly Param="string" ParamIndex=0
-;;   | `-ParagraphComment 0x2779190 <line:8:27, line:9:3>
-;;   |   |-TextComment 0x2779140 <line:8:27, col:48> Text="      A string object."
-;;   |   `-TextComment 0x2779160 <line:9:3> Text=" "
-;;   |-ParamCommandComment 0x27791b0 <col:4, col:51> [in] explicitly Param="postfix" ParamIndex=1
-;;   | `-ParagraphComment 0x2779240 <col:28, col:51>
-;;   |   `-TextComment 0x2779210 <col:28, col:51> Text="     The string postfix."
-;;   |-ParagraphComment 0x2779290 <line:11:3>
-;;   | `-TextComment 0x2779260 <col:3> Text=" "
-;;   `-BlockCommandComment 0x27792b0 <col:4, col:58> Name="returns"
-;;     `-ParagraphComment 0x2779410 <col:12, col:58>
-;;       |-TextComment 0x27792e0 <col:12> Text=" "
-;;       |-InlineCommandComment 0x2779330 <col:13, col:14> Name="c" RenderMonospaced Arg[0]="1"
-;;       |-TextComment 0x2779350 <col:17, col:44> Text=" if the function succeeded, "
-;;       |-InlineCommandComment 0x27793a0 <col:45, col:46> Name="c" RenderMonospaced Arg[0]="0"
-;;       `-TextComment 0x27793c0 <col:49, col:58> Text=" on error."
+;; FunctionDecl 0x3210420 <<stdin>:15:1, col:39> col:5 foobar 'int (char *, char *)'
+;; |-ParmVarDecl 0x32102e0 <col:12, col:18> col:18 string 'char *'
+;; |-ParmVarDecl 0x3210350 <col:26, col:32> col:32 postfix 'char *'
+;; `-FullComment 0x324e4f0 <line:6:3, line:12:58>
+;;   |-ParagraphComment 0x3210610 <line:6:3, col:26>
+;;   | |-TextComment 0x3210510 <col:3, col:10> Text=" Append "
+;;   | |-InlineCommandComment 0x3210560 <col:11, col:12> Name="a" RenderEmphasized Arg[0]="postfix"
+;;   | |-TextComment 0x3210580 <col:21, col:24> Text=" to "
+;;   | `-InlineCommandComment 0x32105d0 <col:25, col:26> Name="a" RenderEmphasized Arg[0]="string."
+;;   |-ParagraphComment 0x3210660 <line:8:3>
+;;   | `-TextComment 0x3210630 <col:3> Text=" "
+;;   |-ParamCommandComment 0x3210680 <col:4, line:10:3> [in,out] explicitly Param="string" ParamIndex=0
+;;   | `-ParagraphComment 0x324e220 <line:8:27, line:10:3>
+;;   |   |-TextComment 0x324e1a0 <line:8:27, col:47> Text="      A string object"
+;;   |   |-TextComment 0x324e1c0 <line:9:3, col:51> Text="                              to read and update."
+;;   |   `-TextComment 0x324e1e0 <line:10:3> Text=" "
+;;   |-ParamCommandComment 0x324e240 <col:4, col:51> [in] explicitly Param="postfix" ParamIndex=1
+;;   | `-ParagraphComment 0x324e2d0 <col:28, col:51>
+;;   |   `-TextComment 0x324e2a0 <col:28, col:51> Text="     The string postfix."
+;;   |-ParagraphComment 0x324e320 <line:12:3>
+;;   | `-TextComment 0x324e2f0 <col:3> Text=" "
+;;   `-BlockCommandComment 0x324e340 <col:4, col:58> Name="returns"
+;;     `-ParagraphComment 0x324e4a0 <col:12, col:58>
+;;       |-TextComment 0x324e370 <col:12> Text=" "
+;;       |-InlineCommandComment 0x324e3c0 <col:13, col:14> Name="c" RenderMonospaced Arg[0]="1"
+;;       |-TextComment 0x324e3e0 <col:17, col:44> Text=" if the function succeeded, "
+;;       |-InlineCommandComment 0x324e430 <col:45, col:46> Name="c" RenderMonospaced Arg[0]="0"
+;;       `-TextComment 0x324e450 <col:49, col:58> Text=" on error."
 ;;
 (defun company-clang--get-ast-doc (ast)
   "Get the AST's comments.
@@ -349,10 +351,10 @@ Return the AST's comments."
                             (> current-line previous-line))
                     (setq doc (concat doc "\n"))))
                 (setq previous-line (or current-line previous-line))
-                (if comment
-                    (setq doc (concat doc comment))
-                  ;; Unhandled sistuation.
-                  (setq doc (concat doc "[FIXME: COMMENT_PARSING_ERROR]")))
+                ;; Unhandled sistuation.
+                (unless comment
+                  (setq comment "[FIXME: COMMENT_PARSING_ERROR]"))
+                (setq doc (concat doc comment))
                 (setq previous-pos next-pos)
                 (goto-char next-pos)))))))
     doc))
