@@ -258,7 +258,7 @@ Return the AST's comments."
         (insert ast)
         (goto-char (point-min))
         ;; Search a paragraph.
-        (while (re-search-forward "^.*ParagraphComment[^<]+<\\(?:\\(?:line:\\([0-9]+\\)\\)[^l]*\\(?:line:\\([0-9]+\\)\\)?\\)?.*$" nil t)
+        (while (re-search-forward "^.*ParagraphComment[^<]+<\\(?:\\(?:line:\\([0-9]+\\)\\)[^l\n]*\\(?:line:\\([0-9]+\\)\\)?\\)?.*$" nil t)
           (setq line-begin (match-string-no-properties 1))
           (setq line-end (match-string-no-properties 2))
           (when line-begin
