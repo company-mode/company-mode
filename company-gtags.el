@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 'company)
+(require 'company-template)
 (require 'cl-lib)
 
 (defgroup company-gtags nil
