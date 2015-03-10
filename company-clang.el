@@ -105,9 +105,9 @@ creates troubles."
 ;; This is our target file.c:
 ;; // file.c
 ;; /** This is a comment. */
-;; extern int foobar(int a, const char *__restrict b);
+;; extern int foobar_1(int a, const char *__restrict b);
 ;; /** This is another comment. */
-;; int foobar(int a, char* b);
+;; int foobar_2(int a, char* b);
 ;; // file.c ends here
 ;;
 ;; Clang 3.5.0 produces the following AST for the file.c:
