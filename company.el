@@ -300,7 +300,6 @@ This doesn't include the margins and the scroll bar."
     (company-keywords . "Programming language keywords")
     (company-nxml . "nxml")
     (company-oddmuse . "Oddmuse")
-    (company-ropemacs . "ropemacs")
     (company-semantic . "Semantic")
     (company-tempo . "Tempo templates")
     (company-xcode . "Xcode")))
@@ -319,7 +318,7 @@ This doesn't include the margins and the scroll bar."
                               company-bbdb
                               company-nxml company-css
                               company-eclim company-semantic company-clang
-                              company-xcode company-ropemacs company-cmake
+                              company-xcode company-cmake
                               company-capf
                               (company-dabbrev-code company-gtags company-etags
                                company-keywords)

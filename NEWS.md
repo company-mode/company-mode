@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-ropemacs` was removed. `ropemacs` supports completion via
+  `completion-at-point-functions` starting with version 0.8.
 * `company-pysmell` was removed.
 * `company-select-next`, `company-select-previous`,
   `company-select-next-or-abort`, `company-select-previous-or-abort` and
