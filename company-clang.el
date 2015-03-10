@@ -338,7 +338,7 @@ Return the AST's comments."
                 ;; position in the block.
                 (when (string-match
                        "^<[^>]*> \\([^ ]+\\) .*Param=\"\\(.*\\)\".*$" value)
-                  (setq missing-spaces 'pending)
+                  (push 'pending missing-spaces)
                   ;; @param[dir] parameter-name parameter-description
                   ;; Possible values of 'dir' are 'in', 'out', and
                   ;; 'in,out'. So, we align the value of 'Param' to
@@ -360,23 +360,24 @@ Return the AST's comments."
                 (when (and current-line doc)
                   (when (or (not previous-line)
                             (> current-line previous-line))
-                    (setq missing-spaces nil)
+                    (pop missing-spaces)
                     (setq col-begin current-col)
                     (setq doc (concat doc "\n"))))
                 (setq previous-line (or current-line previous-line))
                 ;; Add missing spaces to the in-line comment.
                 (when (and last-string comment)
                   (cond
-                   ((equal missing-spaces 'pending)
-                    (setq missing-spaces 'do))
-                   ((equal missing-spaces 'do)
+                   ((and (= (length missing-spaces) 1 )
+                         (equal (car missing-spaces) 'pending))
+                    (setcar missing-spaces 'do))
+                   (missing-spaces
                     (setq col-diff (- current-col col-begin))
                     (setq string-length (length last-string))
                     (setq spaces-diff (- col-diff string-length))
                     (while (> spaces-diff 0)
                       (setq comment (concat " " comment))
                       (setq spaces-diff (- spaces-diff 1)))
-                    (setq missing-spaces nil)))
+                    (pop missing-spaces)))
                   (setq col-begin current-col))
                 (setq last-string comment)
                 ;; Unhandled sistuation.
