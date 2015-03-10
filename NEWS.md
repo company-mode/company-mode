@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-pysmell` was removed.
 * `company-select-next`, `company-select-previous`,
   `company-select-next-or-abort`, `company-select-previous-or-abort` and
   `company-complete-common-or-cycle` accept a numeric argument.

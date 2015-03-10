@@ -300,7 +300,6 @@ This doesn't include the margins and the scroll bar."
     (company-keywords . "Programming language keywords")
     (company-nxml . "nxml")
     (company-oddmuse . "Oddmuse")
-    (company-pysmell . "PySmell")
     (company-ropemacs . "ropemacs")
     (company-semantic . "Semantic")
     (company-tempo . "Tempo templates")
