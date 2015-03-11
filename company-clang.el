@@ -93,15 +93,6 @@ or automatically through a custom `company-clang-prefix-guesser'."
 Clang can parse only comments wrote in Doxygen style."
   :type 'boolean)
 
-(defcustom company-clang-parse-comments-as-c++-mode nil
-  "When the mode is c, force the c++ mode to dump the AST and
-parse comments.
-
-This solves problems as 'invalid sloc' when dumping 'printf': it
-is the variadic argument (...) in the function declaration which
-creates troubles."
-  :type 'boolean)
-
 ;; This is our target file.c:
 ;; // file.c
 ;; // Dump Clang's AST with:
@@ -569,9 +560,7 @@ Return the CANDIDATE's AST."
           (list prefix)
           (when company-clang-parse-system-headers-comments
             (list "-Xclang" "--no-system-header-prefix="))
-          (list "-x" (if company-clang-parse-comments-as-c++-mode
-                         (when (string= "c" (company-clang--lang-option)) "c++")
-                       (company-clang--lang-option)))
+          (list "-x" (company-clang--lang-option))
           company-clang-arguments
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
