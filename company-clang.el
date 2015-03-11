@@ -580,8 +580,9 @@ Return the CANDIDATE's AST."
           (list prefix)
           (when company-clang-parse-system-headers-comments
             (list "-Xclang" "--no-system-header-prefix="))
-          (list "-x" (when company-clang-parse-comments-as-c++-mode
-                       (when (string= "c" (company-clang--lang-option)) "c++")))
+          (list "-x" (if company-clang-parse-comments-as-c++-mode
+                         (when (string= "c" (company-clang--lang-option)) "c++")
+                       (company-clang--lang-option)))
           company-clang-arguments
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
