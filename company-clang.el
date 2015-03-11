@@ -93,7 +93,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
 Clang can parse only comments wrote in Doxygen style."
   :type 'boolean)
 
-(defcustom company-clang-parse-comments-as-c++-mode t
+(defcustom company-clang-parse-comments-as-c++-mode nil
   "When the mode is c, force the c++ mode to dump the AST and
 parse comments.
 
@@ -104,68 +104,40 @@ creates troubles."
 
 ;; This is our target file.c:
 ;; // file.c
-;; /** This is a comment. */
-;; extern int foobar_1(int a, const char *__restrict b);
-;; /** This is another comment. */
-;; int foobar_2(int a, char* b);
+;; // Dump Clang's AST with:
+;; // $ cat file.c | clang -fno-color-diagnostics -fsyntax-only -w -Xclang -ast-dump -Xclang -ast-dump-filter -Xclang printf -x c -
+;; #include <stdio.h>
 ;; // file.c ends here
 ;;
 ;; Clang 3.5.0 produces the following AST for the file.c:
-;; Dumping foobar_1:
-;; FunctionDecl 0x384b460 <<stdin>:3:1, col:52> col:12 foobar_1 'int (int, const char *restrict)' extern
-;; |-ParmVarDecl 0x384b2b0 <col:21, col:25> col:25 a 'int'
-;; |-ParmVarDecl 0x384b350 <col:28, col:51> col:51 b 'const char *restrict'
-;; `-FullComment 0x3888190 <line:2:4, col:23>
-;;   `-ParagraphComment 0x3888160 <col:4, col:23>
-;;       `-TextComment 0x3888130 <col:4, col:23> Text=" This is a comment. "
+;; Dumping printf:
+;; FunctionDecl 0x3636ba0 </usr/include/stdio.h:362:12> col:12 implicit printf 'int (const char *, ...)' extern
+;; |-ParmVarDecl 0x3636c40 <<invalid sloc>> <invalid sloc> 'const char *'
+;; `-FormatAttr 0x3636ca0 <col:12> Implicit printf 1 2
 ;;
-;; Dumping foobar_2:
-;; FunctionDecl 0x3888040 <<stdin>:5:1, col:28> col:5 foobar_2 'int (int, char *)'
-;; |-ParmVarDecl 0x384b550 <col:14, col:18> col:18 a 'int'
-;; |-ParmVarDecl 0x384b5f0 <col:21, col:27> col:27 b 'char *'
-;; `-FullComment 0x3888260 <line:4:4, col:29>
-;;   `-ParagraphComment 0x3888230 <col:4, col:29>
-;;       `-TextComment 0x3888200 <col:4, col:29> Text=" This is another comment. "
+;; Dumping printf:
+;; FunctionDecl 0x3636cf0 prev 0x3636ba0 </usr/include/stdio.h:362:1, col:56> col:12 printf 'int (const char *, ...)' extern
+;; |-ParmVarDecl 0x3636aa0 <col:20, col:43> col:43 __format 'const char *restrict'
+;; `-FormatAttr 0x3636dc0 <col:12> Inherited printf 1 2
 ;;
-(defun company-clang--strip-meta (candidate)
-  "Retrun CANDIDATE's meta stripped from prefix and args."
-  (let* (stripped-meta
-         (prefix (regexp-quote candidate))
-         (meta (company-clang--meta candidate))
-         (strip-prefix (format "\\(%s\\).*\\'" prefix))
-         (strip-pointers "\*\\([a-zA-Z0-9_:]+\\)\\(?:,\\|)\\)")
-         (strip-args "\\( [a-zA-Z0-9_:]+\\)\\(?:,\\|)\\)"))
-    (when meta
-      ;; Strip the prefix first.
-      (setq stripped-meta
-            (replace-regexp-in-string
-             strip-prefix "" meta nil nil 1))
-      ;; Always strip pointers before regular arguments, this will
-      ;; disambiguate between a real pointer and a keyword.
-      (setq stripped-meta
-            (replace-regexp-in-string
-             strip-pointers "" stripped-meta nil nil 1))
-      ;; Finally, strip regular arguments.
-      (setq stripped-meta
-            (replace-regexp-in-string
-             strip-args "" stripped-meta nil nil 1)))
-    ;; If there is no meta, the candidate could be a type, so we use
-    ;; the prefix as meta.
-    (or stripped-meta prefix)))
-
 (defun company-clang--parse-AST (candidate)
   "Return the CANDIDATE's AST.
 
 Resolve function overloads by searching the candidate's meta in
-the Clang's AST."
+the Clang's AST.
+
+Manage 'invalid sloc', for instance when dumping the AST of
+'printf', without the need to force the c++ mode (-x c++). The
+variadic argument (...) in the function declaration is known to
+create this sort of problems."
   (goto-char (point-min))
   (let* ((prefix (regexp-quote candidate))
-         (meta (company-clang--strip-meta candidate))
-         (type (string-match "^[^()]+$" meta))
+         (meta (company-clang--meta candidate))
          (head (format "^Dumping %s:$" prefix))
-         (decl (format "^.* %s '\\(.*\\)'.*$" prefix))
+         (decl (format "^.* %s '\\([^(\n]*\\)\\((.*)\\)?'.*$" prefix))
          (abort nil)
-         proto head-beg head-end empty-line)
+         head-beg head-end empty-line
+         proto args variadic AST-meta type name)
     (while (not abort)
       (if (not (re-search-forward head nil t))
           (setq abort t)
@@ -176,13 +148,30 @@ the Clang's AST."
           (setq empty-line (match-end 0))
           (goto-char (+ head-end 1))
           (when (re-search-forward decl empty-line t)
+            (goto-char (+ (match-end 0) 1))
             (setq proto (match-string-no-properties 1))
-            ;; If `meta' is a type declaration, `proto' must be a type
-            ;; declaration too.  Otherwise `proto' and `meta' should
-            ;; match.
-            (when (or (and type (string-match "^[^()]+$" proto))
-                      (string= proto meta))
-              (setq abort 'ok))))))
+            (setq args (match-string-no-properties 2))
+            (setq variadic (if args (string-match "^(.*[.][.][.])$" args) nil))
+            ;; If `args' is nil, guess it's a type declaration when
+            ;; `meta' is nil too. In this case `proto' is the type
+            ;; definition.
+            (if (and (not args) (not meta))
+                (setq abort 'ok)
+              ;; Reconstruct the function declaration from the AST.
+              (setq AST-meta nil)
+              (while (re-search-forward
+                      "^.*ParmVarDecl.* \\([^>\n]*\\) '\\([^'\n]*\\)'.*$" empty-line t)
+                (setq type (match-string-no-properties 2))
+                (setq name (match-string-no-properties 1))
+                (setq AST-meta
+                      (concat AST-meta (if AST-meta ", ")
+                              type (unless (string= (substring type -1) "*") " ")
+                              name)))
+              (setq AST-meta (concat proto prefix
+                                     "(" AST-meta (if variadic ", ...") ")"))
+              (when (string= meta AST-meta)
+                (setq abort 'ok))))
+          (goto-char (+ empty-line 1)))))
     (when (eq abort 'ok)
       (buffer-substring head-beg empty-line))))
 
