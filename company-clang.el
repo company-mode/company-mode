@@ -148,11 +148,19 @@ create this sort of problems."
             (cond
              ;; Match enum's member.
              ((and (string= obj "EnumConstantDecl")
-                   (string= meta (concat
-                                  "enum "
-                                  (if (string= parent "") "<anonymous>" parent)
-                                  " "
-                                  prefix)))
+                   (or
+                    ;; C language. Also works with C++ when the enum is
+                    ;; anonymous.
+                    (string= meta (concat
+                                   "enum "
+                                   (if (string= parent "") "<anonymous>" parent)
+                                   " "
+                                   prefix))
+                    ;; C++ language. A non-anonymous enum requires this version.
+                    (string= meta (concat
+                                   (if (string= parent "") "<anonymous>" parent)
+                                   " "
+                                   prefix))))
               (setq abort 'ok))
              ;; Anonymous declaration, usually an enum or a struct.
              ((and args
