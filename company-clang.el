@@ -124,14 +124,15 @@ create this sort of problems."
   (goto-char (point-min))
   (let* ((prefix (regexp-quote candidate))
          (meta (company-clang--meta candidate))
-         (head (format "^Dumping %s:$" prefix))
-         (decl (format "^.* %s '\\([^(\n]*\\)\\((.*)\\)?'.*$" prefix))
+         (head (format "^Dumping \\(?:\\(.*\\)::\\)?%s:$" prefix))
+         (decl (format "^\\(.*Decl\\) .* %s '\\([^'(\n]*\\)\\([^']*)\\)?'.*$" prefix))
          (abort nil)
          head-beg head-end empty-line
-         proto args variadic AST-meta type name)
+         parent obj proto args variadic AST-meta type name)
     (while (not abort)
       (if (not (re-search-forward head nil t))
           (setq abort t)
+        (setq parent (match-string-no-properties 1))
         (setq head-beg (match-beginning 0))
         (setq head-end (match-end 0))
         (if (not (re-search-forward "^$" nil t))
@@ -140,14 +141,31 @@ create this sort of problems."
           (goto-char (+ head-end 1))
           (when (re-search-forward decl empty-line t)
             (goto-char (+ (match-end 0) 1))
-            (setq proto (match-string-no-properties 1))
-            (setq args (match-string-no-properties 2))
+            (setq obj (match-string-no-properties 1))
+            (setq proto (match-string-no-properties 2))
+            (setq args (match-string-no-properties 3))
             (setq variadic (if args (string-match "^(.*[.][.][.])$" args) nil))
-            ;; If `args' is nil, guess it's a type declaration when
-            ;; `meta' is nil too. In this case `proto' is the type
-            ;; definition.
-            (if (and (not args) (not meta))
-                (setq abort 'ok)
+            (cond
+             ;; Match enum's member.
+             ((and (string= obj "EnumConstantDecl")
+                   (string= meta (concat
+                                  "enum "
+                                  (if (string= parent "") "<anonymous>" parent)
+                                  " "
+                                  prefix)))
+              (setq abort 'ok))
+             ;; Anonymous declaration, usually an enum or a struct.
+             ((and args
+                   (string-match "(anonymous [^ \n]+ at.*)" args)
+                   (string= meta (concat proto "(anonymous) " prefix)))
+              (setq abort 'ok))
+             ;; If `args' is nil, guess it's a type or struct declaration.  In
+             ;; this case `proto' is the definition of `prefix'.  This is ok when
+             ;; `meta' is nil or equal to the full definition.
+             ((and (not args) (or (not meta)
+                                  (string= meta (concat proto " " prefix))))
+              (setq abort 'ok))
+             (t
               ;; Reconstruct the function declaration from the AST.
               (setq AST-meta nil)
               (while (re-search-forward
@@ -161,7 +179,7 @@ create this sort of problems."
               (setq AST-meta (concat proto prefix
                                      "(" AST-meta (if variadic ", ...") ")"))
               (when (string= meta AST-meta)
-                (setq abort 'ok))))
+                (setq abort 'ok)))))
           (goto-char (+ empty-line 1)))))
     (when (eq abort 'ok)
       (buffer-substring head-beg empty-line))))
