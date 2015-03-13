@@ -61,7 +61,7 @@
 ;; 5. find documentation "OK"
 (ert-deftest company-clang-full-parse-c-mode ()
   ;; FIXME: test disabled due to unexpected travis build system failures.
-  (when (and company-clang-executable nil)
+  (when company-clang-executable
     (let* ((tmp-file (concat temporary-file-directory "test.c"))
            (buf (get-file-buffer tmp-file))
            (total-wait 0)
@@ -175,7 +175,7 @@ void test() {
 ;; 5. find documentation "OK"
 (ert-deftest company-clang-full-parse-c++-mode ()
   ;; FIXME: test disabled due to unexpected travis build system failures.
-  (when (and company-clang-executable nil)
+  (when company-clang-executable
     (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
            (buf (get-file-buffer tmp-file))
            (total-wait 0)
