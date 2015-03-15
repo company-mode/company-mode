@@ -81,50 +81,50 @@
         (write-region "// test.c
 // anonymous enum
 enum {
-  /**OK*/
+  /**OK1*/
   TEST_FIRST,
-  /**OK*/
+  /**OK2*/
   TEST_SECOND
 }
-  /**OK*/
+  /**OK3*/
   test_enum_a;
 
 enum test_my_enum {
-  /**OK*/
+  /**OK4*/
   TEST_ONE,
-  /**OK*/
+  /**OK5*/
   TEST_TWO
 }
-  /**OK*/
+  /**OK6*/
   test_enum_b;
 
 // anonymous struct
 struct {
   int alfa;
 }
-  /**OK*/
+  /**OK7*/
   test_struct_a;
 
 struct test_my_struct {
   int beta;
 }
-  /**OK*/
+  /**OK8*/
   test_struct_b;
 
-/**OK*/
+/**OK9*/
 typedef unsigned char test_char_t;
 
-/**OK*/
+/**OK10*/
 extern int printf (const char *__restrict __format, ...);
 
-/**OK*/
+/**OK11*/
 int test_function_a(char *message, int ref, char *output, int pos);
 
 // use c++ reserved keywords as names
 struct class {
   int gamma;
 }
-  /**OK*/
+  /**OK12*/
   template;
 
 void test() {
@@ -159,9 +159,9 @@ void test() {
                  (sleep-for 0.1)
                  (switch-to-buffer buf)
                  (setq prefixes-used (append prefixes-used (list prefix)))
-                 (should (string=
-                          (company-clang--get-candidate-doc candidate)
-                          "OK"))))
+                 (should (string-match-p
+                          "\\`OK[0-9]+"
+                          (company-clang--get-candidate-doc candidate)))))
              (should (equal (sort prefixes-list #'string<)
                             (sort prefixes-used #'string<)))
              (setq company-clang-parse-doc-busy nil))))))))
@@ -195,46 +195,46 @@ void test() {
         (write-region "// test.cpp
 // anonymous enum
 enum {
-  /**OK*/
+  /**OK1*/
   TEST_FIRST,
-  /**OK*/
+  /**OK2*/
   TEST_SECOND
 }
-  /**OK*/
+  /**OK3*/
   test_enum_a;
 
 enum test_my_enum {
-  /**OK*/
+  /**OK4*/
   TEST_ONE,
-  /**OK*/
+  /**OK5*/
   TEST_TWO
 }
-  /**OK*/
+  /**OK6*/
   test_enum_b;
 
 // anonymous struct
 struct {
   int alfa;
 }
-  /**OK*/
+  /**OK7*/
   test_struct_a;
 
 struct test_my_struct {
   int beta;
 }
-  /**OK*/
+  /**OK8*/
   test_struct_b;
 
-/**OK*/
+/**OK9*/
 typedef unsigned char test_char_t;
 
-/**OK*/
+/**OK10*/
 extern int printf (const char *__restrict __format, ...);
 
-/**OK*/
+/**OK11*/
 int test_function_a(char *message, int ref, char *output, int pos);
 
-/**OK*/
+/**OK12*/
 int test_function_b(char *message, int *ref, char *output, int pos);
 
 void test() {
@@ -269,9 +269,9 @@ void test() {
                  (sleep-for 0.1)
                  (switch-to-buffer buf)
                  (setq prefixes-used (append prefixes-used (list prefix)))
-                 (should (string=
-                          (company-clang--get-candidate-doc candidate)
-                          "OK"))))
+                 (should (string-match-p
+                          "\\`OK[0-9]+"
+                          (company-clang--get-candidate-doc candidate)))))
              (should (equal (sort prefixes-list #'string<)
                             (sort prefixes-used #'string<)))
              (setq company-clang-parse-doc-busy nil))))))))
