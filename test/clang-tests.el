@@ -60,25 +60,14 @@
 ;; 4. parse AST for each candidate
 ;; 5. find documentation "OK"
 (ert-deftest company-clang-full-parse-c-mode ()
-  ;; FIXME: test disabled due to unexpected travis build system failures.
-  (when company-clang-executable
-    (let* ((tmp-file (concat temporary-file-directory "test.c"))
-           (buf (get-file-buffer tmp-file))
-           (total-wait 0)
-           (wait 0.5)
-           abort)
-      (while (and (not abort) company-clang-parse-doc-busy)
-        (if (>= total-wait company-clang-parse-doc-max-wait)
-            (setq abort t)
-          (setq total-wait (+ total-wait wait))
-          (sleep-for wait)))
-      (unless abort
-        (setq company-clang-parse-doc-busy t)
-        (when buf
-          (set-buffer buf)
-          (set-buffer-modified-p nil)
-          (kill-buffer))
-        (write-region "// test.c
+  (skip-unless company-clang-executable)
+  (let* ((tmp-file (concat temporary-file-directory "test.c"))
+         (buf (get-file-buffer tmp-file)))
+    (when buf
+      (set-buffer buf)
+      (set-buffer-modified-p nil)
+      (kill-buffer))
+    (write-region "// test.c
 // anonymous enum
 enum {
   /**OK1*/
@@ -130,41 +119,31 @@ struct class {
 void test() {
 
 }" nil tmp-file)
-        (setq buf (find-file-noselect tmp-file t))
-        (switch-to-buffer buf)
-        (company-mode)
-        (goto-char (- (point-max) 2))
-        (company-clang--candidates
-         ""
-         (lambda (candidates-list)
-           (let* ((tmp-file (concat temporary-file-directory "test.c"))
-                  (buf (find-file-noselect tmp-file t))
-                  (prefixes-list '("TEST_FIRST"      ;; anonymous enum's member
-                                   "TEST_SECOND"     ;; anonymous enum's member
-                                   "test_enum_a"     ;; anonymous enum
-                                   "TEST_ONE"        ;; enum's member
-                                   "TEST_TWO"        ;; enum's member
-                                   "test_enum_b"     ;; enum
-                                   "test_struct_a"   ;; anonymous struct
-                                   "test_struct_b"   ;; struct
-                                   "test_char_t"     ;; type
-                                   "printf"          ;; variadic and 'invalid sloc'
-                                   "test_function_a" ;; various args and pointers
-                                   "template"        ;; c++ keyword as name
-                                   ))
-                  prefixes-used prefix)
-             (dolist (candidate candidates-list)
-               (setq prefix (regexp-quote candidate))
-               (when (member prefix prefixes-list)
-                 (sleep-for 0.1)
-                 (switch-to-buffer buf)
-                 (setq prefixes-used (append prefixes-used (list prefix)))
-                 (should (string-match-p
-                          "\\`OK[0-9]+"
-                          (company-clang--get-candidate-doc candidate)))))
-             (should (equal (sort prefixes-list #'string<)
-                            (sort prefixes-used #'string<)))
-             (setq company-clang-parse-doc-busy nil))))))))
+    (with-current-buffer (find-file-noselect tmp-file t)
+      (company-mode)
+      (goto-char (- (point-max) 2))
+      (let* ((expected-list '("TEST_FIRST"      ; anonymous enum's member
+                              "TEST_SECOND"     ; anonymous enum's member
+                              "test_enum_a"     ; anonymous enum
+                              "TEST_ONE"        ; enum's member
+                              "TEST_TWO"        ; enum's member
+                              "test_enum_b"     ; enum
+                              "test_struct_a"   ; anonymous struct
+                              "test_struct_b"   ; struct
+                              "test_char_t"     ; type
+                              "printf"          ; variadic and 'invalid sloc'
+                              "test_function_a" ; various args and pointers
+                              "template"        ; c++ keyword as name
+                              ))
+             (company-backend 'company-clang)
+             (candidates (company-call-backend 'candidates ""))
+             (n 0))
+        (dolist (candidate expected-list)
+          (let ((match (member candidate candidates)))
+            (should match)
+            (should (string=
+                     (company-clang--get-candidate-doc (car match))
+                     (format "OK%s" (cl-incf n))))))))))
 
 ;; Validated with Clang version 3.5.0.
 ;; Steps:
@@ -174,25 +153,14 @@ void test() {
 ;; 4. parse AST for each candidate
 ;; 5. find documentation "OK"
 (ert-deftest company-clang-full-parse-c++-mode ()
-  ;; FIXME: test disabled due to unexpected travis build system failures.
-  (when company-clang-executable
-    (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
-           (buf (get-file-buffer tmp-file))
-           (total-wait 0)
-           (wait 0.5)
-           abort)
-      (while (and (not abort) company-clang-parse-doc-busy)
-        (if (>= total-wait company-clang-parse-doc-max-wait)
-            (setq abort t)
-          (setq total-wait (+ total-wait wait))
-          (sleep-for wait)))
-      (unless abort
-        (setq company-clang-parse-doc-busy t)
-        (when buf
-          (set-buffer buf)
-          (set-buffer-modified-p nil)
-          (kill-buffer))
-        (write-region "// test.cpp
+  (skip-unless company-clang-executable)
+  (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
+         (buf (get-file-buffer tmp-file)))
+    (when buf
+      (set-buffer buf)
+      (set-buffer-modified-p nil)
+      (kill-buffer))
+    (write-region "// test.cpp
 // anonymous enum
 enum {
   /**OK1*/
@@ -240,41 +208,31 @@ int test_function_b(char *message, int *ref, char *output, int pos);
 void test() {
 
 }" nil tmp-file)
-        (setq buf (find-file-noselect tmp-file t))
-        (switch-to-buffer buf)
-        (company-mode)
-        (goto-char (- (point-max) 2))
-        (company-clang--candidates
-         ""
-         (lambda (candidates-list)
-           (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
-                  (buf (find-file-noselect tmp-file t))
-                  (prefixes-list '("TEST_FIRST"      ;; anonymous enum's member
-                                   "TEST_SECOND"     ;; anonymous enum's member
-                                   "test_enum_a"     ;; anonymous enum
-                                   "TEST_ONE"        ;; enum's member
-                                   "TEST_TWO"        ;; enum's member
-                                   "test_enum_b"     ;; enum
-                                   "test_struct_a"   ;; anonymous struct
-                                   "test_struct_b"   ;; struct
-                                   "test_char_t"     ;; type
-                                   "printf"          ;; variadic and 'invalid sloc'
-                                   "test_function_a" ;; various args and pointers
-                                   "test_function_b" ;; various args and pointers
-                                   ))
-                  prefixes-used prefix)
-             (dolist (candidate candidates-list)
-               (setq prefix (regexp-quote candidate))
-               (when (member prefix prefixes-list)
-                 (sleep-for 0.1)
-                 (switch-to-buffer buf)
-                 (setq prefixes-used (append prefixes-used (list prefix)))
-                 (should (string-match-p
-                          "\\`OK[0-9]+"
-                          (company-clang--get-candidate-doc candidate)))))
-             (should (equal (sort prefixes-list #'string<)
-                            (sort prefixes-used #'string<)))
-             (setq company-clang-parse-doc-busy nil))))))))
+    (with-current-buffer (find-file-noselect tmp-file t)
+      (company-mode)
+      (goto-char (- (point-max) 2))
+      (let* ((expected-list '("TEST_FIRST"      ; anonymous enum's member
+                              "TEST_SECOND"     ; anonymous enum's member
+                              "test_enum_a"     ; anonymous enum
+                              "TEST_ONE"        ; enum's member
+                              "TEST_TWO"        ; enum's member
+                              "test_enum_b"     ; enum
+                              "test_struct_a"   ; anonymous struct
+                              "test_struct_b"   ; struct
+                              "test_char_t"     ; type
+                              "printf"          ; variadic and 'invalid sloc'
+                              "test_function_a" ; various args and pointers
+                              "test_function_b" ; various args and pointers
+                              ))
+             (company-backend 'company-clang)
+             (candidates (company-call-backend 'candidates ""))
+             (n 0))
+        (dolist (candidate expected-list)
+          (let ((match (member candidate candidates)))
+            (should match)
+            (should (string=
+                     (company-clang--get-candidate-doc (car match))
+                     (format "OK%s" (cl-incf n))))))))))
 
 ;; Validated with Clang version 3.5.0.
 ;; Steps:
@@ -284,24 +242,14 @@ void test() {
 ;; 4. parse AST for each candidate
 ;; 5. verify interpretation of documentation
 (ert-deftest company-clang-verify-doc-c-mode ()
-  (when company-clang-executable
-    (let* ((tmp-file (concat temporary-file-directory "test.c"))
-           (buf (get-file-buffer tmp-file))
-           (total-wait 0)
-           (wait 0.5)
-           abort)
-      (while (and (not abort) company-clang-parse-doc-busy)
-        (if (>= total-wait company-clang-parse-doc-max-wait)
-            (setq abort t)
-          (setq total-wait (+ total-wait wait))
-          (sleep-for wait)))
-      (unless abort
-        (setq company-clang-parse-doc-busy t)
-        (when buf
-          (set-buffer buf)
-          (set-buffer-modified-p nil)
-          (kill-buffer))
-        (write-region "// test.c
+  (skip-unless company-clang-executable)
+  (let* ((tmp-file (concat temporary-file-directory "test.c"))
+         (buf (get-file-buffer tmp-file)))
+    (when buf
+      (set-buffer buf)
+      (set-buffer-modified-p nil)
+      (kill-buffer))
+    (write-region "// test.c
 /**
  * Append @a postfix to @a string.
  *
@@ -317,36 +265,23 @@ int foobar(char *string, char *postfix);
 void test() {
 
 }" nil tmp-file)
-        (setq buf (find-file-noselect tmp-file t))
-        (switch-to-buffer buf)
-        (company-mode)
-        (goto-char (- (point-max) 2))
-        (company-clang--candidates
-         ""
-         (lambda (candidates-list)
-           (let* ((tmp-file (concat temporary-file-directory "test.c"))
-                  (buf (find-file-noselect tmp-file t))
-                  (prefixes-list '("foobar"))
-                  prefixes-used prefix)
-             (dolist (candidate candidates-list)
-               (setq prefix (regexp-quote candidate))
-               (when (member prefix prefixes-list)
-                 (sleep-for 0.1)
-                 (switch-to-buffer buf)
-                 (setq prefixes-used (append prefixes-used (list prefix)))
-                 (should (string=
-                          (company-clang--get-candidate-doc candidate)
-                          " Append postfix to string.
+    (with-current-buffer (find-file-noselect tmp-file t)
+      (company-mode)
+      (goto-char (- (point-max) 2))
+      (let* ((company-backend 'company-clang)
+             (candidates (company-call-backend 'candidates ""))
+             (match (member "foobar" candidates)))
+        (should match)
+        (should (string=
+                 (company-clang--get-candidate-doc (car match))
+                 " Append postfix to string.
 
  [in,out] string              A string object
                               to read and update.
  [in]     postfix             The string postfix.
 
  returns
- 1 if the function succeeded, 0 on error."))))
-             (should (equal (sort prefixes-list #'string<)
-                            (sort prefixes-used #'string<)))
-             (setq company-clang-parse-doc-busy nil))))))))
+ 1 if the function succeeded, 0 on error."))))))
 
 ;; Validated with Clang version 3.5.0.
 ;; Steps:
@@ -356,24 +291,14 @@ void test() {
 ;; 4. parse AST for each candidate
 ;; 5. verify interpretation of documentation
 (ert-deftest company-clang-verify-doc-c++-mode ()
-  (when company-clang-executable
-    (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
-           (buf (get-file-buffer tmp-file))
-           (total-wait 0)
-           (wait 0.5)
-           abort)
-      (while (and (not abort) company-clang-parse-doc-busy)
-        (if (>= total-wait company-clang-parse-doc-max-wait)
-            (setq abort t)
-          (setq total-wait (+ total-wait wait))
-          (sleep-for wait)))
-      (unless abort
-        (setq company-clang-parse-doc-busy t)
-        (when buf
-          (set-buffer buf)
-          (set-buffer-modified-p nil)
-          (kill-buffer))
-        (write-region "// test.cpp
+  (skip-unless company-clang-executable)
+  (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
+         (buf (get-file-buffer tmp-file)))
+    (when buf
+      (set-buffer buf)
+      (set-buffer-modified-p nil)
+      (kill-buffer))
+    (write-region "// test.cpp
 /**
  * Append @a postfix to @a string.
  *
@@ -389,36 +314,23 @@ int foobar(char *string, char *postfix);
 void test() {
 
 }" nil tmp-file)
-        (setq buf (find-file-noselect tmp-file t))
-        (switch-to-buffer buf)
-        (company-mode)
-        (goto-char (- (point-max) 2))
-        (company-clang--candidates
-         ""
-         (lambda (candidates-list)
-           (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
-                  (buf (find-file-noselect tmp-file t))
-                  (prefixes-list '("foobar"))
-                  prefixes-used prefix)
-             (dolist (candidate candidates-list)
-               (setq prefix (regexp-quote candidate))
-               (when (member prefix prefixes-list)
-                 (sleep-for 0.1)
-                 (switch-to-buffer buf)
-                 (setq prefixes-used (append prefixes-used (list prefix)))
-                 (should (string=
-                          (company-clang--get-candidate-doc candidate)
-                          " Append postfix to string.
+    (with-current-buffer (find-file-noselect tmp-file t)
+      (company-mode)
+      (goto-char (- (point-max) 2))
+      (let* ((company-backend 'company-clang)
+             (candidates (company-call-backend 'candidates ""))
+             (match (member "foobar" candidates)))
+        (should match)
+        (should (string=
+                 (company-clang--get-candidate-doc (car match))
+                 " Append postfix to string.
 
  [in,out] string              A string object
                               to read and update.
  [in]     postfix             The string postfix.
 
  returns
- 1 if the function succeeded, 0 on error."))))
-             (should (equal (sort prefixes-list #'string<)
-                            (sort prefixes-used #'string<)))
-             (setq company-clang-parse-doc-busy nil))))))))
+ 1 if the function succeeded, 0 on error."))))))
 
 ;; Validated with Clang version 3.5.0.
 ;; This test should be able to run without the need of Clang. Also it doesn't
