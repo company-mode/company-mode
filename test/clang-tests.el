@@ -60,7 +60,7 @@
 ;; 4. parse AST for each candidate
 ;; 5. find documentation "OK"
 (ert-deftest company-clang-full-parse-c-mode ()
-  (skip-unless company-clang-executable)
+  :expected-result (if company-clang-executable :passed :failed)
   (let* ((tmp-file (concat temporary-file-directory "test.c"))
          (buf (get-file-buffer tmp-file)))
     (when buf
@@ -153,7 +153,7 @@ void test() {
 ;; 4. parse AST for each candidate
 ;; 5. find documentation "OK"
 (ert-deftest company-clang-full-parse-c++-mode ()
-  (skip-unless company-clang-executable)
+  :expected-result (if company-clang-executable :passed :failed)
   (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
          (buf (get-file-buffer tmp-file)))
     (when buf
@@ -242,7 +242,7 @@ void test() {
 ;; 4. parse AST for each candidate
 ;; 5. verify interpretation of documentation
 (ert-deftest company-clang-verify-doc-c-mode ()
-  (skip-unless company-clang-executable)
+  :expected-result (if company-clang-executable :passed :failed)
   (let* ((tmp-file (concat temporary-file-directory "test.c"))
          (buf (get-file-buffer tmp-file)))
     (when buf
@@ -291,7 +291,7 @@ void test() {
 ;; 4. parse AST for each candidate
 ;; 5. verify interpretation of documentation
 (ert-deftest company-clang-verify-doc-c++-mode ()
-  (skip-unless company-clang-executable)
+  :expected-result (if company-clang-executable :passed :failed)
   (let* ((tmp-file (concat temporary-file-directory "test.cpp"))
          (buf (get-file-buffer tmp-file)))
     (when buf
