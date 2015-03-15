@@ -151,7 +151,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (insert ann)
         (search-backward ")")
         (let ((pt (1+ (point))))
-          (forward-symbol 1)
+          (re-search-forward ".\\_>" nil t)
           (delete-region pt (point)))
         (buffer-string)))))
 
