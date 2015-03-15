@@ -169,6 +169,8 @@ Leave point at the end of the field."
           (forward-char)
           (setq cnt (company-template--c-like-args templ angle-close
                                                    cnt))))
+      (when (looking-back "\\((\\*)\\)(" (line-beginning-position))
+        (delete-region (match-beginning 1) (match-end 1)))
       (when paren-open
         (goto-char paren-open)
         (company-template--c-like-args templ paren-close cnt)))

@@ -144,6 +144,18 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (get-text-property 0 'meta candidate))
 
 (defun company-clang--annotation (candidate)
+  (let ((ann (company-clang--annotation-1 candidate)))
+    (if (not (string-prefix-p "(*)" ann))
+        ann
+      (with-temp-buffer
+        (insert ann)
+        (search-backward ")")
+        (let ((pt (1+ (point))))
+          (forward-symbol 1)
+          (delete-region pt (point)))
+        (buffer-string)))))
+
+(defun company-clang--annotation-1 (candidate)
   (let ((meta (company-clang--meta candidate)))
     (cond
      ((null meta) nil)

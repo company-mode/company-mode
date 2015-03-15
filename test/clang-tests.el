@@ -44,3 +44,7 @@
               "shared_ptr<_Tp> make_shared<typename _Tp>(_Args &&__args...)")))
     (should (equal (company-clang 'annotation str)
                    "<typename _Tp>(_Args &&__args...)"))))
+
+(ert-deftest company-clang-func-ptr-annotation ()
+  (let ((str (propertize "foo" 'meta "void (*)(int) foo")))
+    (should (equal (company-clang 'annotation str) "(*)(int)"))))

@@ -89,3 +89,12 @@
       (forward-char -1)
       (should (equal "Dict<TKey, TValue>"
                      (overlay-get (company-template-field-at) 'display))))))
+
+(ert-deftest company-template-c-like-func-ptr ()
+  (with-temp-buffer
+    (let ((text "foo(*)(int)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (should (equal "foo(arg0)" (buffer-string)))
+      (should (looking-at "arg0"))
+      (should (equal "int" (overlay-get (company-template-field-at) 'display))))))
