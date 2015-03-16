@@ -666,7 +666,7 @@ asynchronous call into synchronous.")
   :package-version '(company . "0.8.10"))
 
 (defvar company-lighter '(" "
-                          (company-backend
+                          (company-candidates
                            (:eval
                             (if (consp company-backend)
                                 (company--group-lighter (nth company-selection
