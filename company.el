@@ -342,8 +342,9 @@ text immediately before point.  Returning nil from this command passes
 control to the next back-end.  The function should return `stop' if it
 should complete but cannot (e.g. if it is in the middle of a string).
 Instead of a string, the back-end may return a cons where car is the prefix
-and cdr is used in `company-minimum-prefix-length' test.  It must be either
-number or t, and in the latter case the test automatically succeeds.
+and cdr is used instead of the actual prefix length in the comparison
+against `company-minimum-prefix-length'.  It must be either number or t,
+and in the latter case the test automatically succeeds.
 
 `candidates': The second argument is the prefix to be completed.  The
 return value should be a list of candidates that match the prefix.
