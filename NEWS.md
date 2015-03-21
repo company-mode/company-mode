@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-dabbrev-ignore-invisible`.
 * `company-ropemacs` was removed. `ropemacs` supports completion via
   `completion-at-point-functions` starting with version 0.8.
 * `company-pysmell` was removed.
