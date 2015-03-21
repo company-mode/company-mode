@@ -994,13 +994,14 @@ Controlled by `company-auto-complete'.")
   (substring str (length company-prefix)))
 
 (defun company--insert-candidate (candidate)
-  (setq candidate (substring-no-properties candidate))
-  ;; XXX: Return value we check here is subject to change.
-  (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
-      (insert (company-strip-prefix candidate))
-    (unless (equal company-prefix candidate)
-      (delete-region (- (point) (length company-prefix)) (point))
-      (insert candidate))))
+  (when (> (length candidate) 0)
+    (setq candidate (substring-no-properties candidate))
+    ;; XXX: Return value we check here is subject to change.
+    (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
+        (insert (company-strip-prefix candidate))
+      (unless (equal company-prefix candidate)
+        (delete-region (- (point) (length company-prefix)) (point))
+        (insert candidate)))))
 
 (defmacro company-with-candidate-inserted (candidate &rest body)
   "Evaluate BODY with CANDIDATE temporarily inserted.
@@ -1922,8 +1923,7 @@ With ARG, move by that many elements."
     (if (and (not (cdr company-candidates))
              (equal company-common (car company-candidates)))
         (company-complete-selection)
-      (when company-common
-        (company--insert-candidate company-common)))))
+      (company--insert-candidate company-common))))
 
 (defun company-complete-common-or-cycle (&optional arg)
   "Insert the common part of all candidates, or select the next one.
