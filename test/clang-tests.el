@@ -48,3 +48,7 @@
 (ert-deftest company-clang-func-ptr-annotation ()
   (let ((str (propertize "foo" 'meta "void (*)(int) foo")))
     (should (equal (company-clang 'annotation str) "(*)(int)"))))
+
+(ert-deftest company-clang-null-annotation ()
+  (let ((str "char"))
+    (should (null (company-clang 'annotation str)))))

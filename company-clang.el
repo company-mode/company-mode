@@ -145,7 +145,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 (defun company-clang--annotation (candidate)
   (let ((ann (company-clang--annotation-1 candidate)))
-    (if (not (string-prefix-p "(*)" ann))
+    (if (not (and ann (string-prefix-p "(*)" ann)))
         ann
       (with-temp-buffer
         (insert ann)
