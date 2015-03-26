@@ -2148,8 +2148,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (lm-version))))
 
 (defun company-diag ()
-  (interactive)
   "Pop a buffer with information about completions at point."
+  (interactive)
   (let* ((bb company-backends)
          backend
          (prefix (cl-loop for b in bb
