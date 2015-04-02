@@ -111,14 +111,14 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
       ;; search before pos
       (company-dabrev--time-limit-while (re-search-backward regexp nil t)
           start limit
-        (if (and ignore-comments (company-in-string-or-comment))
+        (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
             (goto-char (nth 8 (syntax-ppss)))
           (maybe-collect-match)))
       (goto-char (or pos (point-min)))
       ;; search after pos
       (company-dabrev--time-limit-while (re-search-forward regexp nil t)
           start limit
-        (if (and ignore-comments (company-in-string-or-comment))
+        (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
             (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
           (maybe-collect-match)))
       symbols)))
