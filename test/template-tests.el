@@ -22,6 +22,13 @@
 (require 'company-tests)
 (require 'company-template)
 
+(defun company-template-field-assert-text (str &optional pos)
+  (let ((field (company-template-field-at pos)))
+    (should (equal (buffer-substring-no-properties
+                    (overlay-start field)
+                    (overlay-end field))
+                   str))))
+
 (ert-deftest company-template-removed-after-the-last-jump ()
   (with-temp-buffer
     (insert "{ }")
@@ -29,8 +36,8 @@
     (let ((tpl (company-template-declare-template (point) (1- (point-max)))))
       (save-excursion
         (dotimes (_ 2)
-          (insert " ")
-          (company-template-add-field tpl (point) "foo")))
+          (insert " foo")
+          (company-template-add-field tpl (- (point) 3) (point))))
       (company-call 'template-forward-field)
       (should (= 3 (point)))
       (company-call 'template-forward-field)
@@ -46,8 +53,8 @@
     (goto-char 2)
     (let ((tpl (company-template-declare-template (point) (1- (point-max)))))
       (save-excursion
-        (insert " ")
-        (company-template-add-field tpl (point) "bar"))
+        (insert " bar")
+        (company-template-add-field tpl (- (point) 3) (point)))
       (company-call 'template-move-to-first tpl)
       (should (= 3 (point)))
       (dolist (c (string-to-list "tee"))
@@ -64,37 +71,32 @@
     (let ((text "foo(int a, short b)"))
       (insert text)
       (company-template-c-like-templatify text)
-      (should (equal "foo(arg0, arg1)" (buffer-string)))
-      (should (looking-at "arg0"))
-      (should (equal "int a"
-                     (overlay-get (company-template-field-at) 'display))))))
+      (should (equal "foo(int a, short b)" (buffer-string)))
+      (company-template-field-assert-text "int a"))))
 
 (ert-deftest company-template-c-like-templatify-trims-after-closing-paren ()
   (with-temp-buffer
     (let ((text "foo(int a, short b)!@ #1334 a"))
       (insert text)
       (company-template-c-like-templatify text)
-      (should (equal "foo(arg0, arg1)" (buffer-string)))
-      (should (looking-at "arg0")))))
+      (should (equal "foo(int a, short b)" (buffer-string)))
+      (company-template-field-assert-text "int a"))))
 
 (ert-deftest company-template-c-like-templatify-generics ()
   (with-temp-buffer
     (let ((text "foo<TKey, TValue>(int i, Dict<TKey, TValue>, long l)"))
       (insert text)
       (company-template-c-like-templatify text)
-      (should (equal "foo<arg0, arg1>(arg2, arg3, arg4)" (buffer-string)))
-      (should (looking-at "arg0"))
-      (should (equal "TKey" (overlay-get (company-template-field-at) 'display)))
-      (search-forward "arg3")
+      (should (equal (buffer-string) text))
+      (company-template-field-assert-text "TKey")
+      (search-forward "Dict")
       (forward-char -1)
-      (should (equal "Dict<TKey, TValue>"
-                     (overlay-get (company-template-field-at) 'display))))))
+      (company-template-field-assert-text "Dict<TKey, TValue>"))))
 
 (ert-deftest company-template-c-like-func-ptr ()
   (with-temp-buffer
     (let ((text "foo(*)(int)"))
       (insert text)
       (company-template-c-like-templatify text)
-      (should (equal "foo(arg0)" (buffer-string)))
-      (should (looking-at "arg0"))
-      (should (equal "int" (overlay-get (company-template-field-at) 'display))))))
+      (should (equal (buffer-string) "foo(int)"))
+      (company-template-field-assert-text "int"))))

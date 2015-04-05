@@ -2,6 +2,11 @@
 
 ## Next
 
+* `company-template-c-like-templatify` does not replace the default argument
+  values with `argN` anymore
+  ([#336](https://github.com/company-mode/company-mode/issues/336)). This
+  affects `company-clang` and all third-party backends that use this function.
+* `company-template-add-field` calling convention has changed.
 * New user option `company-dabbrev-ignore-invisible`.
 * `company-ropemacs` was removed. `ropemacs` supports completion via
   `completion-at-point-functions` starting with version 0.8.

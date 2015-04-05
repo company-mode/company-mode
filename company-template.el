@@ -1,6 +1,6 @@
 ;;; company-template.el
 
-;; Copyright (C) 2009, 2010, 2014 Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2010, 2014-2015 Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -93,16 +93,14 @@
         (delq templ company-template--buffer-templates))
   (delete-overlay templ))
 
-(defun company-template-add-field (templ pos text &optional display)
-  "Add new field to template TEMPL at POS, inserting TEXT.
+(defun company-template-add-field (templ beg end &optional display)
+  "Add new field to template TEMPL spanning from BEG to END.
 When DISPLAY is non-nil, set the respective property on the overlay.
 Leave point at the end of the field."
   (cl-assert templ)
-  (goto-char pos)
-  (insert text)
-  (when (> (point) (overlay-end templ))
-    (move-overlay templ (overlay-start templ) (point)))
-  (let ((ov (make-overlay pos (+ pos (length text))))
+  (when (> end (overlay-end templ))
+    (move-overlay templ (overlay-start templ) end))
+  (let ((ov (make-overlay beg end))
         (siblings (overlay-get templ 'company-template-fields)))
     ;; (overlay-put ov 'evaporate t)
     (overlay-put ov 'intangible t)
@@ -149,7 +147,6 @@ Leave point at the end of the field."
 (defun company-template-c-like-templatify (call)
   (let* ((end (point-marker))
          (beg (- (point) (length call)))
-         (cnt 0)
          (templ (company-template-declare-template beg end))
          paren-open paren-close)
     (with-syntax-table (make-syntax-table (syntax-table))
@@ -167,31 +164,24 @@ Leave point at the end of the field."
           (forward-char 1)
           (backward-sexp)
           (forward-char)
-          (setq cnt (company-template--c-like-args templ angle-close
-                                                   cnt))))
+          (company-template--c-like-args templ angle-close)))
       (when (looking-back "\\((\\*)\\)(" (line-beginning-position))
         (delete-region (match-beginning 1) (match-end 1)))
       (when paren-open
         (goto-char paren-open)
-        (company-template--c-like-args templ paren-close cnt)))
+        (company-template--c-like-args templ paren-close)))
     (if (overlay-get templ 'company-template-fields)
         (company-template-move-to-first templ)
       (company-template-remove-template templ)
       (goto-char end))))
 
-(defun company-template--c-like-args (templ end counter)
+(defun company-template--c-like-args (templ end)
   (let ((last-pos (point)))
     (while (re-search-forward "\\([^,]+\\),?" end 'move)
       (when (zerop (car (parse-partial-sexp last-pos (point))))
-        (let ((sig (buffer-substring-no-properties last-pos (match-end 1))))
-          (save-excursion
-            (company-template-add-field templ last-pos
-                                        (format "arg%d" counter) sig)
-            (delete-region (point) (+ (point) (length sig))))
-          (skip-chars-forward " ")
-          (setq last-pos (point))
-          (cl-incf counter)))))
-  counter)
+        (company-template-add-field templ last-pos (match-end 1))
+        (skip-chars-forward " ")
+        (setq last-pos (point))))))
 
 (provide 'company-template)
 ;;; company-template.el ends here
