@@ -289,24 +289,6 @@ or automatically through a custom `company-clang-prefix-guesser'."
             ver))
       0)))
 
-(defun company-clang-objc-templatify (selector)
-  (let* ((end (point-marker))
-         (beg (- (point) (length selector) 1))
-         (templ (company-template-declare-template beg end))
-         (cnt 0))
-    (save-excursion
-      (goto-char beg)
-      (catch 'stop
-        (while (search-forward ":" end t)
-          (when (looking-at "([^)]*) ?")
-            (delete-region (match-beginning 0) (match-end 0)))
-          (company-template-add-field templ (point) (format "arg%d" cnt))
-          (if (< (point) end)
-              (insert " ")
-            (throw 'stop t))
-          (cl-incf cnt))))
-    (company-template-move-to-first templ)))
-
 (defun company-clang (command &optional arg &rest ignored)
   "`company-mode' completion back-end for Clang.
 Clang is a parser for C and ObjC.  Clang version 1.1 or newer is required.

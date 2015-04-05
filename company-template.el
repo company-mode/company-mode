@@ -183,5 +183,32 @@ Leave point at the end of the field."
         (skip-chars-forward " ")
         (setq last-pos (point))))))
 
+;; objc ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun company-clang-objc-templatify (selector)
+  (let* ((end (point-marker))
+         (beg (- (point) (length selector) 1))
+         (templ (company-template-declare-template beg end))
+         (cnt 0))
+    (save-excursion
+      (goto-char beg)
+      (catch 'stop
+        (while (search-forward ":" end t)
+          (if (looking-at "\\(([^)]*)\\) ?")
+              (company-template-add-field templ (point) (match-end 1))
+            ;; Not sure which conditions this case manifests under, but
+            ;; apparently it did before, when I wrote the first test for this
+            ;; function.  FIXME: Revisit it.
+            (company-template-add-field templ (point)
+                                        (progn
+                                          (insert (format "arg%d" cnt))
+                                          (point)))
+            (when (< (point) end)
+              (insert " "))
+            (cl-incf cnt))
+          (when (>= (point) end)
+            (throw 'stop t)))))
+    (company-template-move-to-first templ)))
+
 (provide 'company-template)
 ;;; company-template.el ends here

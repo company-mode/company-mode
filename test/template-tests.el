@@ -100,3 +100,20 @@
       (company-template-c-like-templatify text)
       (should (equal (buffer-string) "foo(int)"))
       (company-template-field-assert-text "int"))))
+
+(ert-deftest company-clang-objc-templatify-empty-args ()
+  (with-temp-buffer
+    (let ((text "createBookWithTitle:andAuthor:"))
+      (insert text)
+      (company-clang-objc-templatify text)
+      (should (equal "createBookWithTitle:arg0 andAuthor:arg1" (buffer-string)))
+      (should (looking-at "arg0"))
+      (should (null (overlay-get (company-template-field-at) 'display))))))
+
+(ert-deftest company-clang-objc-templatify ()
+  (with-temp-buffer
+    (let ((text "createBookWithTitle:(NSString) andAuthor:(id)"))
+      (insert text)
+      (company-clang-objc-templatify text)
+      (should (equal (buffer-string) text))
+      (company-template-field-assert-text "(NSString)"))))
