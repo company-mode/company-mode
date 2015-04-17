@@ -1,6 +1,6 @@
 ;;; company-capf.el --- company-mode completion-at-point-functions back-end -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013-2014  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2015  Free Software Foundation, Inc.
 
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
@@ -51,7 +51,7 @@
              (data (run-hook-wrapped 'completion-at-point-functions
                                      ;; Ignore misbehaving functions.
                                      #'completion--capf-wrapper 'optimist)))
-    (when (and (consp (cdr data)) (numberp (nth 1 data))) data)))
+    (when (and (consp (cdr data)) (integer-or-marker-p (nth 1 data))) data)))
 
 (defun company-capf (command &optional arg &rest _args)
   "`company-mode' back-end using `completion-at-point-functions'."
