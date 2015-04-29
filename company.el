@@ -2141,6 +2141,7 @@ Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 If SHOW-VERSION is non-nil, show the version in the echo area."
   (interactive (list t))
   (with-temp-buffer
+    (require 'find-func)
     (insert-file-contents (find-library-name "company"))
     (require 'lisp-mnt)
     (if show-version
