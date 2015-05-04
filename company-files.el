@@ -50,13 +50,16 @@
     (and (cl-dolist (regexp company-files--regexps)
            (when (setq file (company-grab-line regexp 1))
              (cl-return file)))
-         (or (not (file-remote-p file))
-             (file-remote-p file nil t))
+         (company-files--connected-p file)
          (setq dir (file-name-directory file))
          (not (string-match "//" dir))
          (file-exists-p dir)
          (file-name-all-completions (file-name-nondirectory file) dir)
          file)))
+
+(defun company-files--connected-p (file)
+  (or (not (file-remote-p file))
+      (file-remote-p file nil t)))
 
 (defvar company-files--completion-cache nil)
 
@@ -71,9 +74,10 @@
     (unless (company-file--keys-match-p key (car company-files--completion-cache))
       (dolist (file (company-files--directory-files dir file))
         (setq file (concat dir file))
-        (push file candidates)
-        (when (file-directory-p file)
-          (push file directories)))
+        (when (company-files--connected-p file)
+          (push file candidates)
+          (when (file-directory-p file)
+            (push file directories))))
       (dolist (directory (reverse directories))
         ;; Add one level of children.
         (dolist (child (company-files--directory-files directory ""))
