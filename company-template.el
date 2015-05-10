@@ -1,4 +1,4 @@
-;;; company-template.el
+;;; company-template.el --- utility library for template expansion
 
 ;; Copyright (C) 2009, 2010, 2014-2015 Free Software Foundation, Inc.
 
