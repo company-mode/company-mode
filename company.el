@@ -389,9 +389,10 @@ will be used when rendering the popup.  This command only makes sense for
 backends that provide non-prefix completion.
 
 `require-match': If this returns t, the user is not allowed to enter
-anything not offered as a candidate.  Use with care!  The default value nil
-gives the user that choice with `company-require-match'.  Return value
-`never' overrides that option the other way around.
+anything not offered as a candidate.  Please don't use that value in normal
+backends.  The default value nil gives the user that choice with
+`company-require-match'.  Return value `never' overrides that option the
+other way around.
 
 `init': Called once for each buffer. The back-end can check for external
 programs and files and load any required libraries.  Raising an error here

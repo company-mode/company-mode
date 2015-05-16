@@ -1,6 +1,6 @@
 ;;; company-tempo.el --- company-mode completion back-end for tempo
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2015  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -56,7 +56,6 @@
     (prefix (or (car (tempo-find-match-string tempo-match-finder)) ""))
     (candidates (all-completions arg (tempo-build-collection)))
     (meta (company-tempo-meta arg))
-    (require-match t)
     (sorted t)))
 
 (provide 'company-tempo)
