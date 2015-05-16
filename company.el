@@ -1508,6 +1508,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
           company-point nil)
     (when company-timer
       (cancel-timer company-timer))
+    (company-echo-cancel t)
     (company-search-mode 0)
     (company-call-frontends 'hide)
     (company-enable-overriding-keymap nil))
@@ -1538,6 +1539,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
   (when company-timer
     (cancel-timer company-timer)
     (setq company-timer nil))
+  (company-echo-cancel t)
   (company-uninstall-map))
 
 (defun company-post-command ()
@@ -2751,13 +2753,19 @@ Returns a negative number if the tooltip should be displayed above point."
       (message ""))))
 
 (defun company-echo-show-soon (&optional getter)
-  (when company-echo-timer
-    (cancel-timer company-echo-timer))
+  (company-echo-cancel)
   (setq company-echo-timer (run-with-timer 0 nil 'company-echo-show getter)))
 
-(defsubst company-echo-show-when-idle (&optional getter)
-  (when (sit-for company-echo-delay)
-    (company-echo-show getter)))
+(defun company-echo-cancel (&optional unset)
+  (when company-echo-timer
+    (cancel-timer company-echo-timer))
+  (when unset
+    (setq company-echo-timer nil)))
+
+(defun company-echo-show-when-idle (&optional getter)
+  (company-echo-cancel)
+  (setq company-echo-timer
+        (run-with-idle-timer company-echo-delay nil 'company-echo-show getter)))
 
 (defun company-echo-format ()
 
