@@ -2,6 +2,7 @@
 
 ## Next
 
+* Backend command `ignore-case` has been documented.
 * `company-template-c-like-templatify` does not replace the default argument
   values with `argN` anymore
   ([#336](https://github.com/company-mode/company-mode/issues/336)). This
