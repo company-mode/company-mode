@@ -366,6 +366,11 @@ from the list.
 progresses, unless the back-end returns t for this command.  The second
 argument is the latest prefix.
 
+`ignore-case': Return t here if the backend returns case-insensitive
+matches.  This value is used to determine the longest common prefix (as
+used in `company-complete-common'), and to filter completions when fetching
+them from cache.
+
 `meta': The second argument is a completion candidate.  Return a (short)
 documentation string for it.
 
