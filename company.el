@@ -375,9 +375,11 @@ them from cache.
 documentation string for it.
 
 `doc-buffer': The second argument is a completion candidate.  Return a
-buffer with documentation for it.  Preferably use `company-doc-buffer',
+buffer with documentation for it.  Preferably use `company-doc-buffer'.  If
+not all buffer contents pertain to this candidate, return a cons of buffer
+and window start position.
 
-`location': The second argument is a completion candidate.  Return the cons
+`location': The second argument is a completion candidate.  Return a cons
 of buffer and buffer location, or of file and line number where the
 completion candidate was defined.
 
@@ -2066,11 +2068,14 @@ character, stripping the modifiers.  That character must be a digit."
     (company--electric-do
       (let* ((selected (nth company-selection company-candidates))
              (doc-buffer (or (company-call-backend 'doc-buffer selected)
-                             (error "No documentation available"))))
+                             (error "No documentation available")))
+             start)
+        (when (consp doc-buffer)
+          (setq start (cdr doc-buffer)
+                doc-buffer (car doc-buffer)))
         (setq other-window-scroll-buffer (get-buffer doc-buffer))
-        (with-current-buffer doc-buffer
-          (goto-char (point-min)))
-        (display-buffer doc-buffer t)))))
+        (let ((win (display-buffer doc-buffer t)))
+          (set-window-start win (if start start (point-min))))))))
 (put 'company-show-doc-buffer 'company-keep t)
 
 (defun company-show-location ()

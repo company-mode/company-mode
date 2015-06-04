@@ -2,6 +2,8 @@
 
 ## Next
 
+* Backend command `doc-buffer` now can also return a cons of buffer and window
+  start position.
 * Backend command `ignore-case` has been documented.
 * `company-template-c-like-templatify` does not replace the default argument
   values with `argN` anymore
