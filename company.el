@@ -709,6 +709,9 @@ The completion data is retrieved using `company-backends' and displayed
 using `company-frontends'.  If you want to start a specific back-end, call
 it interactively or use `company-begin-backend'.
 
+By default, the completions list is sorted alphabetically, unless the
+backend chooses otherwise, or `company-transformers' changes it later.
+
 regular keymap (`company-mode-map'):
 
 \\{company-mode-map}
