@@ -26,6 +26,8 @@
 (require 'company)
 (require 'cl-lib)
 
+(declare-function web-mode-language-at-pos "web-mode" (&optional pos))
+
 (defconst company-css-property-alist
   ;; see http://www.w3.org/TR/CSS21/propidx.html
   '(("azimuth" angle "left-side" "far-left" "left" "center-left" "center"
@@ -415,7 +417,9 @@ Returns \"\" if no property found, but feasible at this position."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-css))
-    (prefix (and (derived-mode-p 'css-mode)
+    (prefix (and (or (derived-mode-p 'css-mode)
+                     (and (derived-mode-p 'web-mode)
+                          (string= (web-mode-language-at-pos) "css")))
                  (or (company-grab company-css-tag-regexp 1)
                      (company-grab company-css-pseudo-regexp 1)
                      (company-grab company-css-property-value-regexp 2)
