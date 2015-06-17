@@ -1474,11 +1474,11 @@ from the rest of the back-ends in the group, if any, will be left at the end."
                 c (company-calculate-candidates company-prefix))
           (if (not (consp c))
               (progn
+                (when company--manual-action
+                  (message "No completion found"))
                 ;; t means complete/unique.
                 ;; Run the hooks anyway, to e.g. clear the cache.
-                (company-cancel 'unique)
-                (when company--manual-action
-                  (message "No completion found")))
+                (company-cancel 'unique))
             (when company--manual-action
               (setq company--manual-prefix prefix))
             (company-update-candidates c)
