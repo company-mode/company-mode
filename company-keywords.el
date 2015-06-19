@@ -207,6 +207,12 @@
      "do" "else" "elsif"  "end" "ensure" "false" "for" "if" "in" "module"
      "next" "nil" "not" "or" "redo" "rescue" "retry" "return" "self" "super"
      "then" "true" "undef" "unless" "until" "when" "while" "yield")
+    (scala-mode
+     "abstract" "case" "catch" "class" "def" "do" "else" "extends" "false"
+     "final" "finally" "for" "forSome" "if" "implicit" "import" "lazy" "match"
+     "new" "null" "object" "override" "package" "private" "protected"
+     "return" "sealed" "super" "this" "throw" "trait" "try" "true" "type" "val"
+     "var" "while" "with" "yield")
     ;; aliases
     (js2-mode . javascript-mode)
     (espresso-mode . javascript-mode)
