@@ -198,6 +198,13 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (setq buffer-read-only t)
         (goto-char (point-min))))))
 
+(defun company-clang--run-clang-command (buf prefix args)
+  (if (executable-find "grep")
+      (let* ((join-args (mapconcat 'identity args " "))
+             (command (format "%s %s | grep -i \": %s\"" company-clang-executable join-args prefix)))
+        (start-process-shell-command "company-clang" buf command))
+    (apply #'start-process "company-clang" buf company-clang-executable args)))
+
 (defun company-clang--start-process (prefix callback &rest args)
   (let ((objc (derived-mode-p 'objc-mode))
         (buf (get-buffer-create "*clang-output*"))
@@ -208,8 +215,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
       (setq buffer-undo-list t))
     (if (get-buffer-process buf)
         (funcall callback nil)
-      (let ((process (apply #'start-process "company-clang" buf
-                            company-clang-executable args)))
+      (let ((process (company-clang--run-clang-command buf prefix args)))
         (set-process-sentinel
          process
          (lambda (proc status)
