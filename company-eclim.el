@@ -1,6 +1,6 @@
 ;;; company-eclim.el --- company-mode completion back-end for Eclim
 
-;; Copyright (C) 2009, 2011, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2013, 2015  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -48,7 +48,9 @@
            (cl-return file)))))
 
 (defcustom company-eclim-executable
-  (or (executable-find "eclim") (company-eclim-executable-find))
+  (or (bound-and-true-p eclim-executable)
+      (executable-find "eclim")
+      (company-eclim-executable-find))
   "Location of eclim executable."
   :type 'file)
 
