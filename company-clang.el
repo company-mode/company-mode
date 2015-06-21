@@ -203,11 +203,11 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (buf (get-buffer-create "*clang-output*"))
         ;; Looks unnecessary in Emacs 25.1 and later.
         (process-adaptive-read-buffering nil))
-    (with-current-buffer buf
-      (erase-buffer)
-      (setq buffer-undo-list t))
     (if (get-buffer-process buf)
         (funcall callback nil)
+      (with-current-buffer buf
+        (erase-buffer)
+        (setq buffer-undo-list t))
       (let ((process (apply #'start-process "company-clang" buf
                             company-clang-executable args)))
         (set-process-sentinel
