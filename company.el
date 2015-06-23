@@ -2350,7 +2350,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (while (and (not (eobp)) ; http://debbugs.gnu.org/19553
                 (> (setq lines-moved (vertical-motion 1)) 0)
                 (<= (point) end))
-      (let ((bound (min end (1- (point)))))
+      (let ((bound (min end (point))))
         ;; A visual line can contain several physical lines (e.g. with outline's
         ;; folding overlay).  Take only the first one.
         (push (buffer-substring beg

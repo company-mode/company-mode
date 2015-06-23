@@ -299,7 +299,7 @@
     (insert (propertize "a" 'display "bbb\nccc\ndddd\n"))
     (insert "eee\nfff\nggg")
     (should (equal (company-buffer-lines (point-min) (point-max))
-                   '("" "" "" "eee" "fff" "ggg")))))
+                   '("a" "" "" "eee" "fff" "ggg")))))
 
 (ert-deftest company-buffer-lines-with-multiline-after-string-at-eob ()
   :tags '(interactive)
@@ -309,6 +309,16 @@
       (overlay-put ov 'after-string "~\n~\n~"))
     (should (equal (company-buffer-lines (point-min) (point-max))
                    '("a" "b" "c")))))
+
+(ert-deftest company-buffer-lines-with-line-wrapping ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (let ((ww (company--window-width)))
+      (insert (make-string (* 3 ww) ?a))
+      (should (equal (company-buffer-lines (point-min) (point-max))
+                     (list (make-string ww ?a)
+                           (make-string ww ?a)
+                           (make-string ww ?a)))))))
 
 (ert-deftest company-modify-line ()
   (let ((str "-*-foobar"))
