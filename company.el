@@ -2400,6 +2400,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (version< emacs-version "24.4.51.5"))
       ;; http://debbugs.gnu.org/18384
       (cl-decf ww))
+    ;; whitespace-mode with newline-mark
+    (when (and buffer-display-table
+               (aref buffer-display-table ?\n))
+      (cl-decf ww (1- (length (aref buffer-display-table ?\n)))))
     ww))
 
 (defun company--replacement-string (lines old column nl &optional align-top)
