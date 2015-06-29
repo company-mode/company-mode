@@ -2398,7 +2398,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (or (cdr margins) 0)))))
     (when (and word-wrap
                (version< emacs-version "24.4.51.5"))
-      ;; http://debbugs.gnu.org/18384
+      ;; http://debbugs.gnu.org/19300
       (cl-decf ww))
     ;; whitespace-mode with newline-mark
     (when (and buffer-display-table
