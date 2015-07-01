@@ -36,7 +36,7 @@
         (let (this-command)
           (company-call 'complete))
         (company-call 'open-line 1)
-        (should (eq 1 (overlay-start company-pseudo-tooltip-overlay)))))))
+        (should (eq 2 (overlay-start company-pseudo-tooltip-overlay)))))))
 
 (ert-deftest company-pseudo-tooltip-show ()
   :tags '(interactive)
@@ -57,7 +57,7 @@
         (should (eq (overlay-get ov 'company-height) company-tooltip-limit))
         (should (eq (overlay-get ov 'company-column) col))
         (should (string= (overlay-get ov 'company-display)
-                         "\n  123 \nc 45  c\nddd\n")))))))
+                         "  123 \nc 45  c\nddd\n")))))))
 
 (ert-deftest company-pseudo-tooltip-edit-updates-width ()
   :tags '(interactive)
@@ -109,7 +109,7 @@
           ;; With margins.
           (should (eq (overlay-get ov 'company-width) 8))
           (should (string= (overlay-get ov 'company-display)
-                           "\n 123(4) \n 45     \n")))))))
+                           " 123(4) \n 45     \n")))))))
 
 (ert-deftest company-pseudo-tooltip-show-with-annotations-right-aligned ()
   :tags '(interactive)
@@ -130,7 +130,7 @@
           ;; With margins.
           (should (eq (overlay-get ov 'company-width) 13))
           (should (string= (overlay-get ov 'company-display)
-                           "\n 123     (4) \n 45          \n 67 (891011) \n")))))))
+                           " 123     (4) \n 45          \n 67 (891011) \n")))))))
 
 (ert-deftest company-create-lines-shows-numbers ()
   (let ((company-show-numbers t)
