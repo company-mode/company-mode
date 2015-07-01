@@ -2438,8 +2438,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (company--offset-line (pop lines) offset))
             new))
 
-    (let ((str (concat (when nl " ")
-                       "\n"
+    (let ((str (concat (when nl " \n")
                        (mapconcat 'identity (nreverse new) "\n")
                        "\n")))
       (font-lock-append-text-property 0 (length str) 'face 'default str)
@@ -2591,7 +2590,7 @@ Returns a negative number if the tooltip should be displayed above point."
              (end (save-excursion
                     (move-to-window-line (+ row (abs height)))
                     (point)))
-             (ov (make-overlay (if nl beg (1- beg)) end nil t))
+             (ov (make-overlay beg end nil t))
              (args (list (mapcar 'company-plainify
                                  (company-buffer-lines beg end))
                          column nl above)))
@@ -2632,7 +2631,8 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-hide-temporarily ()
   (when (overlayp company-pseudo-tooltip-overlay)
     (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
-    (overlay-put company-pseudo-tooltip-overlay 'after-string nil)))
+    (overlay-put company-pseudo-tooltip-overlay 'after-string nil)
+    (overlay-put company-pseudo-tooltip-overlay 'display nil)))
 
 (defun company-pseudo-tooltip-unhide ()
   (when company-pseudo-tooltip-overlay
@@ -2640,12 +2640,13 @@ Returns a negative number if the tooltip should be displayed above point."
            (disp (overlay-get ov 'company-display)))
       ;; Beat outline's folding overlays, at least.
       (overlay-put ov 'priority 1)
-      ;; `display' could be better (http://debbugs.gnu.org/18285), but it
-      ;; doesn't work when the overlay is empty, which is what happens at eob.
-      ;; It also seems to interact badly with `cursor'.
-      ;; We deal with priorities by having the overlay start before the newline.
-      (overlay-put ov 'after-string disp)
-      (overlay-put ov 'invisible t)
+      ;; `display' is better
+      ;; (http://debbugs.gnu.org/18285, http://debbugs.gnu.org/20847),
+      ;; but it doesn't work on 0-length overlays.
+      (if (< (overlay-start ov) (overlay-end ov))
+          (overlay-put ov 'display disp)
+        (overlay-put ov 'after-string disp)
+        (overlay-put ov 'invisible t))
       (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
