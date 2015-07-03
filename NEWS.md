@@ -2,6 +2,7 @@
 
 ## Next
 
+* New command `company-indent-or-complete-common`.
 * Backend command `doc-buffer` now can also return a cons of buffer and window
   start position.
 * Backend command `ignore-case` has been documented.
