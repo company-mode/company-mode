@@ -1574,6 +1574,7 @@ from the rest of the back-ends in the group, if any, will be left at the end."
           (if company-candidates
               (company-call-frontends 'post-command)
             (and (numberp company-idle-delay)
+                 (not defining-kbd-macro)
                  (company--should-begin)
                  (setq company-timer
                        (run-with-timer company-idle-delay nil
