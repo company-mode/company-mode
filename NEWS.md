@@ -2,6 +2,8 @@
 
 ## Next
 
+* Completion is not started automatically when a keyboard macro is being
+  recorded ([#374](https://github.com/company-mode/company-mode/issues/374)).
 * New command `company-indent-or-complete-common`.
 * Backend command `doc-buffer` now can also return a cons of buffer and window
   start position.
