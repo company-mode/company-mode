@@ -51,11 +51,13 @@ buffer automatically."
 (defvar-local company-etags-buffer-table 'unknown)
 
 (defun company-etags-find-table ()
-  (let ((dir (locate-dominating-file (or buffer-file-name
-                                         default-directory)
-                                     "TAGS")))
-    (when dir
-      (list (expand-file-name "TAGS" dir)))))
+  (let ((file (expand-file-name
+               "TAGS"
+               (locate-dominating-file (or buffer-file-name
+                                           default-directory)
+                                       "TAGS"))))
+    (when (and file (file-regular-p file))
+      (list file))))
 
 (defun company-etags-buffer-table ()
   (or (and company-etags-use-main-table-list tags-table-list)
