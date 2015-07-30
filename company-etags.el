@@ -70,9 +70,7 @@ buffer automatically."
         (completion-ignore-case company-etags-ignore-case))
     (and (or tags-file-name tags-table-list)
          (fboundp 'tags-completion-table)
-         (save-excursion
-           (visit-tags-table-buffer)
-           (all-completions prefix (tags-completion-table))))))
+         (all-completions prefix (tags-completion-table)))))
 
 ;;;###autoload
 (defun company-etags (command &optional arg &rest ignored)
