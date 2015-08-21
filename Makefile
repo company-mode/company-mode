@@ -4,13 +4,13 @@ EMACS=emacs
 
 package: *.el
 	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
-	tar cjvf company-$$ver.tar.bz2 --mode 644 `git ls-files '*.el' | xargs`
+	tar cjvf company-$$ver.tar.bz2 --mode 644 $$(find . -name \*.el)
 
 elpa: *.el
 	@version=`grep -o "Version: .*" company.el | cut -c 10-`; \
 	dir=company-$$version; \
 	mkdir -p "$$dir"; \
-	cp `git ls-files '*.el' | xargs` company-$$version; \
+	cp $$(find . -name \*.el) company-$$version; \
 	echo "(define-package \"company\" \"$$version\" \
 	\"Modular in-buffer completion framework\")" \
 	> "$$dir"/company-pkg.el; \
