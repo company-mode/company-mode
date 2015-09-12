@@ -354,7 +354,8 @@ prefix, but match it in some backend-defined way).  Backends that use this
 feature must disable cache (return t to `no-cache') and might also want to
 respond to `match'.
 
-Optional commands:
+Optional commands
+=================
 
 `sorted': Return t here to indicate that the candidates are sorted and will
 not need to be sorted again.
@@ -414,25 +415,25 @@ The backend should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
 `company-begin-backend' to start itself in that case.
 
-Grouped backends:
+Grouped backends
+================
 
-An element of `company-backends' can also itself be a list of backends,
-then it's considered to be a \"grouped\" backend.
+An element of `company-backends' can also be a list of backends.  The
+completions from backends in such groups are merged, but only from those
+backends which return the same `prefix'.
 
-When possible, commands taking a candidate as an argument are dispatched to
-the backend it came from.  In other cases, the first non-nil value among
-all the backends is returned.
+Whenever makes sense, company commands taking a candidate as an argument
+are dispatched to the backend it came from.  In other cases, the first
+non-nil value among all the backends is returned.
 
-The latter is the case for the `prefix' command.  But if the group contains
-the keyword `:with', the backends after it are ignored for this command.
+The group can also contain keywords. Currently, `:with' and `:sorted'
+keywords are defined. If the group contains keyword `:with' , the backends
+listed after this keyword are ignored for the purpose of `prefix'
+command. If a grouped backend contains keyword `:sorted', the
+final (merged) list of candidates is not sorted.
 
-The completions from backends in a group are merged (but only from those
-that return the same `prefix').
-
-If a grouped backend contains keyword `:sorted', the final (merged) list of
-candidates is not sorted.
-
-Asynchronous backends:
+Asynchronous backends
+=====================
 
 The return value of each command can also be a cons (:async . FETCHER)
 where FETCHER is a function of one argument, CALLBACK.  When the data
