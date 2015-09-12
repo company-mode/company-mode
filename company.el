@@ -429,6 +429,9 @@ the keyword `:with', the backends after it are ignored for this command.
 The completions from backends in a group are merged (but only from those
 that return the same `prefix').
 
+If a grouped backend contains keyword `:sorted', the final (merged) list of
+candidates is not sorted.
+
 Asynchronous backends:
 
 The return value of each command can also be a cons (:async . FETCHER)
@@ -892,14 +895,17 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                            when (not (and (symbolp b)
                                           (eq 'failed (get b 'company-init))))
                            collect b)))
-    (setq backends
-          (if (eq command 'prefix)
-              (butlast backends (length (member :with backends)))
-            (delq :with backends)))
+
+    (when (eq command 'prefix)
+      (setq backends (butlast backends (length (member :with backends)))))
+    
+    (unless (memq command '(sorted))
+      (setq backends (cl-delete-if #'keywordp backends)))
+    
     (pcase command
       (`candidates
        (company--multi-backend-adapter-candidates backends (car args)))
-      (`sorted nil)
+      (`sorted (memq :sorted backends))
       (`duplicates t)
       ((or `prefix `ignore-case `no-cache `require-match)
        (let (value)
