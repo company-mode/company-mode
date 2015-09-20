@@ -2646,6 +2646,7 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-hide-temporarily ()
   (when (overlayp company-pseudo-tooltip-overlay)
     (overlay-put company-pseudo-tooltip-overlay 'invisible nil)
+    (overlay-put company-pseudo-tooltip-overlay 'line-prefix nil)
     (overlay-put company-pseudo-tooltip-overlay 'after-string nil)
     (overlay-put company-pseudo-tooltip-overlay 'display nil)))
 
@@ -2655,6 +2656,8 @@ Returns a negative number if the tooltip should be displayed above point."
            (disp (overlay-get ov 'company-display)))
       ;; Beat outline's folding overlays, at least.
       (overlay-put ov 'priority 1)
+      ;; No (extra) prefix for the first line.
+      (overlay-put ov 'line-prefix "")
       ;; `display' is better
       ;; (http://debbugs.gnu.org/18285, http://debbugs.gnu.org/20847),
       ;; but it doesn't work on 0-length overlays.
