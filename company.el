@@ -44,20 +44,114 @@
 ;; `company-begin-backend'.  For example:
 ;; M-x company-abbrev will prompt for and insert an abbrev.
 ;;
-;; To write your own back-end, look at the documentation for `company-backends'.
+;; Sometimes it is a good idea to mix several back-ends together, for example to
+;; enrich gtags with dabbrev-code results (to emulate local variables).
+;; To do this, add a list with both back-ends as an element in `company-backends'.
+
+;;; Writing your own backend:
+;;
 ;; Here is a simple example completing "foo":
 ;;
 ;; (defun company-my-backend (command &optional arg &rest ignored)
+;;   "Complete foo."
 ;;   (pcase command
 ;;     (`prefix (when (looking-back "foo\\>")
 ;;               (match-string 0)))
 ;;     (`candidates (list "foobar" "foobaz" "foobarbaz"))
 ;;     (`meta (format "This value is named %s" arg))))
 ;;
-;; Sometimes it is a good idea to mix several back-ends together, for example to
-;; enrich gtags with dabbrev-code results (to emulate local variables).
-;; To do this, add a list with both back-ends as an element in company-backends.
+;; Each back-end is a function that takes a variable number of arguments.
+;; The first argument is the command requested from the back-end.  It is one
+;; of the following:
 ;;
+;; `prefix': The back-end should return the text to be completed.  It must be
+;; text immediately before point.  Returning nil from this command passes
+;; control to the next back-end.  The function should return `stop' if it
+;; should complete but cannot (e.g. if it is in the middle of a string).
+;; Instead of a string, the back-end may return a cons where car is the prefix
+;; and cdr is used instead of the actual prefix length in the comparison
+;; against `company-minimum-prefix-length'.  It must be either number or t,
+;; and in the latter case the test automatically succeeds.
+;;
+;; `candidates': The second argument is the prefix to be completed.  The
+;; return value should be a list of candidates that match the prefix.
+;;
+;; Non-prefix matches are also supported (candidates that don't start with the
+;; prefix, but match it in some backend-defined way).  Backends that use this
+;; feature must disable cache (return t to `no-cache') and might also want to
+;; respond to `match'.
+;;
+;; Optional commands:
+;;
+;; `sorted': Return t here to indicate that the candidates are sorted and will
+;; not need to be sorted again.
+;;
+;; `duplicates': If non-nil, company will take care of removing duplicates
+;; from the list.
+;;
+;; `no-cache': Usually company doesn't ask for candidates again as completion
+;; progresses, unless the back-end returns t for this command.  The second
+;; argument is the latest prefix.
+;;
+;; `ignore-case': Return t here if the backend returns case-insensitive
+;; matches.  This value is used to determine the longest common prefix (as
+;; used in `company-complete-common'), and to filter completions when fetching
+;; them from cache.
+;;
+;; `meta': The second argument is a completion candidate.  Return a (short)
+;; documentation string for it.
+;;
+;; `doc-buffer': The second argument is a completion candidate.  Return a
+;; buffer with documentation for it.  Preferably use `company-doc-buffer'.  If
+;; not all buffer contents pertain to this candidate, return a cons of buffer
+;; and window start position.
+;;
+;; `location': The second argument is a completion candidate.  Return a cons
+;; of buffer and buffer location, or of file and line number where the
+;; completion candidate was defined.
+;;
+;; `annotation': The second argument is a completion candidate.  Return a
+;; string to be displayed inline with the candidate in the popup.  If
+;; duplicates are removed by company, candidates with equal string values will
+;; be kept if they have different annotations.  For that to work properly,
+;; backends should store the related information on candidates using text
+;; properties.
+;;
+;; `match': The second argument is a completion candidate.  Return the index
+;; after the end of text matching `prefix' within the candidate string.  It
+;; will be used when rendering the popup.  This command only makes sense for
+;; backends that provide non-prefix completion.
+;;
+;; `require-match': If this returns t, the user is not allowed to enter
+;; anything not offered as a candidate.  Please don't use that value in normal
+;; backends.  The default value nil gives the user that choice with
+;; `company-require-match'.  Return value `never' overrides that option the
+;; other way around.
+;;
+;; `init': Called once for each buffer. The back-end can check for external
+;; programs and files and load any required libraries.  Raising an error here
+;; will show up in message log once, and the back-end will not be used for
+;; completion.
+;;
+;; `post-completion': Called after a completion candidate has been inserted
+;; into the buffer.  The second argument is the candidate.  Can be used to
+;; modify it, e.g. to expand a snippet.
+;;
+;; The back-end should return nil for all commands it does not support or
+;; does not know about.  It should also be callable interactively and use
+;; `company-begin-backend' to start itself in that case.
+;;
+;; Asynchronous back-ends:
+;;
+;; The return value of each command can also be a cons (:async . FETCHER)
+;; where FETCHER is a function of one argument, CALLBACK.  When the data
+;; arrives, FETCHER must call CALLBACK and pass it the appropriate return
+;; value, as described above.
+;;
+;; True asynchronous operation is only supported for command `candidates', and
+;; only during idle completion.  Other commands will block the user interface,
+;; even if the back-end uses the asynchronous calling convention.
+
 ;;; Change Log:
 ;;
 ;; See NEWS.md in the repository.
@@ -327,92 +421,11 @@ This doesn't include the margins and the scroll bar."
 
 Only one back-end is used at a time.  The choice depends on the order of
 the items in this list, and on the values they return in response to the
-`prefix' command (see below).  But a back-end can also be a \"grouped\"
-one (see below).
+`prefix' command (see discussion in the file header).  But a back-end
+can also be a \"grouped\" one (see below).
 
 `company-begin-backend' can be used to start a specific back-end,
 `company-other-backend' will skip to the next matching back-end in the list.
-
-Each back-end is a function that takes a variable number of arguments.
-The first argument is the command requested from the back-end.  It is one
-of the following:
-
-`prefix': The back-end should return the text to be completed.  It must be
-text immediately before point.  Returning nil from this command passes
-control to the next back-end.  The function should return `stop' if it
-should complete but cannot (e.g. if it is in the middle of a string).
-Instead of a string, the back-end may return a cons where car is the prefix
-and cdr is used instead of the actual prefix length in the comparison
-against `company-minimum-prefix-length'.  It must be either number or t,
-and in the latter case the test automatically succeeds.
-
-`candidates': The second argument is the prefix to be completed.  The
-return value should be a list of candidates that match the prefix.
-
-Non-prefix matches are also supported (candidates that don't start with the
-prefix, but match it in some backend-defined way).  Backends that use this
-feature must disable cache (return t to `no-cache') and might also want to
-respond to `match'.
-
-Optional commands:
-
-`sorted': Return t here to indicate that the candidates are sorted and will
-not need to be sorted again.
-
-`duplicates': If non-nil, company will take care of removing duplicates
-from the list.
-
-`no-cache': Usually company doesn't ask for candidates again as completion
-progresses, unless the back-end returns t for this command.  The second
-argument is the latest prefix.
-
-`ignore-case': Return t here if the backend returns case-insensitive
-matches.  This value is used to determine the longest common prefix (as
-used in `company-complete-common'), and to filter completions when fetching
-them from cache.
-
-`meta': The second argument is a completion candidate.  Return a (short)
-documentation string for it.
-
-`doc-buffer': The second argument is a completion candidate.  Return a
-buffer with documentation for it.  Preferably use `company-doc-buffer'.  If
-not all buffer contents pertain to this candidate, return a cons of buffer
-and window start position.
-
-`location': The second argument is a completion candidate.  Return a cons
-of buffer and buffer location, or of file and line number where the
-completion candidate was defined.
-
-`annotation': The second argument is a completion candidate.  Return a
-string to be displayed inline with the candidate in the popup.  If
-duplicates are removed by company, candidates with equal string values will
-be kept if they have different annotations.  For that to work properly,
-backends should store the related information on candidates using text
-properties.
-
-`match': The second argument is a completion candidate.  Return the index
-after the end of text matching `prefix' within the candidate string.  It
-will be used when rendering the popup.  This command only makes sense for
-backends that provide non-prefix completion.
-
-`require-match': If this returns t, the user is not allowed to enter
-anything not offered as a candidate.  Please don't use that value in normal
-backends.  The default value nil gives the user that choice with
-`company-require-match'.  Return value `never' overrides that option the
-other way around.
-
-`init': Called once for each buffer. The back-end can check for external
-programs and files and load any required libraries.  Raising an error here
-will show up in message log once, and the back-end will not be used for
-completion.
-
-`post-completion': Called after a completion candidate has been inserted
-into the buffer.  The second argument is the candidate.  Can be used to
-modify it, e.g. to expand a snippet.
-
-The back-end should return nil for all commands it does not support or
-does not know about.  It should also be callable interactively and use
-`company-begin-backend' to start itself in that case.
 
 Grouped back-ends:
 
@@ -427,18 +440,7 @@ The latter is the case for the `prefix' command.  But if the group contains
 the keyword `:with', the back-ends after it are ignored for this command.
 
 The completions from back-ends in a group are merged (but only from those
-that return the same `prefix').
-
-Asynchronous back-ends:
-
-The return value of each command can also be a cons (:async . FETCHER)
-where FETCHER is a function of one argument, CALLBACK.  When the data
-arrives, FETCHER must call CALLBACK and pass it the appropriate return
-value, as described above.
-
-True asynchronous operation is only supported for command `candidates', and
-only during idle completion.  Other commands will block the user interface,
-even if the back-end uses the asynchronous calling convention."
+that return the same `prefix')."
   :type `(repeat
           (choice
            :tag "Back-end"
