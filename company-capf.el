@@ -1,4 +1,4 @@
-;;; company-capf.el --- company-mode completion-at-point-functions back-end -*- lexical-binding: t -*-
+;;; company-capf.el --- company-mode completion-at-point-functions backend -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2013-2015  Free Software Foundation, Inc.
 
@@ -54,7 +54,7 @@
     (when (and (consp (cdr data)) (integer-or-marker-p (nth 1 data))) data)))
 
 (defun company-capf (command &optional arg &rest _args)
-  "`company-mode' back-end using `completion-at-point-functions'."
+  "`company-mode' backend using `completion-at-point-functions'."
   (interactive (list 'interactive))
   (pcase command
     (`interactive (company-begin-backend 'company-capf))

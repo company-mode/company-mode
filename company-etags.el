@@ -1,4 +1,4 @@
-;;; company-etags.el --- company-mode completion back-end for etags
+;;; company-etags.el --- company-mode completion backend for etags
 
 ;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
 
@@ -30,7 +30,7 @@
 (require 'etags)
 
 (defgroup company-etags nil
-  "Completion back-end for etags."
+  "Completion backend for etags."
   :group 'company)
 
 (defcustom company-etags-use-main-table-list t
@@ -76,7 +76,7 @@ buffer automatically."
 
 ;;;###autoload
 (defun company-etags (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for etags."
+  "`company-mode' completion backend for etags."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-etags))

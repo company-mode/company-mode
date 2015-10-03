@@ -1,4 +1,4 @@
-;;; company-yasnippet.el --- company-mode completion back-end for Yasnippet
+;;; company-yasnippet.el --- company-mode completion backend for Yasnippet
 
 ;; Copyright (C) 2014  Free Software Foundation, Inc.
 
@@ -58,13 +58,13 @@
 
 ;;;###autoload
 (defun company-yasnippet (command &optional arg &rest ignore)
-  "`company-mode' back-end for `yasnippet'.
+  "`company-mode' backend for `yasnippet'.
 
-This back-end should be used with care, because as long as there are
-snippets defined for the current major mode, this back-end will always
-shadow back-ends that come after it.  Recommended usages:
+This backend should be used with care, because as long as there are
+snippets defined for the current major mode, this backend will always
+shadow backends that come after it.  Recommended usages:
 
-* In a buffer-local value of `company-backends', grouped with a back-end or
+* In a buffer-local value of `company-backends', grouped with a backend or
   several that provide actual text completions.
 
   (add-hook 'js-mode-hook
@@ -72,7 +72,7 @@ shadow back-ends that come after it.  Recommended usages:
               (set (make-local-variable 'company-backends)
                    '((company-dabbrev-code company-yasnippet)))))
 
-* After keyword `:with', grouped with other back-ends.
+* After keyword `:with', grouped with other backends.
 
   (push '(company-semantic :with company-yasnippet) company-backends)
 

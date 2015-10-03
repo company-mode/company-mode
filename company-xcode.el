@@ -1,4 +1,4 @@
-;;; company-xcode.el --- company-mode completion back-end for Xcode projects
+;;; company-xcode.el --- company-mode completion backend for Xcode projects
 
 ;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
 
@@ -29,7 +29,7 @@
 (require 'cl-lib)
 
 (defgroup company-xcode nil
-  "Completion back-end for Xcode projects."
+  "Completion backend for Xcode projects."
   :group 'company)
 
 (defcustom company-xcode-xcodeindex-executable (executable-find "xcodeindex")
@@ -106,7 +106,7 @@ valid in most contexts."
                         company-xcode-tags))))))
 ;;;###autoload
 (defun company-xcode (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for Xcode projects."
+  "`company-mode' completion backend for Xcode projects."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-xcode))

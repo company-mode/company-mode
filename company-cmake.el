@@ -1,4 +1,4 @@
-;;; company-cmake.el --- company-mode completion back-end for CMake
+;;; company-cmake.el --- company-mode completion backend for CMake
 
 ;; Copyright (C) 2013-2014  Free Software Foundation, Inc.
 
@@ -29,7 +29,7 @@
 (require 'cl-lib)
 
 (defgroup company-cmake nil
-  "Completion back-end for CMake."
+  "Completion backend for CMake."
   :group 'company)
 
 (defcustom company-cmake-executable
@@ -178,7 +178,7 @@ They affect which types of symbols we get completion candidates for.")
                                        (point-max))))))
 
 (defun company-cmake (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for CMake.
+  "`company-mode' completion backend for CMake.
 CMake is a cross-platform, open-source make system."
   (interactive (list 'interactive))
   (cl-case command

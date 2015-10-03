@@ -1,4 +1,4 @@
-;;; company-keywords.el --- A company back-end for programming language keywords
+;;; company-keywords.el --- A company backend for programming language keywords
 
 ;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
 
@@ -223,7 +223,7 @@
 
 ;;;###autoload
 (defun company-keywords (command &optional arg &rest ignored)
-  "`company-mode' back-end for programming language keywords."
+  "`company-mode' backend for programming language keywords."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-keywords))

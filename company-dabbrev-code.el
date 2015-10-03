@@ -1,4 +1,4 @@
-;;; company-dabbrev-code.el --- dabbrev-like company-mode back-end for code  -*- lexical-binding: t -*-
+;;; company-dabbrev-code.el --- dabbrev-like company-mode backend for code  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009, 2011, 2014  Free Software Foundation, Inc.
 
@@ -30,7 +30,7 @@
 (require 'cl-lib)
 
 (defgroup company-dabbrev-code nil
-  "dabbrev-like completion back-end for code."
+  "dabbrev-like completion backend for code."
   :group 'company)
 
 (defcustom company-dabbrev-code-modes
@@ -40,7 +40,7 @@
   "Modes that use `company-dabbrev-code'.
 In all these modes (and their derivatives) `company-dabbrev-code' will
 complete only symbols, not text in comments or strings.  In other modes
-`company-dabbrev-code' will pass control to other back-ends
+`company-dabbrev-code' will pass control to other backends
 \(e.g. `company-dabbrev'\).  Value t means complete in all modes."
   :type '(choice (repeat (symbol :tag "Major mode"))
                  (const tag "All modes" t)))
@@ -77,8 +77,8 @@ also `company-dabbrev-code-time-limit'."
 
 ;;;###autoload
 (defun company-dabbrev-code (command &optional arg &rest ignored)
-  "dabbrev-like `company-mode' back-end for code.
-The back-end looks for all symbols in the current buffer that aren't in
+  "dabbrev-like `company-mode' backend for code.
+The backend looks for all symbols in the current buffer that aren't in
 comments or strings."
   (interactive (list 'interactive))
   (cl-case command

@@ -1,4 +1,4 @@
-;;; company-bbdb.el --- company-mode completion back-end for BBDB in message-mode
+;;; company-bbdb.el --- company-mode completion backend for BBDB in message-mode
 
 ;; Copyright (C) 2013-2014  Free Software Foundation, Inc.
 
@@ -28,7 +28,7 @@
 (declare-function bbdb-search "bbdb-com")
 
 (defgroup company-bbdb nil
-  "Completion back-end for BBDB."
+  "Completion backend for BBDB."
   :group 'company)
 
 (defcustom company-bbdb-modes '(message-mode)
@@ -44,7 +44,7 @@
 
 ;;;###autoload
 (defun company-bbdb (command &optional arg &rest ignore)
-  "`company-mode' completion back-end for BBDB."
+  "`company-mode' completion backend for BBDB."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-bbdb))

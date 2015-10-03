@@ -1,4 +1,4 @@
-;;; company-dabbrev.el --- dabbrev-like company-mode completion back-end  -*- lexical-binding: t -*-
+;;; company-dabbrev.el --- dabbrev-like company-mode completion backend  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009, 2011, 2014, 2015  Free Software Foundation, Inc.
 
@@ -29,7 +29,7 @@
 (require 'cl-lib)
 
 (defgroup company-dabbrev nil
-  "dabbrev-like completion back-end."
+  "dabbrev-like completion backend."
   :group 'company)
 
 (defcustom company-dabbrev-other-buffers 'all
@@ -145,7 +145,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest ignored)
-  "dabbrev-like `company-mode' completion back-end."
+  "dabbrev-like `company-mode' completion backend."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-dabbrev))

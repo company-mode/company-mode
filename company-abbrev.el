@@ -1,4 +1,4 @@
-;;; company-abbrev.el --- company-mode completion back-end for abbrev
+;;; company-abbrev.el --- company-mode completion backend for abbrev
 
 ;; Copyright (C) 2009-2011, 2015  Free Software Foundation, Inc.
 
@@ -35,7 +35,7 @@
 
 ;;;###autoload
 (defun company-abbrev (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for abbrev."
+  "`company-mode' completion backend for abbrev."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-abbrev

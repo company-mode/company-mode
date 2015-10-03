@@ -1,4 +1,4 @@
-;;; company-files.el --- company-mode completion back-end for file paths
+;;; company-files.el --- company-mode completion backend for file paths
 
 ;; Copyright (C) 2009-2011, 2014-2015  Free Software Foundation, Inc.
 
@@ -94,7 +94,7 @@
 
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
-  "`company-mode' completion back-end existing file names.
+  "`company-mode' completion backend existing file names.
 Completions works for proper absolute and relative files paths.
 File paths with spaces are only supported inside strings."
   (interactive (list 'interactive))

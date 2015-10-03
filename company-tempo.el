@@ -1,4 +1,4 @@
-;;; company-tempo.el --- company-mode completion back-end for tempo
+;;; company-tempo.el --- company-mode completion backend for tempo
 
 ;; Copyright (C) 2009-2011, 2015  Free Software Foundation, Inc.
 
@@ -48,7 +48,7 @@
 
 ;;;###autoload
 (defun company-tempo (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for tempo."
+  "`company-mode' completion backend for tempo."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-tempo

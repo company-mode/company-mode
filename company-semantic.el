@@ -1,4 +1,4 @@
-;;; company-semantic.el --- company-mode completion back-end using Semantic
+;;; company-semantic.el --- company-mode completion backend using Semantic
 
 ;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
 
@@ -40,7 +40,7 @@
 (declare-function semantic-active-p "semantic")
 
 (defgroup company-semantic nil
-  "Completion back-end using Semantic."
+  "Completion backend using Semantic."
   :group 'company)
 
 (defcustom company-semantic-metadata-function 'company-semantic-summary-and-doc
@@ -126,7 +126,7 @@ Symbols are chained by \".\" or \"->\"."
 
 ;;;###autoload
 (defun company-semantic (command &optional arg &rest ignored)
-  "`company-mode' completion back-end using CEDET Semantic."
+  "`company-mode' completion backend using CEDET Semantic."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-semantic))
