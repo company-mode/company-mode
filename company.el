@@ -422,15 +422,16 @@ An element of `company-backends' can also be a list of backends.  The
 completions from backends in such groups are merged, but only from those
 backends which return the same `prefix'.
 
-Whenever makes sense, company commands taking a candidate as an argument
-are dispatched to the backend it came from.  In other cases, the first
-non-nil value among all the backends is returned.
+If a backend command takes a candidate as an argument (e.g. `meta'), the
+call is dispatched to the backend the candidate came from.  In other
+cases (except for `duplicates' and `sorted'), the first non-nil value among
+all the backends is returned.
 
 The group can also contain keywords. Currently, `:with' and `:sorted'
-keywords are defined. If the group contains keyword `:with' , the backends
-listed after this keyword are ignored for the purpose of `prefix'
-command. If a grouped backend contains keyword `:sorted', the
-final (merged) list of candidates is not sorted.
+keywords are defined.  If the group contains keyword `:with', the backends
+listed after this keyword are ignored for the purpose of the `prefix'
+command.  If the group contains keyword `:sorted', the final list of
+candidates is not sorted after concatenation.
 
 Asynchronous backends
 =====================
@@ -899,10 +900,10 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 
     (when (eq command 'prefix)
       (setq backends (butlast backends (length (member :with backends)))))
-    
+
     (unless (memq command '(sorted))
       (setq backends (cl-delete-if #'keywordp backends)))
-    
+
     (pcase command
       (`candidates
        (company--multi-backend-adapter-candidates backends (car args)))
