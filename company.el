@@ -427,7 +427,7 @@ call is dispatched to the backend the candidate came from.  In other
 cases (except for `duplicates' and `sorted'), the first non-nil value among
 all the backends is returned.
 
-The group can also contain keywords. Currently, `:with' and `:sorted'
+The group can also contain keywords.  Currently, `:with' and `:sorted'
 keywords are defined.  If the group contains keyword `:with', the backends
 listed after this keyword are ignored for the purpose of the `prefix'
 command.  If the group contains keyword `:sorted', the final list of
