@@ -26,19 +26,15 @@
 
 ;;; Commentary:
 ;;
-;; Company is a modular completion mechanism.  Modules for retrieving completion
+;; Company is a modular completion framework.  Modules for retrieving completion
 ;; candidates are called backends, modules for displaying them are frontends.
 ;;
-;; Company comes with many backends, e.g. `company-elisp'.  These are
+;; Company comes with many backends, e.g. `company-etags'.  These are
 ;; distributed in separate files and can be used individually.
 ;;
-;; Place company.el and the backends you want to use in a directory and add the
-;; following to your .emacs:
-;; (add-to-list 'load-path "/path/to/company")
-;; (autoload 'company-mode "company" nil t)
-;;
-;; Enable company-mode with M-x company-mode.  For further information look at
-;; the documentation for `company-mode' (C-h f company-mode RET)
+;; Enable `company-mode' in all buffers with M-x global-company-mode.  For
+;; further information look at the documentation for `company-mode' (C-h f
+;; company-mode RET).
 ;;
 ;; If you want to start a specific backend, call it interactively or use
 ;; `company-begin-backend'.  For example:
@@ -55,8 +51,8 @@
 ;;     (`meta (format "This value is named %s" arg))))
 ;;
 ;; Sometimes it is a good idea to mix several backends together, for example to
-;; enrich gtags with dabbrev-code results (to emulate local variables).
-;; To do this, add a list with both backends as an element in company-backends.
+;; enrich gtags with dabbrev-code results (to emulate local variables).  To do
+;; this, add a list with both backends as an element in `company-backends'.
 ;;
 ;;; Change Log:
 ;;
