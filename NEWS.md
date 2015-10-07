@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-search-regexp-function`.
 * Completion is not started automatically when a keyboard macro is being
   recorded ([#374](https://github.com/company-mode/company-mode/issues/374)).
 * New command `company-indent-or-complete-common`.

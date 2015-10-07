@@ -62,6 +62,7 @@
 
 (require 'cl-lib)
 (require 'newcomment)
+(require 'pcase)
 
 ;; FIXME: Use `user-error'.
 (add-to-list 'debug-ignored-errors "^.* frontend cannot be used twice$")
@@ -1608,6 +1609,17 @@ from the rest of the backends in the group, if any, will be left at the end."
 
 ;;; search ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defcustom company-search-regexp-function #'regexp-quote
+  "Function to construct the search regexp from input.
+It's called with one argument, the current search input.  It must return
+either a regexp without groups, or one where groups don't intersect and
+each one wraps a part of the input string."
+  :type '(choice
+          (const :tag "Exact match" regexp-quote)
+          (const :tag "Words separated with spaces" company-search-words-regexp)
+          (const :tag "Words separated with spaces, in any order"
+                 company-search-words-in-any-order-regexp)))
+
 (defvar-local company-search-string "")
 
 (defvar company-search-lighter '(" "
@@ -1623,11 +1635,33 @@ from the rest of the backends in the group, if any, will be left at the end."
 
 (defvar-local company--search-old-changed nil)
 
+(defun company-search-words-regexp (input)
+  (mapconcat (lambda (word) (format "\\(%s\\)" (regexp-quote word)))
+             (split-string input " +" t) ".*"))
+
+(defun company-search-words-in-any-order-regexp (input)
+  (let* ((words (mapcar (lambda (word) (format "\\(%s\\)" (regexp-quote word)))
+                        (split-string input " +" t)))
+         (permutations (company--permutations words)))
+    (mapconcat (lambda (words)
+                 (mapconcat #'identity words ".*"))
+               permutations
+               "\\|")))
+
+(defun company--permutations (lst)
+  (if (not lst)
+      '(nil)
+    (cl-mapcan
+     (lambda (e)
+       (mapcar (lambda (perm) (cons e perm))
+               (company--permutations (cl-remove e lst :count 1))))
+     lst)))
+
 (defun company--search (text lines)
-  (let ((quoted (regexp-quote text))
+  (let ((re (funcall company-search-regexp-function text))
         (i 0))
     (cl-dolist (line lines)
-      (when (string-match quoted line (length company-prefix))
+      (when (string-match-p re line (length company-prefix))
         (cl-return i))
       (cl-incf i))))
 
@@ -1645,11 +1679,12 @@ from the rest of the backends in the group, if any, will be left at the end."
       (company--search-update-predicate ss))
     (company--search-update-string ss)))
 
-(defun company--search-update-predicate (&optional ss)
-  (let* ((company-candidates-predicate
-          (and (not (string= ss ""))
+(defun company--search-update-predicate (ss)
+  (let* ((re (funcall company-search-regexp-function ss))
+         (company-candidates-predicate
+          (and (not (string= re ""))
                company-search-filtering
-               (lambda (candidate) (string-match ss candidate))))
+               (lambda (candidate) (string-match re candidate))))
          (cc (company-calculate-candidates company-prefix)))
     (unless cc (error "No match"))
     (company-update-candidates cc)))
@@ -2323,16 +2358,18 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                              mouse-face company-tooltip-mouse)
                            line))
     (when selected
-      (if (and (not (string= company-search-string ""))
-               (string-match (regexp-quote company-search-string) value
-                             (length company-prefix)))
-          (let ((beg (+ margin (match-beginning 0)))
-                (end (+ margin (match-end 0)))
-                (width (- width (length right))))
-            (when (< beg width)
-              (add-text-properties beg (min end width)
-                                   '(face company-tooltip-search)
-                                   line)))
+      (if (let ((re (funcall company-search-regexp-function
+                             company-search-string)))
+            (and (not (string= re ""))
+                 (string-match re value (length company-prefix))))
+          (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
+            (let ((beg (+ margin mbeg))
+                  (end (+ margin mend))
+                  (width (- width (length right))))
+              (when (< beg width)
+                (add-text-properties beg (min end width)
+                                     '(face company-tooltip-search)
+                                     line))))
         (add-text-properties 0 width '(face company-tooltip-selection
                                        mouse-face company-tooltip-selection)
                              line)
@@ -2341,6 +2378,16 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                mouse-face company-tooltip-selection)
                              line)))
     line))
+
+(defun company--search-chunks ()
+  (let ((md (match-data t))
+        res)
+    (if (<= (length md) 2)
+        (push (cons (nth 0 md) (nth 1 md)) res)
+      (while (setq md (nthcdr 2 md))
+        (when (car md)
+          (push (cons (car md) (cadr md)) res))))
+    res))
 
 (defun company--clean-string (str)
   (replace-regexp-in-string
@@ -2725,12 +2772,14 @@ Returns a negative number if the tooltip should be displayed above point."
                          '(face company-preview-common) completion)
 
     ;; Add search string
-    (and company-search-string
-         (string-match (regexp-quote company-search-string) completion)
-         (add-text-properties (match-beginning 0)
-                              (match-end 0)
-                              '(face company-preview-search)
-                              completion))
+    (and (string-match (funcall company-search-regexp-function
+                                company-search-string)
+                       completion)
+         (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
+           (add-text-properties mbeg
+                                mend
+                                '(face company-preview-search)
+                                completion)))
 
     (setq completion (company-strip-prefix completion))
 
