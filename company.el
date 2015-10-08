@@ -1839,6 +1839,9 @@ Don't start this directly, use `company-search-candidates' or
 
 Regular characters are appended to the search string.
 
+Customize `company-search-regexp-function' to change how the input
+is interpreted when searching.
+
 The command `company-search-toggle-filtering' (\\[company-search-toggle-filtering])
 uses the search string to filter the completion candidates."
   (interactive)
