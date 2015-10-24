@@ -38,6 +38,7 @@
 (declare-function semantic-tag-start "semantic/tag")
 (declare-function semantic-tag-buffer "semantic/tag")
 (declare-function semantic-active-p "semantic")
+(declare-function semantic-format-tag-prototype "semantic/format")
 
 (defgroup company-semantic nil
   "Completion backend using Semantic."
@@ -113,7 +114,7 @@ Symbols are chained by \".\" or \"->\"."
   (save-excursion
     (let ((pos (point)))
       (goto-char (- (point) prefix-length))
-      (while (looking-back "->\\|\\.")
+      (while (looking-back "->\\|\\." (- (point) 2))
         (goto-char (match-beginning 0))
         (skip-syntax-backward "w_"))
       (- pos (point)))))
@@ -136,7 +137,7 @@ Symbols are chained by \".\" or \"->\"."
                  (not (company-in-string-or-comment))
                  (or (company-semantic--grab) 'stop)))
     (candidates (if (and (equal arg "")
-                         (not (looking-back "->\\|\\.")))
+                         (not (looking-back "->\\|\\." (- (point) 2))))
                     (company-semantic-completions-raw arg)
                   (company-semantic-completions arg)))
     (meta (funcall company-semantic-metadata-function
