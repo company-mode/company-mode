@@ -91,7 +91,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
               (> (float-time (time-since ,start)) ,limit)
               (throw 'done 'company-time-out))))))
 
-(defsubst company-dabbrev--make-regexp (prefix)
+(defun company-dabbrev--make-regexp (prefix)
   (concat "\\<" (if (equal prefix "")
               company-dabbrev-char-regexp
             (regexp-quote prefix))

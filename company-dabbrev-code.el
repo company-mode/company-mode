@@ -69,7 +69,7 @@ also `company-dabbrev-code-time-limit'."
   "Non-nil to ignore case when collecting completion candidates."
   :type 'boolean)
 
-(defsubst company-dabbrev-code--make-regexp (prefix)
+(defun company-dabbrev-code--make-regexp (prefix)
   (concat "\\_<" (if (equal prefix "")
                      "\\([a-zA-Z]\\|\\s_\\)"
                    (regexp-quote prefix))
