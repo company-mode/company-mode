@@ -830,9 +830,15 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
     (or (match-string-no-properties (or expression 0)) "")))
 
 (defun company-grab-line (regexp &optional expression)
+  "Return a match string for REGEXP if it matches text before point.
+If EXPRESSION is non-nil, return the match string for the respective
+parenthesized expression in REGEXP.
+Matching is limited to the current line."
   (company-grab regexp expression (point-at-bol)))
 
 (defun company-grab-symbol ()
+  "If point is at the end of a symbol, return it.
+Otherwise, if point is not inside a symbol, return an empty string."
   (if (looking-at "\\_>")
       (buffer-substring (point) (save-excursion (skip-syntax-backward "w_")
                                                 (point)))
@@ -840,6 +846,8 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
       "")))
 
 (defun company-grab-word ()
+  "If point is at the end of a word, return it.
+Otherwise, if point is not inside a symbol, return an empty string."
   (if (looking-at "\\>")
       (buffer-substring (point) (save-excursion (skip-syntax-backward "w")
                                                 (point)))
@@ -847,6 +855,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
       "")))
 
 (defun company-grab-symbol-cons (idle-begin-after-re &optional max-len)
+  "Return a string SYMBOL or a cons (SYMBOL . t).
+SYMBOL is as returned by `company-grab-symbol'.  If the text before poit
+matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
   (let ((symbol (company-grab-symbol)))
     (when symbol
       (save-excursion
@@ -858,6 +869,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
           symbol)))))
 
 (defun company-in-string-or-comment ()
+  "Return non-nil if point is within a string or comment."
   (let ((ppss (syntax-ppss)))
     (or (car (setq ppss (nthcdr 3 ppss)))
         (car (setq ppss (cdr ppss)))
