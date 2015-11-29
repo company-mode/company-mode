@@ -33,8 +33,45 @@
 (declare-function yas-expand-snippet "yasnippet")
 (declare-function yas--template-content "yasnippet")
 (declare-function yas--template-expand-env "yasnippet")
+(declare-function yas--warning "yasnippet")
+
+(defun company-yasnippet--key-prefixes ()
+  ;; Mostly copied from `yas--templates-for-key-at-point'.
+  (defvar yas-key-syntaxes)
+  (save-excursion
+    (let ((original (point))
+          (methods yas-key-syntaxes)
+          prefixes
+          method)
+      (while methods
+        (unless (eq method (car methods))
+          (goto-char original))
+        (setq method (car methods))
+        (cond ((stringp method)
+               (skip-syntax-backward method)
+               (setq methods (cdr methods)))
+              ((functionp method)
+               (unless (eq (funcall method original)
+                           'again)
+                 (setq methods (cdr methods))))
+              (t
+               (setq methods (cdr methods))
+               (yas--warning "Invalid element `%s' in `yas-key-syntaxes'" method)))
+        (let ((prefix (buffer-substring-no-properties (point) original)))
+          (unless (equal prefix (car prefixes))
+            (push prefix prefixes))))
+      prefixes)))
 
 (defun company-yasnippet--candidates (prefix)
+  ;; Process the prefixes in reverse: unlike Yasnippet, we look for prefix
+  ;; matches, so the longest prefix with any matches should be the most useful.
+  (cl-loop with tables = (yas--get-snippet-tables)
+           for key-prefix in (company-yasnippet--key-prefixes)
+           thereis (company-yasnippet--completions-for-prefix prefix
+                                                              key-prefix
+                                                              tables)))
+
+(defun company-yasnippet--completions-for-prefix (prefix key-prefix tables)
   (cl-mapcan
    (lambda (table)
      (let ((keyhash (yas--table-hash table))
@@ -43,18 +80,31 @@
          (maphash
           (lambda (key value)
             (when (and (stringp key)
-                       (string-prefix-p prefix key))
+                       (string-prefix-p key-prefix key))
               (maphash
                (lambda (name template)
                  (push
-                  (propertize key
+                  (propertize (company-yasnippet--adjust-key key prefix key-prefix)
                               'yas-annotation name
-                              'yas-template template)
+                              'yas-template template
+                              'yas-prefix-offset (- (length key-prefix)
+                                                    (length prefix)))
                   res))
                value)))
           keyhash))
        res))
-   (yas--get-snippet-tables)))
+   tables))
+
+(defun company-yasnippet--adjust-key (key prefix key-prefix)
+  (let ((pl (length prefix))
+        (kpl (length key-prefix)))
+    (cond
+     ((= pl kpl)
+      key)
+     ((> pl kpl)
+      (concat (substring prefix 0 (- pl kpl)) key))
+     (t
+      (substring key (- kpl pl))))))
 
 ;;;###autoload
 (defun company-yasnippet (command &optional arg &rest ignore)
@@ -94,9 +144,10 @@ shadow backends that come after it.  Recommended usages:
       (get-text-property 0 'yas-annotation arg)))
     (candidates (company-yasnippet--candidates arg))
     (post-completion
-     (let ((template (get-text-property 0 'yas-template arg)))
+     (let ((template (get-text-property 0 'yas-template arg))
+           (prefix-offset (get-text-property 0 'yas-prefix-offset arg)))
        (yas-expand-snippet (yas--template-content template)
-                           (- (point) (length arg))
+                           (- (point) (length arg) prefix-offset)
                            (point)
                            (yas--template-expand-env template))))))
 

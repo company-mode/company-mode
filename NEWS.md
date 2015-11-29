@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-yasnippet` respects `yas-key-syntaxes`. But we use them in the
+  reverse order, preferring the longest key prefix that matches anything.
 * New user option `company-search-regexp-function`.
 * Completion is not started automatically when a keyboard macro is being
   recorded ([#374](https://github.com/company-mode/company-mode/issues/374)).
