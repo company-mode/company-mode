@@ -1,6 +1,6 @@
 ;;; company-yasnippet.el --- company-mode completion backend for Yasnippet
 
-;; Copyright (C) 2014  Free Software Foundation, Inc.
+;; Copyright (C) 2014, 2015  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
