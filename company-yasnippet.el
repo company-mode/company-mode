@@ -132,6 +132,7 @@ shadow backends that come after it.  Recommended usages:
       (unless company-tooltip-align-annotations " -> ")
       (get-text-property 0 'yas-annotation arg)))
     (candidates (company-yasnippet--candidates arg))
+    (no-cache t)
     (post-completion
      (let ((template (get-text-property 0 'yas-template arg))
            (prefix-offset (get-text-property 0 'yas-prefix-offset arg)))
