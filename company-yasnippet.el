@@ -84,7 +84,7 @@
               (maphash
                (lambda (name template)
                  (push
-                  (propertize (company-yasnippet--adjust-key key prefix key-prefix)
+                  (propertize key
                               'yas-annotation name
                               'yas-template template
                               'yas-prefix-offset (- (length key-prefix)
@@ -94,17 +94,6 @@
           keyhash))
        res))
    tables))
-
-(defun company-yasnippet--adjust-key (key prefix key-prefix)
-  (let ((pl (length prefix))
-        (kpl (length key-prefix)))
-    (cond
-     ((= pl kpl)
-      key)
-     ((> pl kpl)
-      (concat (substring prefix 0 (- pl kpl)) key))
-     (t
-      (substring key (- kpl pl))))))
 
 ;;;###autoload
 (defun company-yasnippet (command &optional arg &rest ignore)
