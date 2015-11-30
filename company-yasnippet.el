@@ -87,8 +87,12 @@
                   (propertize key
                               'yas-annotation name
                               'yas-template template
-                              'yas-prefix-offset (- (length key-prefix)
-                                                    (length prefix)))
+                              'yas-prefix-offset
+                              (let ((pl (length prefix))
+                                    (kpl (length key-prefix)))
+                                (if (> kpl pl)
+                                    (- kpl pl)
+                                  0)))
                   res))
                value)))
           keyhash))
