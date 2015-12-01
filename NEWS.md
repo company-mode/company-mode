@@ -2,8 +2,11 @@
 
 ## Next
 
-* `company-yasnippet` respects `yas-key-syntaxes`. But we use them in the
-  reverse order, preferring the longest key prefix that matches anything.
+* `company-yasnippet` supports `yas-key-syntaxes` better. But we use them in the
+  reverse order, preferring the longest key prefix that matches anything. And we
+  only consider trigger key prefixes that are at least as long as the symbol at
+  point, which effectively means skipping the `"w"` element
+  ([#422](https://github.com/company-mode/company-mode/issues/422)).
 * New user option `company-search-regexp-function`.
 * Completion is not started automatically when a keyboard macro is being
   recorded ([#374](https://github.com/company-mode/company-mode/issues/374)).

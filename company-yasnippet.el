@@ -67,6 +67,8 @@
   ;; matches, so the longest prefix with any matches should be the most useful.
   (cl-loop with tables = (yas--get-snippet-tables)
            for key-prefix in (company-yasnippet--key-prefixes)
+           ;; Only consider keys at least as long as the symbol at point.
+           when (>= (length key-prefix) (length prefix))
            thereis (company-yasnippet--completions-for-prefix prefix
                                                               key-prefix
                                                               tables)))
@@ -87,12 +89,8 @@
                   (propertize key
                               'yas-annotation name
                               'yas-template template
-                              'yas-prefix-offset
-                              (let ((pl (length prefix))
-                                    (kpl (length key-prefix)))
-                                (if (> kpl pl)
-                                    (- kpl pl)
-                                  0)))
+                              'yas-prefix-offset (- (length key-prefix)
+                                                    (length prefix)))
                   res))
                value)))
           keyhash))
