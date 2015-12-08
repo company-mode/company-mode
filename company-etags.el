@@ -45,6 +45,15 @@ buffer automatically."
   :type 'boolean
   :package-version '(company . "0.7.3"))
 
+(defcustom company-etags-everywhere nil
+  "Non-nil to offer completions in comments and strings.
+Set it to t or to a list of major modes."
+  :type '(choice (const :tag "Off" nil)
+                 (const :tag "Any supported mode" t)
+                 (repeat :tag "Some major modes"
+                         (symbol :tag "Major mode")))
+  :package-version '(company . "0.9.0"))
+
 (defvar company-etags-modes '(prog-mode c-mode objc-mode c++-mode java-mode
                               jde-mode pascal-mode perl-mode python-mode))
 
@@ -80,8 +89,10 @@ buffer automatically."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-etags))
-    (prefix (and (apply 'derived-mode-p company-etags-modes)
-                 (not (company-in-string-or-comment))
+    (prefix (and (apply #'derived-mode-p company-etags-modes)
+                 (or (eq t company-etags-everywhere)
+                     (apply #'derived-mode-p company-etags-everywhere)
+                     (not (company-in-string-or-comment)))
                  (company-etags-buffer-table)
                  (or (company-grab-symbol) 'stop)))
     (candidates (company-etags--candidates arg))

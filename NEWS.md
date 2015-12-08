@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-etags-everywhere`.
 * `company-yasnippet` supports `yas-key-syntaxes` better. But we use them in the
   reverse order, preferring the longest key prefix that matches anything. And we
   only consider trigger key prefixes that are at least as long as the symbol at
