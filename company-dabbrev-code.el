@@ -42,8 +42,8 @@ In all these modes (and their derivatives) `company-dabbrev-code' will
 complete only symbols, not text in comments or strings.  In other modes
 `company-dabbrev-code' will pass control to other backends
 \(e.g. `company-dabbrev'\).  Value t means complete in all modes."
-  :type '(choice (repeat (symbol :tag "Major mode"))
-                 (const tag "All modes" t)))
+  :type '(choice (repeat :tag "Some modes" (symbol :tag "Major mode"))
+                 (const :tag "All modes" t)))
 
 (defcustom company-dabbrev-code-other-buffers t
   "Determines whether `company-dabbrev-code' should search other buffers.
