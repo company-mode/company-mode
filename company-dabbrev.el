@@ -92,10 +92,10 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
               (throw 'done 'company-time-out))))))
 
 (defun company-dabbrev--make-regexp (prefix)
-  (concat "\\<" (if (equal prefix "")
-                    (concat "\\(?:" company-dabbrev-char-regexp "\\)")
-                  (regexp-quote prefix))
-          "\\(?:" company-dabbrev-char-regexp "\\)*\\>"))
+  (concat (if (equal prefix "")
+              (concat "\\(?:" company-dabbrev-char-regexp "\\)")
+            (regexp-quote prefix))
+          "\\(?:" company-dabbrev-char-regexp "\\)*"))
 
 (defun company-dabbrev--search-buffer (regexp pos symbols start limit
                                        ignore-comments)
