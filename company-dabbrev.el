@@ -108,14 +108,24 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                                         (invisible-p (match-beginning 0)))))
                      (push match symbols)))))
       (goto-char (if pos (1- pos) (point-min)))
-      ;; search before pos
-      (company-dabrev--time-limit-while (re-search-backward regexp nil t)
-          start limit
-        (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
-            (goto-char (nth 8 (syntax-ppss)))
-          (maybe-collect-match)))
+      ;; Search before pos.
+      (let ((tmp-end (point)))
+        (company-dabrev--time-limit-while (not (bobp))
+            start limit
+          (ignore-errors
+            (forward-char -10000))
+          (forward-line 0)
+          (save-excursion
+            ;; Before, we used backward search, but it matches non-greedily, and
+            ;; that forced us to use the "beginning/end of word" anchors in
+            ;; `company-dabbrev--make-regexp'.
+            (while (re-search-forward regexp tmp-end t)
+              (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
+                  (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
+                (maybe-collect-match))))
+          (setq tmp-end (point))))
       (goto-char (or pos (point-min)))
-      ;; search after pos
+      ;; Search after pos.
       (company-dabrev--time-limit-while (re-search-forward regexp nil t)
           start limit
         (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
