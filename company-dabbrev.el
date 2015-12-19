@@ -93,9 +93,9 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 
 (defun company-dabbrev--make-regexp (prefix)
   (concat "\\<" (if (equal prefix "")
-              company-dabbrev-char-regexp
-            (regexp-quote prefix))
-          "\\(" company-dabbrev-char-regexp "\\)*\\>"))
+                    (concat "\\(?:" company-dabbrev-char-regexp "\\)")
+                  (regexp-quote prefix))
+          "\\(?:" company-dabbrev-char-regexp "\\)*\\>"))
 
 (defun company-dabbrev--search-buffer (regexp pos symbols start limit
                                        ignore-comments)
@@ -143,13 +143,21 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
              (cl-return))))
     symbols))
 
+(defun company-dabbrev--prefix ()
+  ;; Not in the middle of a word.
+  (unless (looking-at company-dabbrev-char-regexp)
+    ;; Emacs can't do greedy backward-search.
+    (company-grab-line (format "\\(?:^\\| \\)[^ ]*?\\(\\(?:%s\\)*\\)"
+                               company-dabbrev-char-regexp)
+                       1)))
+
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest ignored)
   "dabbrev-like `company-mode' completion backend."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-dabbrev))
-    (prefix (company-grab-word))
+    (prefix (company-dabbrev--prefix))
     (candidates
      (let* ((case-fold-search company-dabbrev-ignore-case)
             (words (company-dabbrev--search (company-dabbrev--make-regexp arg)
