@@ -1,6 +1,6 @@
 # https://github.com/rolandwalker/emacs-travis
 
-language: emacs-lisp
+language: generic
 
 env:
   matrix:
