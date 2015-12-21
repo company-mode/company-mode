@@ -1239,7 +1239,7 @@ can retrieve meta-data for them."
           (push anno2 annos)
           (push str res)            ; Maintain ordering.
           (setq str str2)))))
-    (push str res)
+    (when str (push str res))
     (nreverse res)))
 
 (defun company--transform-candidates (candidates)

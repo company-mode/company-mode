@@ -399,6 +399,9 @@
       (and (ert-equal-including-properties (car list1) (car list2))
            (ct-equal-including-properties (cdr list1) (cdr list2)))))
 
+(ert-deftest company-strips-duplicates-returns-nil ()
+  (should (null (company--preprocess-candidates nil))))
+
 (ert-deftest company-strips-duplicates-within-groups ()
   (let* ((kvs '(("a" . "b")
                 ("a" . nil)
