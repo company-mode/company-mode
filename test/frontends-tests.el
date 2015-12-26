@@ -265,6 +265,31 @@
              #(" bar "
                0 5 (face company-tooltip mouse-face company-tooltip-mouse))))))
 
+(ert-deftest company-fill-propertize-uses-company-face ()
+  (let ((company-backend #'ignore)
+        (company-prefix "")
+        (str1 "str1")
+        (str2 "str2"))
+    (put-text-property 0 3 'company-face 'boo str1)
+    (put-text-property 1 4 'company-face 'boo str2)
+    (let ((res (company-fill-propertize str1 nil 10 nil nil nil)))
+      ;; `equal-including-properties' uses `eq' for properties.
+      (equal-including-properties
+       (substring res 3 10)
+       #("      " 0 6 (face company-tooltip mouse-face company-tooltip-mouse)))
+      (should (equal (get-text-property 0 'face res)
+                     '(boo company-tooltip)))
+      (should (equal (get-text-property 2 'mouse-face res)
+                     '(boo company-tooltip-mouse))))
+    (let ((res (company-fill-propertize str2 nil 4 nil nil nil)))
+      (equal-including-properties
+       (substring res 0 1)
+       #("s" 0 1 (face company-tooltip mouse-face company-tooltip-mouse)))
+      (should (equal (get-text-property 1 'face res)
+                     '(boo company-tooltip)))
+      (should (equal (get-text-property 3 'mouse-face res)
+                     '(boo company-tooltip-mouse))))))
+
 (ert-deftest company-column-with-composition ()
   :tags '(interactive)
   (with-temp-buffer
