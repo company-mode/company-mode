@@ -101,8 +101,7 @@ buffer-local wherever it is set."
   "Face used for the tooltip.")
 
 (defface company-tooltip-selection
-  '((default :inherit company-tooltip)
-    (((class color) (min-colors 88) (background light))
+  '((((class color) (min-colors 88) (background light))
      (:background "light blue"))
     (((class color) (min-colors 88) (background dark))
      (:background "orange1"))
@@ -118,24 +117,18 @@ buffer-local wherever it is set."
   "Face used for the tooltip item under the mouse.")
 
 (defface company-tooltip-common
-  '((default :inherit company-tooltip)
-    (((background light))
+  '((((background light))
      :foreground "darkred")
     (((background dark))
      :foreground "red"))
   "Face used for the common completion in the tooltip.")
 
 (defface company-tooltip-common-selection
-  '((default :inherit company-tooltip-selection)
-    (((background light))
-     :foreground "darkred")
-    (((background dark))
-     :foreground "red"))
+  '((default :inherit company-tooltip-common))
   "Face used for the selected common completion in the tooltip.")
 
 (defface company-tooltip-annotation
-  '((default :inherit company-tooltip)
-    (((background light))
+  '((((background light))
      :foreground "firebrick4")
     (((background dark))
      :foreground "red4"))
@@ -149,8 +142,7 @@ buffer-local wherever it is set."
   "Face used for the tooltip scrollbar thumb.")
 
 (defface company-scrollbar-bg
-  '((default :inherit company-tooltip)
-    (((background light))
+  '((((background light))
      :background "wheat")
     (((background dark))
      :background "gold"))
@@ -158,7 +150,7 @@ buffer-local wherever it is set."
 
 (defface company-preview
   '((((background light))
-     :inherit company-tooltip-selection)
+     :inherit (company-tooltip-selection company-tooltip))
     (((background dark))
      :background "blue4"
      :foreground "wheat"))
@@ -166,7 +158,7 @@ buffer-local wherever it is set."
 
 (defface company-preview-common
   '((((background light))
-     :inherit company-tooltip-selection)
+     :inherit company-tooltip-common-selection)
     (((background dark))
      :inherit company-preview
      :foreground "red"))
@@ -2347,6 +2339,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                      (if company-common
                          (string-width company-common)
                        0)))
+         (_ (setq value (company--pre-render value)
+                  annotation (and annotation (company--pre-render annotation t))))
          (ann-ralign company-tooltip-align-annotations)
          (ann-truncate (< width
                           (+ (length value) (length annotation)
@@ -2373,18 +2367,18 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (setq common (+ (min common width) margin))
     (setq width (+ width margin (length right)))
 
-    (add-text-properties 0 width '(face company-tooltip
-                                   mouse-face company-tooltip-mouse)
-                         line)
-    (add-text-properties margin common
-                         '(face company-tooltip-common
-                           mouse-face company-tooltip-mouse)
-                         line)
+    (font-lock-append-text-property 0 width 'mouse-face
+                                    'company-tooltip-mouse
+                                    line)
     (when (< ann-start ann-end)
-      (add-text-properties ann-start ann-end
-                           '(face company-tooltip-annotation
-                             mouse-face company-tooltip-mouse)
-                           line))
+      (font-lock-append-text-property ann-start ann-end 'face
+                                      'company-tooltip-annotation
+                                      line))
+    (font-lock-prepend-text-property margin common 'face
+                                     (if selected
+                                         'company-tooltip-common-selection
+                                       'company-tooltip-common)
+                                     line)
     (when selected
       (if (let ((re (funcall company-search-regexp-function
                              company-search-string)))
@@ -2395,16 +2389,15 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                   (end (+ margin mend))
                   (width (- width (length right))))
               (when (< beg width)
-                (add-text-properties beg (min end width)
-                                     '(face company-tooltip-search)
-                                     line))))
-        (add-text-properties 0 width '(face company-tooltip-selection
-                                       mouse-face company-tooltip-selection)
-                             line)
-        (add-text-properties margin common
-                             '(face company-tooltip-common-selection
-                               mouse-face company-tooltip-selection)
-                             line)))
+                (font-lock-prepend-text-property beg (min end width)
+                                                 'face 'company-tooltip-search
+                                                 line))))
+        (font-lock-append-text-property 0 width 'face
+                                        'company-tooltip-selection
+                                        line)))
+    (font-lock-append-text-property 0 width 'face
+                                    'company-tooltip
+                                    line)
     line))
 
 (defun company--search-chunks ()
@@ -2416,6 +2409,17 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
         (when (car md)
           (push (cons (car md) (cadr md)) res))))
     res))
+
+(defun company--pre-render (str &optional annotation-p)
+  (or (company-call-backend 'pre-render str annotation-p)
+      (progn
+        (when (or (text-property-not-all 0 (length str) 'face nil str)
+                  (text-property-not-all 0 (length str) 'mouse-face nil str))
+          (setq str (copy-sequence str))
+          (remove-text-properties 0 (length str)
+                                  '(face nil font-lock-face nil mouse-face nil)
+                                  str))
+        str)))
 
 (defun company--clean-string (str)
   (replace-regexp-in-string
@@ -2795,19 +2799,22 @@ Returns a negative number if the tooltip should be displayed above point."
   (company-preview-hide)
 
   (let ((completion (nth company-selection company-candidates)))
-    (setq completion (propertize completion 'face 'company-preview))
-    (add-text-properties 0 (length company-common)
-                         '(face company-preview-common) completion)
+    (setq completion (copy-sequence (company--pre-render completion)))
+    (font-lock-append-text-property 0 (length completion)
+                                    'face 'company-preview
+                                    completion)
+    (font-lock-prepend-text-property 0 (length company-common)
+                                     'face 'company-preview-common
+                                     completion)
 
     ;; Add search string
     (and (string-match (funcall company-search-regexp-function
                                 company-search-string)
                        completion)
          (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
-           (add-text-properties mbeg
-                                mend
-                                '(face company-preview-search)
-                                completion)))
+           (font-lock-prepend-text-property mbeg mend
+                                            'face 'company-preview-search
+                                            completion)))
 
     (setq completion (company-strip-prefix completion))
 
