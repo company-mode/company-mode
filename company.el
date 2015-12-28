@@ -2405,7 +2405,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                              '(face company-tooltip-common-selection
                                mouse-face company-tooltip-selection)
                              line)))
-    (company--apply-company-face line)
     line))
 
 (defun company--search-chunks ()
@@ -2417,21 +2416,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
         (when (car md)
           (push (cons (car md) (cadr md)) res))))
     res))
-
-(defun company--apply-company-face (str)
-  (let ((start (if (get-text-property 0 'company-face str)
-                   0
-                 (next-single-property-change 0 'company-face str)))
-        end value)
-    (while start
-      (setq end (or (next-single-property-change start 'company-face str)
-                    (length str)))
-      (setq value (get-text-property start 'company-face str))
-      (font-lock-prepend-text-property start end 'face value str)
-      (font-lock-prepend-text-property start end 'mouse-face value str)
-      (setq start (next-single-property-change end 'company-face str)))
-    (when end
-      (remove-text-properties 0 end '(company-face) str))))
 
 (defun company--clean-string (str)
   (replace-regexp-in-string
