@@ -48,10 +48,18 @@
               ;; the latter comes later.
               (remove 'tags-completion-at-point-function
                       (default-value 'completion-at-point-functions)))
+             (completion-at-point-functions (company--capf-workaround))
              (data (run-hook-wrapped 'completion-at-point-functions
                                      ;; Ignore misbehaving functions.
                                      #'completion--capf-wrapper 'optimist)))
     (when (and (consp (cdr data)) (integer-or-marker-p (nth 1 data))) data)))
+
+(defun company--capf-workaround ()
+  ;; For http://debbugs.gnu.org/cgi/bugreport.cgi?bug=18067
+  (if (or (not (memq 'python-completion-at-point completion-at-point-functions))
+          (python-shell-get-process))
+      completion-at-point-functions
+    (remq 'python-completion-at-point completion-at-point-functions)))
 
 (defun company-capf (command &optional arg &rest _args)
   "`company-mode' backend using `completion-at-point-functions'."
