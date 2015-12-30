@@ -56,10 +56,10 @@
 
 (defun company--capf-workaround ()
   ;; For http://debbugs.gnu.org/cgi/bugreport.cgi?bug=18067
-  (if (or (not (memq 'python-completion-at-point completion-at-point-functions))
+  (if (or (not (memq 'python-completion-complete-at-point completion-at-point-functions))
           (python-shell-get-process))
       completion-at-point-functions
-    (remq 'python-completion-at-point completion-at-point-functions)))
+    (remq 'python-completion-complete-at-point completion-at-point-functions)))
 
 (defun company-capf (command &optional arg &rest _args)
   "`company-mode' backend using `completion-at-point-functions'."
