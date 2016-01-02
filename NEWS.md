@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-clang-objc-templatify` has been renamed to
+  `company-template-objc-templatify`.
 * When duplicates are removed, completions without annotations are also removed
   in favor of completions with equal names that have annotations (experimental
   change) ([#432](https://github.com/company-mode/company-mode/issues/432)).

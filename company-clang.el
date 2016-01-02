@@ -323,7 +323,7 @@ passed via standard input."
                        (when (and company-clang-insert-arguments anno)
                          (insert anno)
                          (if (string-match "\\`:[^:]" anno)
-                             (company-clang-objc-templatify anno)
+                             (company-template-objc-templatify anno)
                            (company-template-c-like-templatify
                             (concat arg anno))))))))
 

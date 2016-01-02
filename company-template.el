@@ -185,7 +185,7 @@ Leave point at the end of the field."
 
 ;; objc ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun company-clang-objc-templatify (selector)
+(defun company-template-objc-templatify (selector)
   (let* ((end (point-marker))
          (beg (- (point) (length selector) 1))
          (templ (company-template-declare-template beg end))
