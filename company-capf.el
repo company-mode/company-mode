@@ -54,6 +54,8 @@
                                      #'completion--capf-wrapper 'optimist)))
     (when (and (consp (cdr data)) (integer-or-marker-p (nth 1 data))) data)))
 
+(declare-function python-shell-get-process "python")
+
 (defun company--capf-workaround ()
   ;; For http://debbugs.gnu.org/cgi/bugreport.cgi?bug=18067
   (if (or (not (memq 'python-completion-complete-at-point completion-at-point-functions))
