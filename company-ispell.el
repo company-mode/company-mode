@@ -41,11 +41,16 @@ If nil, use `ispell-complete-word-dict'."
 
 (defvar company-ispell-available 'unknown)
 
+(defalias 'company-ispell--lookup-words
+  (if (fboundp 'ispell-lookup-words)
+      'ispell-lookup-words
+    'lookup-words))
+
 (defun company-ispell-available ()
   (when (eq company-ispell-available 'unknown)
     (condition-case err
         (progn
-          (lookup-words "WHATEVER")
+          (company-ispell--lookup-words "WHATEVER")
           (setq company-ispell-available t))
       (error
        (message "Company: ispell-look-command not found")
@@ -61,8 +66,9 @@ If nil, use `ispell-complete-word-dict'."
     (prefix (when (company-ispell-available)
               (company-grab-word)))
     (candidates
-     (let ((words (lookup-words arg (or company-ispell-dictionary
-                                        ispell-complete-word-dict)))
+     (let ((words (company-ispell--lookup-words
+                   arg
+                   (or company-ispell-dictionary ispell-complete-word-dict)))
            (completion-ignore-case t))
        (if (string= arg "")
            ;; Small optimization.
