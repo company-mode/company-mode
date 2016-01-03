@@ -132,7 +132,11 @@ buffer-local wherever it is set."
      :foreground "firebrick4")
     (((background dark))
      :foreground "red4"))
-  "Face used for the annotation in the tooltip.")
+  "Face used for the completion annotation in the tooltip.")
+
+(defface company-tooltip-annotation-selection
+  '((default :inherit company-tooltip-annotation))
+  "Face used for the selected completion annotation in the tooltip.")
 
 (defface company-scrollbar-fg
   '((((background light))
@@ -2372,7 +2376,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                     line)
     (when (< ann-start ann-end)
       (font-lock-append-text-property ann-start ann-end 'face
-                                      'company-tooltip-annotation
+                                      (if selected
+                                          'company-tooltip-annotation-selection
+                                        'company-tooltip-annotation)
                                       line))
     (font-lock-prepend-text-property margin common 'face
                                      (if selected

@@ -2,6 +2,8 @@
 
 ## Next
 
+* New face `company-tooltip-annotation-selection`, used for the annotation in
+  the selected tooltip line.
 * `company-clang-objc-templatify` has been renamed to
   `company-template-objc-templatify`.
 * When duplicates are removed, completions without annotations are also removed
