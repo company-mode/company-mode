@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-capf` accepts `:company-prefix-length` property function.
 * New face `company-tooltip-annotation-selection`, used for the annotation in
   the selected tooltip line.
 * `company-clang-objc-templatify` has been renamed to
