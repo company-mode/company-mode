@@ -805,7 +805,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (let ((col (car (posn-col-row posn)))
         ;; `posn-col-row' doesn't work well with lines of different height.
         ;; `posn-actual-col-row' doesn't handle multiple-width characters.
-        (row (cdr (posn-actual-col-row posn))))
+        (row (cdr (or (posn-actual-col-row posn)
+                      ;; When position is non-visible for some reason.
+                      (posn-col-row posn)))))
     (when (and header-line-format (version< emacs-version "24.3.93.3"))
       ;; http://debbugs.gnu.org/18384
       (cl-decf row))
