@@ -1524,13 +1524,20 @@ from the rest of the backends in the group, if any, will be left at the end."
 
 (defun company-cancel (&optional result)
   (unwind-protect
-      (when company-prefix
-        (if (stringp result)
-            (progn
-              (company-call-backend 'pre-completion result)
-              (run-hook-with-args 'company-completion-finished-hook result)
-              (company-call-backend 'post-completion result))
-          (run-hook-with-args 'company-completion-cancelled-hook result)))
+      (progn
+        (when company-timer
+          (cancel-timer company-timer))
+        (company-echo-cancel t)
+        (company-search-mode 0)
+        (company-call-frontends 'hide)
+        (company-enable-overriding-keymap nil)
+        (when company-prefix
+          (if (stringp result)
+              (progn
+                (company-call-backend 'pre-completion result)
+                (run-hook-with-args 'company-completion-finished-hook result)
+                (company-call-backend 'post-completion result))
+            (run-hook-with-args 'company-completion-cancelled-hook result))))
     (setq company-backend nil
           company-prefix nil
           company-candidates nil
@@ -1543,13 +1550,7 @@ from the rest of the backends in the group, if any, will be left at the end."
           company--manual-action nil
           company--manual-prefix nil
           company--point-max nil
-          company-point nil)
-    (when company-timer
-      (cancel-timer company-timer))
-    (company-echo-cancel t)
-    (company-search-mode 0)
-    (company-call-frontends 'hide)
-    (company-enable-overriding-keymap nil))
+          company-point nil))
   ;; Make return value explicit.
   nil)
 
@@ -2958,8 +2959,8 @@ Returns a negative number if the tooltip should be displayed above point."
             "}")))
 
 (defun company-echo-hide ()
-  (unless (equal company-echo-last-msg "")
-    (setq company-echo-last-msg "")
+  (unless (null company-echo-last-msg)
+    (setq company-echo-last-msg nil)
     (company-echo-show)))
 
 (defun company-echo-frontend (command)
