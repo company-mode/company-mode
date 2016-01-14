@@ -1525,14 +1525,8 @@ from the rest of the backends in the group, if any, will be left at the end."
     (company-call-frontends 'update)))
 
 (defun company-cancel (&optional result)
-  (unwind-protect
-      (when company-prefix
-        (if (stringp result)
-            (progn
-              (company-call-backend 'pre-completion result)
-              (run-hook-with-args 'company-completion-finished-hook result)
-              (company-call-backend 'post-completion result))
-          (run-hook-with-args 'company-completion-cancelled-hook result)))
+  (let ((prefix company-prefix)
+        (backend company-backend))
     (setq company-backend nil
           company-prefix nil
           company-candidates nil
@@ -1551,7 +1545,16 @@ from the rest of the backends in the group, if any, will be left at the end."
     (company-echo-cancel t)
     (company-search-mode 0)
     (company-call-frontends 'hide)
-    (company-enable-overriding-keymap nil))
+    (company-enable-overriding-keymap nil)
+    (when prefix
+      ;; FIXME: RESULT can also be e.g. `unique'.  We should call
+      ;; `company-completion-finished-hook' in that case, with right argument.
+      (if (stringp result)
+          (let ((company-backend backend))
+            (company-call-backend 'pre-completion result)
+            (run-hook-with-args 'company-completion-finished-hook result)
+            (company-call-backend 'post-completion result))
+        (run-hook-with-args 'company-completion-cancelled-hook result))))
   ;; Make return value explicit.
   nil)
 
