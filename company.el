@@ -1570,6 +1570,7 @@ from the rest of the backends in the group, if any, will be left at the end."
   (and (symbolp command) (get command 'company-keep)))
 
 (defun company-pre-command ()
+  (company--electric-restore-window-configuration)
   (unless (company-keep this-command)
     (condition-case-unless-debug err
         (when company-candidates
@@ -2120,28 +2121,30 @@ character, stripping the modifiers.  That character must be a digit."
         (insert string)))
     (current-buffer)))
 
+(defvar company--electric-saved-window-configuration nil)
+
 (defvar company--electric-commands
   '(scroll-other-window scroll-other-window-down mwheel-scroll)
   "List of Commands that won't break out of electric commands.")
 
+(defun company--electric-restore-window-configuration ()
+  "Restore window configuration (after electric commands)."
+  (when (and company--electric-saved-window-configuration
+             (not (memq this-command company--electric-commands)))
+    (set-window-configuration company--electric-saved-window-configuration)
+    (setq company--electric-saved-window-configuration nil)))
+
 (defmacro company--electric-do (&rest body)
   (declare (indent 0) (debug t))
   `(when (company-manual-begin)
-     (save-window-excursion
-       (let ((height (window-height))
-             (row (company--row))
-             cmd)
-         ,@body
-         (and (< (window-height) height)
-              (< (- (window-height) row 2) company-tooltip-limit)
-              (recenter (- (window-height) row 2)))
-         (while (memq (setq cmd (key-binding (read-key-sequence-vector nil)))
-                      company--electric-commands)
-           (condition-case err
-               (call-interactively cmd)
-             ((beginning-of-buffer end-of-buffer)
-              (message (error-message-string err)))))
-         (company--unread-last-input)))))
+     (cl-assert (null company--electric-saved-window-configuration))
+     (setq company--electric-saved-window-configuration (current-window-configuration))
+     (let ((height (window-height))
+           (row (company--row)))
+       ,@body
+       (and (< (window-height) height)
+            (< (- (window-height) row 2) company-tooltip-limit)
+            (recenter (- (window-height) row 2))))))
 
 (defun company--unread-last-input ()
   (when last-input-event
