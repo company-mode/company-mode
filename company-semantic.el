@@ -1,6 +1,6 @@
 ;;; company-semantic.el --- company-mode completion backend using Semantic
 
-;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -90,7 +90,7 @@
     (let ((completion-ignore-case nil)
           (context (semantic-analyze-current-context)))
       (setq company-semantic--current-tags
-            (semantic-analyze-possible-completions context))
+            (semantic-analyze-possible-completions context 'no-unique))
       (all-completions prefix company-semantic--current-tags))))
 
 (defun company-semantic-completions-raw (prefix)
@@ -101,7 +101,7 @@
   (delete "" (mapcar 'semantic-tag-name company-semantic--current-tags)))
 
 (defun company-semantic-annotation (argument tags)
-  (let* ((tag (assoc argument tags))
+  (let* ((tag (assq argument tags))
          (kind (when tag (elt tag 1))))
     (cl-case kind
       (function (let* ((prototype (semantic-format-tag-prototype tag nil nil))
@@ -148,6 +148,7 @@ Symbols are chained by \".\" or \"->\"."
                  (assoc arg company-semantic--current-tags)))
     ;; Because "" is an empty context and doesn't return local variables.
     (no-cache (equal arg ""))
+    (duplicates t)
     (location (let ((tag (assoc arg company-semantic--current-tags)))
                 (when (buffer-live-p (semantic-tag-buffer tag))
                   (cons (semantic-tag-buffer tag)
