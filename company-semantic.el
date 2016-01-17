@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 'company)
+(require 'company-template)
 (require 'cl-lib)
 
 (defvar semantic-idle-summary-function)
@@ -56,6 +57,11 @@ symbol is preceded by \".\", \"->\" or \"::\", ignoring
 If `company-begin-commands' is a list, it should include `c-electric-lt-gt'
 and `c-electric-colon', for automatic completion right after \">\" and
 \":\".")
+
+(defcustom company-semantic-insert-arguments t
+  "When non-nil, insert function arguments as a template after completion."
+  :type 'boolean
+  :package-version '(company . "0.9.0"))
 
 (defvar company-semantic-modes '(c-mode c++-mode jde-mode java-mode))
 
@@ -149,7 +155,13 @@ and `c-electric-colon', for automatic completion right after \">\" and
     (location (let ((tag (assoc arg company-semantic--current-tags)))
                 (when (buffer-live-p (semantic-tag-buffer tag))
                   (cons (semantic-tag-buffer tag)
-                        (semantic-tag-start tag)))))))
+                        (semantic-tag-start tag)))))
+    (post-completion (let ((anno (company-semantic-annotation
+                                  arg company-semantic--current-tags)))
+                       (when (and company-semantic-insert-arguments anno)
+                         (insert anno)
+                         (company-template-c-like-templatify (concat arg anno)))
+                       ))))
 
 (provide 'company-semantic)
 ;;; company-semantic.el ends here
