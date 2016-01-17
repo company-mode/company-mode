@@ -48,6 +48,15 @@
   "The function turning a semantic tag into doc information."
   :type 'function)
 
+(defcustom company-semantic-begin-after-member-access t
+  "When non-nil, automatic completion will start whenever the current
+symbol is preceded by \".\", \"->\" or \"::\", ignoring
+`company-minimum-prefix-length'.
+
+If `company-begin-commands' is a list, it should include `c-electric-lt-gt'
+and `c-electric-colon', for automatic completion right after \">\" and
+\":\".")
+
 (defvar company-semantic-modes '(c-mode c++-mode jde-mode java-mode))
 
 (defvar-local company-semantic--current-tags nil
@@ -108,22 +117,10 @@
                        (par-pos (string-match "(" prototype)))
                   (when par-pos (substring prototype par-pos)))))))
 
-(defun company-semantic--pre-prefix-length (prefix-length)
-  "Sum up the length of all chained symbols before POS.
-Symbols are chained by \".\" or \"->\"."
-  (save-excursion
-    (let ((pos (point)))
-      (goto-char (- (point) prefix-length))
-      (while (looking-back "->\\|\\." (- (point) 2))
-        (goto-char (match-beginning 0))
-        (skip-syntax-backward "w_"))
-      (- pos (point)))))
-
-(defun company-semantic--grab ()
-  "Grab the semantic prefix, but return everything before -> or . as length."
-  (let ((symbol (company-grab-symbol)))
-    (when symbol
-      (cons symbol (company-semantic--pre-prefix-length (length symbol))))))
+(defun company-semantic--prefix ()
+  (if company-semantic-begin-after-member-access
+      (company-grab-symbol-cons "\\.\\|->\\|::" 2)
+    (company-grab-symbol)))
 
 ;;;###autoload
 (defun company-semantic (command &optional arg &rest ignored)
@@ -135,7 +132,7 @@ Symbols are chained by \".\" or \"->\"."
                  (semantic-active-p)
                  (memq major-mode company-semantic-modes)
                  (not (company-in-string-or-comment))
-                 (or (company-semantic--grab) 'stop)))
+                 (or (company-semantic--prefix) 'stop)))
     (candidates (if (and (equal arg "")
                          (not (looking-back "->\\|\\." (- (point) 2))))
                     (company-semantic-completions-raw arg)

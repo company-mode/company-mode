@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-semantic-begin-after-member-access`: New option. Similar to the one
+  in `company-clang`.
 * `company-capf` accepts `:company-prefix-length` property function.
 * New face `company-tooltip-annotation-selection`, used for the annotation in
   the selected tooltip line.
