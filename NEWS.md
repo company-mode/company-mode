@@ -5,7 +5,7 @@
 * `company-semantic-insert-arguments`: New option. Like in `company-clang`.
 * `company-semantic-begin-after-member-access`: New option. Similar to the one
   in `company-clang`.
-* `company-capf` accepts `:company-prefix-length` property function.
+* `company-capf` accepts `:company-prefix-length` property value.
 * New face `company-tooltip-annotation-selection`, used for the annotation in
   the selected tooltip line.
 * `company-clang-objc-templatify` has been renamed to
