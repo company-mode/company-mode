@@ -1641,7 +1641,9 @@ each one wraps a part of the input string."
           (const :tag "Exact match" regexp-quote)
           (const :tag "Words separated with spaces" company-search-words-regexp)
           (const :tag "Words separated with spaces, in any order"
-                 company-search-words-in-any-order-regexp)))
+                 company-search-words-in-any-order-regexp)
+          (const :tag "All characters in given order, with anything in between"
+                 company-search-flex-regexp)))
 
 (defvar-local company-search-string "")
 
@@ -1670,6 +1672,15 @@ each one wraps a part of the input string."
                  (mapconcat #'identity words ".*"))
                permutations
                "\\|")))
+
+(defun company-search-flex-regexp (input)
+  (if (zerop (length input))
+      ""
+    (concat (regexp-quote (string (aref input 0)))
+            (mapconcat (lambda (c)
+                         (concat "[^" (string c) "]*"
+                                 (regexp-quote (string c))))
+                       (substring input 1) ""))))
 
 (defun company--permutations (lst)
   (if (not lst)
