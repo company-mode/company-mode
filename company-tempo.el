@@ -29,6 +29,15 @@
 (require 'cl-lib)
 (require 'tempo)
 
+(defgroup company-tempo nil
+  "Tempo completion backend."
+  :group 'company)
+
+(defcustom company-tempo-expand nil
+  "Whether to expand a tempo tag after completion."
+  :type '(choice (const :tag "Off" nil)
+                 (const :tag "On" t)))
+
 (defsubst company-tempo-lookup (match)
   (cdr (assoc match (tempo-build-collection))))
 
@@ -56,6 +65,7 @@
     (prefix (or (car (tempo-find-match-string tempo-match-finder)) ""))
     (candidates (all-completions arg (tempo-build-collection)))
     (meta (company-tempo-meta arg))
+    (post-completion (when company-tempo-expand (tempo-expand-if-complete)))
     (sorted t)))
 
 (provide 'company-tempo)
