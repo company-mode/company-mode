@@ -60,12 +60,11 @@
   "`company-mode' completion backend for tempo."
   (interactive (list 'interactive))
   (cl-case command
-    (interactive (company-begin-backend 'company-tempo
-                                        'company-tempo-insert))
+    (interactive (company-begin-backend 'company-tempo))
     (prefix (or (car (tempo-find-match-string tempo-match-finder)) ""))
     (candidates (all-completions arg (tempo-build-collection)))
     (meta (company-tempo-meta arg))
-    (post-completion (when company-tempo-expand (tempo-expand-if-complete)))
+    (post-completion (when company-tempo-expand (company-tempo-insert arg)))
     (sorted t)))
 
 (provide 'company-tempo)
