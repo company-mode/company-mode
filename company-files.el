@@ -31,7 +31,8 @@
 (defun company-files--directory-files (dir prefix)
   (ignore-errors
     ;; Don't use directory-files. It produces directories without trailing /.
-    (let ((comp (file-name-all-completions prefix dir)))
+    (let ((comp (sort (file-name-all-completions prefix dir)
+                      (lambda (s1 s2) (string-lessp (downcase s1) (downcase s2))))))
       (if (equal prefix "")
           (delete "../" (delete "./" comp))
         comp))))
@@ -92,8 +93,7 @@
                                                  (company-files--directory-files d "")))
                                        directories))))
         (setq company-files--completion-cache
-              (cons key (sort (append children candidates)
-                              #'string-lessp)))))
+              (cons key (append candidates children)))))
     (all-completions prefix
                      (cdr company-files--completion-cache))))
 
