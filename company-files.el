@@ -30,9 +30,12 @@
 
 (defun company-files--directory-files (dir prefix)
   (ignore-errors
-    (if (equal prefix "")
-        (directory-files dir nil "\\`[^.]\\|\\`.[^.]")
-      (file-name-all-completions prefix dir))))
+    ;; Don't use directory-files. It produces directories without trailing /.
+    (let ((comp (sort (file-name-all-completions prefix dir)
+                      (lambda (s1 s2) (string-lessp (downcase s1) (downcase s2))))))
+      (if (equal prefix "")
+          (delete "../" (delete "./" comp))
+        comp))))
 
 (defvar company-files--regexps
   (let* ((root (if (eq system-type 'windows-nt)
@@ -54,37 +57,43 @@
          (setq dir (file-name-directory file))
          (not (string-match "//" dir))
          (file-exists-p dir)
-         (file-name-all-completions (file-name-nondirectory file) dir)
          file)))
 
 (defun company-files--connected-p (file)
   (or (not (file-remote-p file))
       (file-remote-p file nil t)))
 
+(defun company-files--trailing-slash-p (file)
+  ;; `file-directory-p' is very expensive on remotes. We are relying on
+  ;; `file-name-all-completions' returning directories with trailing / instead.
+  (let ((len (length file)))
+    (and (> len 0) (eq (aref file (1- len)) ?/))))
+
 (defvar company-files--completion-cache nil)
 
 (defun company-files--complete (prefix)
   (let* ((dir (file-name-directory prefix))
-         (key (list (file-name-nondirectory prefix)
+         (file (file-name-nondirectory prefix))
+         (key (list file
                     (expand-file-name dir)
                     (nth 5 (file-attributes dir))))
-         (file (file-name-nondirectory prefix))
-         (completion-ignore-case read-file-name-completion-ignore-case)
-         candidates directories)
+         (completion-ignore-case read-file-name-completion-ignore-case))
     (unless (company-file--keys-match-p key (car company-files--completion-cache))
-      (dolist (file (company-files--directory-files dir file))
-        (setq file (concat dir file))
-        (when (company-files--connected-p file)
-          (push file candidates)
-          (when (file-directory-p file)
-            (push file directories))))
-      (dolist (directory (reverse directories))
-        ;; Add one level of children.
-        (dolist (child (company-files--directory-files directory ""))
-          (push (concat directory
-                        (unless (eq (aref directory (1- (length directory))) ?/) "/")
-                        child) candidates)))
-      (setq company-files--completion-cache (cons key (nreverse candidates))))
+      (let* ((candidates (mapcar (lambda (f) (concat dir f))
+                                 (company-files--directory-files dir file)))
+             (directories (unless (file-remote-p dir)
+                            (cl-remove-if-not (lambda (f)
+                                                (and (company-files--trailing-slash-p f)
+                                                     (not (file-remote-p f))
+                                                     (company-files--connected-p f)))
+                                              candidates)))
+             (children (and directories
+                            (cl-mapcan (lambda (d)
+                                         (mapcar (lambda (c) (concat d c))
+                                                 (company-files--directory-files d "")))
+                                       directories))))
+        (setq company-files--completion-cache
+              (cons key (append candidates children)))))
     (all-completions prefix
                      (cdr company-files--completion-cache))))
 
@@ -104,6 +113,8 @@ File paths with spaces are only supported inside strings."
     (candidates (company-files--complete arg))
     (location (cons (dired-noselect
                      (file-name-directory (directory-file-name arg))) 1))
+    (post-completion (when (company-files--trailing-slash-p arg)
+                       (delete-char -1)))
     (sorted t)
     (no-cache t)))
 
