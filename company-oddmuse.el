@@ -27,7 +27,7 @@
 
 (require 'company)
 (require 'cl-lib)
-(eval-when-compile (require 'yaooddmuse nil t))
+(eval-when-compile (require 'yaoddmuse nil t))
 (eval-when-compile (require 'oddmuse nil t))
 
 (defvar company-oddmuse-link-regexp
