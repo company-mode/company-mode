@@ -2,6 +2,9 @@
 
 ## Next
 
+* `company-files` has been moved to right after `company-capf` in
+  `company-backends`
+  ([#463](https://github.com/company-mode/company-mode/issues/463)).
 * `company-semantic-insert-arguments`: New option. Like in `company-clang`.
 * `company-semantic-begin-after-member-access`: New option. Similar to the one
   in `company-clang`.
