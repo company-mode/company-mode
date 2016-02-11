@@ -83,7 +83,9 @@
       (should (null company-candidates))
       (insert "a")
       (sleep-for 0.1)
-      (should (null company-candidates)))))
+      (should (null company-candidates))
+      (should (null company-candidates-cache))
+      (should (null company-backend)))))
 
 (ert-deftest company-idle-begin-async-allows-immediate-callbacks ()
   (with-temp-buffer
