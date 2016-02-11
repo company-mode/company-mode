@@ -1186,7 +1186,11 @@ can retrieve meta-data for them."
                    company-candidates-cache
                    (list (cons prefix
                                (company--preprocess-candidates candidates))))
-             (company-idle-begin buf win tick pt)))))
+             (unwind-protect
+                 (company-idle-begin buf win tick pt)
+               (unless company-candidates
+                 (setq company-backend nil
+                       company-candidates-cache nil)))))))
       ;; FIXME: Relying on the fact that the callers
       ;; will interpret nil as "do nothing" is shaky.
       ;; A throw-catch would be one possible improvement.
