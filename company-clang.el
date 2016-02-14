@@ -53,6 +53,16 @@ Prefix files (-include ...) can be selected with `company-clang-set-prefix'
 or automatically through a custom `company-clang-prefix-guesser'."
   :type '(repeat (string :tag "Argument")))
 
+(defcustom company-clang-std nil
+  "The language standard to use in Clang.
+
+The value of this variable is either a string denoting a language
+standard, or nil, to use the default standard.  When non-nil,
+pass the language standard via the `-std' option."
+  :type '(choice (const :tag "Default standard" nil)
+                 (string :tag "Language standard")))
+(make-variable-buffer-local 'company-clang-std)
+
 (defcustom company-clang-prefix-guesser 'company-clang-guess-prefix
   "A function to determine the prefix file for the current buffer."
   :type '(function :tag "Guesser function" nil))
@@ -245,6 +255,8 @@ or automatically through a custom `company-clang-prefix-guesser'."
           (unless (company-clang--auto-save-p)
             (list "-x" (company-clang--lang-option)))
           company-clang-arguments
+          (when company-clang-std
+            (list (concat "-std=" company-clang-std)))
           (when (stringp company-clang--prefix)
             (list "-include" (expand-file-name company-clang--prefix)))
           (list "-Xclang" (format "-code-completion-at=%s"
