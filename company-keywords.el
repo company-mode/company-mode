@@ -35,13 +35,16 @@
 (defvar company-keywords-alist
   ;; Please contribute corrections or additions.
   `((c++-mode
-     "asm" "auto" "bool" "break" "case" "catch" "char" "class" "const"
-     "const_cast" "continue" "default" "delete" "do" "double" "dynamic_cast"
-     "else" "enum" "explicit" "export" "extern" "false" "float" "for" "friend"
-     "goto" "if" "inline" "int" "long" "mutable" "namespace" "new"
-     "operator" "private" "protected" "public" "register" "reinterpret_cast"
-     "return" "short" "signed" "sizeof" "static" "static_cast" "struct" "switch"
-     "template" "this" "throw" "true" "try" "typedef" "typeid" "typename"
+     "alignas" "alignof" "asm" "auto" "bool" "break" "case" "catch" "char"
+     "char16_t" "char32_t" "class" "const" "constexpr" "const_cast" "continue"
+     "decltype" "default" "delete" "do" "double" "dynamic_cast" "else" "enum"
+     "explicit" "export" "extern" "false" "final" "float" "for" "friend"
+     "goto" "if" "inline" "int" "long" "mutable" "namespace" "new" "noexcept"
+     "nullptr" "operator" "override"
+     "private" "protected" "public" "register" "reinterpret_cast"
+     "return" "short" "signed" "sizeof" "static" "static_assert"
+     "static_cast" "struct" "switch" "template" "this" "thread_local"
+     "throw" "true" "try" "typedef" "typeid" "typename"
      "union" "unsigned" "using" "virtual" "void" "volatile" "wchar_t" "while")
     (c-mode
      "auto" "break" "case" "char" "const" "continue" "default" "do"
