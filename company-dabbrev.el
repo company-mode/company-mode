@@ -1,6 +1,6 @@
 ;;; company-dabbrev.el --- dabbrev-like company-mode completion backend  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009, 2011, 2014, 2015  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2014, 2015, 2016  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -91,11 +91,8 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
               (> (float-time (time-since ,start)) ,limit)
               (throw 'done 'company-time-out))))))
 
-(defun company-dabbrev--make-regexp (prefix)
-  (concat (if (equal prefix "")
-              (concat "\\(?:" company-dabbrev-char-regexp "\\)")
-            (regexp-quote prefix))
-          "\\(?:" company-dabbrev-char-regexp "\\)*"))
+(defun company-dabbrev--make-regexp ()
+  (concat "\\(?:" company-dabbrev-char-regexp "\\)+"))
 
 (defun company-dabbrev--search-buffer (regexp pos symbols start limit
                                        ignore-comments)
@@ -118,7 +115,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
           (save-excursion
             ;; Before, we used backward search, but it matches non-greedily, and
             ;; that forced us to use the "beginning/end of word" anchors in
-            ;; `company-dabbrev--make-regexp'.
+            ;; `company-dabbrev--make-regexp'.  It's also about 2x slower.
             (while (re-search-forward regexp tmp-end t)
               (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
                   (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
@@ -161,6 +158,10 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                                company-dabbrev-char-regexp)
                        1)))
 
+(defun company-dabbrev--filter (prefix candidates)
+  (let ((completion-ignore-case company-dabbrev-ignore-case))
+    (all-completions prefix candidates)))
+
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest ignored)
   "dabbrev-like `company-mode' completion backend."
@@ -170,7 +171,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     (prefix (company-dabbrev--prefix))
     (candidates
      (let* ((case-fold-search company-dabbrev-ignore-case)
-            (words (company-dabbrev--search (company-dabbrev--make-regexp arg)
+            (words (company-dabbrev--search (company-dabbrev--make-regexp)
                                             company-dabbrev-time-limit
                                             (pcase company-dabbrev-other-buffers
                                               (`t (list major-mode))
@@ -178,6 +179,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
             (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
                             case-replace
                           company-dabbrev-downcase)))
+       (setq words (company-dabbrev--filter arg words))
        (if downcase-p
            (mapcar 'downcase words)
          words)))
