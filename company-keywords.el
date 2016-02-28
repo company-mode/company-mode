@@ -1,6 +1,6 @@
 ;;; company-keywords.el --- A company backend for programming language keywords
 
-;; Copyright (C) 2009-2011  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2016  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
