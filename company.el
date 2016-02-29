@@ -432,7 +432,8 @@ Asynchronous backends
 The return value of each command can also be a cons (:async . FETCHER)
 where FETCHER is a function of one argument, CALLBACK.  When the data
 arrives, FETCHER must call CALLBACK and pass it the appropriate return
-value, as described above.
+value, as described above.  That call must happen in the same buffer as
+where completion was initiated.
 
 True asynchronous operation is only supported for command `candidates', and
 only during idle completion.  Other commands will block the user interface,
