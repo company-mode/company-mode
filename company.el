@@ -833,7 +833,8 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 If EXPRESSION is non-nil, return the match string for the respective
 parenthesized expression in REGEXP.
 Matching is limited to the current line."
-  (company-grab regexp expression (point-at-bol)))
+  (let ((inhibit-field-text-motion t))
+    (company-grab regexp expression (point-at-bol))))
 
 (defun company-grab-symbol ()
   "If point is at the end of a symbol, return it.
