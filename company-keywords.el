@@ -216,12 +216,20 @@
      "new" "null" "object" "override" "package" "private" "protected"
      "return" "sealed" "super" "this" "throw" "trait" "true" "try" "type" "val"
      "var" "while" "with" "yield")
+    (julia-mode
+     "abstract" "break" "case" "catch" "const" "continue" "do" "else" "elseif"
+     "end" "eval" "export" "false" "finally" "for" "function" "global" "if"
+     "ifelse" "immutable" "import" "importall" "in" "let" "macro" "module"
+     "otherwise" "quote" "return" "switch" "throw" "true" "try" "type"
+     "typealias" "using" "while"
+     )
     ;; aliases
     (js2-mode . javascript-mode)
     (espresso-mode . javascript-mode)
     (js-mode . javascript-mode)
     (cperl-mode . perl-mode)
-    (jde-mode . java-mode))
+    (jde-mode . java-mode)
+    (ess-julia-mode . julia-mode))
   "Alist mapping major-modes to sorted keywords for `company-keywords'.")
 
 ;;;###autoload
