@@ -856,7 +856,7 @@ Otherwise, if point is not inside a symbol, return an empty string."
 
 (defun company-grab-symbol-cons (idle-begin-after-re &optional max-len)
   "Return a string SYMBOL or a cons (SYMBOL . t).
-SYMBOL is as returned by `company-grab-symbol'.  If the text before poit
+SYMBOL is as returned by `company-grab-symbol'.  If the text before point
 matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
   (let ((symbol (company-grab-symbol)))
     (when symbol
