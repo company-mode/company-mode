@@ -79,7 +79,8 @@
             (length (cons prefix length))
             (t prefix))))))
     (`candidates
-     (let ((res (company--capf-data)))
+     (let* ((non-essential t)
+            (res (company--capf-data)))
        (when res
          (let* ((table (nth 3 res))
                 (pred (plist-get (nthcdr 4 res) :predicate))
