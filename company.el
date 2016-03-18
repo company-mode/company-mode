@@ -1166,10 +1166,11 @@ can retrieve meta-data for them."
         t))))
 
 (defun company--fetch-candidates (prefix)
-  (let ((c (if company--manual-action
-               (company-call-backend 'candidates prefix)
-             (company-call-backend-raw 'candidates prefix)))
-        res)
+  (let* ((non-essential (not (company-explicit-action-p)))
+         (c (if company--manual-action
+                (company-call-backend 'candidates prefix)
+              (company-call-backend-raw 'candidates prefix)))
+         res)
     (if (not (eq (car c) :async))
         c
       (let ((buf (current-buffer))
