@@ -1096,7 +1096,8 @@ can retrieve meta-data for them."
 
 (defun company--group-lighter (candidate base)
   (let ((backend (or (get-text-property 0 'company-backend candidate)
-                     (car company-backend))))
+                     (cl-some (lambda (x) (and (not (keywordp x)) x))
+                              company-backend))))
     (when (and backend (symbolp backend))
       (let ((name (replace-regexp-in-string "company-\\|-company" ""
                                             (symbol-name backend))))
