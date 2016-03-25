@@ -1595,7 +1595,8 @@ from the rest of the backends in the group, if any, will be left at the end."
   (company-uninstall-map))
 
 (defun company-post-command ()
-  (when (null this-command)
+  (when (and company-candidates
+             (null this-command))
     ;; Happens when the user presses `C-g' while inside
     ;; `flyspell-post-command-hook', for example.
     ;; Or any other `post-command-hook' function that can call `sit-for',
