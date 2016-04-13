@@ -1364,6 +1364,7 @@ from the rest of the backends in the group, if any, will be left at the end."
                   (company-cancel))
            (quit (company-cancel))))))
 
+;;;###autoload
 (defun company-manual-begin ()
   (interactive)
   (company-assert-enabled)
@@ -2056,6 +2057,7 @@ With ARG, move by that many elements."
                  (eq old-tick (buffer-chars-modified-tick)))
         (company-complete-common))))))
 
+;;;###autoload
 (defun company-complete ()
   "Insert the common part of all candidates or the current selection.
 The first time this is called, the common part is inserted, the second
