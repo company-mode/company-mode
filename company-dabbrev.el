@@ -79,7 +79,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
   :type 'boolean
   :package-version '(company . "0.9.0"))
 
-(defmacro company-dabrev--time-limit-while (test start limit freq &rest body)
+(defmacro company-dabbrev--time-limit-while (test start limit freq &rest body)
   (declare (indent 3) (debug t))
   `(let ((company-time-limit-while-counter 0))
      (catch 'done
@@ -107,7 +107,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
-        (company-dabrev--time-limit-while (> tmp-end (point-min))
+        (company-dabbrev--time-limit-while (> tmp-end (point-min))
             start limit 1
           (ignore-errors
             (forward-char -10000))
@@ -123,7 +123,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
           (setq tmp-end (point))))
       (goto-char (or pos (point-min)))
       ;; Search after pos.
-      (company-dabrev--time-limit-while (re-search-forward regexp nil t)
+      (company-dabbrev--time-limit-while (re-search-forward regexp nil t)
           start limit 25
         (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
             (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
