@@ -50,7 +50,7 @@
     (interactive (company-begin-backend 'company-bbdb))
     (prefix (and (memq major-mode company-bbdb-modes)
                  (featurep 'bbdb-com)
-                 (looking-back "^\\(To\\|Cc\\|Bcc\\): *.*?\\([^,; ]*\\)"
+                 (looking-back "^\\(To\\|Cc\\|Bcc\\): *.*? *\\([^,;]*\\)"
                                (line-beginning-position))
                  (match-string-no-properties 2)))
     (candidates (company-bbdb--candidates arg))
