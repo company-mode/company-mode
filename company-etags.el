@@ -55,7 +55,7 @@ Set it to t or to a list of major modes."
   :package-version '(company . "0.9.0"))
 
 (defvar company-etags-modes '(prog-mode c-mode objc-mode c++-mode java-mode
-                              jde-mode pascal-mode perl-mode python-mode))
+                              jde-mode pascal-mode perl-mode python-mode lua-mode))
 
 (defvar-local company-etags-buffer-table 'unknown)
 
