@@ -2,6 +2,7 @@
 
 ## Next
 
+* The value of `company-dabbrev-ignore-buffers` can also be a function.
 * `company-files` has been moved to right after `company-capf` in
   `company-backends`
   ([#463](https://github.com/company-mode/company-mode/issues/463)).

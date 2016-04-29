@@ -41,8 +41,10 @@ buffers with the same major mode.  See also `company-dabbrev-time-limit'."
                  (const :tag "All" all)))
 
 (defcustom company-dabbrev-ignore-buffers "\\`[ *]"
-  "Regexp matching the names of buffers to ignore."
-  :type 'regexp)
+  "Regexp matching the names of buffers to ignore.
+Or a function that returns non-nil for such buffers."
+  :type '(choice (regexp :tag "Regexp")
+                 (function :tag "Predicate")))
 
 (defcustom company-dabbrev-time-limit .1
   "Determines how many seconds `company-dabbrev' should look for matches."
@@ -137,14 +139,16 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                                                   ignore-comments)))
     (when other-buffer-modes
       (cl-dolist (buffer (delq (current-buffer) (buffer-list)))
-        (with-current-buffer buffer
-          (when (if (eq other-buffer-modes 'all)
-                    (not (string-match-p company-dabbrev-ignore-buffers
-                                         (buffer-name)))
-                  (apply #'derived-mode-p other-buffer-modes))
-            (setq symbols
-                  (company-dabbrev--search-buffer regexp nil symbols start
-                                                  limit ignore-comments))))
+        (unless (if (stringp company-dabbrev-ignore-buffers)
+                    (string-match-p company-dabbrev-ignore-buffers
+                                    (buffer-name buffer))
+                  (funcall company-dabbrev-ignore-buffers buffer))
+          (with-current-buffer buffer
+            (when (or (eq other-buffer-modes 'all)
+                      (apply #'derived-mode-p other-buffer-modes))
+              (setq symbols
+                    (company-dabbrev--search-buffer regexp nil symbols start
+                                                    limit ignore-comments)))))
         (and limit
              (> (float-time (time-since start)) limit)
              (cl-return))))
