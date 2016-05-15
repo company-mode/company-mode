@@ -14,9 +14,6 @@
   the selected tooltip line.
 * `company-clang-objc-templatify` has been renamed to
   `company-template-objc-templatify`.
-* When duplicates are removed, completions without annotations are also removed
-  in favor of completions with equal names that have annotations (experimental
-  change) ([#432](https://github.com/company-mode/company-mode/issues/432)).
 * New user option `company-etags-everywhere`.
 * `company-yasnippet` supports `yas-key-syntaxes` better. But we use them in the
   reverse order, preferring the longest key prefix that matches anything. And we

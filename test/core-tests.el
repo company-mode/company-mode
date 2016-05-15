@@ -408,11 +408,9 @@
                 ("a" . "b")
                 ("a" . "c")
                 ("a" . "b")
-                ("b" . nil)
                 ("b" . "c")
-                ("a" . "b")
-                ("c" . nil)
-                ("c" . nil)))
+                ("b" . nil)
+                ("a" . "b")))
          (fn (lambda (kvs)
                (mapcar (lambda (kv) (propertize (car kv) 'ann (cdr kv)))
                        kvs)))
@@ -424,18 +422,18 @@
               (`duplicates t)
               (`annotation (get-text-property 0 'ann arg)))))
          (reference '(("a" . "b")
+                      ("a" . nil)
                       ("a" . "c")
                       ("b" . "c")
-                      ("a" . "b")
-                      ("c" . nil))))
+                      ("b" . nil)
+                      ("a" . "b"))))
     (let ((ct-sorted t))
       (should (ct-equal-including-properties
                (company--preprocess-candidates (funcall fn kvs))
                (funcall fn reference))))
     (should (ct-equal-including-properties
              (company--preprocess-candidates (funcall fn kvs))
-             (funcall fn (append (butlast reference 2)
-                                 (last reference)))))))
+             (funcall fn (butlast reference))))))
 
 ;;; Row and column
 

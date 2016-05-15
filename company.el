@@ -1205,7 +1205,7 @@ can retrieve meta-data for them."
   (unless (company-call-backend 'sorted)
     (setq candidates (sort candidates 'string<)))
   (when (company-call-backend 'duplicates)
-    (setq candidates (company--strip-duplicates candidates)))
+    (company--strip-duplicates candidates))
   candidates)
 
 (defun company--postprocess-candidates (candidates)
@@ -1216,37 +1216,27 @@ can retrieve meta-data for them."
   (company--transform-candidates candidates))
 
 (defun company--strip-duplicates (candidates)
-  (let* ((annos 'unk)
-         (str (car candidates))
-         (ref (cdr candidates))
-         res str2 anno2)
-    (while ref
-      (setq str2 (pop ref))
-      (if (not (equal str str2))
-          (progn
-            (push str res)
-            (setq str str2)
-            (setq annos 'unk))
-        (setq anno2 (company-call-backend
-                     'annotation str2))
-        (cond
-         ((null anno2))             ; Skip it.
-         ((when (eq annos 'unk)
-            (let ((ann1 (company-call-backend 'annotation str)))
-              (if (null ann1)
-                  ;; No annotation on the earlier element, drop it.
-                  t
-                (setq annos (list ann1))
-                nil)))
-          (setq annos (list anno2))
-          (setq str str2))
-         ((member anno2 annos))     ; Also skip.
-         (t
-          (push anno2 annos)
-          (push str res)            ; Maintain ordering.
-          (setq str str2)))))
-    (when str (push str res))
-    (nreverse res)))
+  (let ((c2 candidates)
+        (annos 'unk))
+    (while c2
+      (setcdr c2
+              (let ((str (pop c2)))
+                (while (let ((str2 (car c2)))
+                         (if (not (equal str str2))
+                             (progn
+                               (setq annos 'unk)
+                               nil)
+                           (when (eq annos 'unk)
+                             (setq annos (list (company-call-backend
+                                                'annotation str))))
+                           (let ((anno2 (company-call-backend
+                                         'annotation str2)))
+                             (if (member anno2 annos)
+                                 t
+                               (push anno2 annos)
+                               nil))))
+                  (pop c2))
+                c2)))))
 
 (defun company--transform-candidates (candidates)
   (let ((c candidates))
