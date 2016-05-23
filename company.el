@@ -1202,6 +1202,7 @@ can retrieve meta-data for them."
           (progn (setq res 'done) nil)))))
 
 (defun company--preprocess-candidates (candidates)
+  (cl-assert (cl-every #'stringp candidates))
   (unless (company-call-backend 'sorted)
     (setq candidates (sort candidates 'string<)))
   (when (company-call-backend 'duplicates)
