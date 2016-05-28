@@ -186,9 +186,13 @@ buffer-local wherever it is set."
 (defun company-frontends-set (variable value)
   ;; Uniquify.
   (let ((value (delete-dups (copy-sequence value))))
-    (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
-         (memq 'company-pseudo-tooltip-frontend value)
-         (error "Pseudo tooltip frontend cannot be used twice"))
+    (and (or (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
+                  (memq 'company-pseudo-tooltip-frontend value))
+             (and (memq 'company-ac-frontend value)
+                  (memq 'company-pseudo-tooltip-frontend value))
+             (and (memq 'company-ac-frontend value)
+                  (memq 'company-pseudo-tooltip-unless-just-one-frontend value)))
+         (error "Pseudo tooltip frontend cannot be used more than once"))
     (and (memq 'company-preview-if-just-one-frontend value)
          (memq 'company-preview-frontend value)
          (error "Preview frontend cannot be used twice"))
@@ -233,6 +237,8 @@ The visualized data is stored in `company-prefix', `company-candidates',
                                 company-pseudo-tooltip-frontend)
                          (const :tag "pseudo tooltip, multiple only"
                                 company-pseudo-tooltip-unless-just-one-frontend)
+                         (const :tag "pseudo tooltip, multiple only, delayed"
+                                company-ac-frontend)
                          (const :tag "preview" company-preview-frontend)
                          (const :tag "preview, unique only"
                                 company-preview-if-just-one-frontend)
@@ -557,6 +563,13 @@ happens.  The value of nil means no idle completion."
                  (const :tag "immediate (0)" 0)
                  (number :tag "seconds")))
 
+(defcustom company-tooltip-idle-delay .5
+  "The idle delay in seconds until tooltip when using
+`company-ac-frontend'."
+  :type '(choice (const :tag "never (nil)" nil)
+                 (const :tag "immediate (0)" 0)
+                 (number :tag "seconds")))
+
 (defcustom company-begin-commands '(self-insert-command
                                     org-self-insert-command
                                     orgtbl-self-insert-command
@@ -759,6 +772,16 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                     (not (memq major-mode (cdr company-global-modes))))
                    (t (memq major-mode company-global-modes))))
     (company-mode 1)))
+
+(defun company-ac-setup ()
+  "Sets up company to behave similarly to auto-complete mode."
+  (setq company-require-match nil)
+  (setq company-auto-complete #'company-tooltip-visible)
+  (setq company-frontends '(company-echo-metadata-frontend
+                            company-ac-frontend
+                            company-preview-frontend))
+  (define-key company-active-map [tab] 'company-ac-complete)
+  (define-key company-active-map (kbd "TAB") 'company-ac-complete))
 
 (defsubst company-assert-enabled ()
   (unless company-mode
@@ -1017,6 +1040,7 @@ Controlled by `company-auto-complete'.")
 (defvar-local company-point nil)
 
 (defvar company-timer nil)
+(defvar company-tooltip-timer nil)
 
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
@@ -2048,6 +2072,16 @@ With ARG, move by that many elements."
                  (eq old-tick (buffer-chars-modified-tick)))
         (company-complete-common))))))
 
+(defun company-ac-complete ()
+  "This should be used with `company-ac-frontend'.
+Mimics the way auto-complete does its completion.
+If tooltip is showing, select the next candidate.
+If only preview is showing or only one candidate, complete the selection."
+  (interactive)
+  (if (and (company-tooltip-visible) (> company-candidates-length 1))
+      (call-interactively 'company-select-next)
+    (call-interactively 'company-complete-selection)))
+
 ;;;###autoload
 (defun company-complete ()
   "Insert the common part of all candidates or the current selection.
@@ -2818,6 +2852,22 @@ Returns a negative number if the tooltip should be displayed above point."
                (company--show-inline-p))
     (company-pseudo-tooltip-frontend command)))
 
+(defun company-ac-frontend (command)
+  "`compandy-pseudo-tooltip-frontend', but shown after a delay.
+Similar to auto-complete mode."
+  (when (and (eq command 'pre-command) company-tooltip-timer)
+    (cancel-timer company-tooltip-timer)
+    (setq company-tooltip-timer nil))
+  (unless (and (eq command 'post-command)
+               (company--show-inline-p))
+    (if (or (not (eq command 'post-command))
+            (overlayp company-pseudo-tooltip-overlay))
+        (company-pseudo-tooltip-frontend command)
+      (setq company-tooltip-timer
+            (run-with-timer company-tooltip-idle-delay nil
+                            'company-pseudo-tooltip-frontend
+                            'post-command)))))
+
 ;;; overlay ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar-local company-preview-overlay nil)
@@ -2891,6 +2941,11 @@ Returns a negative number if the tooltip should be displayed above point."
        company-common
        (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
            (string-prefix-p company-prefix company-common))))
+
+(defun company-tooltip-visible ()
+  "Returns whether the tooltip is visible."
+  (when (overlayp company-pseudo-tooltip-overlay)
+    (not (overlay-get company-pseudo-tooltip-overlay 'invisible))))
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
