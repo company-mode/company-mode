@@ -773,16 +773,6 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                    (t (memq major-mode company-global-modes))))
     (company-mode 1)))
 
-(defun company-ac-setup ()
-  "Sets up company to behave similarly to auto-complete mode."
-  (setq company-require-match nil)
-  (setq company-auto-complete #'company-tooltip-visible)
-  (setq company-frontends '(company-echo-metadata-frontend
-                            company-ac-frontend
-                            company-preview-frontend))
-  (define-key company-active-map [tab] 'company-ac-complete)
-  (define-key company-active-map (kbd "TAB") 'company-ac-complete))
-
 (defsubst company-assert-enabled ()
   (unless company-mode
     (company-uninstall-map)
