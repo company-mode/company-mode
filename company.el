@@ -188,9 +188,9 @@ buffer-local wherever it is set."
   (let ((value (delete-dups (copy-sequence value))))
     (and (or (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
                   (memq 'company-pseudo-tooltip-frontend value))
-             (and (memq 'company-ac-frontend value)
+             (and (memq 'company-pseudo-tooltip-frontend-with-delay value)
                   (memq 'company-pseudo-tooltip-frontend value))
-             (and (memq 'company-ac-frontend value)
+             (and (memq 'company-pseudo-tooltip-frontend-with-delay value)
                   (memq 'company-pseudo-tooltip-unless-just-one-frontend value)))
          (error "Pseudo tooltip frontend cannot be used more than once"))
     (and (memq 'company-preview-if-just-one-frontend value)
@@ -238,7 +238,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (const :tag "pseudo tooltip, multiple only"
                                 company-pseudo-tooltip-unless-just-one-frontend)
                          (const :tag "pseudo tooltip, multiple only, delayed"
-                                company-ac-frontend)
+                                company-pseudo-tooltip-frontend-with-delay)
                          (const :tag "preview" company-preview-frontend)
                          (const :tag "preview, unique only"
                                 company-preview-if-just-one-frontend)
@@ -564,8 +564,8 @@ happens.  The value of nil means no idle completion."
                  (number :tag "seconds")))
 
 (defcustom company-tooltip-idle-delay .5
-  "The idle delay in seconds until tooltip when using
-`company-ac-frontend'."
+  "The idle delay in seconds until tooltip is shown when using
+`company-pseudo-tooltip-frontend-with-delay'."
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (0)" 0)
                  (number :tag "seconds")))
@@ -2062,11 +2062,9 @@ With ARG, move by that many elements."
                  (eq old-tick (buffer-chars-modified-tick)))
         (company-complete-common))))))
 
-(defun company-ac-complete ()
-  "This should be used with `company-ac-frontend'.
-Mimics the way auto-complete does its completion.
-If tooltip is showing, select the next candidate.
-If only preview is showing or only one candidate, complete the selection."
+(defun company-complete-selection-or-select-next-if-tooltip-visible ()
+  "This should be used with `company-pseudo-tooltip-frontend-with-delay'.
+Insert selection if only preview is showing or only one candidate, or select the next candidate."
   (interactive)
   (if (and (company-tooltip-visible) (> company-candidates-length 1))
       (call-interactively 'company-select-next)
@@ -2842,9 +2840,9 @@ Returns a negative number if the tooltip should be displayed above point."
                (company--show-inline-p))
     (company-pseudo-tooltip-frontend command)))
 
-(defun company-ac-frontend (command)
+(defun company-pseudo-tooltip-frontend-with-delay (command)
   "`compandy-pseudo-tooltip-frontend', but shown after a delay.
-Similar to auto-complete mode."
+Delay is determined by `company-tooltip-idle-delay'."
   (when (and (eq command 'pre-command) company-tooltip-timer)
     (cancel-timer company-tooltip-timer)
     (setq company-tooltip-timer nil))
