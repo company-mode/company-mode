@@ -88,7 +88,8 @@ eclim can only complete correctly when the buffer has been saved."
   (company-eclim--call-process "project_list"))
 
 (defun company-eclim--project-dir ()
-  (if (eq company-eclim--project-dir 'unknown)
+  (if (and (eq company-eclim--project-dir 'unknown)
+           (locate-dominating-file buffer-file-name ".project"))
       (setq company-eclim--project-dir
             (directory-file-name
              (expand-file-name
@@ -98,7 +99,8 @@ eclim can only complete correctly when the buffer has been saved."
 (defun company-eclim--project-name ()
   (or company-eclim--project-name
       (let ((dir (company-eclim--project-dir)))
-        (when dir
+        (when (and dir
+                   (not (eq company-eclim--project-dir 'unknown)))
           (setq company-eclim--project-name
                 (cl-loop for project in (company-eclim--project-list)
                          when (equal (cdr (assoc 'path project)) dir)
