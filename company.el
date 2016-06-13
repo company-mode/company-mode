@@ -2074,7 +2074,7 @@ With ARG, move by that many elements."
                  (eq old-tick (buffer-chars-modified-tick)))
         (company-complete-common))))))
 
-(defun company-complete-selection-or-select-next-if-tooltip-visible ()
+(defun company-select-next-if-tooltip-visible-or-complete-selection ()
   "This should be used with `company-pseudo-tooltip-frontend-with-delay'.
 Insert selection if only preview is showing or only one candidate, or select the next candidate."
   (interactive)
