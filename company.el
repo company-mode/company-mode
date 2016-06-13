@@ -2859,20 +2859,20 @@ Returns a negative number if the tooltip should be displayed above point."
 Delay is determined by `company-tooltip-idle-delay'."
   (cl-case command
     (pre-command
-     (company-pseudo-tooltip-frontend command)
+     (company-pseudo-tooltip-unless-just-one-frontend command)
      (when company-tooltip-timer
        (cancel-timer company-tooltip-timer)
        (setq company-tooltip-timer nil)))
     (post-command
      (if (or company-tooltip-timer
              (overlayp company-pseudo-tooltip-overlay))
-         (company-pseudo-tooltip-frontend command)
+         (company-pseudo-tooltip-unless-just-one-frontend command)
        (setq company-tooltip-timer
              (run-with-timer company-tooltip-idle-delay nil
                              'company-pseudo-tooltip-frontend-with-delay
                              'post-command))))
     (t
-     (company-pseudo-tooltip-frontend command))))
+     (company-pseudo-tooltip-unless-just-one-frontend command))))
 
 ;;; overlay ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
