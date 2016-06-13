@@ -471,6 +471,8 @@ without duplicates."
           (const :tag "Sort by occurrence" (company-sort-by-occurrence))
           (const :tag "Sort by backend importance"
                  (company-sort-by-backend-importance))
+          (const :tag "Prefer case sensitive prefix"
+                 (company-sort-prefer-same-case-prefix))
           (repeat :tag "User defined" (function))))
 
 (defcustom company-completion-started-hook nil
@@ -1344,6 +1346,16 @@ from the rest of the backends in the group, if any, will be left at the end."
                    (and b2 (memq b2 low-priority)))
                  (let ((b1 (get-text-property 0 'company-backend c1)))
                    (or (not b1) (not (memq b1 low-priority)))))))))))
+
+(defun company-sort-prefer-same-case-prefix (candidates)
+  "Prefer CANDIDATES with the same case sensitive prefix.
+If a backend returns case insensitive matches, candidates with the an exact
+prefix match will be prioritized even if this changes the lexical order."
+  (cl-loop for candidate in candidates
+           if (string-prefix-p company-prefix candidate)
+           collect candidate into same-case
+           else collect candidate into other-case
+           finally return (append same-case other-case)))
 
 (defun company-idle-begin (buf win tick pos)
   (and (eq buf (current-buffer))
