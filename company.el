@@ -188,9 +188,9 @@ buffer-local wherever it is set."
   (let ((value (delete-dups (copy-sequence value))))
     (and (or (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
                   (memq 'company-pseudo-tooltip-frontend value))
-             (and (memq 'company-pseudo-tooltip-frontend-with-delay value)
+             (and (memq 'company-pseudo-tooltip-unless-just-one-frontend-with-delay value)
                   (memq 'company-pseudo-tooltip-frontend value))
-             (and (memq 'company-pseudo-tooltip-frontend-with-delay value)
+             (and (memq 'company-pseudo-tooltip-unless-just-one-frontend-with-delay value)
                   (memq 'company-pseudo-tooltip-unless-just-one-frontend value)))
          (error "Pseudo tooltip frontend cannot be used more than once"))
     (and (memq 'company-preview-if-just-one-frontend value)
@@ -238,7 +238,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (const :tag "pseudo tooltip, multiple only"
                                 company-pseudo-tooltip-unless-just-one-frontend)
                          (const :tag "pseudo tooltip, multiple only, delayed"
-                                company-pseudo-tooltip-frontend-with-delay)
+                                company-pseudo-tooltip-unless-just-one-frontend-with-delay)
                          (const :tag "preview" company-preview-frontend)
                          (const :tag "preview, unique only"
                                 company-preview-if-just-one-frontend)
@@ -567,7 +567,7 @@ happens.  The value of nil means no idle completion."
 
 (defcustom company-tooltip-idle-delay .5
   "The idle delay in seconds until tooltip is shown when using
-`company-pseudo-tooltip-frontend-with-delay'."
+`company-pseudo-tooltip-unless-just-one-frontend-with-delay'."
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (0)" 0)
                  (number :tag "seconds")))
@@ -2076,7 +2076,7 @@ With ARG, move by that many elements."
 
 (defun company-select-next-if-tooltip-visible-or-complete-selection ()
   "Insert selection if only preview is showing or only one candidate, or select the next candidate.
-When used with with `company-pseudo-tooltip-frontend-with-delay',
+When used with with `company-pseudo-tooltip-unless-just-one-frontend-with-delay',
 if tooltip is not visible or only one candidate, complete selection,
 else, select-active-regions the next candidate."
   (interactive)
@@ -2854,7 +2854,7 @@ Returns a negative number if the tooltip should be displayed above point."
                (company--show-inline-p))
     (company-pseudo-tooltip-frontend command)))
 
-(defun company-pseudo-tooltip-frontend-with-delay (command)
+(defun company-pseudo-tooltip-unless-just-one-frontend-with-delay (command)
   "`compandy-pseudo-tooltip-frontend', but shown after a delay.
 Delay is determined by `company-tooltip-idle-delay'."
   (cl-case command
@@ -2869,7 +2869,7 @@ Delay is determined by `company-tooltip-idle-delay'."
          (company-pseudo-tooltip-unless-just-one-frontend command)
        (setq company-tooltip-timer
              (run-with-timer company-tooltip-idle-delay nil
-                             'company-pseudo-tooltip-frontend-with-delay
+                             'company-pseudo-tooltip-unless-just-one-frontend-with-delay
                              'post-command))))
     (t
      (company-pseudo-tooltip-unless-just-one-frontend command))))
