@@ -2867,10 +2867,9 @@ Delay is determined by `company-tooltip-idle-delay'."
              (overlayp company-pseudo-tooltip-overlay))
          (if (not (memq 'company-preview-frontend company-frontends))
              (company-pseudo-tooltip-unless-just-one-frontend command)
-           (progn
-             (company-preview-frontend 'pre-command)
-             (company-pseudo-tooltip-unless-just-one-frontend command)
-             (company-preview-frontend 'post-command)))
+           (company-preview-frontend 'pre-command)
+           (company-pseudo-tooltip-unless-just-one-frontend command)
+           (company-preview-frontend 'post-command))
        (setq company-tooltip-timer
              (run-with-timer company-tooltip-idle-delay nil
                              'company-pseudo-tooltip-unless-just-one-frontend-with-delay
