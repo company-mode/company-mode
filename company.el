@@ -2075,10 +2075,9 @@ With ARG, move by that many elements."
         (company-complete-common))))))
 
 (defun company-select-next-if-tooltip-visible-or-complete-selection ()
-  "Insert selection if only preview is showing or only one candidate, or select the next candidate.
-When used with with `company-pseudo-tooltip-unless-just-one-frontend-with-delay',
-if tooltip is not visible or only one candidate, complete selection,
-else, select-active-regions the next candidate."
+  "Insert selection if appropriate, or select the next candidate.
+Insert selection if only preview is showing or only one candidate,
+otherwise select the next candidate."
   (interactive)
   (if (and (company-tooltip-visible) (> company-candidates-length 1))
       (call-interactively 'company-select-next)
