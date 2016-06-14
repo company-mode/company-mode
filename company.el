@@ -2079,7 +2079,7 @@ With ARG, move by that many elements."
 Insert selection if only preview is showing or only one candidate,
 otherwise select the next candidate."
   (interactive)
-  (if (and (company-tooltip-visible) (> company-candidates-length 1))
+  (if (and (company-tooltip-visible-p) (> company-candidates-length 1))
       (call-interactively 'company-select-next)
     (call-interactively 'company-complete-selection)))
 
@@ -2947,7 +2947,7 @@ Delay is determined by `company-tooltip-idle-delay'."
        (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
            (string-prefix-p company-prefix company-common))))
 
-(defun company-tooltip-visible ()
+(defun company-tooltip-visible-p ()
   "Returns whether the tooltip is visible."
   (when (overlayp company-pseudo-tooltip-overlay)
     (not (overlay-get company-pseudo-tooltip-overlay 'invisible))))
