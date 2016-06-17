@@ -139,9 +139,11 @@ This is based on the premise that a short name indicates significance.")
                                          (company-nxml-attribute-completions
                                           name (rng-match-possible-attribute-names))))))
                   (when candidates
-                    (setq company-nxml-last-command (if arg
-                                                        'company-nxml-attribute
-                                                        'company-nxml-attribute-from-tag))
+                    (if arg
+                        (setq company-nxml-last-command 'company-nxml-attribute)
+                      (setq company-nxml-last-command 'company-nxml-attribute-from-tag
+                            company-prefix "")) ; prevent tag name from acting as a prefix
+
                     candidates)))
     (sorted t)))
 
@@ -221,8 +223,8 @@ Called post completion when inserting a tag name."
     (candidates (cond
                  ((and (eq company-nxml-last-command 'company-nxml-tag)
                        (company-grab company-nxml-in-starttag-name-regexp 1 1))
-                  (setq company-prefix "") ; don't zap the just inserted tag name!
-                  (company-nxml-attribute 'candidates))
+                  (or (company-nxml-attribute 'candidates)
+                      (company-nxml-tag 'candidates arg)))
                  ((company-nxml-tag 'prefix)
                   (company-nxml-tag 'candidates arg))
                  ((company-nxml-attribute 'prefix)
