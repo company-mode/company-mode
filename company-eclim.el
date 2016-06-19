@@ -89,10 +89,11 @@ eclim can only complete correctly when the buffer has been saved."
 
 (defun company-eclim--project-dir ()
   (if (eq company-eclim--project-dir 'unknown)
-      (setq company-eclim--project-dir
-            (directory-file-name
-             (expand-file-name
-              (locate-dominating-file buffer-file-name ".project"))))
+      (let ((dir (locate-dominating-file buffer-file-name ".project")))
+        (when dir
+          (setq company-eclim--project-dir
+                (directory-file-name
+                 (expand-file-name dir)))))
     company-eclim--project-dir))
 
 (defun company-eclim--project-name ()
