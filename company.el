@@ -1356,9 +1356,9 @@ from the rest of the backends in the group, if any, will be left at the end."
                    (or (not b1) (not (memq b1 low-priority)))))))))))
 
 (defun company-sort-prefer-same-case-prefix (candidates)
-  "Prefer CANDIDATES with the same case sensitive prefix.
+  "Prefer CANDIDATES with the exact same prefix.
 If a backend returns case insensitive matches, candidates with the an exact
-prefix match will be prioritized even if this changes the lexical order."
+prefix match (same case) will be prioritized."
   (cl-loop for candidate in candidates
            if (string-prefix-p company-prefix candidate)
            collect candidate into same-case
