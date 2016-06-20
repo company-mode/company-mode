@@ -44,7 +44,8 @@ buffers with the same major mode.  See also `company-dabbrev-time-limit'."
   "Regexp matching the names of buffers to ignore.
 Or a function that returns non-nil for such buffers."
   :type '(choice (regexp :tag "Regexp")
-                 (function :tag "Predicate")))
+                 (function :tag "Predicate"))
+  :package-version '(company . "0.9.0"))
 
 (defcustom company-dabbrev-time-limit .1
   "Determines how many seconds `company-dabbrev' should look for matches."
