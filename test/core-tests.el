@@ -153,6 +153,26 @@
       (should (equal '("abb" "abc" "abd" "acc" "acd")
                      (company-call-backend 'candidates "a"))))))
 
+(ert-deftest company-multi-backend-handles-keyword-separate ()
+  (let ((one (lambda (command &optional _)
+               (cl-case command
+                 (prefix "a")
+                 (candidates '("aa" "ca" "ba")))))
+        (two (lambda (command &optional _)
+               (cl-case command
+                 (prefix "a")
+                 (candidates '("bb" "ab")))))
+        (tri (lambda (command &optional _)
+               (cl-case command
+                 (prefix "a")
+                 (sorted t)
+                 (candidates '("cc" "bc" "ac"))))))
+    (let ((company-backend (list one two tri :separate)))
+      (should (company-call-backend 'sorted))
+      (should-not (company-call-backend 'duplicates))
+      (should (equal '("aa" "ba" "ca" "ab" "bb" "cc" "bc" "ac")
+                     (company-call-backend 'candidates "a"))))))
+
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer
     (insert "a")

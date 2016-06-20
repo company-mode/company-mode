@@ -2,6 +2,8 @@
 
 ## Next
 
+* Group of backends can now contain keyword `:separate`, which makes candidates
+  from different backends sorted separately in the combined list.
 * The value of `company-dabbrev-ignore-buffers` can also be a function.
 * `company-files` has been moved to right after `company-capf` in
   `company-backends`
