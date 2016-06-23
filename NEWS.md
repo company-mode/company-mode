@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2016-06-23 (0.9.0)
 
 * Group of backends can now contain keyword `:separate`, which makes candidates
   from different backends sorted separately in the combined list.
