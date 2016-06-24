@@ -2871,6 +2871,11 @@ Delay is determined by `company-tooltip-idle-delay'."
      (when company-tooltip-timer
        (cancel-timer company-tooltip-timer)
        (setq company-tooltip-timer nil)))
+    (hide
+     (when company-tooltip-timer
+       (cancel-timer company-tooltip-timer)
+       (setq company-tooltip-timer nil))
+     (company-pseudo-tooltip-unless-just-one-frontend command))
     (post-command
      (if (or company-tooltip-timer
              (overlayp company-pseudo-tooltip-overlay))
