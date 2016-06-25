@@ -735,9 +735,6 @@ keymap during active completions (`company-active-map'):
   nil company-lighter company-mode-map
   (if company-mode
       (progn
-        (when (eq company-idle-delay t)
-          (setq company-idle-delay 0)
-          (warn "Setting `company-idle-delay' to t is deprecated.  Set it to 0 instead."))
         (add-hook 'pre-command-hook 'company-pre-command nil t)
         (add-hook 'post-command-hook 'company-post-command nil t)
         (mapc 'company-init-backend company-backends))
@@ -1638,11 +1635,13 @@ prefix match (same case) will be prioritized."
               (company--perform)))
           (if company-candidates
               (company-call-frontends 'post-command)
-            (and (numberp company-idle-delay)
+            (and (or (numberp company-idle-delay)
+                     ;; Deprecated.
+                     (eq company-idle-delay t))
                  (not defining-kbd-macro)
                  (company--should-begin)
                  (setq company-timer
-                       (run-with-timer company-idle-delay nil
+                       (run-with-timer (company--idle-delay) nil
                                        'company-idle-begin
                                        (current-buffer) (selected-window)
                                        (buffer-chars-modified-tick) (point))))))
@@ -1650,6 +1649,11 @@ prefix match (same case) will be prioritized."
              (message "%s" (error-message-string err))
              (company-cancel))))
   (company-install-map))
+
+(defun company--idle-delay ()
+  (if (memql company-idle-delay '(t 0 0.0))
+      0.01
+    company-idle-delay))
 
 (defvar company--begin-inhibit-commands '(company-abort
                                           company-complete-mouse
