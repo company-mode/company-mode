@@ -2869,6 +2869,7 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-unless-just-one-frontend-with-delay (command)
   "`compandy-pseudo-tooltip-frontend', but shown after a delay.
 Delay is determined by `company-tooltip-idle-delay'."
+  (defvar company-preview-overlay)
   (when (and (memq command '(pre-command hide))
              company-tooltip-timer)
     (cancel-timer company-tooltip-timer)
@@ -2877,11 +2878,11 @@ Delay is determined by `company-tooltip-idle-delay'."
     (post-command
      (if (or company-tooltip-timer
              (overlayp company-pseudo-tooltip-overlay))
-         (if (not (memq 'company-preview-frontend company-frontends))
+         (if (not (overlayp company-preview-overlay))
              (company-pseudo-tooltip-unless-just-one-frontend command)
-           (company-preview-frontend 'pre-command)
-           (company-pseudo-tooltip-unless-just-one-frontend command)
-           (company-preview-frontend 'post-command))
+           (let (company-tooltip-timer)
+             (company-call-frontends 'pre-command))
+           (company-call-frontends 'post-command))
        (setq company-tooltip-timer
              (run-with-timer company-tooltip-idle-delay nil
                              'company-pseudo-tooltip-unless-just-one-frontend-with-delay

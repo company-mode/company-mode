@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* `company-pseudo-tooltip-unless-just-one-frontend-with-delay` handles custom
+  frontends derived from `company-preview-frontend` better.
+
 ## 2016-06-23 (0.9.0)
 
 * Group of backends can now contain keyword `:separate`, which makes candidates
