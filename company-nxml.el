@@ -143,7 +143,6 @@ This is based on the premise that a short name indicates significance.")
                         (setq company-nxml-last-command 'company-nxml-attribute)
                       (setq company-nxml-last-command 'company-nxml-attribute-from-tag
                             company-prefix "")) ; prevent tag name from acting as a prefix
-
                     candidates)))
     (sorted t)))
 
@@ -169,7 +168,8 @@ Called post completion when inserting a tag name."
         (message "Auto-inserted %srequired attribute%s for element %s"
                  (or (and (cdr atts) (format "%d " (length atts))) "")
                  (or (and (cdr atts) "s") (concat " " (cdr (car atts))))
-                 tagname)))))
+                 tagname)))
+    atts))
 
 
 (defun company-nxml-attribute-completions (prefix alist)
@@ -217,8 +217,8 @@ Called post completion when inserting a tag name."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-nxml))
-    (prefix (or (company-nxml-tag 'prefix)
-                (company-nxml-attribute 'prefix)
+    (prefix (or (company-nxml-attribute 'prefix)
+                (company-nxml-tag 'prefix)
                 (company-nxml-attribute-value 'prefix)))
     (candidates (cond
                  ((and (eq company-nxml-last-command 'company-nxml-tag)
@@ -234,7 +234,10 @@ Called post completion when inserting a tag name."
                         'string<))))
     (post-completion (cond
                       ((eq company-nxml-last-command 'company-nxml-tag)
-                       (company-nxml-add-required-attributes arg (point)))
+                       (if (eq (aref arg 0) ?/)
+                           (insert ">")
+                         (or (company-nxml-add-required-attributes arg (point))
+                             (signal 'quit nil)))) ; this makes multiple attribute candidates work
                       ((eq company-nxml-last-command 'company-nxml-attribute-from-tag)
                        (backward-char (length arg))
                        (insert " ")
