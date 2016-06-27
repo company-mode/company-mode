@@ -1981,15 +1981,23 @@ With ARG, move by that many elements."
   "Select the candidate one page further."
   (interactive)
   (when (company-manual-begin)
-    (company-set-selection (+ company-selection
-                              company-tooltip-limit))))
+    (if (and company-selection-wrap-around
+             (= company-selection (1- company-candidates-length)))
+        (company-set-selection 0)
+      (let (company-selection-wrap-around)
+        (company-set-selection (+ company-selection
+                                  company-tooltip-limit))))))
 
 (defun company-previous-page ()
   "Select the candidate one page earlier."
   (interactive)
   (when (company-manual-begin)
-    (company-set-selection (- company-selection
-                              company-tooltip-limit))))
+    (if (and company-selection-wrap-around
+             (zerop company-selection))
+        (company-set-selection (1- company-candidates-length))
+      (let (company-selection-wrap-around)
+        (company-set-selection (- company-selection
+                                  company-tooltip-limit))))))
 
 (defvar company-pseudo-tooltip-overlay)
 
