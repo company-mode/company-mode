@@ -127,7 +127,7 @@ and `c-electric-colon', for automatic completion right after \">\" and
                               (coff  ; offset to end of 'canonical' name (i.e. it's len)      
                                (string-bytes cname))
                               (cpos  ; start pos of 'canonical' name in prototype             
-                               (string-match cname prototype)))
+                               (string-match (regexp-quote cname) prototype)))
                          (when cpos (substring prototype (- (+ cpos coff) 1))))))))
 
 (defun company-semantic--prefix ()
