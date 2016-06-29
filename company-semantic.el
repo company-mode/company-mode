@@ -40,6 +40,7 @@
 (declare-function semantic-tag-buffer "semantic/tag")
 (declare-function semantic-active-p "semantic")
 (declare-function semantic-format-tag-prototype "semantic/format")
+(declare-function semantic-format-tag-canonical-name "semantic/format")
 
 (defgroup company-semantic nil
   "Completion backend using Semantic."
@@ -119,9 +120,15 @@ and `c-electric-colon', for automatic completion right after \">\" and
   (let* ((tag (assq argument tags))
          (kind (when tag (elt tag 1))))
     (cl-case kind
-      (function (let* ((prototype (semantic-format-tag-prototype tag nil nil))
-                       (par-pos (string-match "(" prototype)))
-                  (when par-pos (substring prototype par-pos)))))))
+             (function (let* ((prototype
+                               (semantic-format-tag-prototype tag nil nil))
+                              (cname ; semantics' idea of a 'canonical' name for tag          
+                               (semantic-format-tag-canonical-name tag nil nil))
+                              (coff  ; offset to end of 'canonical' name (i.e. it's len)      
+                               (string-bytes cname))
+                              (cpos  ; start pos of 'canonical' name in prototype             
+                               (string-match cname prototype)))
+                         (when cpos (substring prototype (- (+ cpos coff) 1))))))))
 
 (defun company-semantic--prefix ()
   (if company-semantic-begin-after-member-access
