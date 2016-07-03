@@ -7,7 +7,7 @@
   when the selection is at the start of the end of the list.
 * `company-pseudo-tooltip-unless-just-one-frontend-with-delay` handles custom
   frontends derived from `company-preview-frontend` better.
-* `company-idle-delay` is automatically converted to a non-zero value.
+* `company-idle-delay` is automatically adjusted to a non-zero value.
 
 ## 2016-06-23 (0.9.0)
 
