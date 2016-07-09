@@ -1,6 +1,6 @@
 ;;; company-tests.el --- company-mode test helpers  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2011, 2013-2014  Free Software Foundation, Inc.
+;; Copyright (C) 2011, 2013-2016  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
@@ -20,6 +20,9 @@
 ;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'company)
+
+(defvar company-dir (file-name-directory (or load-file-name
+                                             buffer-file-name)))
 
 (defun company--column (&optional pos)
   (car (company--col-row pos)))

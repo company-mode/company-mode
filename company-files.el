@@ -1,4 +1,4 @@
-;;; company-files.el --- company-mode completion backend for file paths
+;;; company-files.el --- company-mode completion backend for file names
 
 ;; Copyright (C) 2009-2011, 2014-2015  Free Software Foundation, Inc.
 
@@ -28,14 +28,39 @@
 (require 'company)
 (require 'cl-lib)
 
+(defgroup company-files nil
+  "Completion backend for file names."
+  :group 'company)
+
+(defcustom company-files-exclusions nil
+  "File name extensions and directory names to ignore.
+The values should use the same format as `completion-ignored-extensions'."
+  :type '(const string)
+  :package-version '(company . "0.9.1"))
+
 (defun company-files--directory-files (dir prefix)
   (ignore-errors
     ;; Don't use directory-files. It produces directories without trailing /.
     (let ((comp (sort (file-name-all-completions prefix dir)
                       (lambda (s1 s2) (string-lessp (downcase s1) (downcase s2))))))
+      (when company-files-exclusions
+        (setq comp (company-files--exclusions-filtered comp)))
       (if (equal prefix "")
           (delete "../" (delete "./" comp))
         comp))))
+
+(defun company-files--exclusions-filtered (completions)
+  (let* ((dir-exclusions (cl-delete-if-not #'company-files--trailing-slash-p
+                                           company-files-exclusions))
+         (file-exclusions (cl-set-difference company-files-exclusions
+                                             dir-exclusions)))
+    (cl-loop for c in completions
+             unless (if (company-files--trailing-slash-p c)
+                        (member c dir-exclusions)
+                      (cl-find-if (lambda (exclusion)
+                                    (string-suffix-p exclusion c))
+                                  file-exclusions))
+             collect c)))
 
 (defvar company-files--regexps
   (let* ((root (if (eq system-type 'windows-nt)

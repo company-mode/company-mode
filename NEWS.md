@@ -2,6 +2,7 @@
 
 ## Next
 
+* New variable `company-files-exclusions`.
 * `company-next-page` and `company-previous-page` adhere to
   `company-selection-wrap-around` docstring more closely and only wrap around
   when the selection is at the start of the end of the list.
