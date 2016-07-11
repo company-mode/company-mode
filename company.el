@@ -2398,7 +2398,7 @@ It defaults to 0.
 CALLBACK is a function called with the selected result if the user
 successfully completes the input.
 
-Example: \(company-begin-with '\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
+Example: \(company-begin-with \\='\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
   (let ((begin-marker (copy-marker (point) t)))
     (company-begin-backend
      (lambda (command &optional arg &rest ignored)

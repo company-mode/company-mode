@@ -37,7 +37,7 @@
 
 (defcustom company-elisp-detect-function-context t
   "If enabled, offer Lisp functions only in appropriate contexts.
-Functions are offered for completion only after ' and \(."
+Functions are offered for completion only after \\=' and \(."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "On" t)))
 
