@@ -920,6 +920,9 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
       (if (functionp company-backend)
           (apply company-backend args)
         (apply #'company--multi-backend-adapter company-backend args))
+    (user-error (user-error
+                 "Company: backend %s user-error: %s"
+                 company-backend (error-message-string err)))
     (error (error "Company: backend %s error \"%s\" with args %s"
                   company-backend (error-message-string err) args))))
 
