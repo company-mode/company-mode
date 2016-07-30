@@ -28,6 +28,11 @@
                     (company-files 'candidates
                                    company-dir)))))
 
+(ert-deftest company-files-candidates-normal-root ()
+  (let (company-files--completion-cache)
+    (should (member "/lost+found/"
+                    (company-files 'candidates "/")))))
+
 (ert-deftest company-files-candidates-excluding-dir ()
   (let ((company-files-exclusions '("test/"))
         company-files--completion-cache)

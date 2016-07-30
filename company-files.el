@@ -40,13 +40,15 @@ The values should use the same format as `completion-ignored-extensions'."
 
 (defun company-files--directory-files (dir prefix)
   ;; Don't use directory-files. It produces directories without trailing /.
-  (let ((comp (sort (file-name-all-completions prefix dir)
-                    (lambda (s1 s2) (string-lessp (downcase s1) (downcase s2))))))
-    (when company-files-exclusions
-      (setq comp (company-files--exclusions-filtered comp)))
-    (if (equal prefix "")
-        (delete "../" (delete "./" comp))
-      comp)))
+  (condition-case err
+      (let ((comp (sort (file-name-all-completions prefix dir)
+                        (lambda (s1 s2) (string-lessp (downcase s1) (downcase s2))))))
+        (when company-files-exclusions
+          (setq comp (company-files--exclusions-filtered comp)))
+        (if (equal prefix "")
+            (delete "../" (delete "./" comp))
+          comp))
+    (file-error nil)))
 
 (defun company-files--exclusions-filtered (completions)
   (let* ((dir-exclusions (cl-delete-if-not #'company-files--trailing-slash-p
