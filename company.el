@@ -118,14 +118,11 @@ attention to case differences."
   "Face used for the selection in the tooltip.")
 
 (defface company-tooltip-search
-  '((t (:foreground "orange")))
+  '((default :inherit highlight))
   "Face used for the search string in the tooltip.")
 
 (defface company-tooltip-search-selection
-  '((((background light))
-     :foreground "orange")
-    (((background dark))
-     :foreground "yellow"))
+  '((default :inherit highlight))
   "Face used for the selected search string in the tooltip.")
 
 (defface company-tooltip-mouse
