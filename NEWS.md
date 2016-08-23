@@ -2,6 +2,7 @@
 
 ## Next
 
+* Better visualization of search matches. New face `company-tooltip-search-selection`.
 * New variable `company-files-exclusions`.
 * `company-next-page` and `company-previous-page` adhere to
   `company-selection-wrap-around` docstring more closely and only wrap around

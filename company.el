@@ -118,8 +118,12 @@ attention to case differences."
   "Face used for the selection in the tooltip.")
 
 (defface company-tooltip-search
-  '((default :inherit company-tooltip-selection))
+  '((default :inherit highlight))
   "Face used for the search string in the tooltip.")
+
+(defface company-tooltip-search-selection
+  '((default :inherit highlight))
+  "Face used for the search string inside the selection in the tooltip.")
 
 (defface company-tooltip-mouse
   '((default :inherit highlight))
@@ -2475,22 +2479,24 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                          'company-tooltip-common-selection
                                        'company-tooltip-common)
                                      line)
-    (when selected
-      (if (let ((re (funcall company-search-regexp-function
+    (when (let ((re (funcall company-search-regexp-function
                              company-search-string)))
             (and (not (string= re ""))
                  (string-match re value (length company-prefix))))
-          (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
-            (let ((beg (+ margin mbeg))
-                  (end (+ margin mend))
-                  (width (- width (length right))))
-              (when (< beg width)
-                (font-lock-prepend-text-property beg (min end width)
-                                                 'face 'company-tooltip-search
-                                                 line))))
-        (font-lock-append-text-property 0 width 'face
-                                        'company-tooltip-selection
-                                        line)))
+      (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
+        (let ((beg (+ margin mbeg))
+              (end (+ margin mend))
+              (width (- width (length right))))
+          (when (< beg width)
+            (font-lock-prepend-text-property beg (min end width) 'face
+                                             (if selected
+                                                 'company-tooltip-search-selection
+                                               'company-tooltip-search)
+                                             line)))))
+    (when selected
+      (font-lock-append-text-property 0 width 'face
+                                      'company-tooltip-selection
+                                      line))
     (font-lock-append-text-property 0 width 'face
                                     'company-tooltip
                                     line)

@@ -256,18 +256,18 @@
     (should (ert-equal-including-properties
              (company-fill-propertize "barfoo" nil 6 t nil nil)
              #("barfoo"
-               0 3 (face (company-tooltip) mouse-face (company-tooltip-mouse))
-               3 6 (face (company-tooltip-search company-tooltip) mouse-face (company-tooltip-mouse)))))
+               0 3 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse))
+               3 6 (face (company-tooltip-search-selection company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))
     (should (ert-equal-including-properties
              (company-fill-propertize "barfoo" nil 5 t "" " ")
              #("barfo "
-               0 3 (face (company-tooltip) mouse-face (company-tooltip-mouse))
-               3 5 (face (company-tooltip-search company-tooltip) mouse-face (company-tooltip-mouse))
-               5 6 (face (company-tooltip) mouse-face (company-tooltip-mouse)))))
+               0 3 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse))
+               3 5 (face (company-tooltip-search-selection company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse))
+               5 6 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))
     (should (ert-equal-including-properties
              (company-fill-propertize "barfoo" nil 3 t " " " ")
              #(" bar "
-               0 5 (face (company-tooltip) mouse-face (company-tooltip-mouse)))))))
+               0 5 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))))
 
 (ert-deftest company-fill-propertize-overrides-face-property ()
   (let ((company-backend #'ignore)
