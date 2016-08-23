@@ -123,7 +123,7 @@ attention to case differences."
 
 (defface company-tooltip-search-selection
   '((default :inherit highlight))
-  "Face used for the selected search string in the tooltip.")
+  "Face used for the search string inside the selection in the tooltip.")
 
 (defface company-tooltip-mouse
   '((default :inherit highlight))
