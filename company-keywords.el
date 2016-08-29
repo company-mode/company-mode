@@ -233,8 +233,10 @@
      )
     ;; aliases
     (js2-mode . javascript-mode)
+    (js2-jsx-mode . javascript-mode)
     (espresso-mode . javascript-mode)
     (js-mode . javascript-mode)
+    (js-jsx-mode . javascript-mode)
     (cperl-mode . perl-mode)
     (jde-mode . java-mode)
     (ess-julia-mode . julia-mode))
