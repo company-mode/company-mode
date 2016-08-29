@@ -12,12 +12,10 @@
 ;; This package adds support for flow to company. It requires
 ;; flow to be in your path.
 
-;; To use it, add to your company-backends for your preferred javascript modes,
-;; for example:
+;; To use it, add to your company-backends:
 
-;; (setq company-backends-js2-mode '((company-flow :with company-dabbrev)
-;;                                     company-files
-;;                                     company-dabbrev))
+;;   (eval-after-load 'company
+;;     '(add-to-list 'company-backends 'company-flow))
 
 ;;; License:
 
@@ -43,17 +41,34 @@
 (require 'company)
 (require 'dash)
 
+(defgroup company-flow ()
+  "Flow company backend."
+  :group 'editing
+  :prefix "company-flow-")
+
+(defcustom company-flow-modes '(
+                                js-mode
+                                js2-mode
+                                web-mode
+                                )
+  "List of major modes where company-flow will be providing completions."
+  :type '(choice (const :tag "All" nil)
+                 (repeat (symbol :tag "Major mode")))
+  :group 'company-flow)
+
 (defun company-flow--handle-signal (process _event)
   (when (memq (process-status process) '(signal exit))
     (let ((callback (process-get process 'company-flow-callback))
           (prefix (process-get process 'company-flow-prefix)))
-      ;; (message "%S" (company-flow--parse-output (company-flow--get-output process)))
-      (funcall callback (->> process
-                             company-flow--get-output
-                             company-flow--parse-output
-                             ;; Remove nils
-                             (--filter it)
-                             (all-completions prefix))))))
+      (if (and (eq (process-status process) 'exit)
+               (eq (process-exit-status process) 0))
+          (funcall callback (->> process
+                                 company-flow--get-output
+                                 company-flow--parse-output
+                                 ;; Remove nils
+                                 (--filter it)
+                                 (all-completions prefix)))
+        (funcall callback nil)))))
 
 (defun company-flow--make-candidate (line)
   "Creates a candidate with a meta property from LINE.
@@ -88,6 +103,8 @@ PROCESS, and terminates standard input with EOF."
   (save-restriction
     (widen)
     (process-send-region process (point-min) (point-max)))
+  ;; flow requires EOF be on its own line
+  (process-send-string process "\n")
   (process-send-eof process))
 
 (defun company-flow--candidates-query (prefix callback)
@@ -107,18 +124,16 @@ PROCESS, and terminates standard input with EOF."
 
 (defun company-flow--prefix ()
   "Grab prefix for flow."
-  (and (not (company-in-string-or-comment))
+  (and (or (null company-flow-modes)
+           (-contains? company-flow-modes major-mode))
+       buffer-file-name
+       (file-exists-p buffer-file-name)
+       (not (company-in-string-or-comment))
        (or (company-grab-symbol-cons "\\." 1)
            'stop)))
 
 (defun company-flow--annotation (candidate)
   (format " %s" (get-text-property 0 'meta candidate)))
-
-(defun company-flow--meta (_candidate)
-  nil)
-
-(defun company-flow--doc (_candidate)
-  nil)
 
 ;;;###autoload
 (defun company-flow (command &optional arg &rest _args)
@@ -127,9 +142,6 @@ PROCESS, and terminates standard input with EOF."
     (`interactive (company-begin-backend 'company-flow))
     (`prefix (company-flow--prefix))
     (`annotation (company-flow--annotation arg))
-    (`meta (company-flow--meta arg))
-    (`doc-buffer (company-flow--doc arg))
-    (`ignore-case t)
     (`sorted t)
     (`candidates (cons :async
                       (lambda (callback)
