@@ -43,7 +43,7 @@
 
 (defgroup company-flow ()
   "Flow company backend."
-  :group 'editing
+  :group 'company
   :prefix "company-flow-")
 
 (defcustom company-flow-modes '(
@@ -115,6 +115,7 @@ PROCESS, and terminates standard input with EOF."
                         buffer-file-name
                         (number-to-string line)
                         (number-to-string col)))
+         (process-connection-type nil)
          (process (apply 'start-process "company-flow" nil command)))
     (set-process-sentinel process #'company-flow--handle-signal)
     (set-process-filter process #'company-flow--receive-checker-output)
