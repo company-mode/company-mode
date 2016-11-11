@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-indent-or-complete-common` skips trying to indent if
+  `indent-line-function` is `indent-relative` or `indent-relative-maybe`.
 * Better visualization of search matches. New face `company-tooltip-search-selection`.
 * New variable `company-files-exclusions`.
 * `company-next-page` and `company-previous-page` adhere to

@@ -2104,6 +2104,9 @@ With ARG, move by that many elements."
   (cond
    ((use-region-p)
     (indent-region (region-beginning) (region-end)))
+   ((memq indent-line-function
+          '(indent-relative indent-relative-maybe))
+    (company-complete-common))
    ((let ((old-point (point))
           (old-tick (buffer-chars-modified-tick))
           (tab-always-indent t))
