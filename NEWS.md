@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2016-11-12 (0.9.1)
 
 * `company-indent-or-complete-common` skips trying to indent if
   `indent-line-function` is `indent-relative` or `indent-relative-maybe`.
