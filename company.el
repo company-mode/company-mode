@@ -697,6 +697,12 @@ asynchronous call into synchronous.")
       (unless (keywordp b)
         (company-init-backend b))))))
 
+(defun company--maybe-init-backend (backend)
+  (or (not (symbolp backend))
+      (eq t (get backend 'company-init))
+      (unless (get backend 'company-init)
+        (company-init-backend backend))))
+
 (defcustom company-lighter-base "company"
   "Base string to use for the `company-mode' lighter."
   :type 'string
@@ -932,8 +938,8 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 
 (defun company--multi-backend-adapter (backends command &rest args)
   (let ((backends (cl-loop for b in backends
-                           when (not (and (symbolp b)
-                                          (eq 'failed (get b 'company-init))))
+                           when (or (keywordp b)
+                                    (company--maybe-init-backend b))
                            collect b))
         (separate (memq :separate backends)))
 
@@ -1535,10 +1541,7 @@ prefix match (same case) will be prioritized."
       (setq prefix
             (if (or (symbolp backend)
                     (functionp backend))
-                (when (or (not (symbolp backend))
-                          (eq t (get backend 'company-init))
-                          (unless (get backend 'company-init)
-                            (company-init-backend backend)))
+                (when (company--maybe-init-backend backend)
                   (funcall backend 'prefix))
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
