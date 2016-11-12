@@ -1448,7 +1448,7 @@ prefix match (same case) will be prioritized."
                (eq company-require-match t))))))
 
 (defun company-auto-complete-p (input)
-  "Return non-nil, if input starts with punctuation or parentheses."
+  "Return non-nil, if INPUT starts with punctuation or parentheses."
   (and (if (functionp company-auto-complete)
            (funcall company-auto-complete)
          company-auto-complete)
@@ -1457,7 +1457,8 @@ prefix match (same case) will be prioritized."
          (if (consp company-auto-complete-chars)
              (memq (char-syntax (string-to-char input))
                    company-auto-complete-chars)
-           (string-match (substring input 0 1) company-auto-complete-chars)))))
+           (string-match (regexp-quote (substring input 0 1))
+                          company-auto-complete-chars)))))
 
 (defun company--incremental-p ()
   (and (> (point) company-point)
