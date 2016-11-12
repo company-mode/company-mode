@@ -1448,7 +1448,7 @@ prefix match (same case) will be prioritized."
                (eq company-require-match t))))))
 
 (defun company-auto-complete-p (input)
-  "Return non-nil, if input starts with punctuation or parentheses."
+  "Return non-nil, if INPUT starts with punctuation or parentheses."
   (and (if (functionp company-auto-complete)
            (funcall company-auto-complete)
          company-auto-complete)
