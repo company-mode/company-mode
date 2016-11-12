@@ -30,7 +30,7 @@
 
 (ert-deftest company-files-candidates-normal-root ()
   (let (company-files--completion-cache)
-    (should (member "/lost+found/"
+    (should (member "/bin/"
                     (company-files 'candidates "/")))))
 
 (ert-deftest company-files-candidates-excluding-dir ()
