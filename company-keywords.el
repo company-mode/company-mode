@@ -239,7 +239,8 @@
     (js-jsx-mode . javascript-mode)
     (cperl-mode . perl-mode)
     (jde-mode . java-mode)
-    (ess-julia-mode . julia-mode))
+    (ess-julia-mode . julia-mode)
+    (enh-ruby-mode . ruby-mode))
   "Alist mapping major-modes to sorted keywords for `company-keywords'.")
 
 ;;;###autoload
