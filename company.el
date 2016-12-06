@@ -188,14 +188,19 @@ attention to case differences."
              (and (memq 'company-pseudo-tooltip-unless-just-one-frontend-with-delay value)
                   (memq 'company-pseudo-tooltip-unless-just-one-frontend value)))
          (user-error "Pseudo tooltip frontend cannot be used more than once"))
-    (and (memq 'company-preview-if-just-one-frontend value)
-         (memq 'company-preview-frontend value)
+    (and (or (and (memq 'company-preview-if-just-one-frontend value)
+                  (memq 'company-preview-frontend value))
+             (and (memq 'company-preview-if-just-one-frontend value)
+                  (memq 'company-preview-common-frontend value))
+             (and (memq 'company-preview-frontend value)
+                  (memq 'company-preview-common-frontend value))
+             )
          (user-error "Preview frontend cannot be used twice"))
     (and (memq 'company-echo value)
          (memq 'company-echo-metadata-frontend value)
          (user-error "Echo area cannot be used twice"))
     ;; Preview must come last.
-    (dolist (f '(company-preview-if-just-one-frontend company-preview-frontend))
+    (dolist (f '(company-preview-if-just-one-frontend company-preview-frontend company-preview-common-frontend))
       (when (cdr (memq f value))
         (setq value (append (delq f value) (list f)))))
     (set variable value)))
@@ -237,6 +242,8 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (const :tag "preview" company-preview-frontend)
                          (const :tag "preview, unique only"
                                 company-preview-if-just-one-frontend)
+                         (const :tag "preview, unique and common part"
+                                company-preview-common-frontend)
                          (function :tag "custom function" nil))))
 
 (defcustom company-tooltip-limit 10
@@ -2912,7 +2919,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-preview-show-at-point (pos)
   (company-preview-hide)
 
-  (let ((completion (nth company-selection company-candidates)))
+  (let ((completion (if (cdr company-candidates) company-common (nth company-selection company-candidates))))
     (setq completion (copy-sequence (company--pre-render completion)))
     (font-lock-append-text-property 0 (length completion)
                                     'face 'company-preview
@@ -2983,6 +2990,19 @@ Delay is determined by `company-tooltip-idle-delay'."
   "Returns whether the tooltip is visible."
   (when (overlayp company-pseudo-tooltip-overlay)
     (not (overlay-get company-pseudo-tooltip-overlay 'invisible))))
+
+
+(defun company--show-common-inline-p ()
+  (and company-common
+       (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
+           (string-prefix-p company-prefix company-common))))
+
+(defun company-preview-common-frontend (command)
+  "`company-preview-frontend', but only shown for single candidates."
+  (when (or (not (eq command 'post-command))
+            (company--show-common-inline-p))
+    (company-preview-frontend command)))
+
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
