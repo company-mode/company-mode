@@ -242,7 +242,7 @@ The visualized data is stored in `company-prefix', `company-candidates',
                          (const :tag "preview" company-preview-frontend)
                          (const :tag "preview, unique only"
                                 company-preview-if-just-one-frontend)
-                         (const :tag "preview, unique and common part"
+                         (const :tag "preview, common"
                                 company-preview-common-frontend)
                          (function :tag "custom function" nil))))
 
@@ -2916,10 +2916,10 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defvar-local company-preview-overlay nil)
 
-(defun company-preview-show-at-point (pos)
+(defun company-preview-show-at-point (pos &optional common)
   (company-preview-hide)
 
-  (let ((completion (if (cdr company-candidates) company-common (nth company-selection company-candidates))))
+  (let ((completion (if common company-common (nth company-selection company-candidates))))
     (setq completion (copy-sequence (company--pre-render completion)))
     (font-lock-append-text-property 0 (length completion)
                                     'face 'company-preview
@@ -2967,11 +2967,11 @@ Delay is determined by `company-tooltip-idle-delay'."
     (delete-overlay company-preview-overlay)
     (setq company-preview-overlay nil)))
 
-(defun company-preview-frontend (command)
+(defun company-preview-frontend (command &optional common)
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
     (`pre-command (company-preview-hide))
-    (`post-command (company-preview-show-at-point (point)))
+    (`post-command (company-preview-show-at-point (point) common))
     (`hide (company-preview-hide))))
 
 (defun company-preview-if-just-one-frontend (command)
@@ -3001,7 +3001,7 @@ Delay is determined by `company-tooltip-idle-delay'."
   "`company-preview-frontend', but only shown for single candidates."
   (when (or (not (eq command 'post-command))
             (company--show-common-inline-p))
-    (company-preview-frontend command)))
+    (company-preview-frontend command t)))
 
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
