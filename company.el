@@ -2916,14 +2916,13 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defvar-local company-preview-overlay nil)
 
-(defun company-preview-show-at-point (pos &optional company-common)
+(defun company-preview-show-at-point (pos completion)
   (company-preview-hide)
 
-  (let ((completion  (or company-common (nth company-selection company-candidates))))
-    (setq completion (copy-sequence (company--pre-render completion)))
-    (font-lock-append-text-property 0 (length completion)
-                                    'face 'company-preview
-                                    completion)
+  (setq completion (copy-sequence (company--pre-render completion)))
+  (font-lock-append-text-property 0 (length completion)
+                                  'face 'company-preview
+                                  completion)
     (font-lock-prepend-text-property 0 (length company-common)
                                      'face 'company-preview-common
                                      completion)
@@ -2960,18 +2959,19 @@ Delay is determined by `company-tooltip-idle-delay'."
       (let ((ov company-preview-overlay))
         (overlay-put ov (if ptf-workaround 'display 'after-string)
                      completion)
-        (overlay-put ov 'window (selected-window))))))
+        (overlay-put ov 'window (selected-window)))))
 
 (defun company-preview-hide ()
   (when company-preview-overlay
     (delete-overlay company-preview-overlay)
     (setq company-preview-overlay nil)))
 
-(defun company-preview-frontend (command &optional company-common)
+(defun company-preview-frontend (command)
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
     (`pre-command (company-preview-hide))
-    (`post-command (company-preview-show-at-point (point) company-common))
+    (`post-command (company-preview-show-at-point (point)
+                                                  (nth company-selection company-candidates)))
     (`hide (company-preview-hide))))
 
 (defun company-preview-if-just-one-frontend (command)
@@ -2992,15 +2992,19 @@ Delay is determined by `company-tooltip-idle-delay'."
     (not (overlay-get company-pseudo-tooltip-overlay 'invisible))))
 
 (defun company-preview-common--show-p ()
+  "Returns whether the preview of common can be showed or not"
   (and company-common
        (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
            (string-prefix-p company-prefix company-common))))
 
 (defun company-preview-common-frontend (command)
-  "`company-preview-frontend', but only shown for single candidates."
+  "`company-mode' frontend preview the common part of candidates."
   (when (or (not (eq command 'post-command))
             (company-preview-common--show-p))
-    (company-preview-frontend command company-common)))
+    (pcase command
+      (`pre-command (company-preview-hide))
+      (`post-command (company-preview-show-at-point (point) company-common))
+      (`hide (company-preview-hide)))))
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
