@@ -2,6 +2,8 @@
 
 ## Next
 
+* New frontend `company-preview-common-frontend`.
+* `company-clang` calls Clang using a pipe instead of pty.
 * The minimum required version of Emacs is now 24.3.
 
 ## 2016-11-12 (0.9.1)
