@@ -2345,7 +2345,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                     (setq backend b)
                                     (company-call-backend 'prefix))))
          cc annotations)
-    (when (stringp prefix)
+    (when (or (stringp prefix) (consp prefix))
       (let ((company-backend backend))
         (setq cc (company-call-backend 'candidates prefix)
               annotations
