@@ -1379,6 +1379,7 @@ prefix match (same case) will be prioritized."
        (eq win (selected-window))
        (eq tick (buffer-chars-modified-tick))
        (eq pos (point))
+       (or (company-explicit-action-p) (not (file-remote-p default-directory)))
        (when (company-auto-begin)
          (company-input-noop)
          (let ((this-command 'company-idle-begin))
