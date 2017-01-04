@@ -209,7 +209,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (erase-buffer)
         (setq buffer-undo-list t))
       (let* ((process-connection-type nil)
-             (process (apply #'start-process "company-clang" buf
+             (process (apply #'start-file-process "company-clang" buf
                              company-clang-executable args)))
         (set-process-sentinel
          process
