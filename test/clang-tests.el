@@ -43,3 +43,9 @@
 (ert-deftest company-clang-null-annotation ()
   (let ((str "char"))
     (should (null (company-clang 'annotation str)))))
+
+(ert-deftest company-clang-anon-union-annotation ()
+  (let ((u (propertize "u" 'meta "union (anonymous) u"))
+        (s (propertize "s" 'meta "struct (anonymous) s")))
+    (should (null (company-clang 'annotation u)))
+    (should (null (company-clang 'annotation s)))))
