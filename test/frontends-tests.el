@@ -83,10 +83,8 @@
     (save-window-excursion
       (set-window-buffer nil (current-buffer))
       (save-excursion (insert "\n"))
-      (let ((company-candidates-length 1)
-            (company-candidates '("123"))
-            (company-backend #'ignore))
-        (company-preview-show-at-point (point))
+      (let ((company-backend #'ignore))
+        (company-preview-show-at-point (point) "123")
         (let* ((ov company-preview-overlay)
                (str (overlay-get ov 'after-string)))
           (should (string= str "123"))
