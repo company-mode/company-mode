@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-clang` and `company-gtags` can work over Tramp.
 * New frontend `company-preview-common-frontend`.
 * `company-clang` calls Clang using a pipe instead of pty.
 * The minimum required version of Emacs is now 24.3.
