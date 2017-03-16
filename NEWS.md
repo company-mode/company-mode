@@ -2,6 +2,7 @@
 
 ## Next
 
+* Use of `overriding-terminal-local-map` does not disable completion.
 * `company-clang` and `company-gtags` can work over Tramp.
 * New frontend `company-preview-common-frontend`.
 * `company-clang` calls Clang using a pipe instead of pty.
