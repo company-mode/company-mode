@@ -1457,32 +1457,24 @@ prefix match (same case) will be prioritized."
               company-prefix)))
 
 (defun company--continue-failed (new-prefix)
-  (let ((input (buffer-substring-no-properties (point) company-point)))
-    (cond
-     ((company-auto-complete-p input)
-      ;; auto-complete
-      (save-excursion
-        (goto-char company-point)
-        (let ((company--auto-completion t))
-          (company-complete-selection))
-        nil))
-     ((and (or (not (company-require-match-p))
-               ;; Don't require match if the new prefix
-               ;; doesn't continue the old one, and the latter was a match.
-               (not (stringp new-prefix))
-               (<= (length new-prefix) (length company-prefix)))
-           (member company-prefix company-candidates))
-      ;; Last input was a success,
-      ;; but we're treating it as an abort + input anyway,
-      ;; like the `unique' case below.
-      (company-cancel 'non-unique))
-     ((company-require-match-p)
-      ;; Wrong incremental input, but required match.
-      (delete-char (- (length input)))
-      (ding)
-      (message "Matching input is required")
-      company-candidates)
-     (t (company-cancel)))))
+  (cond
+   ((and (or (not (company-require-match-p))
+             ;; Don't require match if the new prefix
+             ;; doesn't continue the old one, and the latter was a match.
+             (not (stringp new-prefix))
+             (<= (length new-prefix) (length company-prefix)))
+         (member company-prefix company-candidates))
+    ;; Last input was a success,
+    ;; but we're treating it as an abort + input anyway,
+    ;; like the `unique' case below.
+    (company-cancel 'non-unique))
+   ((company-require-match-p)
+    ;; Wrong incremental input, but required match.
+    (delete-char (- company-point (point)))
+    (ding)
+    (message "Matching input is required")
+    company-candidates)
+   (t (company-cancel))))
 
 (defun company--good-prefix-p (prefix)
   (and (stringp (company--prefix-str prefix)) ;excludes 'stop
@@ -1517,6 +1509,14 @@ prefix match (same case) will be prioritized."
       (setq company-prefix new-prefix)
       (company-update-candidates c)
       c)
+     ((company-auto-complete-p (buffer-substring-no-properties
+                                (point) company-point))
+      ;; auto-complete
+      (save-excursion
+        (goto-char company-point)
+        (let ((company--auto-completion t))
+          (company-complete-selection))
+        nil))
      ((not (company--incremental-p))
       (company-cancel))
      (t (company--continue-failed new-prefix)))))
