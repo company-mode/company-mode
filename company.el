@@ -3015,10 +3015,16 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defvar company-echo-delay .01)
 
+(defcustom company-echo-truncate-lines t
+  "Whether frontend messages written to the echo area should be truncated."
+  :type 'boolean
+  :package-version '(company . "0.9.3"))
+
 (defun company-echo-show (&optional getter)
   (when getter
     (setq company-echo-last-msg (funcall getter)))
-  (let ((message-log-max nil))
+  (let ((message-log-max nil)
+        (message-truncate-lines company-echo-truncate-lines))
     (if company-echo-last-msg
         (message "%s" company-echo-last-msg)
       (message ""))))
