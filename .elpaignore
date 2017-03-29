@@ -1,5 +1,5 @@
 .travis.yml
 .gitignore
 Makefile
-test/
+test
 company-tests.el
