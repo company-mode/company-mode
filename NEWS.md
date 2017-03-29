@@ -1,12 +1,18 @@
 # History of user-visible changes
 
-## Next
+## 2017-03-29 (0.9.3)
 
+* New variable `company-echo-truncate-lines`.
+* `company-auto-complete` improved compatibility with `electric-pair-mode`.
 * Use of `overriding-terminal-local-map` does not disable completion.
 * `company-clang` and `company-gtags` can work over Tramp.
 * New frontend `company-preview-common-frontend`.
 * `company-clang` calls Clang using a pipe instead of pty.
 * The minimum required version of Emacs is now 24.3.
+
+## 2016-11-14 (0.9.2)
+
+* Miscellaneous fixes and docstring improvements.
 
 ## 2016-11-12 (0.9.1)
 
