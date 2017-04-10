@@ -117,3 +117,54 @@
       (company-template-objc-templatify text)
       (should (equal (buffer-string) text))
       (company-template-field-assert-text "(NSString)"))))
+
+(ert-deftest company-template-clear-field-c-like-first-arg ()
+  (with-temp-buffer
+    (let ((text "foo(int a, short b)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (company-template-clear-field)
+      (should (equal "foo(short b)" (buffer-string))))))
+
+(ert-deftest company-template-clear-field-c-like-last-arg ()
+  (with-temp-buffer
+    (let ((text "foo(int a, short b)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (insert "42")
+      (company-template-forward-field)
+      (company-template-clear-field)
+      (should (equal "foo(42)" (buffer-string))))))
+
+(ert-deftest company-template-clear-field-c-like-generic-1 ()
+  (with-temp-buffer
+    (let ((text "foo<TValue>(int a, short b)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (company-template-clear-field)
+      (should (equal "foo<>(int a, short b)" (buffer-string))))))
+
+(ert-deftest company-template-clear-field-c-like-generic-2 ()
+  (with-temp-buffer
+    (let ((text "foo<TKey, TValue>(int a, short b)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (company-template-clear-field)
+      (should (equal "foo<TValue>(int a, short b)" (buffer-string))))))
+
+(ert-deftest company-template-clear-field-objc-first-arg ()
+  (with-temp-buffer
+    (let ((text "createBookWithTitle:andAuthor:"))
+      (insert text)
+      (company-template-objc-templatify text)
+      (company-template-clear-field)
+      (should (equal "createBookWithTitle: andAuthor:arg1" (buffer-string))))))
+
+(ert-deftest company-template-insert-hook-c-like-field ()
+  (with-temp-buffer
+    (let ((text "foo(int a, short b)"))
+      (insert text)
+      (company-template-c-like-templatify text)
+      (let ((ovl (company-template-field-at (point))))
+        (company-template-insert-hook ovl nil)
+        (should (equal "foo(, short b)" (buffer-string)))))))
