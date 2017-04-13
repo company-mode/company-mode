@@ -65,24 +65,30 @@
 (defun company-template-clear-field ()
   "Clear the field at point."
   (interactive)
-  (company-template-remove-field (company-template-field-at (point)) t))
+  (let ((ovl (company-template-field-at (point))))
+    (when ovl
+      (company-template-remove-field ovl t)
+      (let ((after-clear-fn (overlay-get ovl 'after-clear-function)))
+        (when (functionp after-clear-fn)
+          (funcall after-clear-fn))))))
 
-(defun company-template--clear-c-like-field (start end)
-  "Clear the field at point for c like templates.
-If there is a next field, delete everything up to it.  If the field at
-point is the last field, remove preceding comma if present.  START and END
-are the bounds of the current field."
-  (let* ((next-field-start (company-template-find-next-field))
+(defun company-template--after-clear-c-like-field ()
+  "Function that can be called after deleting a field of a c-like template.
+For c-like templates it is set as `after-post-fn' property on fields in
+`company-template-add-field'.  If there is a next field, delete everything
+from point to it.  If there is no field after point, remove preceding comma
+if present."
+  (let* ((pos (point))
+         (next-field-start (company-template-find-next-field))
          (last-field-p (not (company-template-field-at next-field-start))))
     (cond ((and (not last-field-p)
-                (< end next-field-start)
+                (< pos next-field-start)
                 (string-match "^[ ]*,+[ ]*$" (buffer-substring-no-properties
-                                              end next-field-start)))
-           (delete-region start next-field-start))
+                                              pos next-field-start)))
+           (delete-region pos next-field-start))
           ((and last-field-p
                 (looking-back ",+[ ]*" (line-beginning-position)))
-           (delete-region (match-beginning 0) end))
-          (t (delete-region start end)))))
+           (delete-region (match-beginning 0) pos)))))
 
 (defun company-template-find-next-field ()
   (let* ((start (point))
@@ -120,13 +126,12 @@ are the bounds of the current field."
         (delq templ company-template--buffer-templates))
   (delete-overlay templ))
 
-(defun company-template-add-field (templ beg end &optional display clear-function)
+(defun company-template-add-field (templ beg end &optional display after-clear-fn)
   "Add new field to template TEMPL spanning from BEG to END.
 When DISPLAY is non-nil, set the respective property on the overlay.
 Leave point at the end of the field.
-CLEAR-FUNCTION is a function that can be used to apply custom behavior when
-deleting a field in `company-template-remove-field'.  If nil,
-`delete-region' is used."
+AFTER-CLEAR-FN is a function that can be used to apply custom behavior
+after deleting a field in `company-template-remove-field'."
   (cl-assert templ)
   (when (> end (overlay-end templ))
     (move-overlay templ (overlay-start templ) end))
@@ -139,8 +144,8 @@ deleting a field in `company-template-remove-field'.  If nil,
       (overlay-put ov 'display display))
     (overlay-put ov 'company-template-parent templ)
     (overlay-put ov 'insert-in-front-hooks '(company-template-insert-hook))
-    (when clear-function
-      (overlay-put ov 'clear-function clear-function))
+    (when after-clear-fn
+      (overlay-put ov 'after-clear-function after-clear-fn))
     (push ov siblings)
     (overlay-put templ 'company-template-fields siblings)))
 
@@ -148,13 +153,7 @@ deleting a field in `company-template-remove-field'.  If nil,
   (when (overlayp ovl)
     (when (overlay-buffer ovl)
       (when clear
-        (let ((clear-function (overlay-get ovl 'clear-function))
-              (start (overlay-start ovl))
-              (end (overlay-end ovl)))
-          (if (and (not (eq clear 'clear-bounds-only))
-                   (functionp clear-function))
-              (funcall clear-function start end)
-            (delete-region start end))))
+        (delete-region (overlay-start ovl) (overlay-end ovl)))
       (delete-overlay ovl))
     (let* ((templ (overlay-get ovl 'company-template-parent))
            (siblings (overlay-get templ 'company-template-fields)))
@@ -173,7 +172,7 @@ deleting a field in `company-template-remove-field'.  If nil,
 (defun company-template-insert-hook (ovl after-p &rest _ignore)
   "Called when a snippet input prompt is modified."
   (unless after-p
-    (company-template-remove-field ovl 'clear-bounds-only)))
+    (company-template-remove-field ovl t)))
 
 (defun company-template-post-command ()
   (company-template-clean-up)
@@ -218,7 +217,7 @@ deleting a field in `company-template-remove-field'.  If nil,
     (while (re-search-forward "\\([^,]+\\),?" end 'move)
       (when (zerop (car (parse-partial-sexp last-pos (point))))
         (company-template-add-field templ last-pos (match-end 1) nil
-                                    #'company-template--clear-c-like-field)
+                                    #'company-template--after-clear-c-like-field)
         (skip-chars-forward " ")
         (setq last-pos (point))))))
 
