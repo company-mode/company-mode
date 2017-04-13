@@ -33,6 +33,10 @@
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap [tab] 'company-template-forward-field)
     (define-key keymap (kbd "TAB") 'company-template-forward-field)
+    keymap))
+
+(defvar company-template-field-map
+  (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "C-d") 'company-template-clear-field)
     keymap))
 
@@ -146,6 +150,8 @@ after deleting a field in `company-template-remove-field'."
     (overlay-put ov 'insert-in-front-hooks '(company-template-insert-hook))
     (when after-clear-fn
       (overlay-put ov 'after-clear-function after-clear-fn))
+    (overlay-put ov 'keymap company-template-field-map)
+    (overlay-put ov 'priority 101)
     (push ov siblings)
     (overlay-put templ 'company-template-fields siblings)))
 
