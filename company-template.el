@@ -72,7 +72,8 @@
   (let ((ovl (company-template-field-at (point))))
     (when ovl
       (company-template-remove-field ovl t)
-      (let ((after-clear-fn (overlay-get ovl 'after-clear-function)))
+      (let ((after-clear-fn
+             (overlay-get ovl 'company-template-after-clear)))
         (when (functionp after-clear-fn)
           (funcall after-clear-fn))))))
 
@@ -149,7 +150,7 @@ after deleting a field in `company-template-remove-field'."
     (overlay-put ov 'company-template-parent templ)
     (overlay-put ov 'insert-in-front-hooks '(company-template-insert-hook))
     (when after-clear-fn
-      (overlay-put ov 'after-clear-function after-clear-fn))
+      (overlay-put ov 'company-template-after-clear after-clear-fn))
     (overlay-put ov 'keymap company-template-field-map)
     (overlay-put ov 'priority 101)
     (push ov siblings)
