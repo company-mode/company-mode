@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* `company-template` has a new shortcut (`C-d`) for deleting an unmodified
+  template field while cursor is on it.
+
 ## 2017-03-29 (0.9.3)
 
 * New variable `company-echo-truncate-lines`.
