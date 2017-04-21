@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-files` allows completion after `=`.
 * `company-template` has a new shortcut (`C-d`) for deleting an unmodified
   template field while cursor is on it.
 
