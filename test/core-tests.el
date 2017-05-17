@@ -157,16 +157,16 @@
   (let ((one (lambda (command &optional _)
                (cl-case command
                  (prefix "a")
-                 (candidates '("aa" "ca" "ba")))))
+                 (candidates (list "aa" "ca" "ba")))))
         (two (lambda (command &optional _)
                (cl-case command
                  (prefix "a")
-                 (candidates '("bb" "ab")))))
+                 (candidates (list "bb" "ab")))))
         (tri (lambda (command &optional _)
                (cl-case command
                  (prefix "a")
                  (sorted t)
-                 (candidates '("cc" "bc" "ac"))))))
+                 (candidates (list "cc" "bc" "ac"))))))
     (let ((company-backend (list one two tri :separate)))
       (should (company-call-backend 'sorted))
       (should-not (company-call-backend 'duplicates))
@@ -314,6 +314,23 @@
           (company-complete))
         (company-call 'backward-delete-char 1)
         (should (eq 2 company-candidates-length))))))
+
+(ert-deftest company-backspace-into-bad-prefix ()
+  (with-temp-buffer
+    (insert "ab")
+    (company-mode)
+    (let (company-frontends
+          (company-minimum-prefix-length 2)
+          (company-backends
+           (list (lambda (command &optional _)
+                   (cl-case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abcd" "abef")))))))
+      (let ((company-idle-delay 'now))
+        (company-auto-begin))
+      (company-call 'backward-delete-char-untabify 1)
+      (should (string= "a" (buffer-string)))
+      (should (null company-candidates)))))
 
 (ert-deftest company-auto-complete-explicit ()
   (with-temp-buffer
