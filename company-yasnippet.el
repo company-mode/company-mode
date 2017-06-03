@@ -35,6 +35,13 @@
 (declare-function yas--template-expand-env "yasnippet")
 (declare-function yas--warning "yasnippet")
 
+(defgroup company-yasnippet nil
+  "Completion backend for yasnippet")
+(defcustom company-yasnippet-merge-candidates t
+  "Whether completion candidates should merge with other backends"
+  :tag "Whether completion candidates should merge with other backends"
+  :group 'company-yasnippet)
+
 (defun company-yasnippet--key-prefixes ()
   ;; Mostly copied from `yas--templates-for-key-at-point'.
   (defvar yas-key-syntaxes)
@@ -86,7 +93,8 @@
               (maphash
                (lambda (name template)
                  (push
-                  (propertize key
+                  (propertize (or (and company-yasnippet-merge-candidates key)
+                                  (concat key " "))
                               'yas-annotation name
                               'yas-template template
                               'yas-prefix-offset (- (length key-prefix)
