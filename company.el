@@ -341,7 +341,7 @@ of the following:
 `prefix': The backend should return the text to be completed.  It must be
 text immediately before point.  Returning nil from this command passes
 control to the next backend.  The function should return `stop' if it
-should complete but cannot (e.g. if it is in the middle of a string).
+should complete but cannot (e.g. when in the middle of a symbol).
 Instead of a string, the backend may return a cons (PREFIX . LENGTH)
 where LENGTH is a number used in place of PREFIX's length when
 comparing against `company-minimum-prefix-length'.  LENGTH can also
