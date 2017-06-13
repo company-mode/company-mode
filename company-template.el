@@ -37,6 +37,7 @@
 
 (defvar company-template-field-map
   (let ((keymap (make-sparse-keymap)))
+    (set-keymap-parent keymap company-template-nav-map)
     (define-key keymap (kbd "C-d") 'company-template-clear-field)
     keymap))
 
