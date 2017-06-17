@@ -2340,6 +2340,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
   "Pop a buffer with information about completions at point."
   (interactive)
   (let* ((bb company-backends)
+         (mode (symbol-name major-mode))
          backend
          (prefix (cl-loop for b in bb
                           thereis (let ((company-backend b))
@@ -2364,6 +2365,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (insert "company-backends: " (pp-to-string bb))
     (insert "\n")
     (insert "Used backend: " (pp-to-string backend))
+    (insert "\n")
+    (insert "Major mode: " mode)
     (insert "\n")
     (insert "Prefix: " (pp-to-string prefix))
     (insert "\n")
