@@ -2,6 +2,7 @@
 
 ## Next
 
+* Compatibility with native line numbers display in Emacs 26.
 * `company-files` allows completion after `=`.
 * `company-template` has a new shortcut (`C-d`) for deleting an unmodified
   template field while cursor is on it.
