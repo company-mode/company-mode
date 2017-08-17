@@ -367,6 +367,14 @@
              (company-modify-line str "zz" 10)
              "-*-foobar zz"))))
 
+(ert-deftest company-modify-line-with-invisible-prop ()
+  (let ((str "-*-foobar")
+        (buffer-invisibility-spec '((outline . t) t)))
+    (put-text-property 1 2 'invisible 'foo str)
+    (should (equal
+             (company-modify-line str "zz" 4)
+             "-*-fzzbar"))))
+
 (ert-deftest company-scrollbar-bounds ()
   (should (equal nil (company--scrollbar-bounds 0 3 3)))
   (should (equal nil (company--scrollbar-bounds 0 4 3)))
