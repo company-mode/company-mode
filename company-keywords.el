@@ -212,6 +212,10 @@
      "then" "true" "undef" "unless" "until" "when" "while" "yield")
     ;; From https://doc.rust-lang.org/grammar.html#keywords
     ;; but excluding unused reserved words: https://www.reddit.com/r/rust/comments/34fq0k/is_there_a_good_list_of_rusts_keywords/cqucvnj
+    (go-mode
+     "break" "case" "chan" "const" "continue" "default" "defer" "else" "fallthrough"
+     "for" "func" "go" "goto" "if" "import" "interface" "map" "package" "range"
+     "return" "select" "struct" "switch" "type" "var")
     (rust-mode
      "Self"
      "as" "box" "break" "const" "continue" "crate" "else" "enum" "extern"
