@@ -103,7 +103,7 @@
     (prefix (and (derived-mode-p 'nxml-mode)
                  rng-validate-mode
                  (and (memq (char-after) '(?' ?\" ?\  ?\t ?\n)) ;; outside word
-                      (looking-back company-nxml-in-attribute-value-regexp)
+                      (looking-back company-nxml-in-attribute-value-regexp nil)
                       (or (match-string-no-properties 4)
                           (match-string-no-properties 5)
                           ""))))

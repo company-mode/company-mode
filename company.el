@@ -835,6 +835,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
     (cons (+ col (window-hscroll)) row)))
 
 (defun company--col-row (&optional pos)
+  (defvar display-line-numbers) ; For Emacs < 26.
   (let (display-line-numbers)
     (company--posn-col-row (posn-at-point pos))))
 
