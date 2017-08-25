@@ -959,7 +959,8 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 (defun company--multi-backend-adapter-candidates (backends prefix separate)
   (let ((pairs (cl-loop for backend in backends
                         when (equal (company--prefix-str
-                                     (funcall backend 'prefix))
+                                     (let ((company-backend backend))
+                                       (company-call-backend 'prefix)))
                                     prefix)
                         collect (cons (funcall backend 'candidates prefix)
                                       (company--multi-candidates-mapper
@@ -1534,7 +1535,8 @@ prefix match (same case) will be prioritized."
             (if (or (symbolp backend)
                     (functionp backend))
                 (when (company--maybe-init-backend backend)
-                  (funcall backend 'prefix))
+                  (let ((company-backend backend))
+                    (company-call-backend 'prefix)))
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
         (when (company--good-prefix-p prefix)
