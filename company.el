@@ -261,6 +261,12 @@ This doesn't include the margins and the scroll bar."
   :type 'integer
   :package-version '(company . "0.8.0"))
 
+(defcustom company-tooltip-maximum-width most-positive-fixnum
+  "The maximum width of the tooltip's inner area.
+This doesn't include the margins and the scroll bar."
+  :type 'integer
+  :package-version '(company . "0.9.5"))
+
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
   :type 'integer)
@@ -2707,6 +2713,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                          width))))
 
     (setq width (min window-width
+                     company-tooltip-maximum-width
                      (max company-tooltip-minimum-width
                           (if company-show-numbers
                               (+ 2 width)
