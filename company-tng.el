@@ -54,7 +54,8 @@ confirm the selection and finish the completion."
      (let ((ov (make-overlay (point) (point))))
        (setq company-tng--overlay ov)
        (overlay-put ov 'priority 2))
-     (advice-add 'company-select-next :before-until 'company-tng--allow-unselected))
+     (advice-add 'company-select-next :before-until 'company-tng--allow-unselected)
+     (advice-add 'company-fill-propertize :filter-args 'company-tng--adjust-tooltip-highlight))
     (update
      (let ((ov company-tng--overlay)
            (selected (nth company-selection company-candidates))
@@ -64,7 +65,8 @@ confirm the selection and finish the completion."
     (hide
      (when company-tng--overlay
        (delete-overlay company-tng--overlay))
-     (advice-remove 'company-select-next 'company-tng--allow-unselected))
+     (advice-remove 'company-select-next 'company-tng--allow-unselected)
+     (advice-remove 'company-fill-propertize 'company-tng--adjust-tooltip-highlight))
     (pre-command
      (when (and company-selection-changed
                 (not (company--company-command-p (this-command-keys))))
@@ -102,6 +104,14 @@ There is no need to advice `company-select-previous' because it calls
       (company-call-frontends 'update)
       t)
     )))
+
+(defun company-tng--adjust-tooltip-highlight (args)
+  "Prevent the tooltip from highlighting the current selection if it wasn't
+made explicitly (i.e. `company-selection-changed' is true)"
+  (unless company-selection-changed
+    ;; The 4th arg of `company-fill-propertize' is selected
+    (setf (nth 3 args) nil))
+  args)
 
 (provide 'company-tng)
 ;;; company-tng.el ends here
