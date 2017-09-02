@@ -53,7 +53,8 @@ confirm the selection and finish the completion."
     (show
      (let ((ov (make-overlay (point) (point))))
        (setq company-tng--overlay ov)
-       (overlay-put ov 'priority 2)))
+       (overlay-put ov 'priority 2))
+     (advice-add 'company-select-next :before-until 'company-tng--allow-unselected))
     (update
      (let ((ov company-tng--overlay)
            (selected (nth company-selection company-candidates))
@@ -62,12 +63,45 @@ confirm the selection and finish the completion."
        (overlay-put ov 'display (and company-selection-changed selected))))
     (hide
      (when company-tng--overlay
-       (delete-overlay company-tng--overlay)))
+       (delete-overlay company-tng--overlay))
+     (advice-remove 'company-select-next 'company-tng--allow-unselected))
     (pre-command
      (when (and company-selection-changed
                 (not (company--company-command-p (this-command-keys))))
        (company--unread-this-command-keys)
        (setq this-command 'company-complete-selection)))))
+
+(defun company-tng--allow-unselected (&optional arg)
+  "Advice `company-select-next' to allow for an 'unselected'
+state. Unselected means that no user interaction took place on the
+completion candidates and it's marked by setting
+`company-selection-changed' to nil. This advice will call the underlying
+`company-select-next' unless we need to transition to or from an unselected
+state.
+
+Possible state transitions:
+- (arg > 0) unselected -> first candidate selected
+- (arg < 0) first candidate selected -> unselected
+- (arg < 0 wrap-round) unselected -> last candidate selected
+- (arg < 0 no wrap-round) unselected -> unselected
+
+There is no need to advice `company-select-previous' because it calls
+`company-select-next' internally."
+  (cond
+   ;; Selecting next
+   ((or (not arg) (> arg 0))
+    (unless company-selection-changed
+      (company-set-selection (1- (or arg 1)) 'force-update)
+      t))
+   ;; Selecting previous
+   ((< arg 0)
+    (when (and company-selection-changed
+               (< (+ company-selection arg) 0))
+      (company-set-selection 0)
+      (setq company-selection-changed nil)
+      (company-call-frontends 'update)
+      t)
+    )))
 
 (provide 'company-tng)
 ;;; company-tng.el ends here
