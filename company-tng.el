@@ -35,6 +35,28 @@
 ;;
 ;; The benefits are that there is only one shortcut key to interact
 ;; with and there is no need to confirm an entry.
+;;
+;; Usage:
+;;
+;; To apply the default configuration for company-tng call
+;; `company-tng-configure-default' from your configuration file.
+;;
+;; You can also configure company-tng manually:
+;;
+;; Add `company-tng-frontend' to `company-frontends':
+;; (add-to-list 'company-frontends 'company-tng-frontend)
+;;
+;; We recommend to bind TAB to `company-select-next', S-TAB to
+;; `company-select-previous', and unbind RET and other now-unnecessary
+;; keys from `company-active-map':
+;; (define-key company-active-map (kbd "TAB") 'company-select-next)
+;; (define-key company-active-map (kbd "<backtab>") 'company-select-previous)
+;; (define-key company-active-map (kbd "RET") nil)
+;; Note that it's not necessary to rebind keys to use this frontend,
+;; you can use the arrow keys or M-n/M-p to select and insert
+;; candidates. You also need to decide which keys to unbind, depending
+;; on whether you want them to do the Company action or the default
+;; Emacs action (for example C-s or C-w).
 
 ;;; Code:
 
