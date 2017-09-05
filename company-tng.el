@@ -73,6 +73,18 @@ confirm the selection and finish the completion."
        (company--unread-this-command-keys)
        (setq this-command 'company-complete-selection)))))
 
+;;;###autoload
+(defun company-tng-configure-default ()
+  "Applies the default configuration to enable company-tng."
+  (add-to-list 'company-frontends 'company-tng-frontend)
+  (let ((keymap company-active-map))
+    (define-key keymap [return] nil)
+    (define-key keymap (kbd "RET") nil)
+    (define-key keymap [tab] 'company-select-next)
+    (define-key keymap (kbd "TAB") 'company-select-next)
+    (define-key keymap [backtab] 'company-select-previous)
+    (define-key keymap (kbd "S-TAB") 'company-select-previous)))
+
 (defun company-tng--allow-unselected (&optional arg)
   "Advice `company-select-next' to allow for an 'unselected'
 state. Unselected means that no user interaction took place on the
