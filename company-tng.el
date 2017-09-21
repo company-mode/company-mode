@@ -86,7 +86,8 @@ confirm the selection and finish the completion."
        (overlay-put ov 'display (and company-selection-changed selected))))
     (hide
      (when company-tng--overlay
-       (delete-overlay company-tng--overlay))
+       (delete-overlay company-tng--overlay)
+       (kill-local-variable 'company-tng--overlay))
      (advice-remove 'company-select-next 'company-tng--allow-unselected)
      (advice-remove 'company-fill-propertize 'company-tng--adjust-tooltip-highlight))
     (pre-command
