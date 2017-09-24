@@ -6,7 +6,7 @@
   The frontend triggers insertion of the candidate as soon as it's selected, so
   you only need to press TAB. Add `(company-tng-configure-default)` to your
   init script to give it a try.
-  ([#526](https://github.com/company-mode/company-mode/issues/706))
+  ([#706](https://github.com/company-mode/company-mode/issues/706))
 * New user option `company-tooltip-maximum-width`.
 
 ## 2017-07-15 (0.9.4)
