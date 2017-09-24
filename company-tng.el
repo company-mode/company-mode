@@ -34,7 +34,7 @@
 ;; previous candidate, of course.
 ;;
 ;; The benefits are that you only have to use one shortcut key and there is no
-;; need to confirm an entry.
+;; need to confirm the entry.
 ;;
 ;; Usage:
 ;;
@@ -44,7 +44,8 @@
 ;; You can also configure company-tng manually:
 ;;
 ;; Add `company-tng-frontend' to `company-frontends':
-;; (add-to-list 'company-frontends 'company-tng-frontend)
+;;
+;;   (add-to-list 'company-frontends 'company-tng-frontend)
 ;;
 ;; We recommend to bind TAB to `company-select-next', S-TAB to
 ;; `company-select-previous', and unbind RET and other now-unnecessary
