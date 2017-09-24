@@ -4,7 +4,7 @@
 
 * New feature `company-tng`. It contains a frontend and some helper code.
   The frontend triggers insertion of the candidate as soon as it's selected, so
-  you don't need to press RET. Add `(company-tng-configure-default)` to your
+  you only need to press TAB. Add `(company-tng-configure-default)` to your
   init script to give it a try.
   ([#526](https://github.com/company-mode/company-mode/issues/706))
 * New user option `company-tooltip-maximum-width`.
