@@ -1,5 +1,4 @@
-;;; company-tng.el --- company-mode frontend that inserts a candidate
-;;; into the buffer as soon as it's selected, Vim style
+;;; company-tng.el --- company-mode configuration for single-button interaction
 
 ;; Copyright (C) 2017  Free Software Foundation, Inc.
 
@@ -23,23 +22,24 @@
 
 ;;; Commentary:
 ;;
-;; company-tng (tab and go) allows you to use TAB to both select a
-;; completion candidate from the list and to insert it into the
-;; buffer.
+;; company-tng (Tab and Go) allows you to perform completion using just TAB.
+;; Pressing it will both select the next completion candidate in the list and
+;; insert it into the buffer (or make it look like it's inserted, in fact).
 ;;
-;; It cycles the candidates like `yank-pop' or `dabbrev-expand' or
-;; Vim: Pressing TAB selects the first item in the completion menu and
-;; inserts it in the buffer. Pressing TAB again selects the second
-;; item and replaces the inserted item with the second one. This can
-;; continue as long as the user wishes to cycle through the menu.
+;; It cycles the candidates like `yank-pop' or `dabbrev-expand' or Vim:
+;; Pressing TAB selects the first item in the completion menu and inserts it in
+;; the buffer. Pressing TAB again selects the second item and replaces the
+;; "inserted" item with the second one. This can continue as long as the user
+;; wishes to cycle through the menu. You can also press S-TAB to select the
+;; previous candidate, of course.
 ;;
-;; The benefits are that there is only one shortcut key to interact
-;; with and there is no need to confirm an entry.
+;; The benefits are that you only have to use one shortcut key and there is no
+;; need to confirm an entry.
 ;;
 ;; Usage:
 ;;
 ;; To apply the default configuration for company-tng call
-;; `company-tng-configure-default' from your configuration file.
+;; `company-tng-configure-default' from your init script.
 ;;
 ;; You can also configure company-tng manually:
 ;;
@@ -49,9 +49,11 @@
 ;; We recommend to bind TAB to `company-select-next', S-TAB to
 ;; `company-select-previous', and unbind RET and other now-unnecessary
 ;; keys from `company-active-map':
-;; (define-key company-active-map (kbd "TAB") 'company-select-next)
-;; (define-key company-active-map (kbd "<backtab>") 'company-select-previous)
-;; (define-key company-active-map (kbd "RET") nil)
+;;
+;;   (define-key company-active-map (kbd "TAB") 'company-select-next)
+;;   (define-key company-active-map (kbd "<backtab>") 'company-select-previous)
+;;   (define-key company-active-map (kbd "RET") nil)
+;;
 ;; Note that it's not necessary to rebind keys to use this frontend,
 ;; you can use the arrow keys or M-n/M-p to select and insert
 ;; candidates. You also need to decide which keys to unbind, depending
