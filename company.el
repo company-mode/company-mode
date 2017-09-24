@@ -815,6 +815,11 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company-uninstall-map ()
   (setf (cdar company-emulation-alist) nil))
 
+(defun company--company-command-p (keys)
+  "Checks if the keys are part of company's overriding keymap"
+  (or (equal [company-dummy-event] keys)
+      (lookup-key company-my-keymap keys)))
+
 ;; Hack:
 ;; Emacs calculates the active keymaps before reading the event.  That means we
 ;; cannot change the keymap from a timer.  So we send a bogus command.
@@ -1840,7 +1845,7 @@ each one wraps a part of the input string."
   (interactive)
   (company--search-assert-enabled)
   (company-search-mode 0)
-  (company--unread-last-input))
+  (company--unread-this-command-keys))
 
 (defun company-search-delete-char ()
   (interactive)
@@ -1984,7 +1989,7 @@ With ARG, move by that many elements."
   (if (> company-candidates-length 1)
       (company-select-next arg)
     (company-abort)
-    (company--unread-last-input)))
+    (company--unread-this-command-keys)))
 
 (defun company-select-previous-or-abort (&optional arg)
   "Select the previous candidate if more than one, else abort
@@ -1995,7 +2000,7 @@ With ARG, move by that many elements."
   (if (> company-candidates-length 1)
       (company-select-previous arg)
     (company-abort)
-    (company--unread-last-input)))
+    (company--unread-this-command-keys)))
 
 (defun company-next-page ()
   "Select the candidate one page further."
@@ -2063,7 +2068,7 @@ With ARG, move by that many elements."
                                       0)))
           t)
       (company-abort)
-      (company--unread-last-input)
+      (company--unread-this-command-keys)
       nil)))
 
 (defun company-complete-mouse (event)
@@ -2240,10 +2245,12 @@ character, stripping the modifiers.  That character must be a digit."
             (< (- (window-height) row 2) company-tooltip-limit)
             (recenter (- (window-height) row 2))))))
 
-(defun company--unread-last-input ()
-  (when last-input-event
-    (clear-this-command-keys t)
-    (setq unread-command-events (list last-input-event))))
+(defun company--unread-this-command-keys ()
+  (when (> (length (this-command-keys)) 0)
+    (setq unread-command-events (nconc
+                                 (listify-key-sequence (this-command-keys))
+                                 unread-command-events))
+    (clear-this-command-keys t)))
 
 (defun company-show-doc-buffer ()
   "Temporarily show the documentation buffer for the selection."

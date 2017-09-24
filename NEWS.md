@@ -3,6 +3,11 @@
 ## Next
 
 * New user option `company-tooltip-maximum-width`.
+* New feature `company-tng'. When added as a frontend, it allows you to insert
+  the candidates as soon they are selected, eliminating the need to press RET to
+  confirm your selection. See `company-tng.el` and use
+  `(company-tng-configure-default)` to give it a try.
+  ([#526](https://github.com/company-mode/company-mode/issues/526))
 
 ## 2017-07-15 (0.9.4)
 
