@@ -88,8 +88,7 @@ confirm the selection and finish the completion."
        (move-overlay ov (- (point) prefix) (point))
        (overlay-put ov
                     (if (= prefix 0) 'after-string 'display)
-                    (and company-selection-changed selected))
-       (overlay-put ov 'display (and company-selection-changed selected))))
+                    (and company-selection-changed selected))))
     (hide
      (when company-tng--overlay
        (delete-overlay company-tng--overlay)
