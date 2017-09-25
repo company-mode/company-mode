@@ -104,7 +104,9 @@ confirm the selection and finish the completion."
 ;;;###autoload
 (defun company-tng-configure-default ()
   "Applies the default configuration to enable company-tng."
-  (add-to-list 'company-frontends 'company-tng-frontend)
+  (setq company-frontends '(company-tng-frontend
+                            company-pseudo-tooltip-frontend
+                            company-echo-metadata-frontend))
   (let ((keymap company-active-map))
     (define-key keymap [return] nil)
     (define-key keymap (kbd "RET") nil)
