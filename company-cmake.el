@@ -177,6 +177,29 @@ They affect which types of symbols we get completion candidates for.")
        (buffer-substring-no-properties (line-beginning-position)
                                        (point-max))))))
 
+(defun company-cmake-prefox-dollar-brace-p ()
+  "Test if the current char is prefix with ${ in the current line."
+  (setq-local position-current (point))
+  (setq-local position-beg-of-line (line-beginning-position))
+  (setq-local position-end-of-line (line-end-position))
+
+  (if (re-search-backward "\$\{" position-beg-of-line t)
+      (setq-local position-matched (point))
+    (setq-local position-matched nil))
+  (goto-char position-current)
+  (if (re-search-backward "\}" position-beg-of-line t)
+      (setq-local position-matched-right-brace (point))
+    (setq-local position-matched-right-brace nil))
+  (goto-char position-current)
+
+  (if (or (and position-matched
+               position-matched-right-brace
+               (> position-matched position-matched-right-brace))
+          (and position-matched
+               (not position-matched-right-brace)))
+      t
+    nil))
+
 (defun company-cmake (command &optional arg &rest ignored)
   "`company-mode' completion backend for CMake.
 CMake is a cross-platform, open-source make system."
@@ -187,7 +210,8 @@ CMake is a cross-platform, open-source make system."
             (unless company-cmake-executable
               (error "Company found no cmake executable"))))
     (prefix (and (memq major-mode company-cmake-modes)
-                 (not (company-in-string-or-comment))
+                 (or (not (company-in-string-or-comment))
+                     (company-cmake-prefix-dollar-brace-p))
                  (company-grab-symbol)))
     (candidates (company-cmake--candidates arg))
     (meta (company-cmake--meta arg))
