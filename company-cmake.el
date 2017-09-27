@@ -177,7 +177,7 @@ They affect which types of symbols we get completion candidates for.")
        (buffer-substring-no-properties (line-beginning-position)
                                        (point-max))))))
 
-(defun company-cmake-prefox-dollar-brace-p ()
+(defun company-cmake-prefix-dollar-brace-p ()
   "Test if the current char is prefix with ${ in the current line."
   (setq-local position-current (point))
   (setq-local position-beg-of-line (line-beginning-position))
