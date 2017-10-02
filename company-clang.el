@@ -263,7 +263,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (apply 'company-clang--start-process
          prefix
          callback
-         (company-clang--build-complete-args (- (point) (length prefix)))))
+         (company-clang--build-complete-args (point))))
 
 (defun company-clang--prefix ()
   (if company-clang-begin-after-member-access
