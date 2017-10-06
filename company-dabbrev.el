@@ -110,7 +110,8 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
-        (company-dabbrev--time-limit-while (> tmp-end (point-min))
+        (company-dabbrev--time-limit-while (and (not (input-pending-p))
+                                                (> tmp-end (point-min)))
             start limit 1
           (ignore-errors
             (forward-char -10000))
@@ -119,14 +120,16 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
             ;; Before, we used backward search, but it matches non-greedily, and
             ;; that forced us to use the "beginning/end of word" anchors in
             ;; `company-dabbrev--make-regexp'.  It's also about 2x slower.
-            (while (re-search-forward regexp tmp-end t)
+            (while (and (not (input-pending-p))
+                        (re-search-forward regexp tmp-end t))
               (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
                   (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
                 (maybe-collect-match))))
           (setq tmp-end (point))))
       (goto-char (or pos (point-min)))
       ;; Search after pos.
-      (company-dabbrev--time-limit-while (re-search-forward regexp nil t)
+      (company-dabbrev--time-limit-while (and (not (input-pending-p))
+                                              (re-search-forward regexp nil t))
           start limit 25
         (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
             (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
