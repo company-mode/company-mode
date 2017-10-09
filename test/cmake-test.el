@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2016  Free Software Foundation, Inc.
 
-;; Author: oracleyue
+;; Author: Zuogong Yue
 
 ;; This file is part of GNU Emacs.
 
@@ -21,9 +21,6 @@
 
 (require 'company-tests)
 (require 'company-cmake)
-
-;; (load-file "./company-cmake.el")
-;; (load-file "./company-cmake-fix.el")
 
 (require 'cmake-mode)
 
