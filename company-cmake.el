@@ -181,12 +181,14 @@ They affect which types of symbols we get completion candidates for.")
   "Test if the current char is prefix with ${ in the current line."
   (let ((position-current (point))
         (position-beg-of-line (line-beginning-position))
-        (position-end-of-line (line-end-position)))
+        (position-end-of-line (line-end-position))
+        (position-matched nil)
+        (position-matched-right-brace nil))
 
-    (setq-local position-matched
+    (setq position-matched
                 (re-search-backward "\$\{" position-beg-of-line t))
     (goto-char position-current)
-    (setq-local position-matched-right-brace
+    (setq position-matched-right-brace
                 (re-search-backward "\}" position-beg-of-line t))
     (goto-char position-current)
 
