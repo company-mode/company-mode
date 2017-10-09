@@ -179,26 +179,24 @@ They affect which types of symbols we get completion candidates for.")
 
 (defun company-cmake-prefix-dollar-brace-p ()
   "Test if the current char is prefix with ${ in the current line."
-  (setq-local position-current (point))
-  (setq-local position-beg-of-line (line-beginning-position))
-  (setq-local position-end-of-line (line-end-position))
+  (let ((position-current (point))
+        (position-beg-of-line (line-beginning-position))
+        (position-end-of-line (line-end-position)))
 
-  (if (re-search-backward "\$\{" position-beg-of-line t)
-      (setq-local position-matched (point))
-    (setq-local position-matched nil))
-  (goto-char position-current)
-  (if (re-search-backward "\}" position-beg-of-line t)
-      (setq-local position-matched-right-brace (point))
-    (setq-local position-matched-right-brace nil))
-  (goto-char position-current)
+    (setq-local position-matched
+                (re-search-backward "\$\{" position-beg-of-line t))
+    (goto-char position-current)
+    (setq-local position-matched-right-brace
+                (re-search-backward "\}" position-beg-of-line t))
+    (goto-char position-current)
 
-  (if (or (and position-matched
-               position-matched-right-brace
-               (> position-matched position-matched-right-brace))
-          (and position-matched
-               (not position-matched-right-brace)))
-      t
-    nil))
+    (if (or (and position-matched
+                 position-matched-right-brace
+                 (> position-matched position-matched-right-brace))
+            (and position-matched
+                 (not position-matched-right-brace)))
+        t
+      nil)))
 
 (defun company-cmake (command &optional arg &rest ignored)
   "`company-mode' completion backend for CMake.
