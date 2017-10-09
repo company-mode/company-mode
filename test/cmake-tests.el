@@ -1,6 +1,6 @@
 ;;; cmake-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2016  Free Software Foundation, Inc.
+;; Copyright (C) 2017  Free Software Foundation, Inc.
 
 ;; Author: Zuogong Yue
 
@@ -22,18 +22,12 @@
 (require 'company-tests)
 (require 'company-cmake)
 
-(require 'cmake-mode)
-
-
 (ert-deftest company-cmake-complete-in-string-prefix-quotes ()
   (with-temp-buffer
     (insert "set(MyFlags \"${CMAKE_CXX_FLAGS_R")
     (setq-local major-mode 'cmake-mode)
     (should (equal (company-cmake 'prefix)
-                   "CMAKE_CXX_FLAGS_R"))
-    (should (equal (company-cmake 'candidates "CMAKE_CXX_FLAGS_R")
-                   '("CMAKE_CXX_FLAGS_RELWITHDEBINFO" "CMAKE_CXX_FLAGS_RELEASE")))))
-
+                   "CMAKE_CXX_FLAGS_R"))))
 
 (ert-deftest company-cmake-complete-in-string-between-quotes ()
   (with-temp-buffer
@@ -41,19 +35,14 @@
     (backward-char 2)
     (setq-local major-mode 'cmake-mode)
     (should (equal (company-cmake 'prefix)
-                   "CMAKE_CXX_FLAGS_R"))
-    (should (equal (company-cmake 'candidates "CMAKE_CXX_FLAGS_R")
-                   '("CMAKE_CXX_FLAGS_RELWITHDEBINFO" "CMAKE_CXX_FLAGS_RELEASE")))))
-
+                   "CMAKE_CXX_FLAGS_R"))))
 
 (ert-deftest company-cmake-complete-in-string-more-prefix ()
   (with-temp-buffer
     (insert "set(MyFlags \"${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_R")
     (setq-local major-mode 'cmake-mode)
     (should (equal (company-cmake 'prefix)
-                   "CMAKE_CXX_FLAGS_R"))
-    (should (equal (company-cmake 'candidates "CMAKE_CXX_FLAGS_R")
-                   '("CMAKE_CXX_FLAGS_RELWITHDEBINFO" "CMAKE_CXX_FLAGS_RELEASE")))))
+                   "CMAKE_CXX_FLAGS_R"))))
 
 (ert-deftest company-cmake-complete-in-string-more-prefix-2 ()
   (with-temp-buffer
@@ -61,5 +50,3 @@
     (setq-local major-mode 'cmake-mode)
     (should (equal (company-cmake 'prefix)
                    nil))))
-
-;; (ert t)
