@@ -544,3 +544,20 @@
       (should (= (company--row) 0))
       (setq header-line-format "aaaaaaa")
       (should (= (company--row) 0)))))
+
+(ert-deftest company-column-with-line-numbers-display ()
+  (with-temp-buffer
+    (display-line-numbers-mode)
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (should (= (company--column) 0)))))
+
+(ert-deftest company-row-and-column-with-line-numbers-display ()
+  (with-temp-buffer
+    (display-line-numbers-mode)
+    (insert (make-string (+ (company--window-width) (line-number-display-width)) ?a))
+    (insert ?\n)
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (should (= (company--column) 0))
+      (should (= (company--row) 2)))))

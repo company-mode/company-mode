@@ -833,6 +833,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company-input-noop ()
   (push 'company-dummy-event unread-command-events))
 
+;; To avoid warnings in Emacs < 26.
+(declare-function line-number-display-width "indent.c")
+
 (defun company--posn-col-row (posn)
   (let ((col (car (posn-col-row posn)))
         ;; `posn-col-row' doesn't work well with lines of different height.
@@ -843,12 +846,12 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
     (when (and header-line-format (version< emacs-version "24.3.93.3"))
       ;; http://debbugs.gnu.org/18384
       (cl-decf row))
+    (when (bound-and-true-p display-line-numbers)
+      (cl-decf col (+ 2 (line-number-display-width))))
     (cons (+ col (window-hscroll)) row)))
 
 (defun company--col-row (&optional pos)
-  (defvar display-line-numbers) ; For Emacs < 26.
-  (let (display-line-numbers)
-    (company--posn-col-row (posn-at-point pos))))
+  (company--posn-col-row (posn-at-point pos)))
 
 (defun company--row (&optional pos)
   (cdr (company--col-row pos)))

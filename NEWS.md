@@ -2,6 +2,7 @@
 
 ## Next
 
+* Native line numbers compatibility fixes.
 * New feature `company-tng`. It contains a frontend and some helper code.
   The frontend triggers insertion of the candidate as soon as it's selected, so
   you only need to press TAB. Add `(company-tng-configure-default)` to your
