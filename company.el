@@ -2601,6 +2601,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     ;; Account for the line continuation column.
     (when (zerop (cadr (window-fringes)))
       (cl-decf ww))
+    (when (bound-and-true-p display-line-numbers)
+      (cl-decf ww (+ 2 (line-number-display-width))))
     (unless (or (display-graphic-p)
                 (version< "24.3.1" emacs-version))
       ;; Emacs 24.3 and earlier included margins
