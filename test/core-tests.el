@@ -546,6 +546,8 @@
       (should (= (company--row) 0)))))
 
 (ert-deftest company-column-with-line-numbers-display ()
+  :tags '(interactive)
+  (skip-unless (fboundp 'display-line-numbers-mode))
   (with-temp-buffer
     (display-line-numbers-mode)
     (save-window-excursion
@@ -553,6 +555,8 @@
       (should (= (company--column) 0)))))
 
 (ert-deftest company-row-and-column-with-line-numbers-display ()
+  :tags '(interactive)
+  (skip-unless (fboundp 'display-line-numbers-mode))
   (with-temp-buffer
     (display-line-numbers-mode)
     (insert (make-string (+ (company--window-width) (line-number-display-width)) ?a))
