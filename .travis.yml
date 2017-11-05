@@ -5,7 +5,6 @@ language: generic
 env:
   matrix:
     - EMACS=emacs24
-    - EMACS=emacs25
     - EMACS=emacs-snapshot
 
 install:
@@ -13,12 +12,6 @@ install:
         sudo add-apt-repository -y ppa:cassou/emacs &&
         sudo apt-get update -qq &&
         sudo apt-get install -qq emacs24 emacs24-el;
-    fi
-  - if [ "$EMACS" = "emacs25" ]; then
-        sudo add-apt-repository -y ppa:ubuntu-elisp/ppa &&
-        sudo apt-get update -qq &&
-        sudo apt-get -qq -f install &&
-        sudo apt-get install emacs;
     fi
   - if [ "$EMACS" = "emacs-snapshot" ]; then
         sudo add-apt-repository -y ppa:ubuntu-elisp/ppa &&
