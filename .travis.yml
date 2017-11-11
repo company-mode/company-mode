@@ -1,24 +1,26 @@
-# https://github.com/rolandwalker/emacs-travis
+sudo: false
 
 language: generic
 
-env:
-  matrix:
-    - EMACS=emacs24
-    - EMACS=emacs-snapshot
+matrix:
+  include:
+    - env: EMACS=emacs24
+      addons:
+        apt:
+          sources: [ { sourceline: 'ppa:cassou/emacs' } ]
+          packages: [ emacs24, emacs24-el ]
+    - env: EMACS=emacs25
+      addons:
+        apt:
+          sources: [ { sourceline: 'ppa:kelleyk/emacs' } ]
+          packages: [ emacs25 ]
+    - env: EMACS=emacs-snapshot
+      addons:
+        apt:
+          sources: [ { sourceline: 'ppa:ubuntu-elisp/ppa' } ]
+          packages: [ emacs-snapshot ]
 
-install:
-  - if [ "$EMACS" = "emacs24" ]; then
-        sudo add-apt-repository -y ppa:cassou/emacs &&
-        sudo apt-get update -qq &&
-        sudo apt-get install -qq emacs24 emacs24-el;
-    fi
-  - if [ "$EMACS" = "emacs-snapshot" ]; then
-        sudo add-apt-repository -y ppa:ubuntu-elisp/ppa &&
-        sudo apt-get update -qq &&
-        sudo apt-get -qq -f install &&
-        sudo apt-get install -qq emacs-snapshot;
-    fi
+install: true
 
 script:
   make test-batch EMACS=${EMACS}
