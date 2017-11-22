@@ -140,7 +140,7 @@ and `c-electric-colon', for automatic completion right after \">\" and
                  (not (company-in-string-or-comment))
                  (or (company-semantic--prefix) 'stop)))
     (candidates (if (and (equal arg "")
-                         (not (looking-back "->\\|\\." (- (point) 2))))
+                         (not (looking-back "->\\|\\.\\|::" (- (point) 2))))
                     (company-semantic-completions-raw arg)
                   (company-semantic-completions arg)))
     (meta (funcall company-semantic-metadata-function
