@@ -1,6 +1,6 @@
 ;;; company-capf.el --- company-mode completion-at-point-functions backend -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013-2016  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2017  Free Software Foundation, Inc.
 
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
@@ -22,6 +22,9 @@
 
 ;;; Commentary:
 ;;
+;; The CAPF back-end provides a bridge to the standard
+;; completion-at-point-functions facility, and thus can support any major mode
+;; that defines a proper completion function, including emacs-lisp-mode.
 
 ;;; Code:
 

@@ -1,6 +1,6 @@
 ;;; company-elisp.el --- company-mode completion backend for Emacs Lisp -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009, 2011-2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011-2013, 2017  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -22,6 +22,7 @@
 
 ;;; Commentary:
 ;;
+;; In newer versions of Emacs, company-capf is used instead.
 
 ;;; Code:
 
