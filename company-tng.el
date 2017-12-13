@@ -60,6 +60,9 @@
 ;; candidates. You also need to decide which keys to unbind, depending
 ;; on whether you want them to do the Company action or the default
 ;; Emacs action (for example C-s or C-w).
+;;
+;; We recommend to disable `company-require-match' to allow free typing at any
+;; point.
 
 ;;; Code:
 
@@ -104,6 +107,7 @@ confirm the selection and finish the completion."
 ;;;###autoload
 (defun company-tng-configure-default ()
   "Applies the default configuration to enable company-tng."
+  (setq company-require-match nil)
   (setq company-frontends '(company-tng-frontend
                             company-pseudo-tooltip-frontend
                             company-echo-metadata-frontend))
