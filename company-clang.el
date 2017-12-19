@@ -1,6 +1,6 @@
 ;;; company-clang.el --- company-mode completion backend for Clang  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009, 2011, 2013-2016  Free Software Foundation, Inc.
+;; Copyright (C) 2009, 2011, 2013-2017  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -263,7 +263,10 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (apply 'company-clang--start-process
          prefix
          callback
-         (company-clang--build-complete-args (point))))
+         (company-clang--build-complete-args
+          (if (company-clang--check-version 4.0 9.0)
+              (point)
+            (- (point) (length prefix))))))
 
 (defun company-clang--prefix ()
   (if company-clang-begin-after-member-access
