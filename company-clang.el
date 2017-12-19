@@ -45,7 +45,8 @@ symbol is preceded by \".\", \"->\" or \"::\", ignoring
 
 If `company-begin-commands' is a list, it should include `c-electric-lt-gt'
 and `c-electric-colon', for automatic completion right after \">\" and
-\":\".")
+\":\"."
+  :type 'boolean)
 
 (defcustom company-clang-arguments nil
   "Additional arguments to pass to clang when completing.
