@@ -277,18 +277,26 @@ or automatically through a custom `company-clang-prefix-guesser'."
 (defvar company-clang--version nil)
 
 (defun company-clang--auto-save-p ()
-  (< company-clang--version 2.9))
+  (not
+   (company-clang--check-version 2.9 3.1)))
+
+(defun company-clang--check-version (min apple-min)
+  (pcase company-clang--version
+    (`(apple . ,ver) (>= ver apple-min))
+    (`(normal . ,ver) (>= ver min))
+    (_ (error "pcase-exhaustive is not in Emacs 24.3!"))))
 
 (defsubst company-clang-version ()
   "Return the version of `company-clang-executable'."
   (with-temp-buffer
     (call-process company-clang-executable nil t nil "--version")
     (goto-char (point-min))
-    (if (re-search-forward "clang\\(?: version \\|-\\)\\([0-9.]+\\)" nil t)
-        (let ((ver (string-to-number (match-string-no-properties 1))))
-          (if (> ver 100)
-              (/ ver 100)
-            ver))
+    (if (re-search-forward "\\(clang\\|Apple LLVM\\) version \\([0-9.]+\\)" nil t)
+        (cons
+         (if (equal (match-string-no-properties 1) "Apple LLVM")
+             'apple
+           'normal)
+         (string-to-number (match-string-no-properties 2)))
       0)))
 
 (defun company-clang (command &optional arg &rest ignored)
@@ -311,7 +319,8 @@ passed via standard input."
               (error "Company found no clang executable"))
             (setq company-clang--version (company-clang-version))
             (when (< company-clang--version company-clang-required-version)
-              (error "Company requires clang version 1.1"))))
+              (error "Company requires clang version %s"
+                     company-clang-required-version))))
     (prefix (and (memq major-mode company-clang-modes)
                  buffer-file-name
                  company-clang-executable
