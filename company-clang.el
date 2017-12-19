@@ -322,7 +322,9 @@ passed via standard input."
             (unless company-clang-executable
               (error "Company found no clang executable"))
             (setq company-clang--version (company-clang-version))
-            (when (< company-clang--version company-clang-required-version)
+            (unless (company-clang--check-version
+                     company-clang-required-version
+                     company-clang-required-version)
               (error "Company requires clang version %s"
                      company-clang-required-version))))
     (prefix (and (memq major-mode company-clang-modes)
