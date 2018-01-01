@@ -228,6 +228,19 @@
      "new" "null" "object" "override" "package" "private" "protected"
      "return" "sealed" "super" "this" "throw" "trait" "true" "try" "type" "val"
      "var" "while" "with" "yield")
+    (swift-mode
+     "Protocol" "Self" "Type" "and" "as" "assignment" "associatedtype"
+     "associativity" "available" "break" "case" "catch" "class" "column" "continue"
+     "convenience" "default" "defer" "deinit" "didSet" "do" "dynamic" "dynamicType"
+     "else" "elseif" "endif" "enum" "extension" "fallthrough" "false" "file"
+     "fileprivate" "final" "for" "func" "function" "get" "guard" "higherThan" "if"
+     "import" "in" "indirect" "infix" "init" "inout" "internal" "is" "lazy" "left"
+     "let" "line" "lowerThan" "mutating" "nil" "none" "nonmutating" "open"
+     "operator" "optional" "override" "postfix" "precedence" "precedencegroup"
+     "prefix" "private" "protocol" "public" "repeat" "required" "rethrows" "return"
+     "right" "selector" "self" "set" "static" "struct" "subscript" "super" "switch"
+     "throw" "throws" "true" "try" "typealias" "unowned" "var" "weak" "where"
+     "while" "willSet")
     (julia-mode
      "abstract" "break" "case" "catch" "const" "continue" "do" "else" "elseif"
      "end" "eval" "export" "false" "finally" "for" "function" "global" "if"
