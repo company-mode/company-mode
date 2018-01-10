@@ -76,6 +76,7 @@ Set it to t or to a list of major modes."
 
 (defun company-etags--candidates (prefix)
   (let ((tags-table-list (company-etags-buffer-table))
+        (tags-file-name tags-file-name)
         (completion-ignore-case company-etags-ignore-case))
     (and (or tags-file-name tags-table-list)
          (fboundp 'tags-completion-table)
