@@ -56,7 +56,8 @@ symbol is preceded by \".\", \"->\" or \"::\", ignoring
 
 If `company-begin-commands' is a list, it should include `c-electric-lt-gt'
 and `c-electric-colon', for automatic completion right after \">\" and
-\":\".")
+\":\"."
+  :type 'boolean)
 
 (defcustom company-semantic-insert-arguments t
   "When non-nil, insert function arguments as a template after completion."
