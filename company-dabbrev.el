@@ -62,7 +62,7 @@ When it's `keep-prefix', the text before point will remain unchanged after
 candidate is inserted, even some of its characters have different case."
   :type '(choice
           (const :tag "Don't ignore case" nil)
-          (const :tag "Ignore case" ignore-case)
+          (const :tag "Ignore case" t)
           (const :tag "Keep case before point" keep-prefix)))
 
 (defcustom company-dabbrev-downcase 'case-replace
@@ -76,7 +76,7 @@ If you set this value to nil, you may also want to set
 `company-dabbrev-ignore-case' to any value other than `keep-prefix'."
   :type '(choice
           (const :tag "Keep as-is" nil)
-          (const :tag "Downcase" downcase)
+          (const :tag "Downcase" t)
           (const :tag "Use case-replace" case-replace)))
 
 (defcustom company-dabbrev-minimum-length 4
