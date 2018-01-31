@@ -1198,14 +1198,19 @@ can retrieve meta-data for them."
             (cl-dotimes (i (1+ len))
               (when (setq prev (cdr (assoc (substring prefix 0 (- len i))
                                            company-candidates-cache)))
-                (setq candidates (all-completions prefix prev))
-                (cl-return t)))))
+                (cl-return t)))
+            (cond ((eq prev 'async)
+                   ;; Pretend we found results so we don't trigger another search.
+                   t)
+                  (prev
+                   (setq candidates (all-completions prefix prev))))))
         (progn
           ;; No cache match, call the backend.
           (setq candidates (company--preprocess-candidates
                             (company--fetch-candidates prefix)))
           ;; Save in cache.
-          (push (cons prefix candidates) company-candidates-cache)))
+          (if candidates
+              (push (cons prefix candidates) company-candidates-cache))))
     ;; Only now apply the predicate and transformers.
     (setq candidates (company--postprocess-candidates candidates))
     (when candidates
@@ -1229,6 +1234,9 @@ can retrieve meta-data for them."
             (tick (buffer-chars-modified-tick))
             (pt (point))
             (backend company-backend))
+        ;; Indicate that we are currently fetching this result so we do not make
+        ;; another async call again unless we need to.
+        (setq company-candidates-cache (list (cons prefix 'async)))
         (funcall
          (cdr c)
          (lambda (candidates)
@@ -1241,7 +1249,12 @@ can retrieve meta-data for them."
                    (list (cons prefix
                                (company--preprocess-candidates candidates))))
              (unwind-protect
-                 (company-idle-begin buf win tick pt)
+                 (if (company-call-backend 'no-cache prefix)
+                     (company-idle-begin buf win tick pt)
+                   (let ((current-prefix (company-call-backend 'prefix))
+                         (ignore-case (company-call-backend 'ignore-case)))
+                     (when (string-prefix-p prefix current-prefix ignore-case)
+                       (company-idle-begin buf win (buffer-chars-modified-tick) (point)))))
                (unless company-candidates
                  (setq company-backend nil
                        company-candidates-cache nil)))))))
