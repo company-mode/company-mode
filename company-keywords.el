@@ -155,7 +155,7 @@
     (kotlin-mode
      "abstract" "annotation" "as" "break" "by" "catch" "class" "companion"
      "const" "constructor" "continue" "data" "do" "else" "enum" "false" "final"
-     "finally" "for" "fun" "if" "import" "in" "in" "init" "inner" "interface"
+     "finally" "for" "fun" "if" "import" "in" "init" "inner" "interface"
      "internal" "is" "lateinit" "nested" "null" "object" "open" "out" "override"
      "package" "private" "protected" "public" "return" "super" "this" "throw"
      "trait" "true" "try" "typealias" "val" "var" "when" "while")
