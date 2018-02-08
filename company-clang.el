@@ -343,7 +343,9 @@ passed via standard input."
                          (if (string-match "\\`:[^:]" anno)
                              (company-template-objc-templatify anno)
                            (company-template-c-like-templatify
-                            (concat arg anno))))))))
+                            (concat arg anno))))))
+    ;; FIXME: Remove, this is just for testing.
+    (no-cache t)))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here

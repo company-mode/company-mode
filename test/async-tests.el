@@ -66,6 +66,7 @@
     (let (company-frontends
           company-transformers
           (company-backends (list 'company-async-backend)))
+      ;; FIXME: Remove such tests?
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
       (should (null company-candidates))
