@@ -1223,19 +1223,15 @@ can retrieve meta-data for them."
               (company-call-backend-raw 'candidates prefix))))
     (if (not (eq (car c) :async))
         c
-      (let ((res 'none))
+      (let ((res 'none)
+            (inhibit-redisplay t))
         (funcall
          (cdr c)
          (lambda (candidates)
            (setq res candidates)))
         (while (and (eq res 'none)
                     (not (input-pending-p t)))
-          ;; FIXME: This still leads to flickers.
-          ;; Apparently sit-for triggers redisplay anyway.
-          (sleep-for company-async-wait))
-        ;; (if (listp res)
-        ;;     (message "res len is %s" (length res))
-        ;;   (message "none"))
+          (sit-for company-async-wait t))
         (and (consp res) res)))))
 
 (defun company--preprocess-candidates (candidates)
