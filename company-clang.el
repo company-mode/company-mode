@@ -201,12 +201,13 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (goto-char (point-min))))))
 
 (defun company-clang--start-process (prefix callback &rest args)
-  (let ((objc (derived-mode-p 'objc-mode))
-        (buf (get-buffer-create "*clang-output*"))
-        ;; Looks unnecessary in Emacs 25.1 and later.
-        (process-adaptive-read-buffering nil))
-    (if (get-buffer-process buf)
-        (funcall callback nil)
+  (let* ((objc (derived-mode-p 'objc-mode))
+         (buf (get-buffer-create "*clang-output*"))
+         ;; Looks unnecessary in Emacs 25.1 and later.
+         (process-adaptive-read-buffering nil)
+         (existing-process (get-buffer-process buf)))
+    (when existing-process
+      (kill-process existing-process))
       (with-current-buffer buf
         (erase-buffer)
         (setq buffer-undo-list t))
@@ -216,7 +217,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (set-process-sentinel
          process
          (lambda (proc status)
-           (unless (string-match-p "hangup" status)
+           (unless (string-match-p "hangup\\|killed" status)
              (funcall
               callback
               (let ((res (process-exit-status proc)))
@@ -228,7 +229,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (unless (company-clang--auto-save-p)
           (send-region process (point-min) (point-max))
           (send-string process "\n")
-          (process-send-eof process))))))
+          (process-send-eof process)))))
 
 (defsubst company-clang--build-location (pos)
   (save-excursion
