@@ -2713,10 +2713,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
              (annotation (company-call-backend 'annotation value)))
         (setq value (company--clean-string (company-reformat value)))
         (when annotation
+          (setq annotation (company--clean-string annotation))
           (when company-tooltip-align-annotations
             ;; `lisp-completion-at-point' adds a space.
-            (setq annotation (comment-string-strip annotation t nil)))
-          (setq annotation (company--clean-string annotation)))
+            (setq annotation (comment-string-strip annotation t nil))))
         (push (cons value annotation) items)
         (setq width (max (+ (length value)
                             (if (and annotation company-tooltip-align-annotations)
