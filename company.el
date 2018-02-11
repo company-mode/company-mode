@@ -1220,36 +1220,20 @@ can retrieve meta-data for them."
   (let* ((non-essential (not (company-explicit-action-p)))
          (c (if company--manual-action
                 (company-call-backend 'candidates prefix)
-              (company-call-backend-raw 'candidates prefix)))
-         res)
+              (company-call-backend-raw 'candidates prefix))))
     (if (not (eq (car c) :async))
         c
-      (let ((buf (current-buffer))
-            (win (selected-window))
-            (tick (buffer-chars-modified-tick))
-            (pt (point))
-            (backend company-backend))
+      (let ((res 'none)
+            (inhibit-redisplay t))
         (funcall
          (cdr c)
          (lambda (candidates)
-           (if (not (and candidates (eq res 'done)))
-               ;; There's no completions to display,
-               ;; or the fetcher called us back right away.
-               (setq res candidates)
-             (setq company-backend backend
-                   company-candidates-cache
-                   (list (cons prefix
-                               (company--preprocess-candidates candidates))))
-             (unwind-protect
-                 (company-idle-begin buf win tick pt)
-               (unless company-candidates
-                 (setq company-backend nil
-                       company-candidates-cache nil)))))))
-      ;; FIXME: Relying on the fact that the callers
-      ;; will interpret nil as "do nothing" is shaky.
-      ;; A throw-catch would be one possible improvement.
-      (or res
-          (progn (setq res 'done) nil)))))
+           (when (eq res 'none)
+             (push 'company-dummy-event unread-command-events))
+           (setq res candidates)))
+        (while (and (eq res 'none)
+                    (sit-for 0.5)))
+        (and (consp res) res)))))
 
 (defun company--preprocess-candidates (candidates)
   (cl-assert (cl-every #'stringp candidates))

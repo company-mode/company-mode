@@ -2,6 +2,10 @@
 
 ## Next
 
+* The most common case of tooltip flickering with asynchronous backend (and
+  built-in cache disabled) is fixed
+  ([#510](https://github.com/company-mode/company-mode/issues/510),
+  [#654](https://github.com/company-mode/company-mode/issues/654)).
 * Native line numbers compatibility fixes.
 * New feature `company-tng`. It contains a frontend and some helper code.
   The frontend triggers insertion of the candidate as soon as it's selected, so
