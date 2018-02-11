@@ -67,6 +67,7 @@
           company-transformers
           (company-backends (list 'company-async-backend))
           unread-command-events
+          noninteractive
           (start-time (current-time)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
@@ -81,6 +82,7 @@
     (company-mode)
     (let (company-frontends
           (company-backends (list 'company-async-backend))
+          noninteractive
           (unread-command-events (list 'company-dummy-event)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
