@@ -1228,10 +1228,11 @@ can retrieve meta-data for them."
         (funcall
          (cdr c)
          (lambda (candidates)
+           (when (eq res 'none)
+             (push 'company-dummy-event unread-command-events))
            (setq res candidates)))
         (while (and (eq res 'none)
-                    (not (input-pending-p t)))
-          (sit-for company-async-wait t))
+                    (sit-for 0.5)))
         (and (consp res) res)))))
 
 (defun company--preprocess-candidates (candidates)
