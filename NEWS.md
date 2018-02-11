@@ -6,12 +6,17 @@
   built-in cache disabled) is fixed
   ([#510](https://github.com/company-mode/company-mode/issues/510),
   [#654](https://github.com/company-mode/company-mode/issues/654)).
+* `company-keywords` added entries for `go-mode`, `swift-mode` and
+  `kotlin-mode`.
 * Native line numbers compatibility fixes.
+* `company-dabbrev` and `company-dabbrev-code` are more responsive when user
+  input is pending
+  ([#720](https://github.com/company-mode/company-mode/pull/720)).
 * New feature `company-tng`. It contains a frontend and some helper code.
   The frontend triggers insertion of the candidate as soon as it's selected, so
   you only need to press TAB. Add `(company-tng-configure-default)` to your
-  init script to give it a try.
-  ([#706](https://github.com/company-mode/company-mode/issues/706))
+  init script to give it a try
+  ([#706](https://github.com/company-mode/company-mode/issues/706)).
 * New user option `company-tooltip-maximum-width`.
 
 ## 2017-07-15 (0.9.4)
