@@ -926,6 +926,12 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
           (if (> (- (time-to-seconds) start) company-async-timeout)
               (error "Company: backend %s async timeout with args %s"
                      backend args)
+            ;; XXX: Reusing the trick from company--fetch-candidates here
+            ;; doesn't work well: sit-for isn't a good fit when we want to
+            ;; ignore pending input (results in too many calls).
+            ;; FIXME: We should deal with this by standardizing on a kind of
+            ;; Future object that knows how to sync itself. In most cases (but
+            ;; not all), by calling accept-process-output, probably.
             (sleep-for company-async-wait)))
         res))))
 
