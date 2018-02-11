@@ -2,8 +2,8 @@
 
 ## Next
 
-* The most common case of tooltip flickering with asynchronous backend (and
-  built-in cache disabled) is fixed
+* The most common case of tooltip flickering with asynchronous backends (and
+  disabled built-in cache) is fixed
   ([#510](https://github.com/company-mode/company-mode/issues/510),
   [#654](https://github.com/company-mode/company-mode/issues/654)).
 * `company-keywords` added entries for `go-mode`, `swift-mode` and
