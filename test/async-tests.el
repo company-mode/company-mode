@@ -65,28 +65,26 @@
     (company-mode)
     (let (company-frontends
           company-transformers
-          (company-backends (list 'company-async-backend)))
-      ;; FIXME: Remove such tests?
+          (company-backends (list 'company-async-backend))
+          unread-command-events
+          (start-time (current-time)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
-      (should (null company-candidates))
-      (sleep-for 0.1)
+      (should (< (time-to-seconds
+                  (time-subtract (current-time) start-time))
+                 0.1))
       (should (equal "foo" company-prefix))
       (should (equal '("abc" "abd") company-candidates)))))
 
-(ert-deftest company-idle-begin-cancels-async-candidates-if-buffer-changed ()
+(ert-deftest company-idle-begin-with-async-aborts-on-user-input ()
   (with-temp-buffer
     (company-mode)
     (let (company-frontends
-          (company-backends (list 'company-async-backend)))
+          (company-backends (list 'company-async-backend))
+          (unread-command-events (list 'company-dummy-event)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
-      (should (null company-candidates))
-      (insert "a")
-      (sleep-for 0.1)
-      (should (null company-candidates))
-      (should (null company-candidates-cache))
-      (should (null company-backend)))))
+      (should (null company-candidates)))))
 
 (ert-deftest company-idle-begin-async-allows-immediate-callbacks ()
   (with-temp-buffer
@@ -101,7 +99,8 @@
                         (cons :async
                               (lambda (cb) (funcall cb c)))))
                      (`no-cache t)))))
-          (company-minimum-prefix-length 0))
+          (company-minimum-prefix-length 0)
+          (unread-command-events (list 'company-dummy-event)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
       (should (equal '("abc" "def") company-candidates))
