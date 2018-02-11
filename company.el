@@ -1232,7 +1232,7 @@ can retrieve meta-data for them."
              (push 'company-dummy-event unread-command-events))
            (setq res candidates)))
         (while (and (eq res 'none)
-                    (sit-for 0.5)))
+                    (sit-for 0.5 t)))
         (and (consp res) res)))))
 
 (defun company--preprocess-candidates (candidates)
