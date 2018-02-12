@@ -1224,7 +1224,10 @@ can retrieve meta-data for them."
 
 (defun company--fetch-candidates (prefix)
   (let* ((non-essential (not (company-explicit-action-p)))
-         (c (if company--manual-action
+         (c (if (or company-selection-changed
+                    ;; FIXME: This is not ideal, but we have not managed to deal
+                    ;; with these situations in a better way yet.
+                    (company-require-match-p))
                 (company-call-backend 'candidates prefix)
               (company-call-backend-raw 'candidates prefix))))
     (if (not (eq (car c) :async))
