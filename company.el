@@ -829,7 +829,6 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (setq this-command last-command))
 
 (global-set-key '[company-dummy-event] 'company-ignore)
-(global-set-key '[company-async-event] 'ignore)
 
 (defun company-input-noop ()
   (push 'company-dummy-event unread-command-events))
@@ -1239,7 +1238,7 @@ can retrieve meta-data for them."
          (cdr c)
          (lambda (candidates)
            (when (eq res 'none)
-             (push 'company-async-event unread-command-events))
+             (push 'company-dummy-event unread-command-events))
            (setq res candidates)))
         (while (and (eq res 'none)
                     (sit-for 0.5 t)))
