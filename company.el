@@ -1238,11 +1238,16 @@ can retrieve meta-data for them."
          (cdr c)
          (lambda (candidates)
            (when (eq res 'none)
-             (push 'company-dummy-event unread-command-events))
+             (push 'company-foo unread-command-events))
            (setq res candidates)))
         (while (and (eq res 'none)
                     (sit-for 0.5 t)))
-        (and (consp res) res)))))
+        (while (member (car unread-command-events)
+                       '(company-foo (t . company-foo)))
+          (pop unread-command-events))
+        (prog1
+            (and (consp res) res)
+          (setq res 'exited))))))
 
 (defun company--preprocess-candidates (candidates)
   (cl-assert (cl-every #'stringp candidates))
