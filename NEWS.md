@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2018-02-18 (0.9.5)
 
 * The most common case of tooltip flickering with asynchronous backends (and
   disabled built-in cache) is fixed
