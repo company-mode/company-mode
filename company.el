@@ -1240,14 +1240,23 @@ can retrieve meta-data for them."
            (when (eq res 'none)
              (push 'company-foo unread-command-events))
            (setq res candidates)))
-        (while (and (eq res 'none)
-                    (sit-for 0.5 t)))
+        (if (company--flyspell-workaround-p)
+            (while (and (eq res 'none)
+                        (not (input-pending-p)))
+              (sleep-for company-async-wait))
+          (while (and (eq res 'none)
+                      (sit-for 0.5 t))))
         (while (member (car unread-command-events)
                        '(company-foo (t . company-foo)))
           (pop unread-command-events))
         (prog1
             (and (consp res) res)
           (setq res 'exited))))))
+
+(defun company--flyspell-workaround-p ()
+  ;; https://debbugs.gnu.org/23980
+  (and (bound-and-true-p flyspell-mode)
+       (version< emacs-version "27")))
 
 (defun company--preprocess-candidates (candidates)
   (cl-assert (cl-every #'stringp candidates))

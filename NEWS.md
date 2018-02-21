@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+## Next
+
+* Workaround for Emacs bug#23980 triggered in combination with flyspell.
+
 ## 2018-02-18 (0.9.5)
 
 * The most common case of tooltip flickering with asynchronous backends (and
