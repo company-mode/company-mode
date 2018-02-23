@@ -1,8 +1,9 @@
 # History of user-visible changes
 
-## Next
+## 2018-02-23 (0.9.6)
 
-* Workaround for Emacs bug#23980 triggered in combination with flyspell.
+* Workaround for Emacs' ([bug#23980](https://debbugs.gnu.org/23980)) triggered
+  in combination with Flyspell.
 
 ## 2018-02-18 (0.9.5)
 
