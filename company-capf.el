@@ -154,16 +154,19 @@
      (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
     (`post-completion
-     (let* ((res (company--capf-data))
-            (exit-function (plist-get (nthcdr 4 res) :exit-function))
-            (table (nth 3 res))
-            (pred (plist-get (nthcdr 4 res) :predicate)))
-       (if exit-function
-           ;; Follow the example of `completion--done'.
-           (funcall exit-function arg
-                    (if (eq (try-completion arg table pred) t)
-                        'finished 'sole)))))
+     (company--capf-post-completion arg))
     ))
+
+(defun company--capf-post-completion (arg)
+  (let* ((res (company--capf-data))
+         (exit-function (plist-get (nthcdr 4 res) :exit-function))
+         (table (nth 3 res))
+         (pred (plist-get (nthcdr 4 res) :predicate)))
+    (if exit-function
+        ;; Follow the example of `completion--done'.
+        (funcall exit-function arg
+                 (if (eq (try-completion arg table pred) t)
+                     'finished 'sole)))))
 
 (provide 'company-capf)
 
