@@ -165,6 +165,11 @@
     (if exit-function
         ;; Follow the example of `completion--done'.
         (funcall exit-function arg
+                 ;; FIXME: Should probably use an additional heuristic:
+                 ;; completion-at-point doesn't know when the user picked a
+                 ;; particular candidate explicitly (it only checks whether
+                 ;; futher completions exist). Whereas company user can press
+                 ;; RET (or use implicit completion with company-tng).
                  (if (eq (try-completion arg table pred) t)
                      'finished 'sole)))))
 
