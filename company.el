@@ -322,7 +322,9 @@ This doesn't include the margins and the scroll bar."
 (defcustom company-backends `(,@(unless (version< "24.3.51" emacs-version)
                                   (list 'company-elisp))
                               company-bbdb
-                              company-nxml company-css
+                              company-nxml
+                              ,@(unless (version<= "26" emacs-version)
+                                  (list 'company-css))
                               company-eclim company-semantic company-clang
                               company-xcode company-cmake
                               company-capf

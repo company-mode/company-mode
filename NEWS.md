@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* In Emacs 26 and newer, `company-css` is removed from `company-backends`.
+  `company-capf` is used instead.
+
 ## 2018-02-23 (0.9.6)
 
 * Workaround for Emacs' ([bug#23980](https://debbugs.gnu.org/23980)) triggered
