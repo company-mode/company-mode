@@ -1,6 +1,6 @@
 ;;; company-nxml.el --- company-mode completion backend for nxml-mode
 
-;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016 Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -22,7 +22,26 @@
 
 ;;; Commentary:
 ;;
-
+;;  Changes by gitplass@arcor.de (Thomas Plass) 7-Jun-2016
+;;
+;;  With a RELAX NG schema loaded for the current buffer completion is more 
+;;  context sensitive and schema aware.
+;;
+;;  When in tag name context (after a '<'), requesting completion will
+;;   * auto-insert the next required element or default to presenting the candidate 
+;;     list of optional elements along with the end tag for the current element
+;;   * auto-insert all required attributes
+;;   * prepare the next completion request to either
+;;     - auto-insert the sole optional attribute or 
+;;     - present the candidate list of optional attribute names. 
+;;     This requires that the last completion action inserted a tag name but does
+;;     not require a space to be manually inserted after the tag name.
+;;
+;;  Attributes are always inserted as attname="" with point positioned after the first quote.
+;;
+;;  Attribute completion is available at all legal positions in open as well as already
+;;  closed tags.
+;;
 ;;; Code:
 
 (require 'company)
@@ -34,26 +53,41 @@
 (defvar rng-in-attribute-value-regex)
 (declare-function rng-set-state-after "rng-nxml")
 (declare-function rng-match-possible-start-tag-names "rng-match")
+(declare-function rng-match-required-element-name "rng-match")
 (declare-function rng-adjust-state-for-attribute "rng-nxml")
 (declare-function rng-match-possible-attribute-names "rng-match")
+(declare-function rng-match-required-attribute-names "rng-match")
 (declare-function rng-adjust-state-for-attribute-value "rng-nxml")
 (declare-function rng-match-possible-value-strings "rng-match")
 
 (defconst company-nxml-token-regexp
-  "\\(?:[_[:alpha:]][-._[:alnum:]]*\\_>\\)")
+  "\\(?:[_[:alpha:]][-._[:alnum:]]*\\)")
 
 (defvar company-nxml-in-attribute-value-regexp
   (replace-regexp-in-string "w" company-nxml-token-regexp
    "<w\\(?::w\\)?\
 \\(?:[ \t\r\n]+w\\(?::w\\)?[ \t\r\n]*=\
-\[ \t\r\n]*\\(?:\"[^\"]*\"\\|'[^']*'\\)\\)*\
-\[ \t\r\n]+\\(w\\(:w\\)?\\)[ \t\r\n]*=[ \t\r\n]*\
-\\(\"\\([^\"]*\\>\\)\\|'\\([^']*\\>\\)\\)\\="
+[ \t\r\n]*\\(?:\"[^\"]*\"\\|'[^']*'\\)\\)*\
+[ \t\r\n]+\\(w\\(:w\\)?\\)[ \t\r\n]*=[ \t\r\n]*\
+\\(\"\\([^\"]*\\)\\|'\\([^']*\\)\\)"
    t t))
 
 (defvar company-nxml-in-tag-name-regexp
   (replace-regexp-in-string "w" company-nxml-token-regexp
                             "<\\(/?w\\(?::w?\\)?\\)?\\=" t t))
+
+(defvar company-nxml-in-starttag-name-regexp
+  (replace-regexp-in-string "w" company-nxml-token-regexp
+                            "<w\\(?::w?\\)?\\="
+                             t t))
+
+(defvar-local company-nxml-last-command nil
+  "Symbol that records the name of the function that most recently compiled 
+the list of completion candidates.  This name drives 'post-completion.")
+
+(defvar company-nxml-sort-attributes-by-length nil
+  "When set to a non-nil value, attribute names will be sorted by length. 
+This is based on the premise that a short name indicates significance.")
 
 (defun company-nxml-all-completions (prefix alist)
   (let ((candidates (mapcar 'cdr alist))
@@ -80,23 +114,80 @@
     (prefix (and (derived-mode-p 'nxml-mode)
                  rng-validate-mode
                  (company-grab company-nxml-in-tag-name-regexp 1)))
-    (candidates (company-nxml-prepared
-                 (company-nxml-all-completions
-                  arg (rng-match-possible-start-tag-names))))
+    (candidates (let* ((required (company-nxml-prepared (rng-match-required-element-name)))
+                       (candidates (if required
+                                       (list (cdr required))
+                                     (company-nxml-prepared
+                                       (company-nxml-all-completions
+                                        arg (rng-match-possible-start-tag-names))))))
+                  (when candidates
+                    (setq company-nxml-last-command 'company-nxml-tag)
+                    candidates)))
     (sorted t)))
 
 (defun company-nxml-attribute (command &optional arg &rest ignored)
   (cl-case command
     (prefix (and (derived-mode-p 'nxml-mode)
                  rng-validate-mode
-                 (memq (char-after) '(?\  ?\t ?\n)) ;; outside word
+                 (or (memq (char-before) '(?\  ?\t ?\n))     ; after tag name
+                     (memq (char-after) '(?\  ?\t ?\n ?\>))) ; after attribute, before tagc 
                  (company-grab rng-in-attribute-regex 1)))
-    (candidates (company-nxml-prepared
-                 (and (rng-adjust-state-for-attribute
-                       lt-pos (- (point) (length arg)))
-                      (company-nxml-all-completions
-                       arg (rng-match-possible-attribute-names)))))
+    (candidates (let* ((name (or arg ""))
+                       (candidates (company-nxml-prepared
+                                    (and (rng-adjust-state-for-attribute
+                                          lt-pos (- (point) (length name)))
+                                         (company-nxml-attribute-completions
+                                          name (rng-match-possible-attribute-names))))))
+                  (when candidates
+                    (if arg
+                        (setq company-nxml-last-command 'company-nxml-attribute)
+                      (setq company-nxml-last-command 'company-nxml-attribute-from-tag
+                            company-prefix "")) ; prevent tag name from acting as a prefix
+                    candidates)))
     (sorted t)))
+
+
+(defun company-nxml-add-required-attributes (tagname pos)
+  "Add all required attributes as empty strings and position point in first attribute value.
+Called post completion when inserting a tag name."
+  (insert " ")
+  (let ((atts (company-nxml-prepared
+                (and (rng-adjust-state-for-attribute lt-pos (point))
+                     (rng-match-required-attribute-names)))))
+    (if (not atts)
+        (delete-region pos (point)) ; clean up inserted space 
+      (let ((attspecs (mapconcat
+                       (lambda (att)
+                         (concat (cdr att) "=\"\""))
+                       atts
+                       " ")))
+        (insert attspecs)
+        (goto-char pos)
+        (search-forward "=\"\"")
+        (forward-char -1)
+        (message "Auto-inserted %srequired attribute%s for element %s"
+                 (or (and (cdr atts) (format "%d " (length atts))) "")
+                 (or (and (cdr atts) "s") (concat " " (cdr (car atts))))
+                 tagname)))
+    atts))
+
+
+(defun company-nxml-attribute-completions (prefix alist)
+  (let ((candidates (mapcar 'cdr alist))
+         filtered)
+    (when candidates
+      (setq candidates
+            (sort (all-completions prefix candidates)
+                  (lambda (a b)
+                    (if company-nxml-sort-attributes-by-length
+                        (<= (length a) (length b))
+                      (string< a b))))))
+    (while candidates
+      (unless (equal (car candidates) (car filtered))
+        (push (car candidates) filtered))
+      (pop candidates))
+    (nreverse filtered)))
+
 
 (defun company-nxml-attribute-value (command &optional arg &rest ignored)
   (cl-case command
@@ -116,6 +207,7 @@
                         (rng-adjust-state-for-attribute lt-pos attr-start)
                         (rng-adjust-state-for-attribute-value
                          attr-start colon attr-end)
+                        (setq company-nxml-last-command 'company-nxml-attribute-value)
                         (all-completions
                          arg (rng-match-possible-value-strings))))))))
 
@@ -125,10 +217,14 @@
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-nxml))
-    (prefix (or (company-nxml-tag 'prefix)
-                (company-nxml-attribute 'prefix)
+    (prefix (or (company-nxml-attribute 'prefix)
+                (company-nxml-tag 'prefix)
                 (company-nxml-attribute-value 'prefix)))
     (candidates (cond
+                 ((and (eq company-nxml-last-command 'company-nxml-tag)
+                       (company-grab company-nxml-in-starttag-name-regexp 1 1))
+                  (or (company-nxml-attribute 'candidates)
+                      (company-nxml-tag 'candidates arg)))
                  ((company-nxml-tag 'prefix)
                   (company-nxml-tag 'candidates arg))
                  ((company-nxml-attribute 'prefix)
@@ -136,6 +232,21 @@
                  ((company-nxml-attribute-value 'prefix)
                   (sort (company-nxml-attribute-value 'candidates arg)
                         'string<))))
+    (post-completion (cond
+                      ((eq company-nxml-last-command 'company-nxml-tag)
+                       (if (eq (aref arg 0) ?/)
+                           (insert ">")
+                         (or (company-nxml-add-required-attributes arg (point))
+                             (signal 'quit nil)))) ; this makes multiple attribute candidates work
+                      ((eq company-nxml-last-command 'company-nxml-attribute-from-tag)
+                       (backward-char (length arg))
+                       (insert " ")
+                       (forward-char (length arg))
+                       (insert "=\"\"")
+                       (backward-char 1))
+                      ((eq company-nxml-last-command 'company-nxml-attribute)
+                       (insert "=\"\"")
+                       (backward-char 1))))
     (sorted t)))
 
 (provide 'company-nxml)
