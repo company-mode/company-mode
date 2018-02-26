@@ -1,6 +1,6 @@
 ;;; company-nxml.el --- company-mode completion backend for nxml-mode
 
-;; Copyright (C) 2009-2011, 2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013, 2018  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -22,6 +22,7 @@
 
 ;;; Commentary:
 ;;
+;; In Emacs >= 26, company-capf is used instead.
 
 ;;; Code:
 

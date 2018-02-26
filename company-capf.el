@@ -24,8 +24,8 @@
 ;;
 ;; The CAPF back-end provides a bridge to the standard
 ;; completion-at-point-functions facility, and thus can support any major mode
-;; that defines a proper completion function, including emacs-lisp-mode and
-;; css-mode.
+;; that defines a proper completion function, including emacs-lisp-mode,
+;; css-mode and nxml-mode.
 
 ;;; Code:
 

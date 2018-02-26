@@ -21,7 +21,7 @@
 
 ;;; Commentary:
 ;;
-;; In newer versions of Emacs, company-capf is used instead.
+;; In Emacs >= 26, company-capf is used instead.
 
 ;;; Code:
 
