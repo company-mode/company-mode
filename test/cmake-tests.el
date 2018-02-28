@@ -29,14 +29,6 @@
     (should (equal (company-cmake 'prefix)
                    "CMAKE_CXX_FLAGS_R"))))
 
-(ert-deftest company-cmake-complete-in-string-between-quotes ()
-  (with-temp-buffer
-    (insert "set(MyFlags \"${CMAKE_CXX_FLAGS_R}\"")
-    (backward-char 2)
-    (setq-local major-mode 'cmake-mode)
-    (should (equal (company-cmake 'prefix)
-                   "CMAKE_CXX_FLAGS_R"))))
-
 (ert-deftest company-cmake-complete-in-string-more-prefix ()
   (with-temp-buffer
     (insert "set(MyFlags \"${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_R")
