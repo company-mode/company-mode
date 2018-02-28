@@ -2,6 +2,8 @@
 
 ## Next
 
+* Workaround for the conflict between `inferior-python-mode`'s completion code
+  and `company-sort-by-occurrence`.
 * In Emacs 26 and newer, `company-css` is removed from `company-backends`.
   `company-capf` is used instead.
 * Same for `company-nxml`.
