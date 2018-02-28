@@ -1364,7 +1364,7 @@ Keywords and function definition names are ignored."
   (defvar comint-last-prompt)
   (let ((beg (match-beginning 0))
         (end (match-end 0))
-        (comint-last-prompt comint-last-prompt))
+        (comint-last-prompt (bound-and-true-p comint-last-prompt)))
     (save-excursion
       (goto-char end)
       ;; Workaround for python-shell-completion-at-point's behavior:
