@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-cmake` supports completion inside string interpolations
+  ([#714](https://github.com/company-mode/company-mode/pull/714)).
 * Workaround for the conflict between `inferior-python-mode`'s completion code
   and `company-sort-by-occurrence`.
 * In Emacs 26 and newer, `company-css` is removed from `company-backends`.
