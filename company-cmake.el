@@ -1,6 +1,6 @@
 ;;; company-cmake.el --- company-mode completion backend for CMake
 
-;; Copyright (C) 2013-2014  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2014, 2017-2018  Free Software Foundation, Inc.
 
 ;; Author: Chen Bin <chenbin DOT sh AT gmail>
 ;; Version: 0.2
@@ -178,27 +178,11 @@ They affect which types of symbols we get completion candidates for.")
                                        (point-max))))))
 
 (defun company-cmake-prefix-dollar-brace-p ()
-  "Test if the current char is prefix with ${ in the current line."
-  (let ((position-current (point))
-        (position-beg-of-line (line-beginning-position))
-        (position-end-of-line (line-end-position))
-        (position-matched nil)
-        (position-matched-right-brace nil))
-
-    (setq position-matched
-                (re-search-backward "\$\{" position-beg-of-line t))
-    (goto-char position-current)
-    (setq position-matched-right-brace
-                (re-search-backward "\}" position-beg-of-line t))
-    (goto-char position-current)
-
-    (if (or (and position-matched
-                 position-matched-right-brace
-                 (> position-matched position-matched-right-brace))
-            (and position-matched
-                 (not position-matched-right-brace)))
-        t
-      nil)))
+  "Test if the current symbol follows ${."
+  (save-excursion
+    (skip-syntax-backward "w_")
+    (and (eq (char-before (point)) ?\{)
+         (eq (char-before (1- (point))) ?$))))
 
 (defun company-cmake (command &optional arg &rest ignored)
   "`company-mode' completion backend for CMake.
