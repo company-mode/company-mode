@@ -1361,10 +1361,18 @@ Keywords and function definition names are ignored."
      noccurs)))
 
 (defun company--occurrence-predicate ()
+  (defvar comint-last-prompt)
   (let ((beg (match-beginning 0))
-        (end (match-end 0)))
+        (end (match-end 0))
+        (comint-last-prompt comint-last-prompt))
     (save-excursion
       (goto-char end)
+      ;; Workaround for python-shell-completion-at-point's behavior:
+      ;; https://github.com/company-mode/company-mode/issues/759
+      ;; https://github.com/company-mode/company-mode/issues/549
+      (when (derived-mode-p 'inferior-python-mode)
+        (let ((lbp (line-beginning-position)))
+          (setq comint-last-prompt (cons lbp lbp))))
       (and (not (memq (get-text-property (1- (point)) 'face)
                       '(font-lock-function-name-face
                         font-lock-keyword-face)))
