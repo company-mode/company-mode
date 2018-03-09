@@ -1629,7 +1629,6 @@ prefix match (same case) will be prioritized."
       ;; `company-completion-finished-hook' in that case, with right argument.
       (if (stringp result)
           (let ((company-backend backend))
-            (company-call-backend 'pre-completion result)
             (run-hook-with-args 'company-completion-finished-hook result)
             (company-call-backend 'post-completion result))
         (run-hook-with-args 'company-completion-cancelled-hook result))))
