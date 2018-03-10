@@ -102,7 +102,8 @@ confirm the selection and finish the completion."
      (when (and company-selection-changed
                 (not (company--company-command-p (this-command-keys))))
        (company--unread-this-command-keys)
-       (setq this-command 'company-complete-selection)))))
+       (setq this-command 'company-complete-selection)
+       (advice-add 'company-call-backend :before-until 'company-tng--supress-post-completion)))))
 
 ;;;###autoload
 (defun company-tng-configure-default ()
@@ -158,6 +159,16 @@ made explicitly (i.e. `company-selection-changed' is true)"
     ;; The 4th arg of `company-fill-propertize' is selected
     (setf (nth 3 args) nil))
   args)
+
+(defun company-tng--supress-post-completion (command &rest args)
+  "Installed as a :before-until advice on `company-call-backend' and
+prevents the 'post-completion command from being delivered to the backend
+for the next iteration. post-completion do things like expand snippets
+which are undesirable because completions are implicit in company-tng and
+visible side-effects after the completion are surprising."
+  (when (eq command 'post-completion)
+    (advice-remove 'company-call-backend 'company-tng--supress-post-completion)
+    t))
 
 (provide 'company-tng)
 ;;; company-tng.el ends here
