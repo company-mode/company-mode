@@ -2388,7 +2388,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
          cc annotations)
     (when (or (stringp prefix) (consp prefix))
       (let ((company-backend backend))
-        (setq cc (company-call-backend 'candidates prefix)
+        (setq cc (company-call-backend 'candidates (company--prefix-str prefix))
               annotations
               (mapcar
                (lambda (c) (cons c (company-call-backend 'annotation c)))
