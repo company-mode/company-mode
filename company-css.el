@@ -424,7 +424,8 @@ Returns \"\" if no property found, but feasible at this position."
                           (string= (web-mode-language-at-pos) "css")))
                  (or (company-grab company-css-tag-regexp 1)
                      (company-grab company-css-pseudo-regexp 1)
-                     (company-grab company-css-property-value-regexp 2)
+                     (company-grab company-css-property-value-regexp 2
+                                   (line-beginning-position))
                      (company-css-grab-property))))
     (candidates
      (cond
@@ -432,7 +433,8 @@ Returns \"\" if no property found, but feasible at this position."
        (all-completions arg company-css-html-tags))
       ((company-grab company-css-pseudo-regexp 1)
        (all-completions arg company-css-pseudo-classes))
-      ((company-grab company-css-property-value-regexp 2)
+      ((company-grab company-css-property-value-regexp 2
+                     (line-beginning-position))
        (all-completions arg
                         (company-css-property-values
                          (company-grab company-css-property-value-regexp 1))))
