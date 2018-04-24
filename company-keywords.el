@@ -255,6 +255,12 @@
      "otherwise" "quote" "return" "switch" "throw" "true" "try" "type"
      "typealias" "using" "while"
      )
+    ;; From https://github.com/apache/thrift/blob/master/contrib/thrift.el
+    (thrift-mode
+     "binary" "bool" "byte" "const" "double" "enum" "exception" "extends"
+     "i16" "i32" "i64" "include" "list" "map" "oneway" "optional" "required"
+     "service" "set" "string" "struct" "throws" "typedef" "void"
+     )
     ;; aliases
     (js2-mode . javascript-mode)
     (js2-jsx-mode . javascript-mode)
