@@ -187,7 +187,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
                   (buffer-substring-no-properties (point-min)
                                                   (1- (match-beginning 0)))
                 ;; Warn the user more aggressively if no match was found.
-                (message "clang failed with error %d:\n%s" res cmd)
+                (message "clang failed with error %d, see details on %s buffer"
+                         res
+                         company-clang--error-buffer-name)
                 (buffer-string))))
 
     (with-current-buffer buf
