@@ -183,11 +183,12 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (let* ((buf (get-buffer-create company-clang--error-buffer-name))
          (cmd (concat company-clang-executable " " (mapconcat 'identity args " ")))
          (pattern (format company-clang--completion-pattern ""))
+         (message-truncate-lines t)
          (err (if (re-search-forward pattern nil t)
                   (buffer-substring-no-properties (point-min)
                                                   (1- (match-beginning 0)))
                 ;; Warn the user more aggressively if no match was found.
-                (message "clang failed with error %d:\n%s" res cmd)
+                (message "clang failed with error %d: %s" res cmd)
                 (buffer-string))))
 
     (with-current-buffer buf
