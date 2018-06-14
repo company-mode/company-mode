@@ -62,6 +62,11 @@
             (push prefix prefixes))))
       prefixes)))
 
+(defun company-yasnippet--prefix ()
+  (cl-find (company-grab-symbol)
+           (cl-mapcan 'yas--table-all-keys (yas--get-snippet-tables))
+           :test 'string=))
+
 (defun company-yasnippet--candidates (prefix)
   ;; Process the prefixes in reverse: unlike Yasnippet, we look for prefix
   ;; matches, so the longest prefix with any matches should be the most useful.
@@ -125,10 +130,8 @@ shadow backends that come after it.  Recommended usages:
   (cl-case command
     (interactive (company-begin-backend 'company-yasnippet))
     (prefix
-     ;; Should probably use `yas--current-key', but that's bound to be slower.
-     ;; How many trigger keys start with non-symbol characters anyway?
      (and (bound-and-true-p yas-minor-mode)
-          (company-grab-symbol)))
+          (company-yasnippet--prefix)))
     (annotation
      (concat
       (unless company-tooltip-align-annotations " -> ")
