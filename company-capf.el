@@ -112,18 +112,23 @@
                       (nth 3 res) (plist-get (nthcdr 4 res) :predicate))))
            (cdr (assq 'display-sort-function meta))))))
     (`match
-     ;; Can't just use 0 when base-size (see above) is non-zero.
-     (let ((start (if (get-text-property 0 'face arg)
-                      0
-                    (next-single-property-change 0 'face arg))))
-       (when start
-         ;; completions-common-part comes first, but we can't just look for this
-         ;; value because it can be in a list.
-         (or
-          (let ((value (get-text-property start 'face arg)))
-            (text-property-not-all start (length arg)
-                                   'face value arg))
-          (length arg)))))
+     (let* ((match-start nil) (pos -1)
+            (prop-value nil)  (faces nil)
+            (has-face-p nil)  chunks
+            (limit (length arg)))
+       (while (< pos limit)
+         (setq pos
+               (if (< pos 0) 0 (next-property-change pos arg limit)))
+         (setq prop-value (or (get-text-property pos 'face arg)
+                              (get-text-property pos 'font-lock-face arg))
+               faces (if (listp prop-value) prop-value (list prop-value))
+               has-face-p (memq 'completions-common-part faces))
+         (cond ((and (not match-start) has-face-p)
+                (setq match-start pos))
+               ((and match-start (not has-face-p))
+                (push (cons match-start pos) chunks)
+                (setq match-start nil))))
+       (if chunks (nreverse chunks) (cons 0 (length arg)))))
     (`duplicates t)
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.

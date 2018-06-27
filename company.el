@@ -403,10 +403,13 @@ be kept if they have different annotations.  For that to work properly,
 backends should store the related information on candidates using text
 properties.
 
-`match': The second argument is a completion candidate.  Return the index
-after the end of text matching `prefix' within the candidate string.  It
-will be used when rendering the popup.  This command only makes sense for
-backends that provide non-prefix completion.
+`match': The second argument is a completion candidate.  Return a positive
+integer, the index after the end of text matching `prefix' within the
+candidate string.  Alternatively, return a list of (CHUNK-START
+. CHUNK-END) elements, where CHUNK-START and CHUNK-END are indexes within
+the candidate string.  The corresponding regions are be used when rendering
+the popup.  This command only makes sense for backends that provide
+non-prefix completion.
 
 `require-match': If this returns t, the user is not allowed to enter
 anything not offered as a candidate.  Please don't use that value in normal
@@ -2507,7 +2510,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                                   (- width (length annotation)))
                           annotation))
                        right)))
-    (setq common (+ (min common width) margin))
     (setq width (+ width margin (length right)))
 
     (font-lock-append-text-property 0 width 'mouse-face
@@ -2519,11 +2521,17 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                           'company-tooltip-annotation-selection
                                         'company-tooltip-annotation)
                                       line))
-    (font-lock-prepend-text-property margin common 'face
-                                     (if selected
-                                         'company-tooltip-common-selection
-                                       'company-tooltip-common)
-                                     line)
+    (cl-loop
+     with width = (- width (length right))
+     for (comp-beg . comp-end) in (if (integerp common) `((0 . ,common)) common)
+     for inline-beg = (+ margin comp-beg)
+     for inline-end = (min (+ margin comp-end) width)
+     when (< inline-beg width)
+     do (font-lock-prepend-text-property inline-beg inline-end 'face
+                                         (if selected
+                                             'company-tooltip-common-selection
+                                           'company-tooltip-common)
+                                         line))
     (when (let ((re (funcall company-search-regexp-function
                              company-search-string)))
             (and (not (string= re ""))
