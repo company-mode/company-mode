@@ -112,23 +112,27 @@
                       (nth 3 res) (plist-get (nthcdr 4 res) :predicate))))
            (cdr (assq 'display-sort-function meta))))))
     (`match
-     (let* ((match-start nil) (pos -1)
-            (prop-value nil)  (faces nil)
-            (has-face-p nil)  chunks
-            (limit (length arg)))
-       (while (< pos limit)
-         (setq pos
-               (if (< pos 0) 0 (next-property-change pos arg limit)))
-         (setq prop-value (or (get-text-property pos 'face arg)
-                              (get-text-property pos 'font-lock-face arg))
-               faces (if (listp prop-value) prop-value (list prop-value))
-               has-face-p (memq 'completions-common-part faces))
-         (cond ((and (not match-start) has-face-p)
-                (setq match-start pos))
-               ((and match-start (not has-face-p))
-                (push (cons match-start pos) chunks)
-                (setq match-start nil))))
-       (if chunks (nreverse chunks) (cons 0 (length arg)))))
+     ;; ask the for the `:company-match' function.  If that doesn't help,
+     ;; fallback to sniffing for face changes to get a suitable value
+     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-match)))
+       (if f (funcall f arg)
+         (let* ((match-start nil) (pos -1)
+                (prop-value nil)  (faces nil)
+                (has-face-p nil)  chunks
+                (limit (length arg)))
+           (while (< pos limit)
+             (setq pos
+                   (if (< pos 0) 0 (next-property-change pos arg limit)))
+             (setq prop-value (or (get-text-property pos 'face arg)
+                                  (get-text-property pos 'font-lock-face arg))
+                   faces (if (listp prop-value) prop-value (list prop-value))
+                   has-face-p (memq 'completions-common-part faces))
+             (cond ((and (not match-start) has-face-p)
+                    (setq match-start pos))
+                   ((and match-start (not has-face-p))
+                    (push (cons match-start pos) chunks)
+                    (setq match-start nil))))
+           (if chunks (nreverse chunks) (cons 0 (length arg)))))))
     (`duplicates t)
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.
