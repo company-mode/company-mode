@@ -1,6 +1,6 @@
 ;;; capf-tests.el --- company tests for the company-capf backend  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2013-2015  Free Software Foundation, Inc.
+;; Copyright (C) 2018  Free Software Foundation, Inc.
 
 ;; Author: João Távora <joaotavora@gmail.com>
 ;; Keywords: 
@@ -55,9 +55,10 @@
     (should company-candidates)
     (should (member "with-current-buffer" company-candidates))))
 
-;; Re. "perfect" highliting of the non-prefix in company-capf matches, it is
-;; only working in recent Emacsen containing this commit.  The two following
-;; tests reflect that.
+;; Re. "perfect" highlighting of the non-prefix in company-capf matches, it is
+;; only working-out-of-the box (i.e. without the `:company-match' meta) in
+;; recent Emacsen containing the following commit.  The two tests that follow
+;; reflect that.
 ;;
 ;; commit 325ef57b0e3977f9509f1049c826999e8b7c226d
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>

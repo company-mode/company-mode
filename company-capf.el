@@ -88,8 +88,8 @@
          (let* ((table (nth 3 res))
                 (pred (plist-get (nthcdr 4 res) :predicate))
                 (meta (completion-metadata
-                      (buffer-substring (nth 1 res) (nth 2 res))
-                      table pred))
+                       (buffer-substring (nth 1 res) (nth 2 res))
+                       table pred))
                 (sortfun (cdr (assq 'display-sort-function meta)))
                 (candidates (completion-all-completions arg table pred (length arg)))
                 (last (last candidates))
@@ -112,8 +112,8 @@
                       (nth 3 res) (plist-get (nthcdr 4 res) :predicate))))
            (cdr (assq 'display-sort-function meta))))))
     (`match
-     ;; ask the for the `:company-match' function.  If that doesn't help,
-     ;; fallback to sniffing for face changes to get a suitable value
+     ;; Ask the for the `:company-match' function.  If that doesn't help,
+     ;; fallback to sniffing for face changes to get a suitable value.
      (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-match)))
        (if f (funcall f arg)
          (let* ((match-start nil) (pos -1)
@@ -123,8 +123,7 @@
            (while (< pos limit)
              (setq pos
                    (if (< pos 0) 0 (next-property-change pos arg limit)))
-             (setq prop-value (or (get-text-property pos 'face arg)
-                                  (get-text-property pos 'font-lock-face arg))
+             (setq prop-value (get-text-property pos 'font-lock-face arg)
                    faces (if (listp prop-value) prop-value (list prop-value))
                    has-face-p (memq 'completions-common-part faces))
              (cond ((and (not match-start) has-face-p)
