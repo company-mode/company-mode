@@ -55,6 +55,30 @@
     (should company-candidates)
     (should (member "with-current-buffer" company-candidates))))
 
+(ert-deftest company-basic-capf-highlighting ()
+  "Test basic `company-capf' support, with basic prefix completion."
+  (company-capf-with-buffer
+    "(with|)"
+    (company-mode)
+    (company-complete)
+    (should company-candidates)
+    (let* ((cand (car (member "with-current-buffer" company-candidates)))
+           (render
+            (and cand
+                 (company-fill-propertize cand nil (length cand) nil nil nil))))
+      ;; remove `font-lock-face' and `mouse-face' text properties that aren't
+      ;; relevant to our test
+      (remove-list-of-text-properties
+       0 (length cand) '(font-lock-face mouse-face) render)
+      (should
+       (ert-equal-including-properties
+        render
+        #("with-current-buffer"
+          0 4 (face (company-tooltip-common company-tooltip))   ; "with"
+          4 19 (face (company-tooltip))))))))
+
+
+
 ;; Re. "perfect" highlighting of the non-prefix in company-capf matches, it is
 ;; only working-out-of-the box (i.e. without the `:company-match' meta) in
 ;; recent Emacsen containing the following commit.  The two tests that follow

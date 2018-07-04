@@ -133,7 +133,7 @@
                    ((and match-start (not has-face-p))
                     (push (cons match-start pos) chunks)
                     (setq match-start nil))))
-           (if chunks (nreverse chunks) (cons 0 (length arg)))))))
+           (nreverse chunks)))))
     (`duplicates t)
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.
