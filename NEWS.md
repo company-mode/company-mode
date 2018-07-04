@@ -2,6 +2,14 @@
 
 ## Next
 
+* For more sophisticated highlighting in non-prefix completion, a backend may
+  now respond to a `match` request with a list of regions.  See
+  `company-backends`.
+  ([#798](https://github.com/company-mode/company-mode/issues/798),
+  [#762](https://github.com/company-mode/company-mode/issues/762))
+* The `company-capf` backend will pick up on a `:company-match` metadata element
+  on the capf function (similar to `:company-location` or `:company-doc-buffer`)
+  and use it as a response to aforementioned `match` request.
 * `company-cmake` supports completion inside string interpolations
   ([#714](https://github.com/company-mode/company-mode/pull/714)).
 * Workaround for the conflict between `inferior-python-mode`'s completion code
