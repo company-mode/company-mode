@@ -123,7 +123,9 @@
            (while (< pos limit)
              (setq pos
                    (if (< pos 0) 0 (next-property-change pos arg limit)))
-             (setq prop-value (get-text-property pos 'font-lock-face arg)
+             (setq prop-value (or
+                               (get-text-property pos 'face arg)
+                               (get-text-property pos 'font-lock-face arg))
                    faces (if (listp prop-value) prop-value (list prop-value))
                    has-face-p (memq 'completions-common-part faces))
              (cond ((and (not match-start) has-face-p)
