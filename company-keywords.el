@@ -142,17 +142,9 @@
       "tiny" "transfer" "transpose" "trim" "true" "type" "ubound" "unpack"
       "use" "value" "verify" "volatile" "wait" "where" "while" "with" "write"))
     (go-mode
-     ;; from https://golang.org/ref/spec#Keywords
-     "break" "case" "chan" "const" "continue" "default" "defer" "else" "fallthrough"
-     "for" "func" "go" "goto" "if" "import" "interface" "map" "package" "range"
-     "return" "select" "struct" "switch" "type" "var"
-     ;; basic type keywords, from https://golang.org/pkg/go/types/
-     "bool"
-     "int" "int8" "int16" "int32" "int64"
-     "uint" "uint8" "uint16" "uint32" "uint64" "uintptr"
-     "float32" "float64"
-     "complex64" "complex128"
-     "string")
+     "bool" "break" "case" "chan" "complex128" "complex64" "const" "continue" "default" "defer" "else" "fallthrough" "float32" "float64"
+     "for" "func" "go" "goto" "if" "import" "int" "int8" "int16" "int32" "int64" "interface" "map" "package" "range"
+     "return" "select" "string" "struct" "switch" "type" "uint" "uint8" "uint16" "uint32" "uint64" "uintptr" "var")
     (java-mode
      "abstract" "assert" "boolean" "break" "byte" "case" "catch" "char" "class"
      "continue" "default" "do" "double" "else" "enum" "extends" "final"
