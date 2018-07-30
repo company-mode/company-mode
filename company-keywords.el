@@ -142,6 +142,7 @@
       "tiny" "transfer" "transpose" "trim" "true" "type" "ubound" "unpack"
       "use" "value" "verify" "volatile" "wait" "where" "while" "with" "write"))
     (go-mode
+     ;; from https://golang.org/ref/spec#Keywords
      "bool" "break" "case" "chan" "complex128" "complex64" "const" "continue" "default" "defer" "else" "fallthrough" "float32" "float64"
      "for" "func" "go" "goto" "if" "import" "int" "int16" "int32" "int64" "int8" "interface" "map" "package" "range"
      "return" "select" "string" "struct" "switch" "type" "uint" "uint16" "uint32" "uint64" "uint8" "uintptr" "var")
