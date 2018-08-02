@@ -144,9 +144,12 @@
     (go-mode
      ;; From https://golang.org/ref/spec#Keywords
      ;; Plus some basic types, for better programming experience.
-     "bool" "break" "case" "chan" "complex128" "complex64" "const" "continue" "default" "defer" "else" "fallthrough" "float32" "float64"
-     "for" "func" "go" "goto" "if" "import" "int" "int16" "int32" "int64" "int8" "interface" "map" "package" "range"
-     "return" "select" "string" "struct" "switch" "type" "uint" "uint16" "uint32" "uint64" "uint8" "uintptr" "var")
+     "bool" "break" "case" "chan" "complex128" "complex64" "const" "continue"
+     "default" "defer" "else" "fallthrough" "float32" "float64"
+     "for" "func" "go" "goto" "if" "import" "int" "int16" "int32"
+     "int64" "int8" "interface" "map" "package" "range"
+     "return" "select" "string" "struct" "switch" "type"
+     "uint" "uint16" "uint32" "uint64" "uint8" "uintptr" "var")
     (java-mode
      "abstract" "assert" "boolean" "break" "byte" "case" "catch" "char" "class"
      "continue" "default" "do" "double" "else" "enum" "extends" "final"
