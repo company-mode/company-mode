@@ -142,7 +142,6 @@
       "tiny" "transfer" "transpose" "trim" "true" "type" "ubound" "unpack"
       "use" "value" "verify" "volatile" "wait" "where" "while" "with" "write"))
     (go-mode
-     ;; Basic Keywords
       "append" "bool" "break" "cap" "case" "chan" "close" "complex" "complex128" 
      "complex64" "const" "continue" "copy" "default" "defer" "delete" "else" 
      "fallthrough" "float32" "float64" "for" "func" "go" "goto" "if" "imag" "import" 
