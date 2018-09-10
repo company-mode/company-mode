@@ -142,8 +142,8 @@
       "tiny" "transfer" "transpose" "trim" "true" "type" "ubound" "unpack"
       "use" "value" "verify" "volatile" "wait" "where" "while" "with" "write"))
     (go-mode
-     ;; 1. keywords ref: https://golang.org/ref/spec#Keywords
-     ;; 2. builtin functions and types ref: https://golang.org/pkg/builtin/
+     ;; 1. Keywords ref: https://golang.org/ref/spec#Keywords
+     ;; 2. Builtin functions and types ref: https://golang.org/pkg/builtin/
      "append" "bool" "break" "byte" "cap" "case" "chan" "close" "complex" "complex128"
      "complex64" "const" "continue" "copy" "default" "defer" "delete" "else" "error"
      "fallthrough" "float32" "float64" "for" "func" "go" "goto" "if" "imag"
