@@ -142,14 +142,15 @@
       "tiny" "transfer" "transpose" "trim" "true" "type" "ubound" "unpack"
       "use" "value" "verify" "volatile" "wait" "where" "while" "with" "write"))
     (go-mode
-     ;; From https://golang.org/ref/spec#Keywords
-     ;; Plus some basic types, for better programming experience.
-     "bool" "break" "case" "chan" "complex128" "complex64" "const" "continue"
-     "default" "defer" "else" "fallthrough" "float32" "float64"
-     "for" "func" "go" "goto" "if" "import" "int" "int16" "int32"
-     "int64" "int8" "interface" "map" "package" "range"
-     "return" "select" "string" "struct" "switch" "type"
-     "uint" "uint16" "uint32" "uint64" "uint8" "uintptr" "var")
+     ;; 1. Keywords ref: https://golang.org/ref/spec#Keywords
+     ;; 2. Builtin functions and types ref: https://golang.org/pkg/builtin/
+     "append" "bool" "break" "byte" "cap" "case" "chan" "close" "complex" "complex128"
+     "complex64" "const" "continue" "copy" "default" "defer" "delete" "else" "error"
+     "fallthrough" "float32" "float64" "for" "func" "go" "goto" "if" "imag"
+     "import" "int" "int16" "int32" "int64" "int8" "interface" "len" "make"
+     "map" "new" "package" "panic" "print" "println" "range" "real" "recover"
+     "return" "rune" "select" "string" "struct" "switch" "type" "uint" "uint16"
+     "uint32" "uint64" "uint8" "uintptr" "var")
     (java-mode
      "abstract" "assert" "boolean" "break" "byte" "case" "catch" "char" "class"
      "continue" "default" "do" "double" "else" "enum" "extends" "final"
