@@ -33,14 +33,14 @@
   "Completion backend for GNU Global."
   :group 'company)
 
+(define-obsolete-variable-alias
+  'company-gtags-gnu-global-program-name
+  'company-gtags-executable "earlier")
+
 (defcustom company-gtags-executable
   (executable-find "global")
   "Location of GNU global executable."
   :type 'string)
-
-(define-obsolete-variable-alias
-  'company-gtags-gnu-global-program-name
-  'company-gtags-executable "earlier")
 
 (defcustom company-gtags-insert-arguments t
   "When non-nil, insert function arguments as a template after completion."
