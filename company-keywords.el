@@ -146,10 +146,10 @@
      ;; 2. Builtin functions and types ref: https://golang.org/pkg/builtin/
      "append" "bool" "break" "byte" "cap" "case" "chan" "close" "complex" "complex128"
      "complex64" "const" "continue" "copy" "default" "defer" "delete" "else" "error"
-     "fallthrough" "float32" "float64" "for" "func" "go" "goto" "if" "imag"
+     "fallthrough" "false" "float32" "float64" "for" "func" "go" "goto" "if" "imag"
      "import" "int" "int16" "int32" "int64" "int8" "interface" "len" "make"
-     "map" "new" "package" "panic" "print" "println" "range" "real" "recover"
-     "return" "rune" "select" "string" "struct" "switch" "type" "uint" "uint16"
+     "map" "new" "nil" "package" "panic" "print" "println" "range" "real" "recover"
+     "return" "rune" "select" "string" "struct" "switch" "true" "type" "uint" "uint16"
      "uint32" "uint64" "uint8" "uintptr" "var")
     (java-mode
      "abstract" "assert" "boolean" "break" "byte" "case" "catch" "char" "class"
