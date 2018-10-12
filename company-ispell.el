@@ -53,7 +53,7 @@ If nil, use `ispell-complete-word-dict'."
           (company-ispell--lookup-words "WHATEVER")
           (setq company-ispell-available t))
       (error
-       (message "Company: ispell-look-command not found")
+       (message "Company-Ispell: %s" (error-message-string err))
        (setq company-ispell-available nil))))
   company-ispell-available)
 
