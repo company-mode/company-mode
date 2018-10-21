@@ -2827,7 +2827,6 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-show (row column selection)
   (company-pseudo-tooltip-hide)
-  (save-excursion
 
     (let* ((height (company--pseudo-tooltip-height))
            above)
@@ -2836,15 +2835,17 @@ Returns a negative number if the tooltip should be displayed above point."
         (setq row (+ row height -1)
               above t))
 
-      (let* ((nl (< (move-to-window-line row) row))
-             (beg (point))
-             (end (save-excursion
-                    (move-to-window-line (+ row (abs height)))
-                    (point)))
-             (ov (make-overlay beg end nil t))
-             (args (list (mapcar 'company-plainify
-                                 (company-buffer-lines beg end))
-                         column nl above)))
+      (let (nl beg end ov args)
+        (save-excursion
+          (setq nl (< (move-to-window-line row) row)
+                beg (point)
+                end (save-excursion
+                      (move-to-window-line (+ row (abs height)))
+                      (point))
+                ov (make-overlay beg end nil t)
+                args (list (mapcar 'company-plainify
+                                   (company-buffer-lines beg end))
+                           column nl above)))
 
         (setq company-pseudo-tooltip-overlay ov)
         (overlay-put ov 'company-replacement-args args)
@@ -2855,7 +2856,7 @@ Returns a negative number if the tooltip should be displayed above point."
           (overlay-put ov 'company-width (string-width (car lines))))
 
         (overlay-put ov 'company-column column)
-        (overlay-put ov 'company-height height)))))
+        (overlay-put ov 'company-height height))))
 
 (defun company-pseudo-tooltip-show-at-point (pos column-offset)
   (let* ((col-row (company--col-row pos))
