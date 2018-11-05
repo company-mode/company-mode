@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2018-11-06 (0.9.7)
 
 * For more sophisticated highlighting in non-prefix completion, a backend may
   now respond to a `match` request with a list of regions.  See
