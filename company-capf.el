@@ -169,7 +169,11 @@
     ))
 
 (defun company--capf-post-completion (arg)
-  (let* ((res (company--capf-data))
+  ;; Note the direct access to `company--capf-cache', which, according to
+  ;; `company--capf-data' would already be stale.  But it is not really for
+  ;; getting the `:exit-function', and this prevents a second call to the capf
+  ;; hooks.
+  (let* ((res (nth 3 company--capf-cache))
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
          (table (nth 3 res))
          (pred (plist-get (nthcdr 4 res) :predicate)))
