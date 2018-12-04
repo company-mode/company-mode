@@ -34,6 +34,9 @@
 
 (defvar company--capf-cache nil)
 
+(defvar company-capf--current-completion-data nil
+  "Value last returned by `company-capf' when called with `candidates'.")
+
 (defun company--capf-data ()
   (let ((cache company--capf-cache))
     (if (and (equal (current-buffer) (car cache))
@@ -84,6 +87,7 @@
             (t prefix))))))
     (`candidates
      (let ((res (company--capf-data)))
+       (setq company-capf--current-completion-data res)
        (when res
          (let* ((table (nth 3 res))
                 (pred (plist-get (nthcdr 4 res) :predicate))
@@ -169,16 +173,11 @@
     ))
 
 (defun company--capf-post-completion (arg)
-  ;; FIXME: Note the direct access to `company--capf-cache', which,
-  ;; according to `company--capf-data' would already be stale, but it
-  ;; should be quite safe for obtaining the `:exit-function' and the
-  ;; arguments with need to call it with.  This is under the
-  ;; assumption that the cache has last been refreshed just before
-  ;; performing the insertion, so it should happen to contain just the
-  ;; data we need, which includes the `:exit-function' that we got
-  ;; when we received the original completion table, not the one we
-  ;; get when we re-call capf.
-  (let* ((res (nth 3 company--capf-cache))
+  ;; FIXME: Note the access to `company-capf--current-completion-data' and not
+  ;; `company--capf-data'.  It should happen to contain just the data we need,
+  ;; which includes the `:exit-function' that we got when we received the
+  ;; original completion table, not the one we get when we re-call capf.
+  (let* ((res company-capf--current-completion-data)
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
          (table (nth 3 res))
          (pred (plist-get (nthcdr 4 res) :predicate)))
