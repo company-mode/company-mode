@@ -169,10 +169,15 @@
     ))
 
 (defun company--capf-post-completion (arg)
-  ;; Note the direct access to `company--capf-cache', which, according to
-  ;; `company--capf-data' would already be stale.  But it is not really for
-  ;; getting the `:exit-function', and this prevents a second call to the capf
-  ;; hooks.
+  ;; FIXME: Note the direct access to `company--capf-cache', which,
+  ;; according to `company--capf-data' would already be stale, but it
+  ;; should be quite safe for obtaining the `:exit-function' and the
+  ;; arguments with need to call it with.  This is under the
+  ;; assumption that the cache has last been refreshed just before
+  ;; performing the insertion, so it should happen to contain just the
+  ;; data we need, which includes the `:exit-function' that we got
+  ;; when we received the original completion table, not the one we
+  ;; get when we re-call capf.
   (let* ((res (nth 3 company--capf-cache))
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
          (table (nth 3 res))
