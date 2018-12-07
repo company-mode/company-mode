@@ -36,7 +36,8 @@
 
 ;; FIXME: Provide a way to save this info once in Company itself
 ;; (https://github.com/company-mode/company-mode/pull/845).
-(defvar company-capf--current-completion-data nil
+;; FIXME: What about memory usage?
+(defvar-local company-capf--current-completion-data nil
   "Value last returned by `company-capf' when called with `candidates'.
 For most properties/actions, this is just what we need: the exact values
 that accompanied the completion table that's currently is use.")
