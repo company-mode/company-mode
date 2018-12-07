@@ -34,8 +34,12 @@
 
 (defvar company--capf-cache nil)
 
+;; FIXME: Provide a way to save this info once in Company itself
+;; (https://github.com/company-mode/company-mode/pull/845).
 (defvar company-capf--current-completion-data nil
-  "Value last returned by `company-capf' when called with `candidates'.")
+  "Value last returned by `company-capf' when called with `candidates'.
+For most properties/actions, this is just what we need: the exact values
+that accompanied the completion table that's currently is use.")
 
 (defun company--capf-data ()
   (let ((cache company--capf-cache))
@@ -109,7 +113,7 @@
                          candidates))
              candidates)))))
     (`sorted
-     (let ((res (company--capf-data)))
+     (let ((res company-capf--current-completion-data))
        (when res
          (let ((meta (completion-metadata
                       (buffer-substring (nth 1 res) (nth 2 res))
@@ -118,7 +122,8 @@
     (`match
      ;; Ask the for the `:company-match' function.  If that doesn't help,
      ;; fallback to sniffing for face changes to get a suitable value.
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-match)))
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :company-match)))
        (if f (funcall f arg)
          (let* ((match-start nil) (pos -1)
                 (prop-value nil)  (faces nil)
@@ -142,16 +147,20 @@
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.
     (`meta
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-docsig)))
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :company-docsig)))
        (when f (funcall f arg))))
     (`doc-buffer
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-doc-buffer)))
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :company-doc-buffer)))
        (when f (funcall f arg))))
     (`location
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :company-location)))
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :company-location)))
        (when f (funcall f arg))))
     (`annotation
-     (let ((f (plist-get (nthcdr 4 (company--capf-data)) :annotation-function)))
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :annotation-function)))
        (when f (funcall f arg))))
     (`require-match
      (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
@@ -161,10 +170,6 @@
     ))
 
 (defun company--capf-post-completion (arg)
-  ;; FIXME: Note the access to `company-capf--current-completion-data' and not
-  ;; `company--capf-data'.  It should happen to contain just the data we need,
-  ;; which includes the `:exit-function' that we got when we received the
-  ;; original completion table, not the one we get when we re-call capf.
   (let* ((res company-capf--current-completion-data)
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
          (table (nth 3 res))
