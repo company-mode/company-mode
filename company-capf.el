@@ -36,7 +36,6 @@
 
 ;; FIXME: Provide a way to save this info once in Company itself
 ;; (https://github.com/company-mode/company-mode/pull/845).
-;; FIXME: What about memory usage?
 (defvar-local company-capf--current-completion-data nil
   "Value last returned by `company-capf' when called with `candidates'.
 For most properties/actions, this is just what we need: the exact values
@@ -76,6 +75,20 @@ that accompanied the completion table that's currently is use.")
       completion-at-point-functions
     (remq 'python-completion-complete-at-point completion-at-point-functions)))
 
+(defun company-capf--save-current-data (data)
+  (setq company-capf--current-completion-data data)
+  (add-hook 'company-completion-cancelled-hook
+            #'company-capf--clear-current-data nil t)
+  (add-hook 'company-completion-finished-hook
+            #'company-capf--clear-current-data nil t))
+
+(defun company-capf--clear-current-data (_ignored)
+  (setq company-capf--current-completion-data nil)
+  (remove-hook 'company-completion-cancelled-hook
+               #'company-capf--clear-current-data t)
+  (remove-hook 'company-completion-finished-hook
+               #'company-capf--clear-current-data t))
+
 (defun company-capf (command &optional arg &rest _args)
   "`company-mode' backend using `completion-at-point-functions'."
   (interactive (list 'interactive))
@@ -92,7 +105,7 @@ that accompanied the completion table that's currently is use.")
             (t prefix))))))
     (`candidates
      (let ((res (company--capf-data)))
-       (setq company-capf--current-completion-data res)
+       (company-capf--save-current-data res)
        (when res
          (let* ((table (nth 3 res))
                 (pred (plist-get (nthcdr 4 res) :predicate))
