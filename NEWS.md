@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## 2018-12-08 (0.9.8)
+
+* CAPF backend fixed to use the right `:exit-function`
+  ([#845](https://github.com/company-mode/company-mode/pull/845)).
+
 ## 2018-11-06 (0.9.7)
 
 * For more sophisticated highlighting in non-prefix completion, a backend may
