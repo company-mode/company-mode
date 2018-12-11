@@ -1430,7 +1430,7 @@ prefix match (same case) will be prioritized."
        (not company-candidates)
        (let ((company-idle-delay 'now))
          (condition-case-unless-debug err
-             (progn
+             (let ((inhibit-quit nil))
                (company--perform)
                ;; Return non-nil if active.
                company-candidates)
