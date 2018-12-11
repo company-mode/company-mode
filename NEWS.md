@@ -3,9 +3,9 @@
 ## 2018-12-08 (0.9.8)
 
 * CAPF backend fixed to use the right `:exit-function`. It can now safely be a
-closure with lexical context capturing the buffer state at the moment when the
-completion table was returned
-([#845](https://github.com/company-mode/company-mode/pull/845)).
+  closure with lexical context capturing the buffer state at the moment when the
+  completion table was returned
+  ([#845](https://github.com/company-mode/company-mode/pull/845)).
 
 ## 2018-11-06 (0.9.7)
 
