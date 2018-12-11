@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## Next
+
+* `company-clang` removes identity preprocessor #defines from completions
+  ([#841](https://github.com/company-mode/company-mode/issues/841)).
+
 ## 2018-12-08 (0.9.8)
 
 * CAPF backend fixed to use the right `:exit-function`. It can now safely be a
