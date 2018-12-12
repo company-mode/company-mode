@@ -511,6 +511,11 @@ If you indend to use it to post-process candidates from a specific
 backend, consider using the `post-completion' command instead."
   :type 'hook)
 
+(defcustom company-after-completion-hook nil
+  "Hook run at the end of completion, successful or not.
+The hook is called with one argument which is either a string or a symbol."
+  :type 'hook)
+
 (defcustom company-minimum-prefix-length 3
   "The minimum prefix length for idle completion."
   :type '(integer :tag "prefix length"))
@@ -1637,7 +1642,8 @@ prefix match (same case) will be prioritized."
           (let ((company-backend backend))
             (run-hook-with-args 'company-completion-finished-hook result)
             (company-call-backend 'post-completion result))
-        (run-hook-with-args 'company-completion-cancelled-hook result))))
+        (run-hook-with-args 'company-completion-cancelled-hook result))
+      (run-hook-with-args 'company-after-completion-hook result)))
   ;; Make return value explicit.
   nil)
 

@@ -77,9 +77,7 @@ that accompanied the completion table that's currently is use.")
 
 (defun company-capf--save-current-data (data)
   (setq company-capf--current-completion-data data)
-  (add-hook 'company-completion-cancelled-hook
-            #'company-capf--clear-current-data nil t)
-  (add-hook 'company-completion-finished-hook
+  (add-hook 'company-after-completion-hook
             #'company-capf--clear-current-data nil t))
 
 (defun company-capf--clear-current-data (_ignored)
