@@ -1202,9 +1202,8 @@ can retrieve meta-data for them."
                   common))
             (car company-candidates)))))
 
-(defun company-calculate-candidates (prefix)
-  (let ((candidates (cdr (assoc prefix company-candidates-cache)))
-        (ignore-case (company-call-backend 'ignore-case)))
+(defun company-calculate-candidates (prefix ignore-case)
+  (let ((candidates (cdr (assoc prefix company-candidates-cache))))
     (or candidates
         (when company-candidates-cache
           (let ((len (length prefix))
@@ -1222,14 +1221,13 @@ can retrieve meta-data for them."
           ;; Save in cache.
           (push (cons prefix candidates) company-candidates-cache)))
     ;; Only now apply the predicate and transformers.
-    (setq candidates (company--postprocess-candidates candidates))
-    (when candidates
-      (if (or (cdr candidates)
-              (not (eq t (compare-strings (car candidates) nil nil
-                                          prefix nil nil ignore-case))))
-          candidates
-        ;; Already completed and unique; don't start.
-        t))))
+    (company--postprocess-candidates candidates)))
+
+(defun company--unique-match-p (candidates prefix ignore-case)
+  (and candidates
+       (not (cdr candidates))
+       (eq t (compare-strings (car candidates) nil nil
+                              prefix nil nil ignore-case))))
 
 (defun company--fetch-candidates (prefix)
   (let* ((non-essential (not (company-explicit-action-p)))
@@ -1533,14 +1531,14 @@ prefix match (same case) will be prioritized."
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
+         (ignore-case (company-call-backend 'ignore-case))
          (c (when (and (company--good-prefix-p new-prefix)
                        (setq new-prefix (company--prefix-str new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
-              (company-calculate-candidates new-prefix))))
+              (company-calculate-candidates new-prefix ignore-case))))
     (cond
-     ((eq c t)
-      ;; t means complete/unique.
+     ((company--unique-match-p c new-prefix ignore-case)
       ;; Handle it like completion was aborted, to differentiate from user
       ;; calling one of Company's commands to insert the candidate,
       ;; not to trigger template expansion, etc.
@@ -1578,23 +1576,26 @@ prefix match (same case) will be prioritized."
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
         (when (company--good-prefix-p prefix)
-          (setq company-prefix (company--prefix-str prefix)
-                company-backend backend
-                c (company-calculate-candidates company-prefix))
-          (if (not (consp c))
-              (progn
-                (when company--manual-action
-                  (message "No completion found"))
-                (when (eq c t)
-                  ;; t means complete/unique.
-                  ;; Run the hooks anyway, to e.g. clear the cache.
-                  (company-cancel 'unique)))
-            (when company--manual-action
-              (setq company--manual-prefix prefix))
-            (company-update-candidates c)
-            (run-hook-with-args 'company-completion-started-hook
-                                (company-explicit-action-p))
-            (company-call-frontends 'show)))
+          (let ((ignore-case (company-call-backend 'ignore-case)))
+            (setq company-prefix (company--prefix-str prefix)
+                  company-backend backend
+                  c (company-calculate-candidates company-prefix ignore-case))
+            (cond
+             ((and (not company--manual-action)
+                   ;; If `company-manual-begin' was called, the user
+                   ;; really wants something to happen.  Otherwise...
+                   (company--unique-match-p c company-prefix ignore-case))
+              ;; ...abort and run the hooks, e.g. to clear the cache.
+              (company-cancel 'unique))
+             ((and (null c) company--manual-action)
+              (message "No completion found"))
+             (t ;; We got completions!
+              (when company--manual-action
+                (setq company--manual-prefix prefix))
+              (company-update-candidates c)
+              (run-hook-with-args 'company-completion-started-hook
+                                  (company-explicit-action-p))
+              (company-call-frontends 'show)))))
         (cl-return c)))))
 
 (defun company--perform ()
