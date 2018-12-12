@@ -3042,6 +3042,9 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company--show-inline-p ()
   (and (not (cdr company-candidates))
        company-common
+       (not (eq t (compare-strings company-prefix nil nil
+                                   (car company-candidates) nil nil
+                                   t)))
        (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
            (string-prefix-p company-prefix company-common))))
 
