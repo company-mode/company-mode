@@ -127,7 +127,7 @@
                    (annotation "3")
                    (candidates '("e"))
                    (post-completion "74"))))))
-    (let ((candidates (company-calculate-candidates nil)))
+    (let ((candidates (company-calculate-candidates nil nil)))
       (should (equal candidates '("a" "b" "c" "d" "e")))
       (should (equal t (company-call-backend 'ignore-case)))
       (should (equal "1" (company-call-backend 'annotation (nth 0 candidates))))

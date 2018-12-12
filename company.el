@@ -1812,7 +1812,8 @@ each one wraps a part of the input string."
           (and (not (string= re ""))
                company-search-filtering
                (lambda (candidate) (string-match re candidate))))
-         (cc (company-calculate-candidates company-prefix)))
+         (cc (company-calculate-candidates company-prefix
+                                           (company-call-backend 'ignore-case))))
     (unless cc (user-error "No match"))
     (company-update-candidates cc)))
 
