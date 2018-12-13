@@ -1,5 +1,14 @@
 # History of user-visible changes
 
+## Next
+
+* When an symbol is already typed in full, calling `M-x company-complete` will
+  now run its post-completion action (e.g. inserting method parameters
+  template). Calling `M-x company-manual-begin` or invoking a backend command
+  directly will show the popup
+  ([#150](https://github.com/company-mode/company-mode/issues/150),
+  [#476](https://github.com/company-mode/company-mode/issues/476)).
+
 ## 2018-12-13 (0.9.9)
 
 * Fix for the changes in the previous release.
