@@ -1,7 +1,9 @@
 # History of user-visible changes
 
-## Next
+## 2018-12-13 (0.9.9)
 
+* Fix for the changes in the previous release.
+* New hook `company-after-completion-hook`.
 * `company-clang` removes identity preprocessor #defines from completions
   ([#841](https://github.com/company-mode/company-mode/issues/841)).
 

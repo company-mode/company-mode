@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.9.8
+;; Version: 0.9.9
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "24.3"))
 
@@ -509,6 +509,11 @@ The hook is called with the selected candidate as an argument.
 
 If you indend to use it to post-process candidates from a specific
 backend, consider using the `post-completion' command instead."
+  :type 'hook)
+
+(defcustom company-after-completion-hook nil
+  "Hook run at the end of completion, successful or not.
+The hook is called with one argument which is either a string or a symbol."
   :type 'hook)
 
 (defcustom company-minimum-prefix-length 3
@@ -1638,7 +1643,8 @@ prefix match (same case) will be prioritized."
           (let ((company-backend backend))
             (run-hook-with-args 'company-completion-finished-hook result)
             (company-call-backend 'post-completion result))
-        (run-hook-with-args 'company-completion-cancelled-hook result))))
+        (run-hook-with-args 'company-completion-cancelled-hook result))
+      (run-hook-with-args 'company-after-completion-hook result)))
   ;; Make return value explicit.
   nil)
 
