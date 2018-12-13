@@ -1637,8 +1637,6 @@ prefix match (same case) will be prioritized."
     (company-call-frontends 'hide)
     (company-enable-overriding-keymap nil)
     (when prefix
-      ;; FIXME: RESULT can also be e.g. `unique'.  We should call
-      ;; `company-completion-finished-hook' in that case, with right argument.
       (if (stringp result)
           (let ((company-backend backend))
             (run-hook-with-args 'company-completion-finished-hook result)
