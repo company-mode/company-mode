@@ -1586,10 +1586,12 @@ prefix match (same case) will be prioritized."
                   company-backend backend
                   c (company-calculate-candidates company-prefix ignore-case))
             (cond
-             ((and (not company--manual-action)
-                   ;; If `company-manual-begin' was called, the user
-                   ;; really wants something to happen.  Otherwise...
-                   (company--unique-match-p c company-prefix ignore-case))
+             ((and (company--unique-match-p c company-prefix ignore-case)
+                   (if company--manual-action
+                       ;; If `company-manual-begin' was called, the user
+                       ;; really wants something to happen.  Otherwise...
+                       (ignore (message "Sole completion"))
+                     t))
               ;; ...abort and run the hooks, e.g. to clear the cache.
               (company-cancel 'unique))
              ((and (null c) company--manual-action)
