@@ -48,6 +48,32 @@
       (company-abort)
       (should (null company--manual-prefix)))))
 
+(ert-deftest company-auto-begin-unique-cancels ()
+  (with-temp-buffer
+    (insert "abc")
+    (company-mode)
+    (let (company-frontends
+          (company-backends
+           (list (lambda (command &optional _)
+                   (cl-case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc")))))))
+      (company-auto-begin)
+      (should (equal nil company-candidates)))))
+
+(ert-deftest company-manual-begin-unique-shows-completion ()
+  (with-temp-buffer
+    (insert "abc")
+    (company-mode)
+    (let (company-frontends
+          (company-backends
+           (list (lambda (command &optional _)
+                   (cl-case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc")))))))
+      (company-manual-begin)
+      (should (equal '("abc") company-candidates)))))
+
 (ert-deftest company-abort-manual-when-too-short ()
   (let ((company-minimum-prefix-length 5)
         (company-abort-manual-when-too-short t)
