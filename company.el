@@ -1594,8 +1594,9 @@ prefix match (same case) will be prioritized."
                      t))
               ;; ...abort and run the hooks, e.g. to clear the cache.
               (company-cancel 'unique))
-             ((and (null c) company--manual-action)
-              (message "No completion found"))
+             ((null c)
+              (when company--manual-action
+                (message "No completion found")))
              (t ;; We got completions!
               (when company--manual-action
                 (setq company--manual-prefix prefix))
