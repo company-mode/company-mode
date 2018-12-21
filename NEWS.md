@@ -2,7 +2,7 @@
 
 ## Next
 
-* When an symbol is already typed in full, calling `M-x company-complete` will
+* When a symbol is already typed in full, calling `M-x company-complete` will
   now run its post-completion action (e.g. inserting method parameters
   template). Calling `M-x company-manual-begin` or invoking a backend command
   directly will show the popup
