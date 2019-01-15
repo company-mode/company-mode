@@ -2,6 +2,8 @@
 
 ## Next
 
+* Add custom variable `company-show-numbers-function` to make numbers of
+  candidates customizable. 
 * When a symbol is already typed in full, calling `M-x company-complete` will
   now run its post-completion action (e.g. inserting method parameters
   template). Calling `M-x company-manual-begin` or invoking a backend command
