@@ -632,6 +632,14 @@ commands in the `company-' namespace, abort completion."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
+(defcustom company-show-numbers-function #'company--show-numbers
+  "Function called to get custom quick-access numbers for the first then candidates.
+
+If nil falls back to default function that generates 1...8, 9, 0. The function get
+the number of candidates (from 1 to 10 means 1st to 10th candidate) and should
+return a string prefixed with one space."
+  :type 'function)
+
 (defcustom company-selection-wrap-around nil
   "If enabled, selecting item before first or after last wraps around."
   :type '(choice (const :tag "off" nil)
@@ -2635,6 +2643,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           new
           (company-safe-substring old (+ offset (length new)))))
 
+(defun company--show-numbers (numbered)
+  (format " %d" (mod numbered 10)))
+
 (defsubst company--window-height ()
   (if (fboundp 'window-screen-lines)
       (floor (window-screen-lines))
@@ -2787,7 +2798,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           (when (< numbered 10)
             (cl-decf width 2)
             (cl-incf numbered)
-            (setq right (concat (format " %d" (mod numbered 10)) right)))
+            (setq right (concat (funcall company-show-numbers-function numbered) right)))
           (push (concat
                  (company-fill-propertize str annotation
                                           width (equal i selection)
