@@ -290,6 +290,10 @@ This doesn't include the margins and the scroll bar."
   :type 'boolean
   :package-version '(company . "0.8.1"))
 
+(defvar company-backend-counts nil
+  "List of (backend . count-of-last-completions-generated) elements for the current buffer.")
+(make-variable-buffer-local 'company-backend-counts)
+
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
     (company-bbdb . "BBDB")
@@ -682,6 +686,7 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-w" 'company-show-location)
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
+    (define-key keymap [(control ?#)] 'company-show-completion-counts)
     (dotimes (i 10)
       (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
      keymap)
@@ -839,8 +844,9 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 
 (defun company--company-command-p (keys)
   "Checks if the keys are part of company's overriding keymap"
-  (or (equal [company-dummy-event] keys)
-      (commandp (lookup-key company-my-keymap keys))))
+  (when company-my-keymap
+    (or (equal [company-dummy-event] keys)
+        (commandp (lookup-key company-my-keymap keys)))))
 
 ;; Hack:
 ;; Emacs calculates the active keymaps before reading the event.  That means we
@@ -933,6 +939,29 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
         (car (setq ppss (cdr ppss)))
         (nth 3 ppss))))
 
+(defun company-call-backends (backends command &rest args)
+  "Lowest-level function that executes each individual backend.
+Use this to collect data on which backends generate candidates."
+  (unless (listp backends)
+    (setq backends (list backends)))
+  (let ((counts company-backend-counts)
+        (generating-candidates (eq command 'candidates))
+	c count results)
+    (setq results (cl-dolist (backend backends)
+		    (when (setq c (if args
+				      (apply backend command args)
+				    (funcall backend command)))
+		      (condition-case nil
+                          (when generating-candidates
+			    (setq count (length c)))
+			(error (setq count 1)))
+                      (when generating-candidates
+		        ;; Add to total completion count for this backend
+		        (setf (alist-get backend counts 0) (+ (alist-get backend counts 0) count)))
+		      (cl-return c)))
+	  company-backend-counts counts)
+    results))
+
 (defun company-call-backend (&rest args)
   (company--force-sync #'company-call-backend-raw args company-backend))
 
@@ -942,7 +971,7 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
         value
       (let ((res 'trash)
             (start (time-to-seconds)))
-        (funcall (cdr value)
+        (company-call-backends (cdr value)
                  (lambda (result) (setq res result)))
         (while (eq res 'trash)
           (if (> (- (time-to-seconds) start) company-async-timeout)
@@ -960,7 +989,7 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 (defun company-call-backend-raw (&rest args)
   (condition-case-unless-debug err
       (if (functionp company-backend)
-          (apply company-backend args)
+          (apply #'company-call-backends company-backend args)
         (apply #'company--multi-backend-adapter company-backend args))
     (user-error (user-error
                  "Company: backend %s user-error: %s"
@@ -996,7 +1025,7 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
          (when (> (length arg) 0)
            (let ((backend (or (get-text-property 0 'company-backend arg)
                               (car backends))))
-             (apply backend command args))))))))
+             (company-call-backends backend command args))))))))
 
 (defun company--multi-backend-adapter-candidates (backends prefix separate)
   (let ((pairs (cl-loop for backend in backends
@@ -1004,7 +1033,7 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
                                      (let ((company-backend backend))
                                        (company-call-backend 'prefix)))
                                     prefix)
-                        collect (cons (funcall backend 'candidates prefix)
+                        collect (cons (company-call-backends backend 'candidates prefix)
                                       (company--multi-candidates-mapper
                                        backend
                                        separate
@@ -1540,6 +1569,7 @@ prefix match (same case) will be prioritized."
                (>= len company-minimum-prefix-length))))))
 
 (defun company--continue ()
+  (setq company-backend-counts nil)
   (when (company-call-backend 'no-cache company-prefix)
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
@@ -1575,6 +1605,7 @@ prefix match (same case) will be prioritized."
      (t (company--continue-failed new-prefix)))))
 
 (defun company--begin-new ()
+  (setq company-backend-counts nil)
   (let (prefix c)
     (cl-dolist (backend (if company-backend
                             ;; prefer manual override
@@ -1822,6 +1853,7 @@ each one wraps a part of the input string."
     (company--search-update-string ss)))
 
 (defun company--search-update-predicate (ss)
+  (setq company-backend-counts nil)
   (let* ((re (funcall company-search-regexp-function ss))
          (company-candidates-predicate
           (and (not (string= re ""))
@@ -1938,6 +1970,7 @@ each one wraps a part of the input string."
     (define-key keymap "\C-s" 'company-search-repeat-forward)
     (define-key keymap "\C-r" 'company-search-repeat-backward)
     (define-key keymap "\C-o" 'company-search-toggle-filtering)
+    (define-key keymap [(control ?#)] 'company-show-completion-counts)
     (dotimes (i 10)
       (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
     keymap)
@@ -3099,6 +3132,39 @@ Delay is determined by `company-tooltip-idle-delay'."
   "Whether frontend messages written to the echo area should be truncated."
   :type 'boolean
   :package-version '(company . "0.9.3"))
+
+(defun company-echo-completion-counts-frontend (command)
+  "`company-mode' frontend showing the completion counts in the echo area."
+  (pcase command
+    (`post-command (company-echo-show-soon 'company-completion-counts))
+    (`hide (company-echo-hide))))
+
+(defun company-show-completion-counts ()
+  "Display a minibuffer message with counts of the last company-mode completions for the current buffer."
+  (interactive)
+  (message (company-completion-counts)))
+
+(defun company-completion-counts ()
+  "Return a string with counts of the last company-mode completions for the current buffer."
+  (let ((total-candidates (apply #'+ (mapcar 'cdr company-backend-counts)))
+        (company-completing-p (company--company-command-p [(control ?#)])))
+    (if (and company-backend-counts
+             (if company-completing-p
+                 (= total-candidates (length company-candidates))
+               t))
+        (format "%d completions from %d company backends: %s"
+                total-candidates (length company-backend-counts)
+	        company-backend-counts)
+      ;; For asynchronous backends, the company-backend-counts may not be set, so
+      ;; use the list of company-candidates instead.
+      (cond ((null company-candidates)
+             "No completions for this buffer")
+            ((= (length company-candidates) 1)
+             "1 available completion")
+            (t (if company-completing-p
+                   ;; company-mode is actively completing
+                   (format "%d available completions" (length company-candidates))
+                 (format "%d completions were last generated for this buffer" (length company-candidates))))))))
 
 (defun company-echo-show (&optional getter)
   (when getter
