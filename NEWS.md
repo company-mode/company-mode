@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-idle-delay` now accepts a function which generates the idle time or
+  nil indicating no idle completion.
 * Add custom variable `company-show-numbers-function` to make numbers of
   candidates customizable. 
 * When a symbol is already typed in full, calling `M-x company-complete` will

@@ -584,6 +584,7 @@ The prefix still has to satisfy `company-minimum-prefix-length' before that
 happens.  The value of nil means no idle completion."
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (0)" 0)
+                 (function :tag "Predicate function")
                  (number :tag "seconds")))
 
 (defcustom company-tooltip-idle-delay .5
@@ -1702,25 +1703,28 @@ prefix match (same case) will be prioritized."
               (company--perform)))
           (if company-candidates
               (company-call-frontends 'post-command)
-            (and (or (numberp company-idle-delay)
-                     ;; Deprecated.
-                     (eq company-idle-delay t))
-                 (not defining-kbd-macro)
-                 (company--should-begin)
-                 (setq company-timer
-                       (run-with-timer (company--idle-delay) nil
-                                       'company-idle-begin
-                                       (current-buffer) (selected-window)
-                                       (buffer-chars-modified-tick) (point))))))
+            (let ((delay (company--idle-delay)))
+             (and (numberp delay)
+                  (not defining-kbd-macro)
+                  (company--should-begin)
+                  (setq company-timer
+                        (run-with-timer delay nil
+                                        'company-idle-begin
+                                        (current-buffer) (selected-window)
+                                        (buffer-chars-modified-tick) (point)))))))
       (error (message "Company: An error occurred in post-command")
              (message "%s" (error-message-string err))
              (company-cancel))))
   (company-install-map))
 
 (defun company--idle-delay ()
-  (if (memql company-idle-delay '(t 0 0.0))
-      0.01
-    company-idle-delay))
+  (let ((delay
+          (if (functionp company-idle-delay)
+              (funcall company-idle-delay)
+            company-idle-delay)))
+    (if (memql delay '(t 0 0.0))
+        0.01
+      delay)))
 
 (defvar company--begin-inhibit-commands '(company-abort
                                           company-complete-mouse
