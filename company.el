@@ -2191,7 +2191,8 @@ inserted."
             (eq last-command 'company-complete-common))
         (call-interactively 'company-complete-selection)
       (call-interactively 'company-complete-common)
-      (setq this-command 'company-complete-common))))
+      (when company-candidates
+        (setq this-command 'company-complete-common)))))
 
 (defun company-complete-number (n)
   "Insert the Nth candidate visible in the tooltip.
