@@ -2188,7 +2188,8 @@ inserted."
   (interactive)
   (when (company-manual-begin)
     (if (or company-selection-changed
-            (eq last-command 'company-complete-common))
+            (and (eq real-last-command 'company-complete)
+                 (eq last-command 'company-complete-common)))
         (call-interactively 'company-complete-selection)
       (call-interactively 'company-complete-common)
       (when company-candidates
