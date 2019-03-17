@@ -26,6 +26,7 @@
 
 (require 'company-tests)
 (require 'company-capf)
+(require 'cl-lib)
 
 (defmacro company-capf-with-buffer (contents &rest body)
   (declare (indent 0) (debug (sexp &rest form)))
@@ -55,6 +56,19 @@
     (should company-candidates)
     (should (member "with-current-buffer" company-candidates))))
 
+(defun company--remove-but-these-properties (string keep)
+  "Remove from STRING all text properties but the ones in KEEP."
+  (remove-list-of-text-properties
+   0 (length string)
+   (cl-set-difference
+    (cl-loop for start = 0 then (next-property-change start string)
+             while start
+             append (cl-loop for (k _v) on (text-properties-at start string)
+                             by #'cddr collect k))
+    keep)
+   string)
+  string)
+
 (ert-deftest company-basic-capf-highlighting ()
   "Test basic `company-capf' support, with basic prefix completion."
   (company-capf-with-buffer
@@ -66,10 +80,8 @@
            (render
             (and cand
                  (company-fill-propertize cand nil (length cand) nil nil nil))))
-      ;; remove `font-lock-face' and `mouse-face' text properties that aren't
-      ;; relevant to our test
-      (remove-list-of-text-properties
-       0 (length cand) '(font-lock-face mouse-face) render)
+      ;; remove text properties that aren't relevant to our test
+      (company--remove-but-these-properties render '(face))
       (should
        (ert-equal-including-properties
         render
@@ -99,10 +111,8 @@
            (render
             (and cand
                  (company-fill-propertize cand nil (length cand) nil nil nil))))
-      ;; remove `font-lock-face' and `mouse-face' text properties that aren't
-      ;; relevant to our test
-      (remove-list-of-text-properties
-       0 (length cand) '(font-lock-face mouse-face) render)
+      ;; remove text properties that aren't relevant to our test
+      (company--remove-but-these-properties render '(face))
       (should
        (ert-equal-including-properties
         render
@@ -125,10 +135,8 @@
            (render
             (and cand
                  (company-fill-propertize cand nil (length cand) nil nil nil))))
-      ;; remove `font-lock-face' and `mouse-face' text properties that aren't
-      ;; relevant to our test
-      (remove-list-of-text-properties
-       0 (length cand) '(font-lock-face mouse-face) render)
+      ;; remove text properties that aren't relevant to our test
+      (company--remove-but-these-properties render '(face))
       (should
        (ert-equal-including-properties
         render
