@@ -63,6 +63,26 @@
 ;;
 ;; We recommend to disable `company-require-match' to allow free typing at any
 ;; point.
+;;
+;; By default, company-tng doesn't work well with backends that use
+;; `post-completion' (for actions such as expanding snippets in
+;; company-yasnippet or company-template). In company-tng, completion candidates
+;; are inserted into the buffer as the user selects them and the completion is
+;; finished implicitly when the user continues typing after selecting a
+;; candidate. Modifying the buffer (by expanding a snippet) when the user
+;; continues typing would be surprising and undesirable, since the candidate was
+;; already inserted into the buffer. For this reason company-tng disables
+;; `post-completion' in all backends.
+;;
+;; YASnippet and company-tng both use TAB, which causes conflicts. The
+;; recommended way to use YASnippet with company-tng is to choose a different
+;; key for expanding a snippet and moving to the next snippet field:
+;;
+;;   (define-key yas-minor-mode-map "\C-j" 'yas-expand)
+;;   (define-key yas-keymap "\C-j" 'yas-next-field-or-maybe-expand)
+;;   (dolist (keymap (list yas-minor-mode-map yas-keymap))
+;;     (define-key keymap (kbd "TAB") nil)
+;;     (define-key keymap [(tab)] nil))
 
 ;;; Code:
 
