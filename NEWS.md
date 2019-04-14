@@ -2,6 +2,9 @@
 
 ## Next
 
+* The change in `company-clang` regarding identity #defines is reverted because
+  it affected other completions as well
+  ([#884](https://github.com/company-mode/company-mode/issues/884)).
 * `company-idle-delay` now accepts a function which generates the idle time or
   nil indicating no idle completion.
 * Add custom variable `company-show-numbers-function` to make numbers of
