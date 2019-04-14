@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-clang`: better compatibility with Clang 8
+  ([#885](https://github.com/company-mode/company-mode/issues/885)).
 * The change in `company-clang` regarding identity #defines is reverted because
   it affected other completions as well
   ([#884](https://github.com/company-mode/company-mode/issues/884)).
