@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2019-04-15 (0.9.10)
 
 * `company-clang`: better compatibility with Clang 8
   ([#885](https://github.com/company-mode/company-mode/issues/885)).
