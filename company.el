@@ -774,9 +774,11 @@ keymap during active completions (`company-active-map'):
       (progn
         (add-hook 'pre-command-hook 'company-pre-command nil t)
         (add-hook 'post-command-hook 'company-post-command nil t)
+        (add-hook 'yas-keymap-disable-hook 'company--active-p nil t)
         (mapc 'company-init-backend company-backends))
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
+    (remove-hook 'yas-keymap-disable-hook 'company--active-p t)
     (company-cancel)
     (kill-local-variable 'company-point)))
 
@@ -1668,6 +1670,9 @@ prefix match (same case) will be prioritized."
 
 (defsubst company-keep (command)
   (and (symbolp command) (get command 'company-keep)))
+
+(defun company--active-p ()
+  company-candidates)
 
 (defun company-pre-command ()
   (company--electric-restore-window-configuration)

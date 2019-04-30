@@ -29,16 +29,24 @@
   "Face used for editable text in template fields."
   :group 'company)
 
+(defvar company-template-forward-field-item
+  '(menu-item "" company-template-forward-field
+              :filter company-template--keymap-filter))
+
 (defvar company-template-nav-map
   (let ((keymap (make-sparse-keymap)))
-    (define-key keymap [tab] 'company-template-forward-field)
-    (define-key keymap (kbd "TAB") 'company-template-forward-field)
+    (define-key keymap [tab] company-template-forward-field-item)
+    (define-key keymap (kbd "TAB") company-template-forward-field-item)
     keymap))
+
+(defvar company-template-clear-field-item
+  '(menu-item "" company-template-clear-field
+              :filter company-template--keymap-filter))
 
 (defvar company-template-field-map
   (let ((keymap (make-sparse-keymap)))
     (set-keymap-parent keymap company-template-nav-map)
-    (define-key keymap (kbd "C-d") 'company-template-clear-field)
+    (define-key keymap (kbd "C-d") company-template-clear-field-item)
     keymap))
 
 (defvar-local company-template--buffer-templates nil)
@@ -77,6 +85,10 @@
              (overlay-get ovl 'company-template-after-clear)))
         (when (functionp after-clear-fn)
           (funcall after-clear-fn))))))
+
+(defun company-template--keymap-filter (cmd)
+  (unless (run-hook-with-args-until-success 'yas-keymap-disable-hook)
+    cmd))
 
 (defun company-template--after-clear-c-like-field ()
   "Function that can be called after deleting a field of a c-like template.
