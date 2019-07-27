@@ -45,6 +45,12 @@ buffer automatically."
   :type 'boolean
   :package-version '(company . "0.7.3"))
 
+(defcustom company-etags-support-ctags-only nil
+  "Nil to support tags file created by both etags and ctags.
+Non-nil to support tags file created only by ctags.
+Please note nil slows down tags file loading time."
+  :type 'boolean)
+
 (defcustom company-etags-everywhere nil
   "Non-nil to offer completions in comments and strings.
 Set it to t or to a list of major modes."
@@ -54,17 +60,42 @@ Set it to t or to a list of major modes."
                          (symbol :tag "Major mode")))
   :package-version '(company . "0.9.0"))
 
+(defcustom company-etags-check-tags-file-interval 30
+  "The interval (seconds) to check tags file.
+Default value is 30 seconds."
+  :type 'integer)
+
+
+(defcustom company-etags-tags-file-name "TAGS"
+  "The name of tags file."
+  :type 'string)
+
 (defvar company-etags-modes '(prog-mode c-mode objc-mode c++-mode java-mode
                               jde-mode pascal-mode perl-mode python-mode))
 
 (defvar-local company-etags-buffer-table 'unknown)
 
+(defvar company-etags-tags-file-caches nil
+  "The cached tags files.")
+
+(defvar company-etags-cached-candidates nil
+  "The cached candidates searched with certain prefix.
+It's like (prefix . candidates).")
+
+(defconst company-etags-fast-pattern
+  "\177\\([^\177\001\n]+\\)\001"
+  "Pattern to extract tag name created by Ctags only.")
+
+(defconst company-etags-slow-pattern
+  "\\([^\f\t\n\r()=,; ]*\\)[\f\t\n\r()=,; ]*\177\\\(?:\\([^\n\001]+\\)\001\\)?"
+  "Pattern to extract tag name created by Ctags/Etags.")
+
 (defun company-etags-find-table ()
   (let ((file (expand-file-name
-               "TAGS"
+               company-etags-tags-file-name
                (locate-dominating-file (or buffer-file-name
                                            default-directory)
-                                       "TAGS"))))
+                                       company-etags-tags-file-name))))
     (when (and file (file-regular-p file))
       (list file))))
 
@@ -74,15 +105,196 @@ Set it to t or to a list of major modes."
           (setq company-etags-buffer-table (company-etags-find-table))
         company-etags-buffer-table)))
 
+(defmacro company-etags-push-tagname (tagname tagname-dict)
+  "Push TAGNAME into TAGNAME-DICT."
+  `(let* ((c (elt ,tagname 0)))
+    (cond
+     ((or (and (>= c ?a) (<= c ?z))
+          (and (>= c ?A) (<= c ?Z))
+          (eq c ?$)
+          (eq c ?#)
+          (eq c ?@)
+          (eq c ?%)
+          (eq c ?_)
+          (eq c ?!)
+          (eq c ?*)
+          (eq c ?&)
+          (and (>= c ?0) (<= c ?9)))
+      (push ,tagname (gethash c ,tagname-dict)))
+     (t
+      (push ,tagname (gethash ?' ,tagname-dict))))))
+
+(defun company-etags-extract-tagnames (text)
+  "Extract tag names from TEXT."
+  (let* ((start 0)
+         (tagname-dict (make-hash-table))
+         (i 0))
+
+    ;; initialize hashtable whose key is from a...z and A...Z
+    (while (< i 26)
+      ;; make sure the hash value is not nil
+      (puthash (+ ?a i) '() tagname-dict)
+      (puthash (+ ?A i) '() tagname-dict)
+      (setq i (1+ i)))
+
+    ;; initialize hashtable whose key is from 0...9
+    (setq i 0)
+    (while (< i 10)
+      ;; make sure the hash value is not nil
+      (puthash (+ ?0 i) '() tagname-dict)
+      (setq i (1+ i)))
+    ;; other key used as the first character of variable name
+    (puthash ?$ '() tagname-dict)
+    (puthash ?_ '() tagname-dict)
+    (puthash ?# '() tagname-dict)
+    (puthash ?& '() tagname-dict)
+    (puthash ?@ '() tagname-dict)
+    (puthash ?! '() tagname-dict)
+    (puthash ?* '() tagname-dict)
+    (puthash ?% '() tagname-dict)
+    ;; rubbish bin
+    (puthash ?' '() tagname-dict)
+
+    ;; Code inside the loop should be optimized.
+    ;; Please avoid calling lisp function inside the loop.
+    (cond
+     (company-etags-support-ctags-only
+      ;; fast algorithm, support explicit tags name only
+      (while (string-match company-etags-fast-pattern text start)
+        (company-etags-push-tagname (substring text (match-beginning 1) (match-end 1))
+                                    tagname-dict)
+        (setq start (+ 4 (match-end 0)))))
+     (t
+      ;; slow algorithm, need support both explicit and implicit tags name
+      (while (string-match company-etags-slow-pattern text start)
+        (cond
+         ((match-beginning 2)
+          ;; There is an explicit tag name.
+          (company-etags-push-tagname (substring text (match-beginning 2) (match-end 2))
+                                      tagname-dict))
+         (t
+          ;; No explicit tag name.  Backtrack a little,
+          ;; and look for the implicit one.
+          (company-etags-push-tagname (substring text (match-beginning 1) (match-end 1))
+                                      tagname-dict)))
+        (setq start (+ 4 (match-end 0))))))
+
+    tagname-dict))
+
+(defun company-etags-append-new-tagname-dict (new-tagnames file-info)
+  "Append NEW-TAGNAMES to FILE-INFO."
+  (dolist (tagname new-tagnames)
+    (company-etags-push-tagname tagname (plist-get file-info :tagname-dict))))
+
+(defun company-etags-all-completions (prefix tagname-dict)
+  "Search for partial matches to PREFIX in TAGNAME-DICT."
+  (let* ((c (elt prefix 0))
+         (arr (gethash c tagname-dict (gethash ?' tagname-dict))))
+    (all-completions prefix arr)))
+
+(defun company-etags-load-tags-file (file &optional force no-diff-prog)
+  "Load tags from FILE.
+If FORCE is t, file is read without check item in `company-etags-tags-file-caches'.
+If NO-DIFF-PROG is t, do NOT use diff on tags file.
+This function return t if any tag file is reloaded."
+  (let* (raw-content
+         (file-info (and company-etags-tags-file-caches
+                         (gethash file company-etags-tags-file-caches)))
+         (use-diff (and (not no-diff-prog) file-info (executable-find diff-command)))
+         tagname-dict
+         reloaded)
+    (when (or force
+              (not file-info)
+              (and
+               ;; time to expire cache from tags file
+               (> (- (float-time (current-time))
+                     (plist-get file-info :timestamp))
+                  company-etags-check-tags-file-interval)
+               ;; When generating new tags file, file size could be
+               ;; temporarily smaller than cached file size.
+               ;; Don't reload tags file until new tags file is bigger.
+               (> (nth 7 (file-attributes file))
+                  (plist-get file-info :filesize))))
+
+      ;; Read file content
+      (setq reloaded t)
+      (message "Loading %s ..." file)
+      (cond
+       (use-diff
+        ;; actually don't change raw-content attached to file-info
+        (setq raw-content (plist-get file-info :raw-content))
+
+        ;; use diff to find the new tags
+        (let* ((tmp-file (make-temp-file "company-etags-diff"))
+               (cmd (format "%s -ab %s %s" diff-command tmp-file file)))
+          ;; create old tags file
+          (with-temp-buffer
+            (insert (plist-get file-info :raw-content))
+            (write-region (point-min) (point-max) tmp-file nil :silent))
+          ;; compare old and new tags file, extract tag names from diff output which
+          ;; should be merged with old tag names
+          (setq tagname-dict (company-etags-append-new-tagname-dict (company-etags-extract-tagnames (shell-command-to-string cmd))
+                                                      file-info))
+          ;; clean up
+          (delete-file tmp-file)))
+       (t
+        (setq raw-content (with-temp-buffer
+                            (insert-file-contents file)
+                            (buffer-string)))
+        ;; collect all tag names
+        (setq tagname-dict (company-etags-extract-tagnames raw-content))))
+
+      ;; initialize hash table if needed
+      (unless company-etags-tags-file-caches
+        (set 'company-etags-tags-file-caches (make-hash-table :test #'equal)))
+
+      ;; finalize tags file info
+      (puthash file
+               (list :raw-content raw-content
+                     :tagname-dict tagname-dict
+                     :timestamp (float-time (current-time))
+                     :filesize (nth 7 (file-attributes file)))
+               company-etags-tags-file-caches)
+      (message "%s is loaded." file))
+    reloaded))
+
 (defun company-etags--candidates (prefix)
-  (let ((tags-table-list (company-etags-buffer-table))
-        (tags-file-name tags-file-name)
-        (completion-ignore-case company-etags-ignore-case))
-    (and (or tags-file-name tags-table-list)
-         (fboundp 'tags-completion-table)
-         (save-excursion
-           (visit-tags-table-buffer)
-           (all-completions prefix (tags-completion-table))))))
+  "Get candidate with PREFIX."
+  (when (and prefix (> (length prefix) 0))
+    (let* ((file (and tags-file-name (file-truename tags-file-name)))
+           (completion-ignore-case company-etags-ignore-case)
+           (all-tags-files (mapcar (lambda (f)
+                                     (file-truename f))
+                                   (delete-dups (append (if file (list file))
+                                                        (company-etags-buffer-table)))))
+           rlt)
+
+      ;; load tags files, maybe
+      (dolist (f all-tags-files)
+        (when (and f (file-exists-p f))
+          (when (company-etags-load-tags-file f)
+            ;; clear cached candidates if any tags file is reloaded
+            (setq company-etags-cached-candidates nil))))
+
+      (cond
+       ;; re-use cached candidates
+       ((and company-etags-cached-candidates
+             (>= (length prefix) (length (car company-etags-cached-candidates)))
+             (string= (substring prefix 0 (length (car company-etags-cached-candidates)))
+                      (car company-etags-cached-candidates)))
+        (setq rlt (all-completions prefix (cdr company-etags-cached-candidates))))
+
+       ;; search candidates through tags files
+       (t
+        (dolist (f all-tags-files)
+          (let* ((cache (gethash f company-etags-tags-file-caches))
+                 (tagname-dict (plist-get cache :tagname-dict)))
+            (when tagname-dict
+              (setq rlt (append rlt (company-etags-all-completions prefix tagname-dict))))))
+        (setq company-etags-cached-candidates (cons prefix rlt))))
+
+      ;; cleanup
+      (if rlt (delete-dups rlt)))))
 
 ;;;###autoload
 (defun company-etags (command &optional arg &rest ignored)
