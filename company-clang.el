@@ -297,7 +297,8 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (with-temp-buffer
     (call-process company-clang-executable nil t nil "--version")
     (goto-char (point-min))
-    (if (re-search-forward "\\(clang\\|Apple LLVM\\) version \\([0-9.]+\\)" nil t)
+    (if (re-search-forward
+         "\\(clang\\|Apple LLVM\\|bcc32x\\|bcc64\\) version \\([0-9.]+\\)" nil t)
         (cons
          (if (equal (match-string-no-properties 1) "Apple LLVM")
              'apple
