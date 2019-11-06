@@ -32,6 +32,7 @@
 (require 'company)
 (require 'cl-lib)
 
+;; Amortizes several calls to a c-a-p-f from the same position.
 (defvar company--capf-cache nil)
 
 ;; FIXME: Provide a way to save this info once in Company itself
@@ -39,7 +40,11 @@
 (defvar-local company-capf--current-completion-data nil
   "Value last returned by `company-capf' when called with `candidates'.
 For most properties/actions, this is just what we need: the exact values
-that accompanied the completion table that's currently is use.")
+that accompanied the completion table that's currently is use.
+
+`company-capf', however, could be called at some different positions during
+a completion session (most importantly, by `company-sort-by-occurrence'),
+so we can't just use the preceding variable instead.")
 
 (defun company--capf-data ()
   (let ((cache company--capf-cache))
