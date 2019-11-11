@@ -2271,7 +2271,8 @@ character, stripping the modifiers.  That character must be a digit."
     (erase-buffer)
     (when string
       (save-excursion
-        (insert string)))
+        (insert string)
+        (visual-line-mode)))
     (current-buffer)))
 
 (defvar company--electric-saved-window-configuration nil)
