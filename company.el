@@ -554,7 +554,7 @@ This can also be a function."
 (defcustom company-auto-complete-chars '(?\  ?\) ?.)
   "Determines which characters trigger auto-completion.
 See `company-auto-complete'.  If this is a string, each string character
-tiggers auto-completion.  If it is a list of syntax description characters (see
+triggers auto-completion.  If it is a list of syntax description characters (see
 `modify-syntax-entry'), all characters with that syntax auto-complete.
 
 This can also be a function, which is called with the new input and should
@@ -3039,7 +3039,7 @@ Delay is determined by `company-tooltip-idle-delay'."
                             pto
                             (char-before pos)
                             (eq pos (overlay-start pto)))))
-      ;; Try to accomodate for the pseudo-tooltip overlay,
+      ;; Try to accommodate for the pseudo-tooltip overlay,
       ;; which may start at the same position if it's at eol.
       (when ptf-workaround
         (cl-decf beg)
