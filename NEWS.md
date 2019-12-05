@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-capf`'s `:exit-function` handling has been improved
+  ([#935](https://github.com/company-mode/company-mode/issues/935)).
 * New user option `company-clang-use-compile-flags-txt`
   ([#933](https://github.com/company-mode/company-mode/issues/933)).
 * Support for completion style specific sorting (Emacs 27 feature).

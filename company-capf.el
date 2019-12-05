@@ -188,18 +188,20 @@ so we can't just use the preceding variable instead.")
 (defun company--capf-post-completion (arg)
   (let* ((res company-capf--current-completion-data)
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
-         (table (nth 3 res))
-         (pred (plist-get (nthcdr 4 res) :predicate)))
+         (table (nth 3 res)))
     (if exit-function
-        ;; Follow the example of `completion--done'.
+        ;; We can more or less know when the user is done with completion,
+        ;; so we do something different than `completion--done'.
         (funcall exit-function arg
                  ;; FIXME: Should probably use an additional heuristic:
                  ;; completion-at-point doesn't know when the user picked a
                  ;; particular candidate explicitly (it only checks whether
                  ;; further completions exist). Whereas company user can press
                  ;; RET (or use implicit completion with company-tng).
-                 (if (eq (try-completion arg table pred) t)
-                     'finished 'sole)))))
+                 (if (= (car (completion-boundaries arg table nil ""))
+                        (length arg))
+                     'sole
+                   'finished)))))
 
 (provide 'company-capf)
 
