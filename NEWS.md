@@ -2,6 +2,7 @@
 
 ## Next
 
+* Support for completion style specific sorting (Emacs 27 feature).
 * Snippet/template field interaction is inhibited while completion is active
   (where by default `TAB` calls `company-complete-common`, clashing with snippet
   map binding `TAB` to "jump to the next field"). Affects both
