@@ -1619,8 +1619,11 @@ prefix match (same case) will be prioritized."
         (cl-return c)))))
 
 (defun company--perform ()
-  (or (and company-candidates (company--continue))
-      (and (company--should-complete) (company--begin-new)))
+  (cond
+   (company-candidates
+    (company--continue))
+   ((company--should-complete)
+    (company--begin-new)))
   (if (not company-candidates)
       (setq company-backend nil)
     (setq company-point (point)
@@ -2724,6 +2727,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (let ((str (concat (when nl " \n")
                        (mapconcat 'identity (nreverse new) "\n")
                        "\n")))
+      ;; Use add-face-text-property in Emacs 24.4
       (font-lock-append-text-property 0 (length str) 'face 'default str)
       (when nl (put-text-property 0 1 'cursor t str))
       str)))
