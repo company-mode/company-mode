@@ -823,7 +823,7 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 
 (defvar company-emulation-alist '((t . nil)))
 
-(defsubst company-enable-overriding-keymap (keymap)
+(defun company-enable-overriding-keymap (keymap)
   (company-uninstall-map)
   (setq company-my-keymap keymap))
 
