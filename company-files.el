@@ -70,7 +70,7 @@ The values should use the same format as `completion-ignored-extensions'."
          (begin (concat "\\(?:\\.\\{1,2\\}/\\|~/\\|" root "\\)")))
     (list (concat "\"\\(" begin "[^\"\n]*\\)")
           (concat "\'\\(" begin "[^\'\n]*\\)")
-          (concat "\\(?:[ \t=]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
+          (concat "\\(?:[ \t=\[]\\|^\\)\\(" begin "[^ \t\n]*\\)"))))
 
 (defun company-files--grab-existing-name ()
   ;; Grab the file name.
