@@ -2545,6 +2545,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                        right)))
     (setq width (+ width margin (length right)))
 
+    ;; TODO: Use add-face-text-property in Emacs 24.4
     (font-lock-append-text-property 0 width 'mouse-face
                                     'company-tooltip-mouse
                                     line)
@@ -2727,8 +2728,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (let ((str (concat (when nl " \n")
                        (mapconcat 'identity (nreverse new) "\n")
                        "\n")))
-      ;; Use add-face-text-property in Emacs 24.4
-      (font-lock-append-text-property 0 (length str) 'face 'default str)
       (when nl (put-text-property 0 1 'cursor t str))
       str)))
 
@@ -2939,6 +2938,7 @@ Returns a negative number if the tooltip should be displayed above point."
           (overlay-put ov 'display disp)
         (overlay-put ov 'after-string disp)
         (overlay-put ov 'invisible t))
+      (overlay-put ov 'face 'default)
       (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
