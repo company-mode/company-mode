@@ -27,7 +27,7 @@
   '((((background dark)) (:background "yellow" :foreground "black"))
     (((background light)) (:background "orange" :foreground "black")))
   "Face used for editable text in template fields."
-  :group 'company)
+  :group 'company-faces)
 
 (defvar company-template-forward-field-item
   '(menu-item "" company-template-forward-field

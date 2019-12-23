@@ -84,6 +84,11 @@ attention to case differences."
   :group 'convenience
   :group 'matching)
 
+(defgroup company-faces nil
+  "Faces used by Company."
+  :group 'company
+  :group 'faces)
+
 (defface company-tooltip
   '((default :foreground "black")
     (((class color) (min-colors 88) (background light))
@@ -179,6 +184,10 @@ attention to case differences."
   '((((background dark)) (:foreground "firebrick1"))
     (((background light)) (:background "firebrick4")))
   "Face used for the common part of completions in the echo area.")
+
+;; Too lazy to re-add :group to all defcustoms down below.
+(setcdr (assoc load-file-name custom-current-group-alist)
+        'company)
 
 (defun company-frontends-set (variable value)
   ;; Uniquify.
