@@ -644,10 +644,9 @@ commands in the `company-' namespace, abort completion."
                  (const :tag "on" t)))
 
 (defcustom company-show-numbers-function #'company--show-numbers
-  "Function called to get custom quick-access numbers for the first then candidates.
+  "Function called to get quick-access numbers for the first ten candidates.
 
-If nil falls back to default function that generates 1...8, 9, 0. The function get
-the number of candidates (from 1 to 10 means 1st to 10th candidate) and should
+The function receives the candidate number (starting from 1) and should
 return a string prefixed with one space."
   :type 'function)
 
