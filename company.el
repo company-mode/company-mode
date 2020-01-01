@@ -2935,8 +2935,9 @@ Returns a negative number if the tooltip should be displayed above point."
   (when company-pseudo-tooltip-overlay
     (let* ((ov company-pseudo-tooltip-overlay)
            (disp (overlay-get ov 'company-display)))
-      ;; Beat outline's folding overlays, at least.
-      (overlay-put ov 'priority 1)
+      ;; Beat outline's folding overlays.
+      ;; And Flymake (53). And Flycheck (110).
+      (overlay-put ov 'priority 111)
       ;; No (extra) prefix for the first line.
       (overlay-put ov 'line-prefix "")
       ;; `display' is better
