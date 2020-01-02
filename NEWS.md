@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2020-01-03 (0.9.11)
 
 * New value for option `company-show-numbers` to show numbers on the left.
 * `company-gtags` has some minor fixes.
