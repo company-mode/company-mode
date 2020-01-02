@@ -14,6 +14,7 @@
   map binding `TAB` to "jump to the next field"). Affects both
   `company-template` and `yasnippet` (requires changes from 2019-04-21,
   currently unreleased).
+* New values for option `company-show-numbers` to show number on the left.
 
 ## 2019-04-15 (0.9.10)
 
