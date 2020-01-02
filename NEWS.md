@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-gtags` has some minor fixes.
 * Face definitions have moved to a separate group: `company-faces`.
 * `company-capf`'s `:exit-function` handling has been improved
   ([#935](https://github.com/company-mode/company-mode/issues/935)).
