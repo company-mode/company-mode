@@ -2,6 +2,7 @@
 
 ## Next
 
+* New value for option `company-show-numbers` to show numbers on the left.
 * `company-gtags` has some minor fixes.
 * Face definitions have moved to a separate group: `company-faces`.
 * `company-capf`'s `:exit-function` handling has been improved
@@ -14,7 +15,6 @@
   map binding `TAB` to "jump to the next field"). Affects both
   `company-template` and `yasnippet` (requires changes from 2019-04-21,
   currently unreleased).
-* New value for option `company-show-numbers` to show numbers on the left.
 
 ## 2019-04-15 (0.9.10)
 
