@@ -1,6 +1,6 @@
 ;;; company-gtags.el --- company-mode completion backend for GNU Global
 
-;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2014-2020  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
