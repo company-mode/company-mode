@@ -139,6 +139,14 @@
     (should (equal '(" x 1 " " y 2 " " z 3 ")
                    (company--create-lines 0 999)))))
 
+(ert-deftest company-create-lines-shows-numbers-on-the-left ()
+  (let ((company-show-numbers 'left)
+        (company-candidates '("x" "y" "z"))
+        (company-candidates-length 3)
+        (company-backend 'ignore))
+    (should (equal '(" 1 x " " 2 y " " 3 z ")
+                   (company--create-lines 0 999)))))
+
 (ert-deftest company-create-lines-truncates-annotations ()
   (let* ((ww (company--window-width))
          (data `(("1" . "(123)")
