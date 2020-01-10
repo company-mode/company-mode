@@ -2171,9 +2171,9 @@ With ARG, move by that many elements."
               (current-prefix-arg arg))
           (call-interactively 'company-select-next))))))
 
-(defun company-indent-or-complete-common ()
+(defun company-indent-or-complete-common (arg)
   "Indent the current line or region, or complete the common part."
-  (interactive)
+  (interactive "P")
   (cond
    ((use-region-p)
     (indent-region (region-beginning) (region-end)))
@@ -2183,7 +2183,7 @@ With ARG, move by that many elements."
    ((let ((old-point (point))
           (old-tick (buffer-chars-modified-tick))
           (tab-always-indent t))
-      (call-interactively #'indent-for-tab-command)
+      (indent-for-tab-command arg)
       (when (and (eq old-point (point))
                  (eq old-tick (buffer-chars-modified-tick)))
         (company-complete-common))))))
