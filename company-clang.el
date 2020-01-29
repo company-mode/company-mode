@@ -76,6 +76,11 @@ or automatically through a custom `company-clang-prefix-guesser'."
   :type 'boolean
   :package-version '(company . "0.8.0"))
 
+(defcustom company-clang-use-remote-executable t
+  "When non-nil, clang will be run via tramp-aware call to `start-file-process' 
+instead of tramp-oblivious `start-process'."
+  :type 'boolean)
+
 ;; prefix ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-clang--prefix nil)
@@ -223,7 +228,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
       (erase-buffer)
       (setq buffer-undo-list t))
     (let* ((process-connection-type nil)
-           (process (apply #'start-file-process "company-clang" buf
+           (start-process (if company-clang-use-remote-executable
+                              #'start-file-process #'start-process))
+           (process (apply start-process "company-clang" buf
                            company-clang-executable args)))
       (set-process-sentinel
        process
