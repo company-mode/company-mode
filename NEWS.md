@@ -1,7 +1,8 @@
 # History of user-visible changes
 
-## Next
+## 2020-02-07 (0.9.12)
 
+* Tooltip rendering bugfix.
 * `company-indent-or-complete-common` is better compatible with
   `indent-for-tab-command`
   ([comment](https://github.com/company-mode/company-mode/issues/94#issuecomment-571265393)).
