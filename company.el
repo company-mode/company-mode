@@ -2957,7 +2957,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-guard ()
   (list
-   (save-excursion (beginning-of-visual-line))
+   (save-excursion (beginning-of-visual-line 1))
    (window-width)
    (let ((ov company-pseudo-tooltip-overlay)
          (overhang (save-excursion (end-of-visual-line)
