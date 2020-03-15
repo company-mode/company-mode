@@ -100,7 +100,8 @@
 (defun company-yasnippet--doc (arg)
   (let ((template (get-text-property 0 'yas-template arg)))
     (with-current-buffer (company-doc-buffer)
-      (insert (yas--template-content template))
+      (yas-minor-mode 1)
+      (yas-expand-snippet (yas--template-content template))
       (goto-char (point-min))
       (current-buffer))))
 
