@@ -98,11 +98,19 @@
    tables))
 
 (defun company-yasnippet--doc (arg)
-  (let ((template (get-text-property 0 'yas-template arg)))
+  (let ((template (get-text-property 0 'yas-template arg))
+        (mode (format "%s" major-mode)))
     (with-current-buffer (company-doc-buffer)
       (yas-minor-mode 1)
       (yas-expand-snippet (yas--template-content template))
-      (goto-char (point-min))
+      (delay-mode-hooks
+        (let ((inhibit-message t))
+          (if (string-equal mode "web-mode")
+                (progn
+                  (setq mode "html-mode")
+                  (funcall (intern mode)))
+            (funcall (intern mode))))
+         (ignore-errors (font-lock-ensure)))
       (current-buffer))))
 
 ;;;###autoload
