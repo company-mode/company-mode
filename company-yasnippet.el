@@ -97,6 +97,13 @@
        res))
    tables))
 
+(defun company-yasnippet--doc (arg)
+  (let ((template (get-text-property 0 'yas-template arg)))
+    (with-current-buffer (company-doc-buffer)
+      (insert (yas--template-content template))
+      (goto-char (point-min))
+      (current-buffer))))
+
 ;;;###autoload
 (defun company-yasnippet (command &optional arg &rest ignore)
   "`company-mode' backend for `yasnippet'.
@@ -134,6 +141,7 @@ shadow backends that come after it.  Recommended usages:
       (unless company-tooltip-align-annotations " -> ")
       (get-text-property 0 'yas-annotation arg)))
     (candidates (company-yasnippet--candidates arg))
+    (doc-buffer (company-yasnippet--doc arg))
     (no-cache t)
     (post-completion
      (let ((template (get-text-property 0 'yas-template arg))
