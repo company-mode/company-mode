@@ -35,6 +35,14 @@
 (declare-function yas--template-expand-env "yasnippet")
 (declare-function yas--warning "yasnippet")
 
+(defvar company-yasnippet-annotation-fn
+  (lambda (name)
+    (concat
+     (unless company-tooltip-align-annotations " -> ")
+     name))
+  "Function to format completion annotation.
+It has to accept one argument: the snippet's name.")
+
 (defun company-yasnippet--key-prefixes ()
   ;; Mostly copied from `yas--templates-for-key-at-point'.
   (defvar yas-key-syntaxes)
@@ -146,9 +154,8 @@ shadow backends that come after it.  Recommended usages:
      (and (bound-and-true-p yas-minor-mode)
           (company-grab-symbol)))
     (annotation
-     (concat
-      (unless company-tooltip-align-annotations " -> ")
-      (get-text-property 0 'yas-annotation arg)))
+     (funcall company-yasnippet-annotation-fn
+              (get-text-property 0 'yas-annotation arg)))
     (candidates (company-yasnippet--candidates arg))
     (doc-buffer (company-yasnippet--doc arg))
     (no-cache t)
