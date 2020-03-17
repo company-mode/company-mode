@@ -110,20 +110,20 @@ It has to accept one argument: the snippet's name.")
         (mode major-mode)
         (file-name (buffer-file-name)))
     (with-current-buffer (company-doc-buffer)
-      (setq-local buffer-file-name file-name)
-      (yas-minor-mode 1)
-      (condition-case error
-        (yas-expand-snippet (yas--template-content template))
-       (error
-          (message "%s"  (error-message-string error))))
-      (delay-mode-hooks
-        (let ((inhibit-message t))
-          (if (eq mode 'web-mode)
+      (let ((buffer-file-name file-name))
+        (yas-minor-mode 1)
+        (condition-case error
+            (yas-expand-snippet (yas--template-content template))
+          (error
+           (message "%s"  (error-message-string error))))
+        (delay-mode-hooks
+          (let ((inhibit-message t))
+            (if (eq mode 'web-mode)
                 (progn
                   (setq mode 'html-mode)
                   (funcall mode))
-            (funcall mode)))
-         (ignore-errors (font-lock-ensure)))
+              (funcall mode)))
+          (ignore-errors (font-lock-ensure))))
       (current-buffer))))
 
 ;;;###autoload
