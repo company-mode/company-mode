@@ -109,6 +109,7 @@ It has to accept one argument: the snippet's name.")
   (let ((template (get-text-property 0 'yas-template arg))
         (mode major-mode))
     (with-current-buffer (company-doc-buffer)
+      (setq-local buffer-file-name "company-yasnippet-doc")
       (yas-minor-mode 1)
       (yas-expand-snippet (yas--template-content template))
       (delay-mode-hooks
