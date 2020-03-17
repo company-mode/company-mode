@@ -107,11 +107,15 @@ It has to accept one argument: the snippet's name.")
 
 (defun company-yasnippet--doc (arg)
   (let ((template (get-text-property 0 'yas-template arg))
-        (mode major-mode))
+        (mode major-mode)
+        (file-name (buffer-file-name)))
     (with-current-buffer (company-doc-buffer)
-      (setq-local buffer-file-name "company-yasnippet-doc")
+      (setq-local buffer-file-name file-name)
       (yas-minor-mode 1)
-      (yas-expand-snippet (yas--template-content template))
+      (condition-case error
+        (yas-expand-snippet (yas--template-content template))
+       (error
+          (message "%s"  (error-message-string error))))
       (delay-mode-hooks
         (let ((inhibit-message t))
           (if (eq mode 'web-mode)
