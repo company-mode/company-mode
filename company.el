@@ -2283,6 +2283,7 @@ character, stripping the modifiers.  That character must be a digit."
 (defun company-doc-buffer (&optional string)
   (with-current-buffer (get-buffer-create "*company-documentation*")
     (erase-buffer)
+    (fundamental-mode)
     (when string
       (save-excursion
         (insert string)
