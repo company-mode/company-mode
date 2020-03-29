@@ -1195,6 +1195,13 @@ can retrieve meta-data for them."
                                             (symbol-name backend))))
         (format "%s-<%s>" base name)))))
 
+(defun company-extract-common (prefix candidates)
+  "Use PREFIX to extract common string of CANDIDATES."
+  (let ((common (try-completion "" candidates)))
+    (when (string-prefix-p prefix common
+                           completion-ignore-case)
+      common)))
+
 (defun company-update-candidates (candidates)
   (setq company-candidates-length (length candidates))
   (if company-selection-changed
@@ -1223,10 +1230,7 @@ can retrieve meta-data for them."
     ;; `company-complete-common', unless there's only one candidate.
     (setq company-common
           (if (cdr company-candidates)
-              (let ((common (try-completion "" company-candidates)))
-                (when (string-prefix-p company-prefix common
-                                       completion-ignore-case)
-                  common))
+              (company-extract-common company-prefix company-candidates)
             (car company-candidates)))))
 
 (defun company-calculate-candidates (prefix ignore-case)
