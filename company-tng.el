@@ -1,6 +1,6 @@
 ;;; company-tng.el --- company-mode configuration for single-button interaction
 
-;; Copyright (C) 2017-2019  Free Software Foundation, Inc.
+;; Copyright (C) 2017-2020  Free Software Foundation, Inc.
 
 ;; Author: Nikita Leshenko
 
