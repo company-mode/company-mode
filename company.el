@@ -1575,9 +1575,8 @@ prefix match (same case) will be prioritized."
       (setq company-prefix new-prefix)
       (company-update-candidates c)
       c)
-     ((and (> (point) company-point)
-           (company-auto-complete-p (buffer-substring-no-properties
-                                     (point) company-point)))
+     ((and (characterp last-command-event)
+           (company-auto-complete-p (string last-command-event)))
       ;; auto-complete
       (save-excursion
         (goto-char company-point)
