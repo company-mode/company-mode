@@ -1,7 +1,8 @@
 # History of user-visible changes
 
-## Next
+## 2020-02-07 (0.9.12)
 
+* Tooltip rendering bugfix.
 * `company-indent-or-complete-common` is better compatible with
   `indent-for-tab-command`
   ([comment](https://github.com/company-mode/company-mode/issues/94#issuecomment-571265393)).
@@ -19,8 +20,7 @@
 * Snippet/template field interaction is inhibited while completion is active
   (where by default `TAB` calls `company-complete-common`, clashing with snippet
   map binding `TAB` to "jump to the next field"). Affects both
-  `company-template` and `yasnippet` (requires changes from 2019-04-21,
-  currently unreleased).
+  `company-template` and `yasnippet` (requires version 0.14.0).
 
 ## 2019-04-15 (0.9.10)
 

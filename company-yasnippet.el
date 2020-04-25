@@ -1,6 +1,6 @@
 ;;; company-yasnippet.el --- company-mode completion backend for Yasnippet
 
-;; Copyright (C) 2014, 2015  Free Software Foundation, Inc.
+;; Copyright (C) 2014, 2015, 2020  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
@@ -34,6 +34,14 @@
 (declare-function yas--template-content "yasnippet")
 (declare-function yas--template-expand-env "yasnippet")
 (declare-function yas--warning "yasnippet")
+
+(defvar company-yasnippet-annotation-fn
+  (lambda (name)
+    (concat
+     (unless company-tooltip-align-annotations " -> ")
+     name))
+  "Function to format completion annotation.
+It has to accept one argument: the snippet's name.")
 
 (defun company-yasnippet--key-prefixes ()
   ;; Mostly copied from `yas--templates-for-key-at-point'.
@@ -97,6 +105,27 @@
        res))
    tables))
 
+(defun company-yasnippet--doc (arg)
+  (let ((template (get-text-property 0 'yas-template arg))
+        (mode major-mode)
+        (file-name (buffer-file-name)))
+    (with-current-buffer (company-doc-buffer)
+      (let ((buffer-file-name file-name))
+        (yas-minor-mode 1)
+        (condition-case error
+            (yas-expand-snippet (yas--template-content template))
+          (error
+           (message "%s"  (error-message-string error))))
+        (delay-mode-hooks
+          (let ((inhibit-message t))
+            (if (eq mode 'web-mode)
+                (progn
+                  (setq mode 'html-mode)
+                  (funcall mode))
+              (funcall mode)))
+          (ignore-errors (font-lock-ensure))))
+      (current-buffer))))
+
 ;;;###autoload
 (defun company-yasnippet (command &optional arg &rest ignore)
   "`company-mode' backend for `yasnippet'.
@@ -130,10 +159,10 @@ shadow backends that come after it.  Recommended usages:
      (and (bound-and-true-p yas-minor-mode)
           (company-grab-symbol)))
     (annotation
-     (concat
-      (unless company-tooltip-align-annotations " -> ")
-      (get-text-property 0 'yas-annotation arg)))
+     (funcall company-yasnippet-annotation-fn
+              (get-text-property 0 'yas-annotation arg)))
     (candidates (company-yasnippet--candidates arg))
+    (doc-buffer (company-yasnippet--doc arg))
     (no-cache t)
     (post-completion
      (let ((template (get-text-property 0 'yas-template arg))
