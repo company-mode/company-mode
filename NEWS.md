@@ -1,5 +1,15 @@
 # History of user-visible changes
 
+## Next
+
+* `company-tng` stops disabling `post-completion` in backends
+  ([#946](https://github.com/company-mode/company-mode/pull/946)). Instead,
+  `company-tng-configure-default` disables snippet expansion in most popular
+  backends. If a backend you use needs this and is not covered, and you use
+  `company-tng`, disable snippet insertion by customizing a relevant option
+  provided by the backend. The result is better compatibility with LSP backends
+  because they currently depend on `post-completion` in all cases.
+
 ## 2020-02-07 (0.9.12)
 
 * Tooltip rendering bugfix.
