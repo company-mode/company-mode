@@ -127,6 +127,10 @@ The values should use the same format as `completion-ignored-extensions'."
   (and (equal (cdr old) (cdr new))
        (string-prefix-p (car old) (car new))))
 
+(defun company-files--post-completion (arg)
+  (when (company-files--trailing-slash-p arg)
+    (delete-char -1)))
+
 ;;;###autoload
 (defun company-files (command &optional arg &rest ignored)
   "`company-mode' completion backend existing file names.
@@ -139,8 +143,7 @@ File paths with spaces are only supported inside strings."
     (candidates (company-files--complete arg))
     (location (cons (dired-noselect
                      (file-name-directory (directory-file-name arg))) 1))
-    (post-completion (when (company-files--trailing-slash-p arg)
-                       (delete-char -1)))
+    (post-completion (company-files--post-completion arg))
     (sorted t)
     (no-cache t)))
 
