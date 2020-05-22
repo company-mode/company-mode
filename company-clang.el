@@ -194,7 +194,11 @@ or automatically through a custom `company-clang-prefix-guesser'."
          (cmd (concat company-clang-executable " " (mapconcat 'identity args " ")))
          (pattern (format company-clang--completion-pattern ""))
          (message-truncate-lines t)
-         (err (if (re-search-forward pattern nil t)
+         (err (if (and (re-search-forward pattern nil t)
+                       ;; Something in the Windows build?
+                       ;; Looks like Clang doesn't always include the error text
+                       ;; before completions (even if exited with error).
+                       (> (match-beginning 0) (point-min)))
                   (buffer-substring-no-properties (point-min)
                                                   (1- (match-beginning 0)))
                 ;; Warn the user more aggressively if no match was found.
