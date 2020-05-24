@@ -90,7 +90,7 @@ attention to case differences."
   :group 'faces)
 
 (defface company-tooltip
-  '((default :foreground "black")
+  '((default :foreground "black" :background "yellow")
     (((class color) (min-colors 88) (background light))
      (:background "cornsilk"))
     (((class color) (min-colors 88) (background dark))
