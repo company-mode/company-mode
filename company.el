@@ -90,10 +90,12 @@ attention to case differences."
   :group 'faces)
 
 (defface company-tooltip
-  '((default :foreground "black" :background "yellow")
+  '((default :foreground "black")
     (((class color) (min-colors 88) (background light))
      (:background "cornsilk"))
     (((class color) (min-colors 88) (background dark))
+     (:background "yellow"))
+    (t
      (:background "yellow")))
   "Face used for the tooltip.")
 
