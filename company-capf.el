@@ -90,7 +90,7 @@ so we can't just use the preceding variable instead.")
 
 (defvar-local company-capf--sorted nil)
 
-(defun company-capf (command &optional arg &rest _args)
+(defun company-capf (command &optional arg &rest args)
   "`company-mode' backend using `completion-at-point-functions'."
   (interactive (list 'interactive))
   (pcase command
@@ -151,6 +151,10 @@ so we can't just use the preceding variable instead.")
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :annotation-function)))
        (when f (funcall f arg))))
+    (`candidate-prefix
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :company-candidate-annotation-prefix)))
+       (when f (funcall f arg (car args)))))
     (`require-match
      (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
