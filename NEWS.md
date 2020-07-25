@@ -1,7 +1,8 @@
 # History of user-visible changes
 
-## Next
+## 2020-07-26 (0.9.13)
 
+* `company-clang`: error handling is more permissive.
 * `company-tng` stops disabling `post-completion` in backends
   ([#946](https://github.com/company-mode/company-mode/pull/946)). Instead,
   `company-tng-configure-default` disables snippet expansion in most popular
@@ -9,6 +10,9 @@
   `company-tng`, disable snippet insertion by customizing a relevant option
   provided by the backend. The result is better compatibility with LSP backends
   because they currently depend on `post-completion` in all cases.
+* `company-keywords`: additions for C and C++.
+* `company-yasnippet` supports the `doc-buffer` action.
+* `company-bbdb` supports more headers.
 
 ## 2020-02-07 (0.9.12)
 
