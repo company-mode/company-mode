@@ -2016,14 +2016,6 @@ uses the search string to filter the completion candidates."
   (interactive)
   (company-search-mode 1))
 
-(defvar company-filter-map
-  (let ((keymap (make-keymap)))
-    (define-key keymap [remap company-search-printing-char]
-      'company-filter-printing-char)
-    (set-keymap-parent keymap company-search-map)
-    keymap)
-  "Keymap used for incrementally searching the completion candidates.")
-
 (defun company-filter-candidates ()
   "Start filtering the completion candidates incrementally.
 This works the same way as `company-search-candidates' immediately
