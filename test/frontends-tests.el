@@ -215,7 +215,7 @@
                              "avatar"))
         (company-candidates-length 2)
         (company-backend 'ignore))
-    (should (equal '(" avalis‗e "
+    (should (equal '(" avalis?e "
                      " avatar   ")
                    (company--create-lines 0 999)))))
 

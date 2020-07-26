@@ -2629,7 +2629,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       ((match-beginning 1)
        ;; FIXME: Better char for 'non-printable'?
        ;; We shouldn't get any of these, but sometimes we might.
-       "\u2017")
+       ;; The official "replacement character" is not supported by some fonts.
+       ;;"\ufffd"
+       "?"
+       )
       ((match-beginning 2)
        ;; Zero-width non-breakable space.
        "")
