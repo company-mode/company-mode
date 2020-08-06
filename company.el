@@ -310,7 +310,6 @@ This doesn't include the margins and the scroll bar."
     (company-css . "CSS")
     (company-dabbrev . "dabbrev for plain text")
     (company-dabbrev-code . "dabbrev for code")
-    (company-eclim . "Eclim (an Eclipse interface)")
     (company-elisp . "Emacs Lisp")
     (company-etags . "etags")
     (company-files . "Files")
@@ -339,7 +338,7 @@ This doesn't include the margins and the scroll bar."
                                   (list 'company-nxml))
                               ,@(unless (version<= "26" emacs-version)
                                   (list 'company-css))
-                              company-eclim company-semantic company-clang
+                              company-semantic company-clang
                               company-xcode company-cmake
                               company-capf
                               company-files

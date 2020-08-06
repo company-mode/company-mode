@@ -1,5 +1,12 @@
 # History of user-visible changes
 
+## Next
+
+* `company-eclim` has been removed. Eclim is generally not recommended for Emacs
+  users these days, with
+  ([emacs-eclim](https://github.com/emacs-eclim/emacs-eclim/)) declared obsolete
+  in favor of `lsp-java`. Though it used its own backend anyway.
+
 ## 2020-07-26 (0.9.13)
 
 * `company-clang`: error handling is more permissive.
