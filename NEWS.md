@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-xcode` has been removed. It has not been useful for years now.
 * `company-clang` has been moved to after `company-capf` in the default value of
   `company-backends`. So now if there is an active completion function in
   `completion-at-point-functions`, it will have priority over

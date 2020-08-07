@@ -319,8 +319,7 @@ This doesn't include the margins and the scroll bar."
     (company-nxml . "nxml")
     (company-oddmuse . "Oddmuse")
     (company-semantic . "Semantic")
-    (company-tempo . "Tempo templates")
-    (company-xcode . "Xcode")))
+    (company-tempo . "Tempo templates")))
 (put 'company-safe-backends 'risky-local-variable t)
 
 (defun company-safe-backends-p (backends)
@@ -339,7 +338,7 @@ This doesn't include the margins and the scroll bar."
                               ,@(unless (version<= "26" emacs-version)
                                   (list 'company-css))
                               company-semantic
-                              company-xcode company-cmake
+                              company-cmake
                               company-capf
                               company-clang
                               company-files
