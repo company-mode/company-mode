@@ -2,6 +2,11 @@
 
 ## Next
 
+* `company-clang` has been moved to after `company-capf` in the default value of
+  `company-backends`. So now if there is an active completion function in
+  `completion-at-point-functions`, it will have priority over
+  `company-clang`. Unless it's `tags-completion-at-point-function` (this one is
+  still skipped explicitly).
 * `company-eclim` has been removed. Eclim is generally not recommended for Emacs
   users these days, with
   ([emacs-eclim](https://github.com/emacs-eclim/emacs-eclim/)) declared obsolete

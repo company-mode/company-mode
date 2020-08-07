@@ -338,9 +338,10 @@ This doesn't include the margins and the scroll bar."
                                   (list 'company-nxml))
                               ,@(unless (version<= "26" emacs-version)
                                   (list 'company-css))
-                              company-semantic company-clang
+                              company-semantic
                               company-xcode company-cmake
                               company-capf
+                              company-clang
                               company-files
                               (company-dabbrev-code company-gtags company-etags
                                company-keywords)
