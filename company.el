@@ -2706,7 +2706,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (cl-decf ww (1- (length (aref buffer-display-table ?\n)))))
     ww))
 
-(defun company--replacement-string (lines old column nl &optional align-top)
+(defun company--replacement-string (lines old column nl align-top newline-faces)
   (cl-decf column company-tooltip-margin)
 
   (when (and align-top company-tooltip-flip-when-above)
@@ -2728,6 +2728,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
         (push (pop old) new)))
     ;; length into old lines.
     (while old
+      ;; FIXME: Add the 'extend' effect here too (if the line is < column)?
+      ;; This is the most annoying part to implement.
       (push (company-modify-line (pop old)
                                  (company--offset-line (pop lines) offset)
                                  column)
@@ -2738,25 +2740,32 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (company--offset-line (pop lines) offset))
             new))
 
-    ;; TODO: Choose the face most appropriate for each line, instead of
-    ;; simply forcing :extend to nil.
-    (let* ((nl-face (list
-                     :extend t
-                     :inverse-video nil
-                     :background (face-attribute 'default :background)))
-           (str (concat (when nl " \n")
-                        (apply
-                         #'concat
-                         (mapcan
-                          ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
-                          (lambda (line) (list line
-                                          (propertize "\n" 'face nl-face)))
-                          (nreverse new))))))
+    (let* ((str (apply #'concat
+                       (when nl " \n")
+                       (mapcar
+                        (lambda (line)
+                          (concat
+                           line
+                           (company--propertized-newline (pop newline-faces))))
+                        (nreverse new)))))
       ;; Use add-face-text-property in Emacs 24.4
       ;; https://debbugs.gnu.org/38563
       (font-lock-append-text-property 0 (length str) 'face 'default str)
       (when nl (put-text-property 0 1 'cursor t str))
       str)))
+
+(defun company--propertized-newline (face)
+  (propertize "\n" 'face
+              (list
+               :extend t
+               :inverse-video nil
+               :background
+               (face-attribute
+                (if (and face
+                         (eq (face-attribute face :extend) t))
+                    face
+                  'default)
+                :background))))
 
 (defun company--offset-line (line offset)
   (if (and offset line)
@@ -2891,6 +2900,17 @@ Returns a negative number if the tooltip should be displayed above point."
         (- (max 3 (min company-tooltip-limit lines)))
       (max 3 (min company-tooltip-limit below)))))
 
+(defun company--newline-face (line)
+  ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
+  (let ((face (unless (equal line "")
+                (get-text-property (1- (length line))
+                                   'face
+                                   line))))
+    (when (listp face)
+      (setq face (cl-find-if (lambda (f) (face-attribute f :extend))
+                             face)))
+    face))
+
 (defun company-pseudo-tooltip-show (row column selection)
   (company-pseudo-tooltip-hide)
 
@@ -2901,7 +2921,7 @@ Returns a negative number if the tooltip should be displayed above point."
         (setq row (+ row height -1)
               above t))
 
-      (let (nl beg end ov args)
+      (let (nl beg end ov buf-lines newline-faces args)
         (save-excursion
           (setq nl (< (move-to-window-line row) row)
                 beg (point)
@@ -2909,10 +2929,11 @@ Returns a negative number if the tooltip should be displayed above point."
                       (move-to-window-line (+ row (abs height)))
                       (point))
                 ov (make-overlay beg end nil t)
-                args (list (mapcar 'company-plainify
-                                   (company-buffer-lines beg end))
-                           column nl above)))
-
+                buf-lines (company-buffer-lines beg end)
+                newline-faces (mapcar #'company--newline-face
+                                      buf-lines)
+                args (list (mapcar 'company-plainify buf-lines)
+                           column nl above newline-faces)))
         (setq company-pseudo-tooltip-overlay ov)
         (overlay-put ov 'company-replacement-args args)
 
