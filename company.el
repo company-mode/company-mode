@@ -2738,9 +2738,23 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (company--offset-line (pop lines) offset))
             new))
 
-    (let ((str (concat (when nl " \n")
-                       (mapconcat 'identity (nreverse new) "\n")
-                       "\n")))
+    ;; TODO: Choose the face most appropriate for each line, instead of
+    ;; simply forcing :extend to nil.
+    (let* ((nl-face (list
+                     :extend t
+                     :inverse-video nil
+                     :background (face-attribute 'default :background)))
+           (str (concat (when nl " \n")
+                        (apply
+                         #'concat
+                         (mapcan
+                          ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
+                          (lambda (line) (list line
+                                          (propertize "\n" 'face nl-face)))
+                          (nreverse new))))))
+      ;; Use add-face-text-property in Emacs 24.4
+      ;; https://debbugs.gnu.org/38563
+      (font-lock-append-text-property 0 (length str) 'face 'default str)
       (when nl (put-text-property 0 1 'cursor t str))
       str)))
 
@@ -2949,14 +2963,12 @@ Returns a negative number if the tooltip should be displayed above point."
       (overlay-put ov 'priority 111)
       ;; No (extra) prefix for the first line.
       (overlay-put ov 'line-prefix "")
-      ;; `display' is better
-      ;; (http://debbugs.gnu.org/18285, http://debbugs.gnu.org/20847),
-      ;; but it doesn't work on 0-length overlays.
-      (if (< (overlay-start ov) (overlay-end ov))
-          (overlay-put ov 'display disp)
-        (overlay-put ov 'after-string disp)
-        (overlay-put ov 'invisible t))
-      (overlay-put ov 'face 'default)
+      (overlay-put ov 'after-string disp)
+      ;; `display' is better than `invisible':
+      ;; https://debbugs.gnu.org/18285
+      ;; https://debbugs.gnu.org/20847
+      ;; https://debbugs.gnu.org/42521
+      (overlay-put ov 'display "")
       (overlay-put ov 'window (selected-window)))))
 
 (defun company-pseudo-tooltip-guard ()
