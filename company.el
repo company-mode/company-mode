@@ -2738,20 +2738,17 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (company--offset-line (pop lines) offset))
             new))
 
-    ;; TODO: Choose the face most appropriate for each line, instead of
-    ;; simply forcing :extend to nil.
+    ;; XXX: Also see branch 'more-precise-extend'.
     (let* ((nl-face (list
                      :extend t
                      :inverse-video nil
                      :background (face-attribute 'default :background)))
-           (str (concat (when nl " \n")
-                        (apply
-                         #'concat
-                         (mapcan
-                          ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
-                          (lambda (line) (list line
-                                          (propertize "\n" 'face nl-face)))
-                          (nreverse new))))))
+           (str (apply #'concat
+                       (when nl " \n")
+                       (mapcan
+                        ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
+                        (lambda (line) (list line (propertize "\n" 'face nl-face)))
+                        (nreverse new)))))
       ;; Use add-face-text-property in Emacs 24.4
       ;; https://debbugs.gnu.org/38563
       (font-lock-append-text-property 0 (length str) 'face 'default str)
