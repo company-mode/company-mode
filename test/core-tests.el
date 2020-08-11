@@ -591,3 +591,128 @@
       (set-window-buffer nil (current-buffer))
       (should (= (company--column) 0))
       (should (= (company--row) 2)))))
+
+(ert-deftest company-set-nil-selection ()
+  (let ((company-selection 1)
+        (company-candidates-length 10)
+        (company-selection-changed nil)
+        (company-frontends nil))
+    (company-set-selection nil)
+    (should (eq company-selection nil))
+    (should (eq company-selection-changed t))))
+
+(ert-deftest company-update-candidates-nil-selection ()
+  (let ((company-selection nil)
+        (company-backend #'ignore)
+        company-candidates
+        company-candidates-length
+        company-candidates-cache
+        company-common
+        company-selection-default
+        (company-prefix "ab"))
+    (company-update-candidates '("abcd" "abcde" "abcdf"))
+    (should (null company-selection)))
+
+  (let* ((company-selection 1)
+         (company-backend #'ignore)
+         (company-candidates '("abc" "abdc" "abe"))
+         company-candidates-length
+         company-candidates-cache
+         company-common
+         company-selection-default
+         (company-prefix "ab")
+         (company-selection-changed t))
+    (company-update-candidates '("abcd" "abcde" "abcdf"))
+    (should (null company-selection))))
+
+(ert-deftest company-select-next ()
+  (cl-letf (((symbol-function 'company-manual-begin) (lambda () t))
+            (company-selection 1)
+            (company-candidates-length 10)
+            (company-selection-default 0)
+            (company-selection-wrap-around nil)
+            (company-frontends nil))
+    ;; Not wrap
+    (company-select-next 5)
+    (should (eq company-selection 6))
+
+    (company-select-next 5)
+    (should (eq company-selection 9))
+
+    (company-select-next -2)
+    (should (eq company-selection 7))
+
+    ;; Nil selection
+    (setq company-selection nil)
+    (company-select-next 5)
+    (should (eq company-selection 5))
+
+    (setq company-selection nil)
+    (company-select-next -1)
+    (should (eq company-selection 0))
+
+    ;; Wrap
+    (setq company-selection-wrap-around t)
+    (setq company-selection 7)
+    (company-select-next 5)
+    (should (eq company-selection 2))
+
+    ;; Nil selection
+    (setq company-selection nil)
+    (company-select-next 11)
+    (should (eq company-selection 1))
+
+    (setq company-selection nil)
+    (company-select-next -10)
+    (should (eq company-selection 0))))
+
+(ert-deftest company-select-next-default-selection-nil ()
+  (cl-letf (((symbol-function 'company-manual-begin) (lambda () t))
+            (company-selection 1)
+            (company-candidates-length 10)
+            (company-selection-default nil)
+            (company-selection-wrap-around nil)
+            (company-frontends nil))
+    ;; Not wrap
+    (company-select-next 5)
+    (should (eq company-selection 6))
+
+    (company-select-next 5)
+    (should (eq company-selection 9))
+
+    (company-select-next -10)
+    (should (eq company-selection nil))
+
+    ;; Nil selection
+    (setq company-selection nil)
+    (company-select-next 5)
+    (should (eq company-selection 4))
+
+    (setq company-selection nil)
+    (company-select-next -1)
+    (should (eq company-selection nil))
+
+    ;; Wrap
+    (setq company-selection-wrap-around t)
+    (setq company-selection 7)
+    (company-select-next 5)
+    (should (eq company-selection 1))
+
+    (setq company-selection 0)
+    (company-select-next -1)
+    (should (eq company-selection nil))
+
+    (setq company-selection 0)
+    (company-select-next -11)
+    (should (eq company-selection 0))
+
+    ;; Nil selection
+    (setq company-selection nil)
+    (company-select-next 11)
+    (should (eq company-selection nil))
+
+    (setq company-selection nil)
+    (company-select-next -10)
+    (should (eq company-selection 0))))
+
+;;; core-tests.el ends here.
