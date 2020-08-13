@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-clang` filters out duplicates
+  ([#841](https://github.com/company-mode/company-mode/issues/841)).
 * New user option `company-tooltip-width-grow-only`.
 * `company-xcode` has been removed. It has not been useful for years now.
 * `company-clang` has been moved to after `company-capf` in the default value of
