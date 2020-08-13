@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-tooltip-width-grow-only`.
 * `company-xcode` has been removed. It has not been useful for years now.
 * `company-clang` has been moved to after `company-capf` in the default value of
   `company-backends`. So now if there is an active completion function in

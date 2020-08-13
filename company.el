@@ -280,6 +280,11 @@ This doesn't include the margins and the scroll bar."
   :type 'integer
   :package-version '(company . "0.9.5"))
 
+(defcustom company-tooltip-width-grow-only nil
+  "When non-nil, the tooltip width is not allowed to decrease."
+  :type 'boolean
+  :package-version '(company . "0.9.14"))
+
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
   :type 'integer)
@@ -2477,6 +2482,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defvar-local company-tooltip-offset 0)
 
+(defvar-local company--tooltip-current-width 0)
+
 (defun company-tooltip--lines-update-offset (selection num-lines limit)
   (cl-decf limit 2)
   (setq company-tooltip-offset
@@ -2823,6 +2830,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                               (+ 2 width)
                             width))))
 
+    (when company-tooltip-width-grow-only
+      (setq width (max company--tooltip-current-width width))
+      (setq company--tooltip-current-width width))
+
     (let ((items (nreverse items))
           (numbered (if company-show-numbers 0 99999))
           new)
@@ -2999,6 +3010,7 @@ Returns a negative number if the tooltip should be displayed above point."
        (overlay-put company-pseudo-tooltip-overlay
                     'company-guard (company-pseudo-tooltip-guard)))
      (company-pseudo-tooltip-unhide))
+    (show (setq company--tooltip-current-width 0))
     (hide (company-pseudo-tooltip-hide)
           (setq company-tooltip-offset 0))
     (update (when (overlayp company-pseudo-tooltip-overlay)
