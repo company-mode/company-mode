@@ -2816,6 +2816,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           (setq annotation (company--clean-string annotation))
           (when company-tooltip-align-annotations
             ;; `lisp-completion-at-point' adds a space.
+            ;; FIXME: Use `string-trim' in Emacs 24.4
             (setq annotation (comment-string-strip annotation t nil))))
         (push (cons value annotation) items)
         (setq width (max (+ (length value)
