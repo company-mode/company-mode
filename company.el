@@ -1823,6 +1823,7 @@ each one wraps a part of the input string."
 (defun company--permutations (lst)
   (if (not lst)
       '(nil)
+    ;; FIXME: Replace with `mapcan' in Emacs 26.
     (cl-mapcan
      (lambda (e)
        (mapcar (lambda (perm) (cons e perm))
@@ -2752,7 +2753,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                      :background (face-attribute 'default :background)))
            (str (apply #'concat
                        (when nl " \n")
-                       (mapcan
+                       (cl-mapcan
                         ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
                         (lambda (line) (list line (propertize "\n" 'face nl-face)))
                         (nreverse new)))))
