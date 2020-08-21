@@ -24,7 +24,9 @@
 ;;    for LDAP servers, and to the BBDB.
 
 ;;; Usage:
-;;    (require 'company-eudc)
+
+;;    See `company-eudc', `company-eudc-activate-autocomplete', and
+;;    `company-eudc-expand-inline'.
 
 ;;; Code:
 
@@ -68,20 +70,15 @@ Reply-To header fields of message buffers only. I.e. you can not
 use this backend for completing email addresses outside a message
 header.
 
-To load the `company-eudc' backend, simply do
-
-    (require 'company-eudc)
-
-With this alone, no completions from EUDC will be offered
-yet. You will additionally need to decide how you want to use
-it. Since EUDC can query remote resources (such as e.g. LDAP
-servers), the completion process may take a while. Depending on
-how you have configured `company-mode', this may result in Emacs
-being blocked for extensive periods of time. To accommodate this,
-the `company-eudc' backend can either install itself into the
-list of `company-mode' backends for `message-mode' (see
-`company-eudc-activate-autocomplete'), or provide autocompletion
-through `company-mode' only when bound to a key (see
+Without additonal configuration, no completions from EUDC will be offered
+yet. You will additionally need to decide how you want to use it. Since
+EUDC can query remote resources (such as e.g. LDAP servers), the completion
+process may take a while. Depending on how you have configured
+`company-mode', this may result in Emacs being blocked for extensive
+periods of time. To accommodate this, the `company-eudc' backend can either
+install itself into the list of `company-mode' backends for
+`message-mode' (see `company-eudc-activate-autocomplete'), or provide
+autocompletion through `company-mode' only when bound to a key (see
 `company-eudc-expand-inline')."
   (interactive (list 'interactive))
   (pcase command
@@ -109,7 +106,6 @@ candidate.
 
 To get this behaviour, do
 
-    (require 'company-eudc)
     (company-eudc-activate-autocomplete)
 
 If you have configured many and/or slow servers for EUDC, this
@@ -118,9 +114,8 @@ results). If this is a frequent issue, and you would like to
 avoid this, use `company-eudc-expand-inline' instead. "
   (interactive)
   (add-to-list 'company-backends 'company-eudc)
-  (with-eval-after-load "message"
-    (add-hook 'message-mode-hook
-	      (lambda () (add-to-list 'company-backends 'company-eudc)))))
+  (add-hook 'message-mode-hook
+	    (lambda () (add-to-list 'company-backends 'company-eudc))))
 
 ;;;###autoload
 (defun company-eudc-expand-inline ()
@@ -129,7 +124,6 @@ This function triggers `company-mode' completion at point, using
 the `company-eudc' backend only. It is intended for being bound
 to a key chord; for example:
 
-    (require 'company-eudc)
     (with-eval-after-load \"message\"
       (define-key message-mode-map (kbd \"<C-tab>\") 'company-eudc-expand-inline))
 
