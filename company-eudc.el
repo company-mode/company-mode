@@ -73,20 +73,24 @@ install itself into the list of `company-mode' backends for
 autocompletion through `company-mode' only when bound to a key (see
 `company-eudc-expand-inline')."
   (interactive (list 'interactive))
-  (pcase command
-    (`interactive (company-begin-backend 'company-eudc))
-    (`prefix (and (derived-mode-p 'message-mode)
-		  (let ((case-fold-search t))
-		    (looking-back
-		     "^\\([^ :]*-\\)?\\(To\\|B?Cc\\|From\\|Reply-to\\):.*? *\\([^,;]*\\)"
-		     (line-beginning-position)))
-		  (company-grab-symbol)))
-    (`candidates (let* ((q-result (eudc-query `((name . ,arg)))))
-		   (cl-loop for person-record in q-result
-			    collect (company-eudc-email-address-from-alist
-				     person-record))
-		  ))
-    (`sorted t)))
+  (let ((prefix (save-excursion
+		    (buffer-substring-no-properties
+                     (save-excursion
+		       (if (re-search-backward "\\([:,]\\|^\\)[ \t]*"
+					       (point-at-bol) 'move)
+		           (goto-char (match-end 0)))
+		       (point))
+                     (point)))))
+    (pcase command
+      (`interactive (company-begin-backend 'company-eudc))
+      (`prefix (and (derived-mode-p 'message-mode)
+		    (let ((case-fold-search t))
+		      (looking-back
+		       "^\\([^ :]*-\\)?\\(To\\|B?Cc\\|From\\|Reply-to\\):.*? *\\([^,;]*\\)"
+		       (line-beginning-position)))
+                    prefix))
+      (`candidates (eudc-query-with-words (split-string prefix "[ \t]+")))
+      (`sorted t))))
 
 ;;;###autoload
 (defun company-eudc-activate-autocomplete ()
