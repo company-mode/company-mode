@@ -51,14 +51,6 @@
 
 ;;{{{      High-level interfaces
 
-(defgroup company-eudc nil
-  "Completion backend for EUDC."
-  :group 'company)
-
-(defcustom company-eudc-modes '(message-mode notmuch-message-mode mail-mode)
-  "Major modes in which `company-eudc' may complete."
-  :type '(repeat (symbol :tag "Major mode")))
-
 ;;;###autoload
 (defun company-eudc (command &optional arg &rest ignored)
   "`company-mode' completion backend for EUDC.
@@ -83,7 +75,7 @@ autocompletion through `company-mode' only when bound to a key (see
   (interactive (list 'interactive))
   (pcase command
     (`interactive (company-begin-backend 'company-eudc))
-    (`prefix (and (memq major-mode company-eudc-modes)
+    (`prefix (and (derived-mode-p 'message-mode)
 		  (let ((case-fold-search t))
 		    (looking-back
 		     "^\\([^ :]*-\\)?\\(To\\|B?Cc\\|From\\|Reply-to\\):.*? *\\([^,;]*\\)"
