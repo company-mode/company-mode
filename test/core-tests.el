@@ -258,7 +258,7 @@
     (insert "ab")
     (company-mode)
     (let (company-frontends
-          company-auto-complete
+          company-auto-commit
           (company-require-match t)
           (company-backends
            (list (lambda (command &optional _)
@@ -358,13 +358,13 @@
       (should (string= "a" (buffer-string)))
       (should (null company-candidates)))))
 
-(ert-deftest company-auto-complete-explicit ()
+(ert-deftest company-auto-commit-explicit ()
   (with-temp-buffer
     (insert "ab")
     (company-mode)
     (let (company-frontends
-          (company-auto-complete 'company-explicit-action-p)
-          (company-auto-complete-chars '(? ))
+          (company-auto-commit 'company-explicit-action-p)
+          (company-auto-commit-chars '(? ))
           (company-backends
            (list (lambda (command &optional _)
                    (cl-case command
@@ -376,14 +376,14 @@
         (company-call 'self-insert-command 1))
       (should (string= "abcd " (buffer-string))))))
 
-(ert-deftest company-auto-complete-with-electric-pair ()
+(ert-deftest company-auto-commit-with-electric-pair ()
   (with-temp-buffer
     (insert "foo(ab)")
     (forward-char -1)
     (company-mode)
     (let (company-frontends
-          (company-auto-complete t)
-          (company-auto-complete-chars '(? ?\)))
+          (company-auto-commit t)
+          (company-auto-commit-chars '(? ?\)))
           (company-backends
            (list (lambda (command &optional _)
                    (cl-case command
@@ -401,13 +401,13 @@
           (electric-pair-mode -1)))
       (should (string= "foo(abcd)" (buffer-string))))))
 
-(ert-deftest company-no-auto-complete-when-idle ()
+(ert-deftest company-no-auto-commit-when-idle ()
   (with-temp-buffer
     (insert "ab")
     (company-mode)
     (let (company-frontends
-          (company-auto-complete 'company-explicit-action-p)
-          (company-auto-complete-chars '(? ))
+          (company-auto-commit 'company-explicit-action-p)
+          (company-auto-commit-chars '(? ))
           (company-minimum-prefix-length 2)
           (company-backends
            (list (lambda (command &optional _)

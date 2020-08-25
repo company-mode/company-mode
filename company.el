@@ -548,34 +548,45 @@ prefix it was started from."
 This can be a function do determine if a match is required.
 
 This can be overridden by the backend, if it returns t or `never' to
-`require-match'.  `company-auto-complete' also takes precedence over this."
+`require-match'.  `company-auto-commit' also takes precedence over this."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
                         'company-explicit-action-p)
                  (const :tag "On" t)))
 
-(defcustom company-auto-complete nil
-  "Determines when to auto-complete.
-If this is enabled, all characters from `company-auto-complete-chars'
+(define-obsolete-variable-alias
+  'company-auto-complete
+  'company-auto-commit
+  "0.9.14")
+
+(defcustom company-auto-commit nil
+  "Determines whether to auto-commit.
+If this is enabled, all characters from `company-auto-commit-chars'
 trigger insertion of the selected completion candidate.
 This can also be a function."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
                         'company-explicit-action-p)
-                 (const :tag "On" t)))
+                 (const :tag "On" t))
+  :package-version '(company . "0.9.14"))
 
-(defcustom company-auto-complete-chars '(?\  ?\) ?.)
-  "Determines which characters trigger auto-completion.
-See `company-auto-complete'.  If this is a string, each string character
-triggers auto-completion.  If it is a list of syntax description characters (see
-`modify-syntax-entry'), all characters with that syntax auto-complete.
+(define-obsolete-variable-alias
+  'company-auto-complete-chars
+  'company-auto-commit-chars
+  "0.9.14")
+
+(defcustom company-auto-commit-chars '(?\  ?\) ?.)
+  "Determines which characters trigger auto-commit.
+See `company-auto-commit'.  If this is a string, each character in it
+triggers auto-commit.  If it is a list of syntax description characters (see
+`modify-syntax-entry'), characters with any of those syntaxes do that.
 
 This can also be a function, which is called with the new input and should
-return non-nil if company should auto-complete.
+return non-nil if company should auto-commit.
 
-A character that is part of a valid candidate never triggers auto-completion."
+A character that is part of a valid completion never triggers auto-commit."
   :type '(choice (string :tag "Characters")
                  (set :tag "Syntax"
                       (const :tag "Whitespace" ?\ )
@@ -592,7 +603,8 @@ A character that is part of a valid candidate never triggers auto-completion."
                       (const :tag "Character-quote." ?/)
                       (const :tag "Generic string fence." ?|)
                       (const :tag "Generic comment fence." ?!))
-                 (function :tag "Predicate function")))
+                 (function :tag "Predicate function"))
+  :package-version '(company . "0.9.14"))
 
 (defcustom company-idle-delay .5
   "The idle delay in seconds until completion starts automatically.
@@ -1105,10 +1117,6 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 
 (defvar-local company--manual-prefix nil)
 
-(defvar company--auto-completion nil
-  "Non-nil when current candidate is being inserted automatically.
-Controlled by `company-auto-complete'.")
-
 (defvar-local company--point-max nil)
 
 (defvar-local company-point nil)
@@ -1509,18 +1517,18 @@ prefix match (same case) will be prioritized."
                  (funcall company-require-match)
                (eq company-require-match t))))))
 
-(defun company-auto-complete-p (input)
-  "Return non-nil if INPUT should trigger auto-completion."
-  (and (if (functionp company-auto-complete)
-           (funcall company-auto-complete)
-         company-auto-complete)
-       (if (functionp company-auto-complete-chars)
-           (funcall company-auto-complete-chars input)
-         (if (consp company-auto-complete-chars)
+(defun company-auto-commit-p (input)
+  "Return non-nil if INPUT should trigger auto-commit."
+  (and (if (functionp company-auto-commit)
+           (funcall company-auto-commit)
+         company-auto-commit)
+       (if (functionp company-auto-commit-chars)
+           (funcall company-auto-commit-chars input)
+         (if (consp company-auto-commit-chars)
              (memq (char-syntax (string-to-char input))
-                   company-auto-complete-chars)
+                   company-auto-commit-chars)
            (string-match (regexp-quote (substring input 0 1))
-                          company-auto-complete-chars)))))
+                          company-auto-commit-chars)))))
 
 (defun company--incremental-p ()
   (and (> (point) company-point)
@@ -1584,12 +1592,11 @@ prefix match (same case) will be prioritized."
       (company-update-candidates c)
       c)
      ((and (characterp last-command-event)
-           (company-auto-complete-p (string last-command-event)))
-      ;; auto-complete
+           (company-auto-commit-p (string last-command-event)))
+      ;; auto-commit
       (save-excursion
         (goto-char company-point)
-        (let ((company--auto-completion t))
-          (company-complete-selection))
+        (company-complete-selection)
         nil))
      ((not (company--incremental-p))
       (company-cancel))
