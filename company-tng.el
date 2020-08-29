@@ -37,11 +37,16 @@
 ;; need to confirm the entry.
 ;;
 ;; Usage:
-;; Enable`company-tng-mode' with:
-;;   (add-hook 'company-mode-hook 'company-tng-mode)
 ;;
-;; To apply the default configuration for company-tng call
-;; `company-tng-configure-default' from your init script.
+;; Enable `company-tng-mode' with:
+;;
+;;   (add-hook 'after-init-hook 'company-tng-mode)
+;;
+;; in your init script. It will set up the required frontend, as well as make a
+;; number of recommended configuration changes described below.
+;;
+;; To avoid these changes, if you want to tweak everything yourself, customize
+;;`company-tng-auto-configure' to nil.
 ;;
 ;; We recommend to bind TAB to `company-select-next', S-TAB to
 ;; `company-select-previous', and unbind RET and other now-unnecessary
@@ -70,8 +75,8 @@
 ;; continues typing would be surprising and undesirable, since the candidate was
 ;; already inserted into the buffer.
 ;;
-;; For this reason `company-tng-configure-default' disables arguments insertion
-;; for a number of popular backends.  If the backend you are using is not among
+;; For this reason `company-tng-mode' by default disables arguments insertion
+;; for a number of popular backends. If the backend you are using is not among
 ;; them, you might have to configure it not to do that yourself.
 ;;
 ;; YASnippet and company-tng both use TAB, which causes conflicts. The
