@@ -3,7 +3,7 @@
 ## Next
 
 * `company-tng-mode` has been added to replace both
-  `company-tng-configure-default' and the manual method of enabling
+  `company-tng-configure-default` and the manual method of enabling
   `company-tng-frontend` (see also `company-tng-auto-configure`). Also,
   `company-selection` can now have `nil` value, which means no selection.
 * `company-auto-complete` and `company-auto-complete-chars` have been renamed to
