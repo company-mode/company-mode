@@ -34,6 +34,7 @@
 (declare-function yas--template-content "yasnippet")
 (declare-function yas--template-expand-env "yasnippet")
 (declare-function yas--warning "yasnippet")
+(declare-function yas-minor-mode "yasnippet")
 
 (defvar company-yasnippet-annotation-fn
   (lambda (name)

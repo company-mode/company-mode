@@ -143,6 +143,8 @@ confirm the selection and finish the completion."
 (define-obsolete-function-alias 'company-tng-configure-default 'company-tng-mode "0.9.14"
   "Applies the default configuration to enable company-tng.")
 
+(declare-function eglot--snippet-expansion-fn "eglot")
+
 ;;;###autoload
 (define-minor-mode company-tng-mode
  "This minor mode enables `company-tng-frontend'."
