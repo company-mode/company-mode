@@ -40,6 +40,7 @@
 (defvar company-cmake-executable-arguments
   '("--help-command-list"
     "--help-module-list"
+    "--help-property-list"
     "--help-variable-list")
   "The arguments we pass to cmake, separately.
 They affect which types of symbols we get completion candidates for.")
