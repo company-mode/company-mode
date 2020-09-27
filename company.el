@@ -3238,10 +3238,12 @@ Delay is determined by `company-tooltip-idle-delay'."
                                      'face 'company-echo))
               (cl-incf len 3)
               (cl-incf i)
-              (add-text-properties 3 (+ 3 (string-width company-common))
+              ;; FIXME: Add support for the `match' backend action, and thus,
+              ;; non-prefix matches.
+              (add-text-properties 3 (+ 3 (string-width (or company-common "")))
                                    '(face company-echo-common) comp))
           (setq comp (propertize comp 'face 'company-echo))
-          (add-text-properties 0 (string-width company-common)
+          (add-text-properties 0 (string-width (or company-common ""))
                                '(face company-echo-common) comp))
         (if (>= len limit)
             (setq candidates nil)
