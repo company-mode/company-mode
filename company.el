@@ -2746,6 +2746,22 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (cl-decf ww (1- (length (aref buffer-display-table ?\n)))))
     ww))
 
+(defun company--face-attribute (face attr)
+  ;; Like `face-attribute', but accounts for faces that have been remapped to
+  ;; another face, a list of faces, or a face spec.
+  (cond ((symbolp face)
+         (let ((remap (cadr (assq face face-remapping-alist))))
+           (if remap
+               (company--face-attribute remap attr)
+             (face-attribute face attr nil t))))
+        ((keywordp (car-safe face))
+         (or (plist-get face attr)
+             (company--face-attribute (plist-get face :inherit))))
+        ((listp face)
+         (cl-find-if #'stringp
+                     (mapcar (lambda (f) (company--face-attribute f attr))
+                             face)))))
+
 (defun company--replacement-string (lines old column nl &optional align-top)
   (cl-decf column company-tooltip-margin)
 
@@ -2782,7 +2798,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (let* ((nl-face (list
                      :extend t
                      :inverse-video nil
-                     :background (face-attribute 'default :background)))
+                     :background (company--face-attribute 'default :background)))
            (str (apply #'concat
                        (when nl " \n")
                        (cl-mapcan
