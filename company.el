@@ -2803,7 +2803,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (let* ((nl-face (list
                      :extend t
                      :inverse-video nil
-                     :background (company--face-attribute 'default :background)))
+                     :background (or (company--face-attribute 'default :background)
+                                     (face-attribute 'default :background nil t))))
            (str (apply #'concat
                        (when nl " \n")
                        (cl-mapcan
