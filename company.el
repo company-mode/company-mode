@@ -2749,7 +2749,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company--face-attribute (face attr)
   ;; Like `face-attribute', but accounts for faces that have been remapped to
   ;; another face, a list of faces, or a face spec.
-  (cond ((symbolp face)
+  (cond ((null face) nil)
+        ((symbolp face)
          (let ((remap (cdr (assq face face-remapping-alist))))
            (if remap
                (company--face-attribute
@@ -2802,7 +2803,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (let* ((nl-face (list
                      :extend t
                      :inverse-video nil
-                     :background (company--face-attribute 'default :background)))
+                     :background (or (company--face-attribute 'default :background)
+                                     (face-attribute 'default :background nil t))))
            (str (apply #'concat
                        (when nl " \n")
                        (cl-mapcan
