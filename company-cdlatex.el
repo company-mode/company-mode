@@ -32,16 +32,16 @@
 (declare-function org-inside-LaTeX-fragment-p "org")
 
 ;;;###autoload
-(defun company-cdlatex-backend (command &optional arg &rest ignored)
+(defun company-cdlatex (command &optional arg &rest ignored)
     "`company-mode' backend for `cdlatex'.
 
 Suggest cdlatex-commands and expand them using `cdlatex-tab'.
 Works in `org-mode' latex fragments and `latex-mode'."
     (interactive (list 'interactive))
     (cl-case command
-      (interactive (company-begin-backend 'company-cdlatex-backend))
+      (interactive (company-begin-backend 'company-cdlatex))
       (prefix (if (and (or (org-inside-LaTeX-fragment-p)
-                           (eq 'major-mode 'latex-mode)))
+                           (eq major-mode 'latex-mode)))
                   (let ((prefix
                          (if (looking-at "\\$\\|\\_>")
                              (buffer-substring (point) (save-excursion (skip-syntax-backward "w_")
