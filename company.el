@@ -1203,6 +1203,7 @@ update if FORCE-UPDATE."
     (let* ((offset (if company-selection-default 0 1))
            (company-candidates-length
             (+ company-candidates-length offset)))
+      (setq selection (+ selection offset))
       (setq selection
             (if company-selection-wrap-around
                 (mod selection company-candidates-length)
@@ -2065,8 +2066,7 @@ meant for no selection."
     (let ((selection (+ (or arg 1)
                         (or company-selection
                             company-selection-default
-                            -1)
-                        (if company-selection-default 0 1))))
+                            -1))))
       (company-set-selection selection))))
 
 (defun company-select-previous (&optional arg)
