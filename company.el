@@ -2098,6 +2098,16 @@ With ARG, move by that many elements."
     (company-abort)
     (company--unread-this-command-keys)))
 
+(defun company-select-first ()
+  "Select the first completion candidate."
+  (interactive)
+  (company-set-selection 0))
+
+(defun company-select-last ()
+  "Select the last completion candidate."
+  (interactive)
+  (company-set-selection (1- company-candidates-length)))
+
 (defun company-next-page ()
   "Select the candidate one page further."
   (interactive)

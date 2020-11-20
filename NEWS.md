@@ -2,6 +2,7 @@
 
 ## Next
 
+* New commands `company-select-first` and `company-select-last`.
 * `company-tng-mode` has been added to replace both
   `company-tng-configure-default` and the manual method of enabling
   `company-tng-frontend` (see also `company-tng-auto-configure`). Also,
