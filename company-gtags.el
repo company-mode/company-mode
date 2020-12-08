@@ -37,8 +37,7 @@
   'company-gtags-gnu-global-program-name
   'company-gtags-executable "earlier")
 
-(defcustom company-gtags-executable
-  (executable-find "global")
+(defcustom company-gtags-executable nil
   "Location of GNU global executable."
   :type 'string)
 
@@ -48,6 +47,7 @@
   :package-version '(company . "0.8.1"))
 
 (defvar-local company-gtags--tags-available-p 'unknown)
+(defvar-local company-gtags--executable 'unknown)
 
 (defcustom company-gtags-modes '(prog-mode jde-mode)
   "Modes that use `company-gtags'.
@@ -62,30 +62,41 @@ completion."
             (locate-dominating-file buffer-file-name "GTAGS"))
     company-gtags--tags-available-p))
 
+(defun company-gtags--executable-p ()
+  (cond
+   (company-gtags-executable)
+   ((eq company-gtags--executable 'unknown)
+    (setq-local company-gtags--executable (if (version<= "27" emacs-version)
+					      (executable-find "global" t)
+					    (executable-find "global"))))
+   (t company-gtags--executable)))
+
 (defun company-gtags--fetch-tags (prefix)
-  (with-temp-buffer
-    (let (tags)
-      ;; For some reason Global v 6.6.3 is prone to returning exit status 1
-      ;; even on successful searches when '-T' is used.
-      (when (/= 3 (process-file company-gtags-executable nil
-                               ;; "-T" goes through all the tag files listed in GTAGSLIBPATH
-                               (list (current-buffer) nil) nil "-xGqT" (concat "^" prefix)))
-        (goto-char (point-min))
-        (cl-loop while
-                 (re-search-forward (concat
-                                     "^"
-                                     "\\([^ ]*\\)" ;; completion
-                                     "[ \t]+\\([[:digit:]]+\\)" ;; linum
-                                     "[ \t]+\\([^ \t]+\\)" ;; file
-                                     "[ \t]+\\(.*\\)" ;; definition
-                                     "$"
-                                     ) nil t)
-                 collect
-                 (propertize (match-string 1)
-                             'meta (match-string 4)
-                             'location (cons (expand-file-name (match-string 3))
-                                             (string-to-number (match-string 2)))
-                             ))))))
+  "Call global executable "
+  (let ((caller-buffer (current-buffer)))
+    (with-temp-buffer
+      (let ((temp-buffer (current-buffer)))
+        (when (with-current-buffer caller-buffer
+                ;; Execute the command in the local buffer but output in the temporal one.
+                (/= 3 (process-file (company-gtags--executable-p) nil
+                                    ;; "-T" goes through all the tag files listed in GTAGSLIBPATH
+                                    temp-buffer nil "-xGqT" (concat "^" prefix))))
+          (goto-char (point-min))
+          (cl-loop while
+                   (re-search-forward (concat
+                                       "^"
+                                       "\\([^ ]*\\)" ;; completion
+                                       "[ \t]+\\([[:digit:]]+\\)" ;; linum
+                                       "[ \t]+\\([^ \t]+\\)" ;; file
+                                       "[ \t]+\\(.*\\)" ;; definition
+                                       "$"
+                                       ) nil t)
+                   collect
+                   (propertize (match-string 1)
+                               'meta (match-string 4)
+                               'location (cons (expand-file-name (match-string 3))
+                                               (string-to-number (match-string 2)))
+                               )))))))
 
 (defun company-gtags--annotation (arg)
   (let ((meta (get-text-property 0 'meta arg)))
@@ -98,7 +109,7 @@ completion."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-gtags))
-    (prefix (and company-gtags-executable
+    (prefix (and (company-gtags--executable-p)
                  buffer-file-name
                  (apply #'derived-mode-p company-gtags-modes)
                  (not (company-in-string-or-comment))
