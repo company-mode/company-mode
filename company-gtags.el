@@ -37,7 +37,8 @@
   'company-gtags-gnu-global-program-name
   'company-gtags-executable "earlier")
 
-(defcustom company-gtags-executable nil
+(defcustom company-gtags-executable
+  (executable-find "global")
   "Location of GNU global executable."
   :type 'string)
 
@@ -64,12 +65,13 @@ completion."
 
 (defun company-gtags--executable-p ()
   (cond
-   (company-gtags-executable)
-   ((eq company-gtags--executable 'unknown)
-    (setq-local company-gtags--executable (if (version<= "27" emacs-version)
-					      (executable-find "global" t)
-					    (executable-find "global"))))
-   (t company-gtags--executable)))
+   ((not (eq company-gtags--executable 'unknown)) ;; the value is already cached
+    company-gtags--executable)
+   ((and (version<= "27" emacs-version)           ;; can search remotely to set
+         (file-remote-p default-directory))
+    (setq-local company-gtags--executable (executable-find "global" t)))
+   (t                                     ;; use default value (searched locally)
+    (setq-local company-gtags--executable company-gtags-executable))))
 
 (defun company-gtags--fetch-tags (prefix)
   "Call global executable "
