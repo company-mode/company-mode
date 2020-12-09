@@ -69,7 +69,22 @@ completion."
     company-gtags--executable)
    ((and (version<= "27" emacs-version)           ;; can search remotely to set
          (file-remote-p default-directory))
-    (setq-local company-gtags--executable (executable-find "global" t)))
+
+    (with-connection-local-variables
+     (if (boundp 'company-gtags--executable-connection)
+         (setq-local company-gtags--executable     ;; use if defined as connection-local
+                     company-gtags--executable-connection)
+
+       ;; Else search and set as connection local for next uses.
+       (setq-local company-gtags--executable (executable-find "global" t))
+       (let* ((host (file-remote-p default-directory 'host))
+              (symvars (intern (concat host "-vars")))) ;; profile name
+
+         (connection-local-set-profile-variables
+          symvars
+          `((company-gtags--executable-connection . ,company-gtags--executable)))
+
+         (connection-local-set-profiles `(:machine ,host) symvars)))))
    (t                                     ;; use default value (searched locally)
     (setq-local company-gtags--executable company-gtags-executable))))
 
