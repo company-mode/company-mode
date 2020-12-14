@@ -63,7 +63,7 @@ completion."
             (locate-dominating-file buffer-file-name "GTAGS"))
     company-gtags--tags-available-p))
 
-(defun company-gtags--executable-p ()
+(defun company-gtags--executable ()
   (cond
    ((not (eq company-gtags--executable 'unknown)) ;; the value is already cached
     company-gtags--executable)
@@ -95,7 +95,7 @@ completion."
       (let ((temp-buffer (current-buffer)))
         (when (with-current-buffer caller-buffer
                 ;; Execute the command in the local buffer but output in the temporal one.
-                (/= 3 (process-file (company-gtags--executable-p) nil
+                (/= 3 (process-file (company-gtags--executable) nil
                                     ;; "-T" goes through all the tag files listed in GTAGSLIBPATH
                                     temp-buffer nil "-xGqT" (concat "^" prefix))))
           (goto-char (point-min))
@@ -126,7 +126,7 @@ completion."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-gtags))
-    (prefix (and (company-gtags--executable-p)
+    (prefix (and (company-gtags--executable)
                  buffer-file-name
                  (apply #'derived-mode-p company-gtags-modes)
                  (not (company-in-string-or-comment))
