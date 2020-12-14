@@ -133,8 +133,12 @@ so we can't just use the preceding variable instead.")
                     (setq match-start nil))))
            (nreverse chunks)))))
     (`duplicates t)
-    (`no-cache t)   ;Not much can be done here, as long as we handle
-                    ;non-prefix matches.
+    (`no-cache
+     ;; since we eventually handle non-prefix matches, we're no-cache by
+     ;; default, unless the backend declares it's giving us the full set by
+     ;; setting a flag.
+     (null (plist-get (nthcdr 4 company-capf--current-completion-data)
+                      :company-cache)))
     (`meta
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-docsig)))

@@ -22,6 +22,11 @@
   users these days, with
   ([emacs-eclim](https://github.com/emacs-eclim/emacs-eclim/)) declared obsolete
   in favor of `lsp-java`. Though it used its own backend anyway.
+* The `company-capf` backend will pick up on a `:company-cache` metadata element
+  on the capf function (similar to `:company-location` or `:company-doc-buffer`)
+  and use it to control caching behaviour.  The new element's value can be set
+  to non-nil if the capf function ensures it supplies the full set of candidates
+  regardless of prefix.
 
 ## 2020-07-26 (0.9.13)
 
