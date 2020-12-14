@@ -85,8 +85,8 @@ completion."
           `((company-gtags--executable-connection . ,company-gtags--executable)))
 
          (connection-local-set-profiles `(:machine ,host) symvars)))))
-   (t                                     ;; use default value (searched locally)
-    (setq-local company-gtags--executable company-gtags-executable))))
+   (t     ;; use default value (searched locally)
+    company-gtags-executable)))
 
 (defun company-gtags--fetch-tags (prefix)
   "Call global executable "
