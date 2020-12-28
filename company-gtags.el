@@ -84,7 +84,8 @@ completion."
           symvars
           `((company-gtags--executable-connection . ,company-gtags--executable)))
 
-         (connection-local-set-profiles `(:machine ,host) symvars)))))
+         (connection-local-set-profiles `(:machine ,host) symvars))
+       company-gtags--executable)))
    (t     ;; use default value (searched locally)
     company-gtags-executable)))
 
