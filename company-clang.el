@@ -136,6 +136,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (let ((pattern (format company-clang--completion-pattern
                          (regexp-quote prefix)))
         (case-fold-search nil)
+        (results (make-hash-table :test 'equal :size (/ (point-max) 100)))
         lines match)
     (while (re-search-forward pattern nil t)
       (setq match (match-string-no-properties 1))
@@ -144,11 +145,21 @@ or automatically through a custom `company-clang-prefix-guesser'."
           (when (string-match ":" match)
             (setq match (substring match 0 (match-beginning 0)))))
         (let ((meta (match-string-no-properties 2)))
-          (when (and meta (not (string= match meta)))
-            (put-text-property 0 1 'meta
-                               (company-clang--strip-formatting meta)
-                               match)))
-        (push match lines)))
+          ;; Avoiding duplicates:
+          ;; https://github.com/company-mode/company-mode/issues/841
+          (cond
+           ;; Either meta != completion (not a macro)
+           ((not (equal match meta))
+            (puthash match meta results))
+           ;; Or it's the first time we see this completion
+           ((eq (gethash match results 'none) 'none)
+            (puthash match nil results))))))
+    (maphash
+     (lambda (match meta)
+       (when meta
+         (put-text-property 0 1 'meta (company-clang--strip-formatting meta) match))
+       (push match lines))
+     results)
     lines))
 
 (defun company-clang--meta (candidate)

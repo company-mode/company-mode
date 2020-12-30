@@ -1,5 +1,30 @@
 # History of user-visible changes
 
+## Next
+
+* `company-gtags` on remote hosts is improved
+  ([#1037](https://github.com/company-mode/company-mode/pull/1037)).
+* New commands `company-select-first` and `company-select-last`.
+* `company-tng-mode` has been added to replace both
+  `company-tng-configure-default` and the manual method of enabling
+  `company-tng-frontend` (see also `company-tng-auto-configure`). Also,
+  `company-selection` can now have `nil` value, which means no selection.
+* `company-auto-complete` and `company-auto-complete-chars` have been renamed to
+  `company-auto-commit` and `company-auto-commit-chars` respectively.
+* `company-clang` filters out duplicates
+  ([#841](https://github.com/company-mode/company-mode/issues/841)).
+* New user option `company-tooltip-width-grow-only`.
+* `company-xcode` has been removed. It has not been useful for years now.
+* `company-clang` has been moved to after `company-capf` in the default value of
+  `company-backends`. So now if there is an active completion function in
+  `completion-at-point-functions`, it will have priority over
+  `company-clang`. Unless it's `tags-completion-at-point-function` (this one is
+  still skipped explicitly).
+* `company-eclim` has been removed. Eclim is generally not recommended for Emacs
+  users these days, with
+  ([emacs-eclim](https://github.com/emacs-eclim/emacs-eclim/)) declared obsolete
+  in favor of `lsp-java`. Though it used its own backend anyway.
+
 ## 2020-07-26 (0.9.13)
 
 * `company-clang`: error handling is more permissive.

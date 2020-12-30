@@ -38,14 +38,15 @@
 ;;
 ;; Usage:
 ;;
-;; To apply the default configuration for company-tng call
-;; `company-tng-configure-default' from your init script.
+;; Enable `company-tng-mode' with:
 ;;
-;; You can also configure company-tng manually:
+;;   (add-hook 'after-init-hook 'company-tng-mode)
 ;;
-;; Add `company-tng-frontend' to `company-frontends':
+;; in your init script. It will set up the required frontend, as well as make a
+;; number of recommended configuration changes described below.
 ;;
-;;   (add-to-list 'company-frontends 'company-tng-frontend)
+;; To avoid these changes, if you want to tweak everything yourself, customize
+;;`company-tng-auto-configure' to nil.
 ;;
 ;; We recommend to bind TAB to `company-select-next', S-TAB to
 ;; `company-select-previous', and unbind RET and other now-unnecessary
@@ -74,8 +75,8 @@
 ;; continues typing would be surprising and undesirable, since the candidate was
 ;; already inserted into the buffer.
 ;;
-;; For this reason `company-tng-configure-default' disables arguments insertion
-;; for a number of popular backends.  If the backend you are using is not among
+;; For this reason `company-tng-mode' by default disables arguments insertion
+;; for a number of popular backends. If the backend you are using is not among
 ;; them, you might have to configure it not to do that yourself.
 ;;
 ;; YASnippet and company-tng both use TAB, which causes conflicts. The
@@ -105,25 +106,22 @@ confirm the selection and finish the completion."
     (show
      (let ((ov (make-overlay (point) (point))))
        (setq company-tng--overlay ov)
-       (overlay-put ov 'priority 2))
-     (advice-add 'company-select-next :before-until 'company-tng--allow-unselected)
-     (advice-add 'company-fill-propertize :filter-args 'company-tng--adjust-tooltip-highlight))
+       (overlay-put ov 'priority 2)))
     (update
-     (let ((ov company-tng--overlay)
-           (selected (nth company-selection company-candidates))
-           (prefix (length company-prefix)))
+     (let* ((ov company-tng--overlay)
+            (selected (and company-selection
+                           (nth company-selection company-candidates)))
+            (prefix (length company-prefix)))
        (move-overlay ov (- (point) prefix) (point))
        (overlay-put ov
                     (if (= prefix 0) 'after-string 'display)
-                    (and company-selection-changed selected))))
+                    selected)))
     (hide
      (when company-tng--overlay
        (delete-overlay company-tng--overlay)
-       (kill-local-variable 'company-tng--overlay))
-     (advice-remove 'company-select-next 'company-tng--allow-unselected)
-     (advice-remove 'company-fill-propertize 'company-tng--adjust-tooltip-highlight))
+       (kill-local-variable 'company-tng--overlay)))
     (pre-command
-     (when (and company-selection-changed
+     (when (and company-selection
                 (not (company--company-command-p (this-command-keys))))
        (company--unread-this-command-keys)
        (setq this-command 'company-complete-selection)))))
@@ -133,65 +131,51 @@ confirm the selection and finish the completion."
 (defvar company-rtags-insert-arguments)
 (defvar lsp-enable-snippet)
 
+(defgroup company-tng nil
+  "Company Tab and Go."
+  :group 'company)
+
+(defcustom company-tng-auto-configure t
+  "Automatically apply default configure when enable `company-tng-mode'."
+  :type 'boolean)
+
 ;;;###autoload
-(defun company-tng-configure-default ()
-  "Applies the default configuration to enable company-tng."
-  (setq company-require-match nil)
-  (setq company-frontends '(company-tng-frontend
-                            company-pseudo-tooltip-frontend
-                            company-echo-metadata-frontend))
-  (setq company-clang-insert-arguments nil
-        company-semantic-insert-arguments nil
-        company-rtags-insert-arguments nil
-        lsp-enable-snippet nil)
-  (advice-add #'eglot--snippet-expansion-fn :override #'ignore)
-  (let ((keymap company-active-map))
-    (define-key keymap [return] nil)
-    (define-key keymap (kbd "RET") nil)
-    (define-key keymap [tab] 'company-select-next)
-    (define-key keymap (kbd "TAB") 'company-select-next)
-    (define-key keymap [backtab] 'company-select-previous)
-    (define-key keymap (kbd "S-TAB") 'company-select-previous)))
+(define-obsolete-function-alias 'company-tng-configure-default 'company-tng-mode "0.9.14"
+  "Applies the default configuration to enable company-tng.")
 
-(defun company-tng--allow-unselected (&optional arg)
-  "Advice `company-select-next' to allow for an 'unselected'
-state. Unselected means that no user interaction took place on the
-completion candidates and it's marked by setting
-`company-selection-changed' to nil. This advice will call the underlying
-`company-select-next' unless we need to transition to or from an unselected
-state.
+(declare-function eglot--snippet-expansion-fn "eglot")
 
-Possible state transitions:
-- (arg > 0) unselected -> first candidate selected
-- (arg < 0) first candidate selected -> unselected
-- (arg < 0 wrap-round) unselected -> last candidate selected
-- (arg < 0 no wrap-round) unselected -> unselected
-
-There is no need to advice `company-select-previous' because it calls
-`company-select-next' internally."
+;;;###autoload
+(define-minor-mode company-tng-mode
+ "This minor mode enables `company-tng-frontend'."
+  :init-value nil
+  :global t
   (cond
-   ;; Selecting next
-   ((or (not arg) (> arg 0))
-    (unless company-selection-changed
-      (company-set-selection (1- (or arg 1)) 'force-update)
-      t))
-   ;; Selecting previous
-   ((< arg 0)
-    (when (and company-selection-changed
-               (< (+ company-selection arg) 0))
-      (company-set-selection 0)
-      (setq company-selection-changed nil)
-      (company-call-frontends 'update)
-      t)
-    )))
-
-(defun company-tng--adjust-tooltip-highlight (args)
-  "Prevent the tooltip from highlighting the current selection if it wasn't
-made explicitly (i.e. `company-selection-changed' is true)"
-  (unless company-selection-changed
-    ;; The 4th arg of `company-fill-propertize' is selected
-    (setf (nth 3 args) nil))
-  args)
+   (company-tng-mode
+    (setq company-frontends
+          (add-to-list 'company-frontends 'company-tng-frontend))
+    (when company-tng-auto-configure
+      (setq company-require-match nil)
+      (setq company-frontends '(company-tng-frontend
+                                company-pseudo-tooltip-frontend
+                                company-echo-metadata-frontend))
+      (setq company-clang-insert-arguments nil
+            company-semantic-insert-arguments nil
+            company-rtags-insert-arguments nil
+            lsp-enable-snippet nil)
+      (advice-add #'eglot--snippet-expansion-fn :override #'ignore)
+      (let ((keymap company-active-map))
+        (define-key keymap [return] nil)
+        (define-key keymap (kbd "RET") nil)
+        (define-key keymap [tab] 'company-select-next)
+        (define-key keymap (kbd "TAB") 'company-select-next)
+        (define-key keymap [backtab] 'company-select-previous)
+        (define-key keymap (kbd "S-TAB") 'company-select-previous)))
+    (setq company-selection-default nil))
+   (t
+    (setq company-frontends
+          (delete 'company-tng-frontend company-frontends))
+    (setq company-selection-default 0))))
 
 (provide 'company-tng)
 ;;; company-tng.el ends here
