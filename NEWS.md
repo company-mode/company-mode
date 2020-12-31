@@ -27,6 +27,7 @@
 
 ## 2020-07-26 (0.9.13)
 
+* `company-select-mouse` is now a frontend action.
 * `company-clang`: error handling is more permissive.
 * `company-tng` stops disabling `post-completion` in backends
   ([#946](https://github.com/company-mode/company-mode/pull/946)). Instead,
