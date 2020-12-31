@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-select-mouse` is a new frontend action
+  ([#1045](https://github.com/company-mode/company-mode/pull/1045)).
 * `company-gtags` on remote hosts is improved
   ([#1037](https://github.com/company-mode/company-mode/pull/1037)).
 * New commands `company-select-first` and `company-select-last`.
@@ -27,7 +29,6 @@
 
 ## 2020-07-26 (0.9.13)
 
-* `company-select-mouse` is now a frontend action.
 * `company-clang`: error handling is more permissive.
 * `company-tng` stops disabling `post-completion` in backends
   ([#946](https://github.com/company-mode/company-mode/pull/946)). Instead,

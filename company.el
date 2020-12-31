@@ -2159,7 +2159,7 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
   "Select the candidate picked by the mouse."
   (interactive "e")
   (or (let ((company-mouse-event event))
-        (cl-position-if #'identity (company-call-frontends 'select-mouse)))
+        (cl-some #'identity (company-call-frontends 'select-mouse)))
       (progn
         (company-abort)
         (company--unread-this-command-keys)
