@@ -1188,11 +1188,11 @@ can retrieve meta-data for them."
                  (string-match-p "\\`company-" (symbol-name this-command)))))))
 
 (defun company-call-frontends (command)
-  (dolist (frontend company-frontends)
-    (condition-case-unless-debug err
-        (funcall frontend command)
-      (error (error "Company: frontend %s error \"%s\" on command %s"
-                    frontend (error-message-string err) command)))))
+  (cl-loop for frontend in company-frontends collect
+           (condition-case-unless-debug err
+               (funcall frontend command)
+             (error (error "Company: frontend %s error \"%s\" on command %s"
+                           frontend (error-message-string err) command)))))
 
 (defun company-set-selection (selection &optional force-update)
   "Set SELECTION for company candidates.
@@ -2151,31 +2151,19 @@ With ARG, move by that many elements."
 (defun company--event-col-row (event)
   (company--posn-col-row (event-start event)))
 
+(defvar company-mouse-event nil
+  "Holds the mouse event from `company-select-mouse'.
+For use in the `select-mouse' frontend action.  `let'-bound.")
+
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
   (interactive "e")
-  (let ((event-col-row (company--event-col-row event))
-        (ovl-row (company--row))
-        (ovl-height (and company-pseudo-tooltip-overlay
-                         (min (overlay-get company-pseudo-tooltip-overlay
-                                           'company-height)
-                              company-candidates-length))))
-    (if (and ovl-height
-             (company--inside-tooltip-p event-col-row ovl-row ovl-height))
-        (progn
-          (company-set-selection (+ (cdr event-col-row)
-                                    (1- company-tooltip-offset)
-                                    (if (and (eq company-tooltip-offset-display 'lines)
-                                             (not (zerop company-tooltip-offset)))
-                                        -1 0)
-                                    (- ovl-row)
-                                    (if (< ovl-height 0)
-                                        (- 1 ovl-height)
-                                      0)))
-          t)
-      (company-abort)
-      (company--unread-this-command-keys)
-      nil)))
+  (or (let ((company-mouse-event event))
+        (cl-position-if #'identity (company-call-frontends 'select-mouse)))
+      (progn
+        (company-abort)
+        (company--unread-this-command-keys)
+        nil)))
 
 (defun company-complete-mouse (event)
   "Insert the candidate picked by the mouse."
@@ -3066,14 +3054,14 @@ Returns a negative number if the tooltip should be displayed above point."
     (pre-command (company-pseudo-tooltip-hide-temporarily))
     (post-command
      (unless (when (overlayp company-pseudo-tooltip-overlay)
-              (let* ((ov company-pseudo-tooltip-overlay)
-                     (old-height (overlay-get ov 'company-height))
-                     (new-height (company--pseudo-tooltip-height)))
-                (and
-                 (>= (* old-height new-height) 0)
-                 (>= (abs old-height) (abs new-height))
-                 (equal (company-pseudo-tooltip-guard)
-                        (overlay-get ov 'company-guard)))))
+               (let* ((ov company-pseudo-tooltip-overlay)
+                      (old-height (overlay-get ov 'company-height))
+                      (new-height (company--pseudo-tooltip-height)))
+                 (and
+                  (>= (* old-height new-height) 0)
+                  (>= (abs old-height) (abs new-height))
+                  (equal (company-pseudo-tooltip-guard)
+                         (overlay-get ov 'company-guard)))))
        ;; Redraw needed.
        (company-pseudo-tooltip-show-at-point (point) (length company-prefix))
        (overlay-put company-pseudo-tooltip-overlay
@@ -3083,7 +3071,26 @@ Returns a negative number if the tooltip should be displayed above point."
     (hide (company-pseudo-tooltip-hide)
           (setq company-tooltip-offset 0))
     (update (when (overlayp company-pseudo-tooltip-overlay)
-              (company-pseudo-tooltip-edit company-selection)))))
+              (company-pseudo-tooltip-edit company-selection)))
+    (select-mouse
+     (let ((event-col-row (company--event-col-row company-mouse-event))
+           (ovl-row (company--row))
+           (ovl-height (and company-pseudo-tooltip-overlay
+                            (min (overlay-get company-pseudo-tooltip-overlay
+                                              'company-height)
+                                 company-candidates-length))))
+       (cond ((and ovl-height
+                   (company--inside-tooltip-p event-col-row ovl-row ovl-height))
+              (company-set-selection (+ (cdr event-col-row)
+                                        (1- company-tooltip-offset)
+                                        (if (and (eq company-tooltip-offset-display 'lines)
+                                                 (not (zerop company-tooltip-offset)))
+                                            -1 0)
+                                        (- ovl-row)
+                                        (if (< ovl-height 0)
+                                            (- 1 ovl-height)
+                                          0)))
+              t))))))
 
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
   "`company-pseudo-tooltip-frontend', but not shown for single candidates."
