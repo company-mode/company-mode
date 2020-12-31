@@ -1188,14 +1188,11 @@ can retrieve meta-data for them."
                  (string-match-p "\\`company-" (symbol-name this-command)))))))
 
 (defun company-call-frontends (command)
-  (let (success)
-    (dolist (frontend company-frontends)
-      (condition-case-unless-debug err
-          (when (funcall frontend command)
-            (setq success t))
-        (error (error "Company: frontend %s error \"%s\" on command %s"
-                      frontend (error-message-string err) command))))
-    success))
+  (cl-loop for frontend in company-frontends collect
+           (condition-case-unless-debug err
+               (funcall frontend command)
+             (error (error "Company: frontend %s error \"%s\" on command %s"
+                           frontend (error-message-string err) command)))))
 
 (defun company-set-selection (selection &optional force-update)
   "Set SELECTION for company candidates.
@@ -2162,7 +2159,7 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
   "Select the candidate picked by the mouse."
   (interactive "e")
   (or (let ((company-mouse-event event))
-        (company-call-frontends 'select-mouse))
+        (cl-position-if #'identity (company-call-frontends 'select-mouse)))
       (progn
         (company-abort)
         (company--unread-this-command-keys)
