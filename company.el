@@ -543,6 +543,16 @@ prefix it was started from."
   :type 'boolean
   :package-version '(company . "0.8.0"))
 
+(defcustom company-abort-on-unique-match t
+  "If non-nil, typing a full unique match aborts completion.
+
+You can still invoke `company-complete' manually to run the
+`post-completion' handler, though.
+
+If it's nil, completion will remain active until you type a prefix that
+doesn't match anything or finish it manually, e.g. with RET."
+  :type 'boolean)
+
 (defcustom company-require-match 'company-explicit-action-p
   "If enabled, disallow non-matching input.
 This can be a function do determine if a match is required.
@@ -1637,7 +1647,8 @@ prefix match (same case) will be prioritized."
                   company-backend backend
                   c (company-calculate-candidates company-prefix ignore-case))
             (cond
-             ((and (company--unique-match-p c company-prefix ignore-case)
+             ((and company-abort-on-unique-match
+                   (company--unique-match-p c company-prefix ignore-case)
                    (if company--manual-action
                        ;; If `company-manual-begin' was called, the user
                        ;; really wants something to happen.  Otherwise...

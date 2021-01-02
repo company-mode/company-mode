@@ -53,6 +53,7 @@
     (insert "abc")
     (company-mode)
     (let (company-frontends
+          (company-abort-on-unique-match t)
           (company-backends
            (list (lambda (command &optional _)
                    (cl-case command
@@ -60,6 +61,20 @@
                      (candidates '("abc")))))))
       (company-auto-begin)
       (should (equal nil company-candidates)))))
+
+(ert-deftest company-auto-begin-unique-cancels-not ()
+  (with-temp-buffer
+    (insert "abc")
+    (company-mode)
+    (let (company-frontends
+          company-abort-on-unique-match
+          (company-backends
+           (list (lambda (command &optional _)
+                   (cl-case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("abc")))))))
+      (company-auto-begin)
+      (should (equal '("abc") company-candidates)))))
 
 (ert-deftest company-manual-begin-unique-shows-completion ()
   (with-temp-buffer
