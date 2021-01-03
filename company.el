@@ -1606,7 +1606,8 @@ prefix match (same case) will be prioritized."
                           (- company-point (length company-prefix))))
               (company-calculate-candidates new-prefix ignore-case))))
     (cond
-     ((company--unique-match-p c new-prefix ignore-case)
+     ((and company-abort-on-unique-match
+           (company--unique-match-p c new-prefix ignore-case))
       ;; Handle it like completion was aborted, to differentiate from user
       ;; calling one of Company's commands to insert the candidate,
       ;; not to trigger template expansion, etc.
