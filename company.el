@@ -1033,6 +1033,9 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
          (cl-dolist (backend backends)
            (when (setq value (company--force-sync
                               backend (cons command args) backend))
+             (when (and (eq command 'ignore-case)
+                        (eq value 'keep-prefix))
+               (setq value t))
              (cl-return value)))))
       (_
        (let ((arg (car args)))
