@@ -1,6 +1,6 @@
 ;;; gtags-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2020  Free Software Foundation, Inc.
+;; Copyright (C) 2021  Free Software Foundation, Inc.
 
 ;; Author: Aymeric Agon-Rambosson
 
