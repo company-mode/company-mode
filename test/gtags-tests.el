@@ -24,32 +24,32 @@
 
 (ert-deftest company-gtags-cpp-macro-variable ()
   (let ((str (propertize
-	      "PGT_ADDRESS_MASK"
-	      'meta "#define PGT_ADDRESS_MASK 0xFFFFFFFFFF000")))
+              "PGT_ADDRESS_MASK"
+              'meta "#define PGT_ADDRESS_MASK 0xFFFFFFFFFF000")))
     (should (null (company-gtags 'annotation str)))))
 
 (ert-deftest company-gtags-cpp-macro-function ()
   (let ((str (propertize
-	      "ADDRESS_FROM_STACK"
-	      'meta "#define ADDRESS_FROM_STACK(a) ((TEXT_BASE > a) && (a >= STACK_BASE))")))
+              "ADDRESS_FROM_STACK"
+              'meta "#define ADDRESS_FROM_STACK(a) ((TEXT_BASE > a) && (a >= STACK_BASE))")))
     (should (equal (company-gtags 'annotation str)
-		   "(a)"))))
+                   "(a)"))))
 
 (ert-deftest company-gtags-C-function ()
   (let ((str (propertize
-	      "munmap"
-	      'meta "void munmap(struct task *ctx, vaddr_t vaddr)")))
+              "munmap"
+              'meta "void munmap(struct task *ctx, vaddr_t vaddr)")))
     (should (equal (company-gtags 'annotation str)
-		   "(struct task *ctx, vaddr_t vaddr)"))))
+                   "(struct task *ctx, vaddr_t vaddr)"))))
 
 (ert-deftest company-gtags-C-type ()
   (let ((str (propertize
-	      "uint64_t"
-	      'meta "typedef unsigned long int   uint64_t;")))
+              "uint64_t"
+              'meta "typedef unsigned long int   uint64_t;")))
     (should (null (company-gtags 'annotation str)))))
 
 (ert-deftest company-gtags-C-struct ()
   (let ((str (propertize
-	      "interrupt_context"
-	      'meta "struct interrupt_context")))
+              "interrupt_context"
+              'meta "struct interrupt_context")))
     (should (null (company-gtags 'annotation str)))))
