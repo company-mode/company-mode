@@ -116,8 +116,14 @@ completion."
 
 (defun company-gtags--annotation (arg)
   (let ((meta (get-text-property 0 'meta arg)))
-    (when (string-match (concat (regexp-quote arg) "\\(([^\)]*)\\).*") meta)
-      (match-string 1 meta))))
+    (when (string-match (concat (regexp-quote arg) " *(") meta)
+      (with-temp-buffer
+        (let ((start (match-end 0)))
+          (insert meta)
+          (goto-char start)
+          (forward-sexp)
+          (buffer-substring-no-properties
+           start (point)))))))
 
 ;;;###autoload
 (defun company-gtags (command &optional arg &rest ignored)

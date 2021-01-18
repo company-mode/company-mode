@@ -53,3 +53,10 @@
               "interrupt_context"
               'meta "struct interrupt_context")))
     (should (null (company-gtags 'annotation str)))))
+
+(ert-deftest company-gtags-C-function-with-lots-of-parens-in-arg ()
+  (let ((str (propertize
+              "test"
+              'meta "static void test(void (*foo)(void (*bar)(void)))")))
+    (should (equal (company-gtags 'annotation str)
+                   "(void (*foo)(void (*bar)(void)))"))))
