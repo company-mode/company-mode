@@ -2559,7 +2559,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 ;;; propertize
 
-(defsubst company-round-tab (arg)
+(defun company-round-tab (arg)
   (* (/ (+ arg tab-width) tab-width) tab-width))
 
 (defun company-plainify (str)
