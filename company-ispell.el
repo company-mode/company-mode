@@ -17,7 +17,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.
+;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
 
 ;;; Commentary:
@@ -28,6 +28,7 @@
 (require 'company)
 (require 'cl-lib)
 (require 'ispell)
+(require 'company-cache)
 
 (defgroup company-ispell nil
   "Completion backend using Ispell."
@@ -39,18 +40,51 @@ If nil, use `ispell-complete-word-dict'."
   :type '(choice (const :tag "default (nil)" nil)
                  (file :tag "dictionary" t)))
 
+(defcustom company-ispell-cache-results nil
+  "Maintain an in-memory cache of recent results."
+  :type 'boolean)
+
+(defcustom company-ispell-cache-size 1000
+  "The number of results the ispell-company cache can hold.
+Has no effect if company-ispell-cache-results is nil."
+  :type 'number)
+
+(defcustom company-ispell-cache-ignore-case t
+  "If the company-ispell cache should ignore case."
+  :type 'boolean)
+
 (defvar company-ispell-available 'unknown)
+
+(defvar company-ispell-cache
+  (company-lru-new :size company-ispell-cache-size)
+  "Holds the cached results of previous company-ispell searches.")
 
 (defalias 'company-ispell--lookup-words
   (if (fboundp 'ispell-lookup-words)
       'ispell-lookup-words
     'lookup-words))
 
+(defun company-ispell-lookup (word &optional lookup-dict)
+  "Cache aware lookup of WORD in LOOKUP-DICT.
+Respects `company-ispell-cache-results'."
+  (let ((word (if company-ispell-cache-ignore-case (upcase word) word)))
+    (if (not company-ispell-cache-results)
+        (company-ispell--lookup-words word lookup-dict)
+      (let ((cached (company-lru-get
+                     (cons word lookup-dict)
+                     company-ispell-cache 'empty)))
+        (if (eq 'empty cached)
+            (company-lru-put
+             (cons word lookup-dict)
+             (company-ispell--lookup-words word lookup-dict)
+             company-ispell-cache)
+          cached)))))
+
 (defun company-ispell-available ()
   (when (eq company-ispell-available 'unknown)
     (condition-case err
         (progn
-          (company-ispell--lookup-words "WHATEVER")
+          (company-ispell-lookup "WHATEVER")
           (setq company-ispell-available t))
       (error
        (message "Company-Ispell: %s" (error-message-string err))
@@ -66,7 +100,7 @@ If nil, use `ispell-complete-word-dict'."
     (prefix (when (company-ispell-available)
               (company-grab-word)))
     (candidates
-     (let ((words (company-ispell--lookup-words
+     (let ((words (company-ispell-lookup
                    arg
                    (or company-ispell-dictionary ispell-complete-word-dict)))
            (completion-ignore-case t))

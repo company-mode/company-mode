@@ -28,6 +28,12 @@
   users these days, with
   ([emacs-eclim](https://github.com/emacs-eclim/emacs-eclim/)) declared obsolete
   in favor of `lsp-java`. Though it used its own backend anyway.
+* `company-ispell` now has a built-in cache mechanism. It can be turned on by
+  setting `company-ispell-cache-results` to `t`. The cache size is set via
+  `company-ispell-cache-size`, and must be set before `company-ispell` is
+  loaded. The cache defaults to case insensitive because ispell defaults to case
+  insensitive, but this can be controlled by `company-ispell-cache-ignore-case`.
+  The cache is stored in `company-ispell-cache`.
 
 ## 2020-07-26 (0.9.13)
 
