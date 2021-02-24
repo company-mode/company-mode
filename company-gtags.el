@@ -94,7 +94,7 @@ completion."
     (let (tags)
       ;; For some reason Global v 6.6.3 is prone to returning exit status 1
       ;; even on successful searches when '-T' is used.
-      (when (/= 3 (process-file company-gtags-executable nil
+      (when (/= 3 (process-file (company-gtags--executable) nil
                                ;; "-T" goes through all the tag files listed in GTAGSLIBPATH
                                (list (current-buffer) nil) nil "-xGqT" (concat "^" prefix)))
         (goto-char (point-min))
