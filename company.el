@@ -64,6 +64,7 @@
 (require 'cl-lib)
 (require 'newcomment)
 (require 'pcase)
+(require 'find-func)
 
 ;;; Compatibility
 (eval-and-compile
@@ -441,6 +442,10 @@ completion.
 `post-completion': Called after a completion candidate has been inserted
 into the buffer.  The second argument is the candidate.  Can be used to
 modify it, e.g. to expand a snippet.
+
+`kind': The second argument is a completion candidate.  Return a symbol
+describing the kind of the candidate. Refer `company-vscode-icons-mapping' for
+the possible values.
 
 The backend should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
@@ -1389,6 +1394,90 @@ end of the match."
                  company-occurrence-prefer-closest-above)
           (const :tag "Prefer closest in any direction"
                  company-occurrence-prefer-any-closest)))
+
+(defvar company-vscode-icons-mapping
+  '((array . "symbol-array.png")
+    (boolean . "symbol-boolean.png")
+    (class . "symbol-class.png")
+    (color . "symbol-color.png")
+    (constant . "symbol-constant.png")
+    (enum-member . "symbol-enumerator-member.png")
+    (enum . "symbol-enumerator.png")
+    (event . "symbol-event.png")
+    (field . "symbol-field.png")
+    (interface . "symbol-interface.png")
+    (key . "symbol-key.png")
+    (keyword . "symbol-keyword.png")
+    (method . "symbol-method.png")
+    (function . "symbol-method.png")
+    (misc . "symbol-misc.png")
+    (module . "symbol-namespace.png")
+    (numeric . "symbol-numeric.png")
+    (operator . "symbol-operator.png")
+    (parameter . "symbol-parameter.png")
+    (property . "symbol-property.png")
+    (ruler . "symbol-ruler.png")
+    (snippet . "symbol-snippet.png")
+    (string . "symbol-string.png")
+    (struct . "symbol-structure.png")
+    (variable . "symbol-variable.png")))
+
+(defconst company-package-root
+  (file-name-as-directory
+   (expand-file-name "icons"
+                     (file-name-directory (find-library-name "company")))))
+
+(defcustom company-icon-size 15
+  "Default icons size."
+  :type 'integer)
+
+(defun company--icons-margin-function (icon-mapping root-dir candidate selected)
+  (if-let ((candidate candidate)
+           (kind (company-call-backend 'kind candidate))
+           (icon-file (alist-get kind icon-mapping)))
+      (let* ((bkg (face-attribute (if selected
+                                      'company-tooltip-selection
+                                    'company-tooltip)
+                                  :background))
+             (spec (list 'image
+                         :file (expand-file-name icon-file root-dir)
+                         :type 'png
+                         :width company-icon-size
+                         :height company-icon-size
+                         :ascent 'center
+                         :background (unless (eq bkg 'unspecified)
+                                       bkg))))
+        (concat
+         (propertize " " 'display spec)
+         (propertize " " 'display `(space . (:width ,(- 2 (car (image-size spec))))))))
+    "  "))
+
+(defun company-vscode-dark-icons-margin-function (candidate selected)
+  "Margin function which returns icons from vscode's dark theme."
+  (company--icons-margin-function company-vscode-icons-mapping
+                                  (expand-file-name "vscode-dark" company-package-root)
+                                  candidate
+                                  selected))
+
+(defun company-vscode-light-icons-margin-function (candidate selected)
+  "Margin function which returns icons from vscode's light theme."
+  (company--icons-margin-function company-vscode-icons-mapping
+                                  (expand-file-name "vscode-light" company-package-root)
+                                  candidate
+                                  selected))
+
+(defcustom company-format-margin-function nil
+  "Function to format the margin.
+It accepts 2 params `candidate' and `selected' and can be used for
+inserting prefix/image before the completion items. Typically, the
+functions call the backends with `kind' and then insert the appropriate
+image for the returned kind image. Function is called with (nil nil) to get
+the default margin."
+  :type '(choice
+          (const :tag "Disabled" nil)
+          (const :tag "VScode dark icons theme" company-vscode-dark-icons-margin-function)
+          (const :tag "VScode light icons theme" company-vscode-light-icons-margin-function)
+          (function :tag "Custom icon function.")))
 
 (defun company-occurrence-prefer-closest-above (pos match-beg match-end)
   "Give priority to the matches above point, then those below point."
@@ -2781,7 +2870,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                              face)))))
 
 (defun company--replacement-string (lines old column nl &optional align-top)
-  (cl-decf column company-tooltip-margin)
+  (cl-decf column (or (when company-format-margin-function
+                        (when-let (margin (funcall company-format-margin-function nil nil))
+                          (length margin)))
+                      company-tooltip-margin))
 
   (when (and align-top company-tooltip-flip-when-above)
     (setq lines (reverse lines)))
@@ -2878,9 +2970,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (cl-decf window-width (* 2 company-tooltip-margin))
     (when scrollbar-bounds (cl-decf window-width))
 
-    (dotimes (_ len)
+    (dotimes (i len)
       (let* ((value (pop lines-copy))
-             (annotation (company-call-backend 'annotation value)))
+             (annotation (company-call-backend 'annotation value))
+             (candidate-prefix (when company-format-margin-function
+                                 (funcall company-format-margin-function
+                                          value
+                                          (equal selection i)))))
         (setq value (company--clean-string value))
         (when annotation
           (setq annotation (company--clean-string annotation))
@@ -2888,8 +2984,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
             ;; `lisp-completion-at-point' adds a space.
             ;; FIXME: Use `string-trim' in Emacs 24.4
             (setq annotation (comment-string-strip annotation t nil))))
-        (push (cons value annotation) items)
+        (push (list value annotation candidate-prefix) items)
         (setq width (max (+ (length value)
+                            (length candidate-prefix)
                             (if (and annotation company-tooltip-align-annotations)
                                 (1+ (length annotation))
                               (length annotation)))
@@ -2915,9 +3012,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (dotimes (i len)
         (let* ((item (pop items))
                (str (car item))
-               (annotation (cdr item))
+               (annotation (cadr item))
+               (candidate-prefix (caddr item))
                (margin (company-space-string company-tooltip-margin))
-               (left margin)
+               (left (or candidate-prefix margin))
                (right margin)
                (width width))
           (when (< numbered 10)

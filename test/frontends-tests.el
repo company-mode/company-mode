@@ -255,6 +255,21 @@
                      " MIRAI﻿発﻿売2﻿カ﻿月 ")
                    (company--create-lines 0 999)))))
 
+(ert-deftest company-create-lines-with-format-function ()
+  :tags '(interactive)
+  (let* (company-show-numbers
+         (company-candidates '("ArrayList"))
+         (company-candidates-length 1)
+         (company-package-root default-directory)
+         (company-format-margin-function (lambda (candidate selected)
+                                           "XXX"))
+         (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
+    (should (ert-equal-including-properties
+             (car (company--create-lines 0 999))
+             #("XXXArrayList    " 0 16
+               (face (company-tooltip-selection company-tooltip)
+                     mouse-face (company-tooltip-mouse)))))))
+
 (ert-deftest company-fill-propertize-truncates-search-highlight ()
   (let ((company-search-string "foo")
         (company-backend #'ignore)
