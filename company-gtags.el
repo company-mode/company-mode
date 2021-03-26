@@ -121,7 +121,10 @@ completion."
         (let ((start (match-end 0)))
           (insert meta)
           (goto-char start)
-          (forward-sexp)
+          (condition-case nil
+              (forward-sexp)
+            (scan-error
+             (goto-char (point-max))))
           (buffer-substring-no-properties
            start (point)))))))
 

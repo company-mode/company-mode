@@ -60,3 +60,9 @@
               'meta "static void test(void (*foo)(void (*bar)(void)))")))
     (should (equal (company-gtags 'annotation str)
                    "(void (*foo)(void (*bar)(void)))"))))
+
+(ert-deftest company-gtags-C-function-multiline-args ()
+  (let ((str (propertize
+              "munmap"
+              'meta "void munmap(")))
+    (should (equal (company-gtags 'annotation str) "(" ))))
