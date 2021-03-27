@@ -1430,7 +1430,7 @@ end of the match."
   "Default icons size."
   :type 'integer)
 
-(defun company--icons-margin-function (icon-mapping root-dir candidate selected)
+(defun company--render-icons-margin (icon-mapping root-dir candidate selected)
   (if-let ((candidate candidate)
            (kind (company-call-backend 'kind candidate))
            (icon-file (alist-get kind icon-mapping)))
@@ -1451,19 +1451,19 @@ end of the match."
          (propertize " " 'display `(space . (:width ,(- 2 (car (image-size spec))))))))
     "  "))
 
-(defun company-vscode-dark-icons-margin-function (candidate selected)
+(defun company-vscode-dark-icons-margin (candidate selected)
   "Margin function which returns icons from vscode's dark theme."
-  (company--icons-margin-function company-vscode-icons-mapping
-                                  (expand-file-name "vscode-dark" company-icons-root)
-                                  candidate
-                                  selected))
+  (company--render-icons-margin company-vscode-icons-mapping
+                                (expand-file-name "vscode-dark" company-icons-root)
+                                candidate
+                                selected))
 
-(defun company-vscode-light-icons-margin-function (candidate selected)
+(defun company-vscode-light-icons-margin (candidate selected)
   "Margin function which returns icons from vscode's light theme."
-  (company--icons-margin-function company-vscode-icons-mapping
-                                  (expand-file-name "vscode-light" company-icons-root)
-                                  candidate
-                                  selected))
+  (company--render-icons-margin company-vscode-icons-mapping
+                                (expand-file-name "vscode-light" company-icons-root)
+                                candidate
+                                selected))
 
 (defcustom company-format-margin-function nil
   "Function to format the margin.
@@ -1474,8 +1474,8 @@ image for the returned kind image. Function is called with (nil nil) to get
 the default margin."
   :type '(choice
           (const :tag "Disabled" nil)
-          (const :tag "VScode dark icons theme" company-vscode-dark-icons-margin-function)
-          (const :tag "VScode light icons theme" company-vscode-light-icons-margin-function)
+          (const :tag "VScode dark icons theme" company-vscode-dark-icons-margin)
+          (const :tag "VScode light icons theme" company-vscode-light-icons-margin)
           (function :tag "Custom icon function.")))
 
 (defun company-occurrence-prefer-closest-above (pos match-beg match-end)
