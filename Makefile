@@ -21,11 +21,15 @@ clean:
 
 test:
 	${EMACS} -Q -nw -L . -l test/all.el \
+	--eval "(let (pop-up-windows) (ert '(not (tag gui))))"
+
+test-gui:
+	${EMACS} -Q -L . -l test/all.el \
 	--eval "(let (pop-up-windows) (ert t))"
 
 test-batch:
 	${EMACS} -Q --batch -L . -l test/all.el \
-	--eval "(ert-run-tests-batch-and-exit '(not (tag interactive)))"
+	--eval "(ert-run-tests-batch-and-exit '(not (or (tag interactive) (tag gui))))"
 
 compile:
 	${EMACS} -Q --batch -L . -f batch-byte-compile company.el company-*.el

@@ -255,6 +255,44 @@
                      " MIRAI﻿発﻿売2﻿カ﻿月 ")
                    (company--create-lines 0 999)))))
 
+(ert-deftest company-create-lines-with-format-function ()
+  (let* (company-show-numbers
+         (company-candidates '("ArrayList"))
+         (company-candidates-length 1)
+         (company-package-root default-directory)
+         (company-format-margin-function (lambda (candidate selected)
+                                           "XXX"))
+         (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
+    (should (ert-equal-including-properties
+             (car (company--create-lines 0 999))
+             #("XXXArrayList    " 0 16
+               (face (company-tooltip-selection company-tooltip)
+                     mouse-face (company-tooltip-mouse)))))))
+
+(ert-deftest company-create-lines-with-icons-format-function ()
+  :tags '(gui)
+  (let* (company-show-numbers
+         (company-icon-size 15)
+         (company-candidates '("ArrayList"))
+         (company-candidates-length 1)
+         (default-directory company-package-root)
+         (company-tooltip-maximum-width 20)
+         (company-tooltip-minimum-width 20)
+         (company-format-margin-function
+          'company-vscode-light-icons-margin-function)
+         (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
+    (let ((tooltip-line (car (company--create-lines 0 999))))
+      (should (equal tooltip-line "  ArrayList            "))
+      (should (equal
+               (car (get-text-property 1 'display tooltip-line))
+               'space))
+      (should (equal
+               (get-text-property 0 'display tooltip-line)
+               `(image :file ,(expand-file-name "vscode-light/symbol-class.png")
+                       :type png :width 15 :height 15 :ascent center
+                       :background ,(face-attribute 'company-tooltip-selection
+                                                    :background)))))))
+
 (ert-deftest company-fill-propertize-truncates-search-highlight ()
   (let ((company-search-string "foo")
         (company-backend #'ignore)
