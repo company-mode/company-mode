@@ -132,7 +132,9 @@ so we can't just use the preceding variable instead.")
                     (push (cons match-start pos) chunks)
                     (setq match-start nil))))
            (nreverse chunks)))))
-    (`duplicates t)
+    (`duplicates
+     (plist-get (nthcdr 4 company-capf--current-completion-data)
+                :company-duplicates))
     (`no-cache t)   ;Not much can be done here, as long as we handle
                     ;non-prefix matches.
     (`meta
