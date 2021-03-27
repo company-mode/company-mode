@@ -1395,31 +1395,31 @@ end of the match."
                  company-occurrence-prefer-any-closest)))
 
 (defvar company-vscode-icons-mapping
-  '((array . "symbol-array.png")
-    (boolean . "symbol-boolean.png")
-    (class . "symbol-class.png")
-    (color . "symbol-color.png")
-    (constant . "symbol-constant.png")
-    (enum-member . "symbol-enumerator-member.png")
-    (enum . "symbol-enumerator.png")
-    (event . "symbol-event.png")
-    (field . "symbol-field.png")
-    (interface . "symbol-interface.png")
-    (key . "symbol-key.png")
-    (keyword . "symbol-keyword.png")
-    (method . "symbol-method.png")
-    (function . "symbol-method.png")
-    (misc . "symbol-misc.png")
-    (module . "symbol-namespace.png")
-    (numeric . "symbol-numeric.png")
-    (operator . "symbol-operator.png")
-    (parameter . "symbol-parameter.png")
-    (property . "symbol-property.png")
-    (ruler . "symbol-ruler.png")
-    (snippet . "symbol-snippet.png")
-    (string . "symbol-string.png")
-    (struct . "symbol-structure.png")
-    (variable . "symbol-variable.png")))
+  '((array . "symbol-array.svg")
+    (boolean . "symbol-boolean.svg")
+    (class . "symbol-class.svg")
+    (color . "symbol-color.svg")
+    (constant . "symbol-constant.svg")
+    (enum-member . "symbol-enumerator-member.svg")
+    (enum . "symbol-enumerator.svg")
+    (event . "symbol-event.svg")
+    (field . "symbol-field.svg")
+    (interface . "symbol-interface.svg")
+    (key . "symbol-key.svg")
+    (keyword . "symbol-keyword.svg")
+    (method . "symbol-method.svg")
+    (function . "symbol-method.svg")
+    (misc . "symbol-misc.svg")
+    (module . "symbol-namespace.svg")
+    (numeric . "symbol-numeric.svg")
+    (operator . "symbol-operator.svg")
+    (parameter . "symbol-parameter.svg")
+    (property . "symbol-property.svg")
+    (ruler . "symbol-ruler.svg")
+    (snippet . "symbol-snippet.svg")
+    (string . "symbol-string.svg")
+    (struct . "symbol-structure.svg")
+    (variable . "symbol-variable.svg")))
 
 (defconst company-icons-root
   (file-name-as-directory
@@ -1440,7 +1440,7 @@ end of the match."
                                   :background))
              (spec (list 'image
                          :file (expand-file-name icon-file root-dir)
-                         :type 'png
+                         :type 'svg
                          :width company-icon-size
                          :height company-icon-size
                          :ascent 'center

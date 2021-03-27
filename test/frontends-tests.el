@@ -288,8 +288,8 @@
                'space))
       (should (equal
                (get-text-property 0 'display tooltip-line)
-               `(image :file ,(expand-file-name "vscode-light/symbol-class.png")
-                       :type png :width 15 :height 15 :ascent center
+               `(image :file ,(expand-file-name "vscode-light/symbol-class.svg")
+                       :type svg :width 15 :height 15 :ascent center
                        :background ,(face-attribute 'company-tooltip-selection
                                                     :background)))))))
 
