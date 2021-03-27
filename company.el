@@ -64,7 +64,6 @@
 (require 'cl-lib)
 (require 'newcomment)
 (require 'pcase)
-(require 'find-func)
 
 ;;; Compatibility
 (eval-and-compile
@@ -1422,12 +1421,12 @@ end of the match."
     (struct . "symbol-structure.png")
     (variable . "symbol-variable.png")))
 
-(defconst company-package-root
+(defconst company-icons-root
   (file-name-as-directory
    (expand-file-name "icons"
-                     (file-name-directory (find-library-name "company")))))
+                     (file-name-directory (or load-file-name buffer-file-name)))))
 
-(defcustom company-icon-size 15
+(defcustom company-icon-size 30
   "Default icons size."
   :type 'integer)
 
@@ -1455,14 +1454,14 @@ end of the match."
 (defun company-vscode-dark-icons-margin-function (candidate selected)
   "Margin function which returns icons from vscode's dark theme."
   (company--icons-margin-function company-vscode-icons-mapping
-                                  (expand-file-name "vscode-dark" company-package-root)
+                                  (expand-file-name "vscode-dark" company-icons-root)
                                   candidate
                                   selected))
 
 (defun company-vscode-light-icons-margin-function (candidate selected)
   "Margin function which returns icons from vscode's light theme."
   (company--icons-margin-function company-vscode-icons-mapping
-                                  (expand-file-name "vscode-light" company-package-root)
+                                  (expand-file-name "vscode-light" company-icons-root)
                                   candidate
                                   selected))
 

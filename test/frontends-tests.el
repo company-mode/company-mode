@@ -272,6 +272,7 @@
 (ert-deftest company-create-lines-with-icons-format-function ()
   :tags '(gui)
   (let* (company-show-numbers
+         (company-icon-size 15)
          (company-candidates '("ArrayList"))
          (company-candidates-length 1)
          (default-directory company-package-root)
