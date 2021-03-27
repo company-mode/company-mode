@@ -1394,32 +1394,78 @@ end of the match."
           (const :tag "Prefer closest in any direction"
                  company-occurrence-prefer-any-closest)))
 
+(defvar company-vscode-icons-type
+  (if (image-type-available-p 'svg)
+      'svg
+    'png))
+
 (defvar company-vscode-icons-mapping
-  '((array . "symbol-array.png")
-    (boolean . "symbol-boolean.png")
-    (class . "symbol-class.png")
-    (color . "symbol-color.png")
-    (constant . "symbol-constant.png")
-    (enum-member . "symbol-enumerator-member.png")
-    (enum . "symbol-enumerator.png")
-    (event . "symbol-event.png")
-    (field . "symbol-field.png")
-    (interface . "symbol-interface.png")
-    (key . "symbol-key.png")
-    (keyword . "symbol-keyword.png")
-    (method . "symbol-method.png")
-    (function . "symbol-method.png")
-    (misc . "symbol-misc.png")
-    (module . "symbol-namespace.png")
-    (numeric . "symbol-numeric.png")
-    (operator . "symbol-operator.png")
-    (parameter . "symbol-parameter.png")
-    (property . "symbol-property.png")
-    (ruler . "symbol-ruler.png")
-    (snippet . "symbol-snippet.png")
-    (string . "symbol-string.png")
-    (struct . "symbol-structure.png")
-    (variable . "symbol-variable.png")))
+  (mapcar (lambda (mapping)
+            (setcdr mapping
+                    (concat (cdr mapping)
+                            (if (eq company-vscode-icons-type 'svg)
+                                ".svg"
+                              ".png")))
+            mapping)
+          '((array . "symbol-array")
+            (boolean . "symbol-boolean")
+            (class . "symbol-class")
+            (color . "symbol-color")
+            (constant . "symbol-constant")
+            (enum-member . "symbol-enumerator-member")
+            (enum . "symbol-enumerator")
+            (event . "symbol-event")
+            (field . "symbol-field")
+            (interface . "symbol-interface")
+            (key . "symbol-key")
+            (keyword . "symbol-keyword")
+            (method . "symbol-method")
+            (function . "symbol-method")
+            (misc . "symbol-misc")
+            (module . "symbol-namespace")
+            (numeric . "symbol-numeric")
+            (operator . "symbol-operator")
+            (parameter . "symbol-parameter")
+            (property . "symbol-property")
+            (ruler . "symbol-ruler")
+            (snippet . "symbol-snippet")
+            (string . "symbol-string")
+            (struct . "symbol-structure")
+            (variable . "symbol-variable"))))
+
+(defvar company-vscode-icons-mapping
+  (mapcar (lambda (mapping)
+            (setcdr mapping
+                    (concat (cdr mapping)
+                            (if (eq  company-vscode-icons-type 'svg)
+                                ".svg"
+                              ".png")))
+            mapping)
+          '((array . "symbol-array")
+            (boolean . "symbol-boolean")
+            (class . "symbol-class")
+            (color . "symbol-color")
+            (constant . "symbol-constant")
+            (enum-member . "symbol-enumerator-member")
+            (enum . "symbol-enumerator")
+            (event . "symbol-event")
+            (field . "symbol-field")
+            (interface . "symbol-interface")
+            (key . "symbol-key")
+            (keyword . "symbol-keyword")
+            (method . "symbol-method")
+            (function . "symbol-method")
+            (misc . "symbol-misc")
+            (module . "symbol-namespace")
+            (numeric . "symbol-numeric")
+            (operator . "symbol-operator")
+            (parameter . "symbol-parameter")
+            (property . "symbol-property")
+            (ruler . "symbol-ruler")
+            (snippet . "symbol-snippet")
+            (string . "symbol-string")
+            (struct . "symbol-structure")
+            (variable . "symbol-variable"))))
 
 (defconst company-icons-root
   (file-name-as-directory
@@ -1440,7 +1486,7 @@ end of the match."
                                   :background))
              (spec (list 'image
                          :file (expand-file-name icon-file root-dir)
-                         :type 'png
+                         :type company-vscode-icons-type
                          :width company-icon-size
                          :height company-icon-size
                          :ascent 'center
