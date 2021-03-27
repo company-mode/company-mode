@@ -275,11 +275,11 @@
          (company-icon-size 15)
          (company-candidates '("ArrayList"))
          (company-candidates-length 1)
-         (default-directory company-package-root)
+         (default-directory company-icons-root)
          (company-tooltip-maximum-width 20)
          (company-tooltip-minimum-width 20)
          (company-format-margin-function
-          'company-vscode-light-icons-margin-function)
+          'company-vscode-light-icons-margin)
          (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
     (let ((tooltip-line (car (company--create-lines 0 999))))
       (should (equal tooltip-line "  ArrayList            "))
