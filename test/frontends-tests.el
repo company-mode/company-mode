@@ -321,7 +321,7 @@
     (should (ert-equal-including-properties
              (company-fill-propertize str1 str2 8 nil nil nil)
              #("str1str2"
-               0 4 (face (company-tooltip) mouse-face (company-tooltip-mouse))
+               0 4 (face company-tooltip mouse-face (company-tooltip-mouse))
                4 8 (face (company-tooltip-annotation company-tooltip)
                          mouse-face (company-tooltip-mouse)))))))
 

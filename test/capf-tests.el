@@ -87,7 +87,7 @@
         render
         #("with-current-buffer"
           0 4 (face (company-tooltip-common company-tooltip))   ; "with"
-          4 19 (face (company-tooltip))))))))
+          4 19 (face company-tooltip)))))))
 
 
 
@@ -118,11 +118,11 @@
         render
         #("with-current-buffer"
           0 1 (face (company-tooltip-common company-tooltip))   ; "w"
-          1 4 (face (company-tooltip))                          ; "ith"
+          1 4 (face company-tooltip)                          ; "ith"
           4 6 (face (company-tooltip-common company-tooltip))   ; "-c"
-          6 12 (face (company-tooltip))                         ; "urrent"
+          6 12 (face company-tooltip)                         ; "urrent"
           12 14 (face (company-tooltip-common company-tooltip)) ; "-b"
-          14 19 (face (company-tooltip))))))))                  ; "uffer"
+          14 19 (face company-tooltip)))))))                  ; "uffer"
 
 (ert-deftest company-non-prefix-modest-capf-highlighting ()
   "Test highlighting for non-prefix `company-capf' in elisp"
@@ -142,7 +142,7 @@
         render
         #("with-current-buffer"
           0 14 (face (company-tooltip-common company-tooltip)); "with-current-b"
-          14 19 (face (company-tooltip))))))))                ; "uffer"
+          14 19 (face company-tooltip)))))))                ; "uffer"
 
 (provide 'capf-tests)
 ;;; capf-tests.el ends here
