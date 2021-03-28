@@ -1396,7 +1396,7 @@ end of the match."
    (expand-file-name "icons"
                      (file-name-directory (or load-file-name buffer-file-name)))))
 
-(defcustom company-icon-size 30
+(defcustom company-icon-size 15
   "Default icons size."
   :type 'integer)
 
