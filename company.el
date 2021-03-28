@@ -1396,9 +1396,12 @@ end of the match."
    (expand-file-name "icons"
                      (file-name-directory (or load-file-name buffer-file-name)))))
 
-(defcustom company-icon-size 15
-  "Default icons size."
-  :type 'integer)
+(defcustom company-icon-size '(auto-scale . 15)
+  "Size of icons indicating completion kind in the popup."
+  :type '(choice (integer :tag "Size in pixels" :value 15)
+                 (cons :tag "Size in pixels, scaled 2x on HiDPI screens"
+                       (const auto-scale)
+                       (integer :value 15))))
 
 (defun company--render-icons-margin (icon-mapping root-dir candidate selected)
   (if-let ((candidate candidate)
@@ -1408,11 +1411,21 @@ end of the match."
                                       'company-tooltip-selection
                                     'company-tooltip)
                                   :background))
+             (icon-size (cond
+                         ((integerp company-icon-size)
+                          company-icon-size)
+                         ((and (consp company-icon-size)
+                               (eq 'auto-scale (car company-icon-size)))
+                          (let ((base-size (cdr company-icon-size)))
+                            (if (> (frame-char-height)
+                                   (* 2 base-size))
+                                (* 2 base-size)
+                              base-size)))))
              (spec (list 'image
                          :file (expand-file-name icon-file root-dir)
                          :type 'svg
-                         :width company-icon-size
-                         :height company-icon-size
+                         :width icon-size
+                         :height icon-size
                          :ascent 'center
                          :background (unless (eq bkg 'unspecified)
                                        bkg))))
