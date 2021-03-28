@@ -230,6 +230,8 @@ or automatically through a custom `company-clang-prefix-guesser'."
   (let* ((objc (derived-mode-p 'objc-mode))
          (buf (get-buffer-create "*clang-output*"))
          ;; Looks unnecessary in Emacs 25.1 and later.
+         ;; (Inconclusive, needs more testing):
+         ;; https://github.com/company-mode/company-mode/pull/288#issuecomment-72491808
          (process-adaptive-read-buffering nil)
          (existing-process (get-buffer-process buf)))
     (when existing-process
@@ -336,10 +338,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
    (company-clang--check-version 2.9 3.1)))
 
 (defun company-clang--check-version (min apple-min)
-  (pcase company-clang--version
+  (pcase-exhaustive company-clang--version
     (`(apple . ,ver) (>= ver apple-min))
-    (`(normal . ,ver) (>= ver min))
-    (_ (error "pcase-exhaustive is not in Emacs 24.3!"))))
+    (`(normal . ,ver) (>= ver min))))
 
 (defsubst company-clang-version ()
   "Return the version of `company-clang-executable'."

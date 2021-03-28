@@ -1,6 +1,6 @@
 ;;; async-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015, 2016, 2018  Free Software Foundation, Inc.
+;; Copyright (C) 2015, 2016, 2018, 2020-2021  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
@@ -83,7 +83,7 @@
     (let (company-frontends
           (company-backends (list 'company-async-backend))
           noninteractive
-          (unread-command-events (list 'company-dummy-event)))
+          (unread-command-events (list ?a)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
       (should (null company-candidates)))))
@@ -102,7 +102,7 @@
                               (lambda (cb) (funcall cb c)))))
                      (`no-cache t)))))
           (company-minimum-prefix-length 0)
-          (unread-command-events (list 'company-dummy-event)))
+          (unread-command-events (list ?a)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
       (should (equal '("abc" "def") company-candidates))

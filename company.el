@@ -1,13 +1,13 @@
 ;;; company.el --- Modular text completion framework  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2020  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2021  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
 ;; URL: http://company-mode.github.io/
 ;; Version: 0.9.13
 ;; Keywords: abbrev, convenience, matching
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is part of GNU Emacs.
 
@@ -62,21 +62,8 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'newcomment)
+(require 'subr-x)
 (require 'pcase)
-
-;;; Compatibility
-(eval-and-compile
-  ;; Defined in Emacs 24.4
-  (unless (fboundp 'string-suffix-p)
-    (defun string-suffix-p (suffix string  &optional ignore-case)
-      "Return non-nil if SUFFIX is a suffix of STRING.
-If IGNORE-CASE is non-nil, the comparison is done without paying
-attention to case differences."
-      (let ((start-pos (- (length string) (length suffix))))
-        (and (>= start-pos 0)
-             (eq t (compare-strings suffix nil nil
-                                    string start-pos nil ignore-case)))))))
 
 (defgroup company nil
   "Extensible inline text completion mechanism."
@@ -335,9 +322,7 @@ This doesn't include the margins and the scroll bar."
                         (assq backend company-safe-backends))
                 (cl-return t))))))
 
-(defcustom company-backends `(,@(unless (version< "24.3.51" emacs-version)
-                                  (list 'company-elisp))
-                              company-bbdb
+(defcustom company-backends `(company-bbdb
                               ,@(unless (version<= "26" emacs-version)
                                   (list 'company-nxml))
                               ,@(unless (version<= "26" emacs-version)
@@ -888,20 +873,6 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (or (equal [company-dummy-event] keys)
       (commandp (lookup-key company-my-keymap keys))))
 
-;; Hack:
-;; Emacs calculates the active keymaps before reading the event.  That means we
-;; cannot change the keymap from a timer.  So we send a bogus command.
-;; XXX: Seems not to be needed anymore in Emacs 24.4
-;; Apparently, starting with emacs-mirror/emacs@99d0d6dc23.
-(defun company-ignore ()
-  (interactive)
-  (setq this-command last-command))
-
-(global-set-key '[company-dummy-event] 'company-ignore)
-
-(defun company-input-noop ()
-  (push 'company-dummy-event unread-command-events))
-
 ;; To avoid warnings in Emacs < 26.
 (declare-function line-number-display-width "indent.c")
 
@@ -912,9 +883,6 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
         (row (cdr (or (posn-actual-col-row posn)
                       ;; When position is non-visible for some reason.
                       (posn-col-row posn)))))
-    (when (and header-line-format (version< emacs-version "24.3.93.3"))
-      ;; http://debbugs.gnu.org/18384
-      (cl-decf row))
     (when (bound-and-true-p display-line-numbers)
       (cl-decf col (+ 2 (line-number-display-width))))
     (cons (+ col (window-hscroll)) row)))
@@ -1577,8 +1545,6 @@ prefix match (same case) will be prioritized."
        (eq tick (buffer-chars-modified-tick))
        (eq pos (point))
        (when (company-auto-begin)
-         (when (version< emacs-version "24.3.50")
-           (company-input-noop))
          (let ((this-command 'company-idle-begin))
            (company-post-command)))))
 
@@ -2696,27 +2662,26 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                        right)))
     (setq width (+ width margin (length right)))
 
-    ;; TODO: Use add-face-text-property in Emacs 24.4
     (font-lock-append-text-property 0 width 'mouse-face
                                     'company-tooltip-mouse
                                     line)
     (when (< ann-start ann-end)
-      (font-lock-append-text-property ann-start ann-end 'face
-                                      (if selected
-                                          'company-tooltip-annotation-selection
-                                        'company-tooltip-annotation)
-                                      line))
+      (add-face-text-property ann-start ann-end
+                              (if selected
+                                  'company-tooltip-annotation-selection
+                                'company-tooltip-annotation)
+                              t line))
     (cl-loop
      with width = (- width (length right))
      for (comp-beg . comp-end) in (if (integerp common) `((0 . ,common)) common)
      for inline-beg = (+ margin comp-beg)
      for inline-end = (min (+ margin comp-end) width)
      when (< inline-beg width)
-     do (font-lock-prepend-text-property inline-beg inline-end 'face
-                                         (if selected
-                                             'company-tooltip-common-selection
-                                           'company-tooltip-common)
-                                         line))
+     do (add-face-text-property inline-beg inline-end
+                                (if selected
+                                    'company-tooltip-common-selection
+                                  'company-tooltip-common)
+                                nil line))
     (when (let ((re (funcall company-search-regexp-function
                              company-search-string)))
             (and (not (string= re ""))
@@ -2726,18 +2691,14 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
               (end (+ margin mend))
               (width (- width (length right))))
           (when (< beg width)
-            (font-lock-prepend-text-property beg (min end width) 'face
-                                             (if selected
-                                                 'company-tooltip-search-selection
-                                               'company-tooltip-search)
-                                             line)))))
+            (add-face-text-property beg (min end width)
+                                    (if selected
+                                        'company-tooltip-search-selection
+                                      'company-tooltip-search)
+                                    nil line)))))
     (when selected
-      (font-lock-append-text-property 0 width 'face
-                                      'company-tooltip-selection
-                                      line))
-    (font-lock-append-text-property 0 width 'face
-                                    'company-tooltip
-                                    line)
+      (add-face-text-property 0 width 'company-tooltip-selection t line))
+    (add-face-text-property 0 width 'company-tooltip t line)
     line))
 
 (defun company--search-chunks ()
@@ -2829,18 +2790,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (cl-decf ww))
     (when (bound-and-true-p display-line-numbers)
       (cl-decf ww (+ 2 (line-number-display-width))))
-    (unless (or (display-graphic-p)
-                (version< "24.3.1" emacs-version))
-      ;; Emacs 24.3 and earlier included margins
-      ;; in window-width when in TTY.
-      (cl-decf ww
-               (let ((margins (window-margins)))
-                 (+ (or (car margins) 0)
-                    (or (cdr margins) 0)))))
-    (when (and word-wrap
-               (version< emacs-version "24.4.51.5"))
-      ;; http://debbugs.gnu.org/19300
-      (cl-decf ww))
     ;; whitespace-mode with newline-mark
     (when (and buffer-display-table
                (aref buffer-display-table ?\n))
@@ -2915,9 +2864,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                         ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
                         (lambda (line) (list line (propertize "\n" 'face nl-face)))
                         (nreverse new)))))
-      ;; Use add-face-text-property in Emacs 24.4
       ;; https://debbugs.gnu.org/38563
-      (font-lock-append-text-property 0 (length str) 'face 'default str)
+      (add-face-text-property 0 (length str) 'default t str)
       (when nl (put-text-property 0 1 'cursor t str))
       str)))
 
@@ -2981,8 +2929,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           (setq annotation (company--clean-string annotation))
           (when company-tooltip-align-annotations
             ;; `lisp-completion-at-point' adds a space.
-            ;; FIXME: Use `string-trim' in Emacs 24.4
-            (setq annotation (comment-string-strip annotation t nil))))
+            (setq annotation (string-trim-left annotation))))
         (push (list value annotation candidate-prefix) items)
         (setq width (max (+ (length value)
                             (length candidate-prefix)
@@ -3242,21 +3189,18 @@ Delay is determined by `company-tooltip-idle-delay'."
   (company-preview-hide)
 
   (setq completion (copy-sequence (company--pre-render completion)))
-  (font-lock-append-text-property 0 (length completion)
-                                  'face 'company-preview
-                                  completion)
-    (font-lock-prepend-text-property 0 (length company-common)
-                                     'face 'company-preview-common
-                                     completion)
+  (add-face-text-property 0 (length completion) 'company-preview
+                          nil completion)
+  (add-face-text-property 0 (length company-common) 'company-preview-common
+                          nil completion)
 
     ;; Add search string
     (and (string-match (funcall company-search-regexp-function
                                 company-search-string)
                        completion)
          (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
-           (font-lock-prepend-text-property mbeg mend
-                                            'face 'company-preview-search
-                                            completion)))
+           (add-face-text-property mbeg mend 'company-preview-search
+                                   nil completion)))
 
     (setq completion (company-strip-prefix completion))
 
