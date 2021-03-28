@@ -2959,7 +2959,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
         (let* ((item (pop items))
                (str (car item))
                (annotation (cadr item))
-               (candidate-prefix (caddr item))
+               (candidate-prefix (nth 2 item))
                (margin (company-space-string company-tooltip-margin))
                (left (or candidate-prefix margin))
                (right margin)
