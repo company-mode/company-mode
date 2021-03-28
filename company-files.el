@@ -144,6 +144,7 @@ File paths with spaces are only supported inside strings."
     (location (cons (dired-noselect
                      (file-name-directory (directory-file-name arg))) 1))
     (post-completion (company-files--post-completion arg))
+    (kind (if (string-suffix-p "/" arg) 'folder 'file))
     (sorted t)
     (no-cache t)))
 

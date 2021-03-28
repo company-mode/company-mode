@@ -308,6 +308,7 @@
        (all-completions arg (if (consp symbols)
                                 symbols
                               (cdr (assq symbols company-keywords-alist))))))
+    (kind 'keyword)
     (sorted t)))
 
 (provide 'company-keywords)

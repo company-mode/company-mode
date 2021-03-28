@@ -1372,6 +1372,8 @@ end of the match."
     (enum . "symbol-enumerator.svg")
     (event . "symbol-event.svg")
     (field . "symbol-field.svg")
+    (file . "symbol-file.svg")
+    (folder . "folder.svg")
     (interface . "symbol-interface.svg")
     (key . "symbol-key.svg")
     (keyword . "symbol-keyword.svg")

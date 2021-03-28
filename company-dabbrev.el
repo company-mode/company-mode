@@ -199,6 +199,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
        (if downcase-p
            (mapcar 'downcase words)
          words)))
+    (kind 'key)
     (ignore-case company-dabbrev-ignore-case)
     (duplicates t)))
 
