@@ -165,6 +165,7 @@ shadow backends that come after it.  Recommended usages:
     (candidates (company-yasnippet--candidates arg))
     (doc-buffer (company-yasnippet--doc arg))
     (no-cache t)
+    (kind 'snippet)
     (post-completion
      (let ((template (get-text-property 0 'yas-template arg))
            (prefix-offset (get-text-property 0 'yas-prefix-offset arg)))
