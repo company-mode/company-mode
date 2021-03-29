@@ -137,7 +137,7 @@
         (company-candidates-length 3)
         (company-backend 'ignore))
     (should (equal '(" x 1 " " y 2 " " z 3 ")
-                   (company--create-lines 0 999)))))
+                   (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-shows-numbers-on-the-left ()
   (let ((company-show-numbers 'left)
@@ -145,7 +145,7 @@
         (company-candidates-length 3)
         (company-backend 'ignore))
     (should (equal '(" 1 x " " 2 y " " 3 z ")
-                   (company--create-lines 0 999)))))
+                   (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-combines-numbers-on-the-left-and-icons ()
   (let ((company-show-numbers 'left)
@@ -174,13 +174,13 @@
                          (format " 2%s " (company-space-string (- ww 3)))
                          (format " 3(444%s " (make-string (- ww 7) ?4))
                          (format " %s " (make-string (- ww 2) ?4)))
-                   (company--create-lines 0 999)))
+                   (cdr (company--create-lines 0 999))))
     (let ((company-tooltip-align-annotations t))
       (should (equal (list (format " 1%s(123) " (company-space-string (- ww 8)))
                            (format " 2%s " (company-space-string (- ww 3)))
                            (format " 3 (444%s " (make-string (- ww 8) ?4))
                            (format " %s " (make-string (- ww 2) ?4)))
-                     (company--create-lines 0 999))))))
+                     (cdr (company--create-lines 0 999)))))))
 
 (ert-deftest company-create-lines-truncates-common-part ()
   (let* ((ww (company--window-width))
@@ -192,17 +192,17 @@
                                  ,(concat company-common "3"))))
       (should (equal (list (format " %s2 " (make-string (- ww 3) ?1))
                            (format " %s3 " (make-string (- ww 3) ?1)))
-                     (company--create-lines 0 999))))
+                     (cdr (company--create-lines 0 999)))))
     (let* ((company-common (make-string (- ww 2) ?1))
            (company-candidates `(,(concat company-common "2")
                                  ,(concat company-common "3"))))
       (should (equal (list (format " %s " company-common)
                            (format " %s " company-common))
-                     (company--create-lines 0 999))))
+                     (cdr (company--create-lines 0 999)))))
     (let* ((company-common (make-string ww ?1))
            (company-candidates `(,(concat company-common "2")
                                  ,(concat company-common "3")))
-           (res (company--create-lines 0 999)))
+           (res (cdr (company--create-lines 0 999))))
       (should (equal (list (format " %s " (make-string (- ww 2) ?1))
                            (format " %s " (make-string (- ww 2) ?1)))
                      res))
@@ -227,7 +227,7 @@
         (company-backend 'ignore))
     (should (equal '(" avalis?e "
                      " avatar   ")
-                   (company--create-lines 0 999)))))
+                   (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-handles-multiple-width ()
   :tags '(interactive)
@@ -237,7 +237,7 @@
         (company-backend 'ignore))
     (should (equal '(" ﻿蛙﻿蛙﻿蛙﻿蛙 "
                      " ﻿蛙abc    ")
-                   (company--create-lines 0 999)))))
+                   (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-handles-multiple-width-in-annotation ()
   (let* (company-show-numbers
@@ -249,7 +249,7 @@
                               (assoc-default a alist)))))
     (should (equal '(" a ﻿︸   "
                      " b ﻿︸﻿︸ ")
-                   (company--create-lines 0 999)))))
+                   (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-with-multiple-width-and-keep-prefix ()
   :tags '(interactive)
@@ -263,7 +263,7 @@
                               (`ignore-case 'keep-prefix)))))
     (should (equal '(" MIRAI﻿発﻿売1﻿カ﻿月 "
                      " MIRAI﻿発﻿売2﻿カ﻿月 ")
-                   (company--create-lines 0 999)))))
+                   (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-with-format-function ()
   (let* (company-show-numbers
@@ -275,7 +275,7 @@
                                            "X"))
          (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
     (should (ert-equal-including-properties
-             (car (company--create-lines 0 999))
+             (cadr (company--create-lines 0 999))
              #("XArrayList " 0 11
                (face (company-tooltip-selection company-tooltip)
                      mouse-face (company-tooltip-mouse)))))))
@@ -292,7 +292,7 @@
          (company-format-margin-function
           'company-vscode-light-icons-margin)
          (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
-    (let ((tooltip-line (car (company--create-lines 0 999))))
+    (let ((tooltip-line (cadr (company--create-lines 0 999))))
       (should (equal tooltip-line "  ArrayList            "))
       (should (equal
                (car (get-text-property 1 'display tooltip-line))
