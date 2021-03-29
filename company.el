@@ -428,8 +428,8 @@ into the buffer.  The second argument is the candidate.  Can be used to
 modify it, e.g. to expand a snippet.
 
 `kind': The second argument is a completion candidate.  Return a symbol
-describing the kind of the candidate. Refer `company-vscode-icons-mapping' for
-the possible values.
+describing the kind of the candidate.  Refer to `company-vscode-icons-mapping'
+for the possible values.
 
 The backend should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
