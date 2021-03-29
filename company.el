@@ -1390,6 +1390,7 @@ end of the match."
     (string . "symbol-string.svg")
     (struct . "symbol-structure.svg")
     (text . "symbol-key.svg")
+    (value . "symbol-enumerator.svg")
     (variable . "symbol-variable.svg")))
 
 (defconst company-icons-root
