@@ -2943,15 +2943,15 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (dotimes (_ len)
       (let* ((value (pop lines-copy))
              (annotation (company-call-backend 'annotation value))
-             (left-margin (or (pop left-margins)
-                              (company-space-string left-margin-size))))
+             (left (or (pop left-margins)
+                       (company-space-string left-margin-size))))
         (setq value (company--clean-string value))
         (when annotation
           (setq annotation (company--clean-string annotation))
           (when company-tooltip-align-annotations
             ;; `lisp-completion-at-point' adds a space.
             (setq annotation (string-trim-left annotation))))
-        (push (list value annotation left-margin) items)
+        (push (list value annotation left) items)
         (setq width (max (+ (length value)
                             (if (and annotation company-tooltip-align-annotations)
                                 (1+ (length annotation))
