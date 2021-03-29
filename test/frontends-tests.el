@@ -147,6 +147,16 @@
     (should (equal '(" 1 x " " 2 y " " 3 z ")
                    (company--create-lines 0 999)))))
 
+(ert-deftest company-create-lines-combines-numbers-on-the-left-and-icons ()
+  (let ((company-show-numbers 'left)
+        (company-candidates '("x" "y" "z"))
+        (company-format-margin-function (lambda (candidate selected)
+                                          "X"))
+        (company-candidates-length 3)
+        (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
+    (should (equal '(" 1Xx " " 2Xy " " 3Xz ")
+                   (cdr (company--create-lines 0 999))))))
+
 (ert-deftest company-create-lines-truncates-annotations ()
   (let* ((ww (company--window-width))
          (data `(("1" . "(123)")

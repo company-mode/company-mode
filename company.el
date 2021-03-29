@@ -2980,7 +2980,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (str (car item))
                (annotation (cadr item))
                (left (nth 2 item))
-               (margin (company-space-string company-tooltip-margin))
                (right (company-space-string company-tooltip-margin))
                (width width))
           (when (< numbered 10)
@@ -2988,7 +2987,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
             (cl-incf numbered)
             (setf (if (eq company-show-numbers 'left) left right)
                   (concat (funcall company-show-numbers-function numbered)
-                          margin)))
+                          (if (eq company-show-numbers 'left) left right))))
           (push (concat
                  (company-fill-propertize str annotation
                                           width (equal i selection)
