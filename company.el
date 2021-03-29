@@ -2835,6 +2835,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company--replacement-string (lines column-offset old column nl &optional align-top)
   (cl-decf column column-offset)
 
+  (when (< column 0) (setq column 0))
+
   (when (and align-top company-tooltip-flip-when-above)
     (setq lines (reverse lines)))
 
@@ -2844,24 +2846,18 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (when (> width remaining-cols)
       (cl-decf column (- width remaining-cols))))
 
-  (let ((offset (and (< column 0) (- column)))
-        new)
-    (when offset
-      (setq column 0))
+  (let (new)
     (when align-top
       ;; untouched lines first
       (dotimes (_ (- (length old) (length lines)))
         (push (pop old) new)))
     ;; length into old lines.
     (while old
-      (push (company-modify-line (pop old)
-                                 (company--offset-line (pop lines) offset)
-                                 column)
+      (push (company-modify-line (pop old) (pop lines) column)
             new))
     ;; Append whole new lines.
     (while lines
-      (push (concat (company-space-string column)
-                    (company--offset-line (pop lines) offset))
+      (push (concat (company-space-string column) (pop lines))
             new))
 
     ;; XXX: Also see branch 'more-precise-extend'.
@@ -2880,11 +2876,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (add-face-text-property 0 (length str) 'default t str)
       (when nl (put-text-property 0 1 'cursor t str))
       str)))
-
-(defun company--offset-line (line offset)
-  (if (and offset line)
-      (substring line offset)
-    line))
 
 (defun company--create-lines (selection limit)
   (let ((len company-candidates-length)
