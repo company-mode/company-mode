@@ -2919,7 +2919,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           len (min limit len)
           lines-copy lines)
 
-    (cl-decf window-width (* 2 company-tooltip-margin))
     (when scrollbar-bounds (cl-decf window-width))
 
     (when company-format-margin-function
@@ -2936,6 +2935,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     ;; default margin is not supported (yet?).
     (setq left-margin-size (apply #'max company-tooltip-margin
                                   (mapcar #'length left-margins)))
+
+    (cl-decf window-width company-tooltip-margin)
+    (cl-decf window-width left-margin-size)
 
     (dotimes (_ len)
       (let* ((value (pop lines-copy))
