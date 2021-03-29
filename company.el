@@ -1368,6 +1368,7 @@ end of the match."
     (class . "symbol-class.svg")
     (color . "symbol-color.svg")
     (constant . "symbol-constant.svg")
+    (constructor . "symbol-method.svg")
     (enum-member . "symbol-enumerator-member.svg")
     (enum . "symbol-enumerator.svg")
     (event . "symbol-event.svg")
@@ -1375,7 +1376,6 @@ end of the match."
     (file . "symbol-file.svg")
     (folder . "folder.svg")
     (interface . "symbol-interface.svg")
-    (key . "symbol-key.svg")
     (keyword . "symbol-keyword.svg")
     (method . "symbol-method.svg")
     (function . "symbol-method.svg")
@@ -1389,6 +1389,7 @@ end of the match."
     (snippet . "symbol-snippet.svg")
     (string . "symbol-string.svg")
     (struct . "symbol-structure.svg")
+    (text . "symbol-key.svg")
     (variable . "symbol-variable.svg")))
 
 (defconst company-icons-root

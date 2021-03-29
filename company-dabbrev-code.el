@@ -97,7 +97,7 @@ comments or strings."
                      (`code company-dabbrev-code-modes)
                      (`all `all))
                    (not company-dabbrev-code-everywhere))))
-    (kind 'key)
+    (kind 'text)
     (ignore-case company-dabbrev-code-ignore-case)
     (duplicates t)))
 
