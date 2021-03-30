@@ -1,6 +1,6 @@
 ;;; company-capf.el --- company-mode completion-at-point-functions backend -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013-2019  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2019, 2021  Free Software Foundation, Inc.
 
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
@@ -148,9 +148,7 @@ so we can't just use the preceding variable instead.")
                          :company-location)))
        (when f (funcall f arg))))
     (`annotation
-     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
-                         :annotation-function)))
-       (when f (funcall f arg))))
+     (company-capf--annotation arg))
     (`kind
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-kind)))
@@ -161,6 +159,17 @@ so we can't just use the preceding variable instead.")
     (`post-completion
      (company--capf-post-completion arg))
     ))
+
+(defun company-capf--annotation (arg)
+  (let* ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                       :annotation-function))
+         (annotation (when f (funcall f arg))))
+    (if (and company-format-margin-function
+             (equal annotation " <f>") ; elisp-completion-at-point, pre-icons
+             (plist-get (nthcdr 4 company-capf--current-completion-data)
+                        :company-kind))
+        nil
+      annotation)))
 
 (defun company-capf--candidates (input)
   (let ((res (company--capf-data)))
