@@ -1406,7 +1406,8 @@ end of the match."
                        (integer :value 15))))
 
 (defun company--render-icons-margin (icon-mapping root-dir candidate selected)
-  (if-let ((candidate candidate)
+  (if-let ((ws (window-system))
+           (candidate candidate)
            (kind (company-call-backend 'kind candidate))
            (icon-file (alist-get kind icon-mapping)))
       (let* ((bkg (face-attribute (if selected
