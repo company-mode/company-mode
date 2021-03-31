@@ -1448,6 +1448,45 @@ end of the match."
                                 candidate
                                 selected))
 
+(defvar company-unicode-icons-mapping
+  '((array . "Α")
+    (boolean . "β")
+    (class . "γ")
+    (color . "Δ")
+    (constant . "ε")
+    (enum-member . "ζ")
+    (enum . "Ζ")
+    (event . "η")
+    (field . "θ")
+    (file . "Ɩ")
+    (folder . "⍳")
+    (interface . "ϰ")
+    (key . "μ")
+    (keyword . "ν")
+    (method . "λ")
+    (function . "ƒ")
+    (misc . "ξ")
+    (module . "Ο")
+    (numeric . "π")
+    (operator . "⊙")
+    (parameter . "ρ")
+    (property . "σ")
+    (ruler . "τ")
+    (snippet . "υ")
+    (string . "φ")
+    (struct . "Χ")
+    (variable . "ѱ")))
+
+(defun company-unicode-icons-margin (candidate selected)
+  "Margin function which returns icons from vscode's light theme."
+  (when-let ((candidate candidate)
+             (kind (company-call-backend 'kind candidate))
+             (icon (alist-get kind company-unicode-icons-mapping)))
+    (propertize icon
+                'face (if selected
+                          'company-tooltip-selection
+                        'company-tooltip))))
+
 (defcustom company-format-margin-function nil
   "Function to format the margin.
 It accepts 2 params `candidate' and `selected' and can be used for
