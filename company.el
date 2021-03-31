@@ -2914,10 +2914,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
             new))
 
     ;; XXX: Also see branch 'more-precise-extend'.
-    (let* ((nl-face (list
-                     :extend t
+    (let* ((nl-face `(,@(when (version<= "27" emacs-version)
+                          '(:extend t))
                      :inverse-video nil
-                     :background (or (company--face-attribute 'default :background)
+                     :background ,(or (company--face-attribute 'default :background)
                                      (face-attribute 'default :background nil t))))
            (str (apply #'concat
                        (when nl " \n")
