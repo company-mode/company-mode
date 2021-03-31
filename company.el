@@ -1478,7 +1478,7 @@ end of the match."
     (variable . "ѱ")))
 
 (defun company-unicode-icons-margin (candidate selected)
-  "Margin function which returns icons from vscode's light theme."
+  "Margin function which returns unicode icons."
   (when-let ((candidate candidate)
              (kind (company-call-backend 'kind candidate))
              (icon (alist-get kind company-unicode-icons-mapping)))
@@ -1486,6 +1486,16 @@ end of the match."
                 'face (if selected
                           'company-tooltip-selection
                         'company-tooltip))))
+
+(defun company-unicode-or-vscode-icons-margin (candidate selected)
+  "Margin function which picks from vscodes icons or unicode icons
+based on `display-graphic-p'."
+  (if (display-graphic-p)
+      ;; Default to dark because who in their right mind uses light 😜
+      (cl-case (frame-parameter nil 'background-mode)
+        ('light (company-vscode-light-icons-margin candidate selected))
+        (t (company-vscode-dark-icons-margin candidate selected)))
+    (company-unicode-icons-margin candidate selected)))
 
 (defcustom company-format-margin-function nil
   "Function to format the margin.
