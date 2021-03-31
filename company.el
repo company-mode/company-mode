@@ -1451,6 +1451,52 @@ end of the match."
                                 candidate
                                 selected))
 
+(defvar company-text-icons-mapping
+  '((array . "Α")
+    (boolean . "β")
+    (class . "γ")
+    (color . "Δ")
+    (constant . "ε")
+    (enum-member . "ζ")
+    (enum . "Ζ")
+    (event . "η")
+    (field . "θ")
+    (file . "Ɩ")
+    (folder . "⍳")
+    (interface . "ϰ")
+    (key . "μ")
+    (keyword . "ν")
+    (method . "λ")
+    (function . "ƒ")
+    (misc . "ξ")
+    (module . "Ο")
+    (numeric . "π")
+    (operator . "⊙")
+    (parameter . "ρ")
+    (property . "σ")
+    (ruler . "τ")
+    (snippet . "υ")
+    (string . "φ")
+    (struct . "Χ")
+    (variable . "ѱ")))
+
+(defun company-text-icons-margin (candidate selected)
+  "Margin function which returns unicode icons."
+  (when-let ((candidate candidate)
+             (kind (company-call-backend 'kind candidate))
+             (icon (alist-get kind company-text-icons-mapping)))
+    icon))
+
+(defun company-detect-icons-margin (candidate selected)
+  "Margin function which picks from vscodes icons or unicode icons
+based on `display-graphic-p'."
+  (if (display-graphic-p)
+      ;; Default to dark because who in their right mind uses light 😜
+      (cl-case (frame-parameter nil 'background-mode)
+        ('light (company-vscode-light-icons-margin candidate selected))
+        (t (company-vscode-dark-icons-margin candidate selected)))
+    (company-text-icons-margin candidate selected)))
+
 (defcustom company-format-margin-function nil
   "Function to format the margin.
 It accepts 2 params `candidate' and `selected' and can be used for
