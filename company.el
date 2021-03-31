@@ -1482,10 +1482,7 @@ end of the match."
   (when-let ((candidate candidate)
              (kind (company-call-backend 'kind candidate))
              (icon (alist-get kind company-text-icons-mapping)))
-    (propertize icon
-                'face (if selected
-                          'company-tooltip-selection
-                        'company-tooltip))))
+    icon))
 
 (defun company-detect-icons-margin (candidate selected)
   "Margin function which picks from vscodes icons or unicode icons
