@@ -1451,7 +1451,7 @@ end of the match."
                                 candidate
                                 selected))
 
-(defvar company-text-icons-mapping
+(defcustom company-text-icons-mapping
   '((array . "Α")
     (boolean . "β")
     (class . "γ")
@@ -1478,7 +1478,9 @@ end of the match."
     (snippet . "υ")
     (string . "φ")
     (struct . "Χ")
-    (variable . "ѱ")))
+    (variable . "ѱ"))
+  "Mapping of the text icons."
+  :type 'list)
 
 (defun company-text-icons-margin (candidate selected)
   "Margin function which returns unicode icons."
@@ -1506,6 +1508,8 @@ image for the returned kind image. Function is called with (nil nil) to get
 the default margin."
   :type '(choice
           (const :tag "Disabled" nil)
+          (const :tag "Detect icons theme base on conditions" company-detect-icons-margin)
+          (const :tag "TTY icons theme" company-text-icons-margin)
           (const :tag "VScode dark icons theme" company-vscode-dark-icons-margin)
           (const :tag "VScode light icons theme" company-vscode-light-icons-margin)
           (function :tag "Custom icon function.")))
