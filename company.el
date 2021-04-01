@@ -1451,7 +1451,7 @@ end of the match."
                                 candidate
                                 selected))
 
-(defvar company-text-icons-mapping
+(defcustom company-text-icons-mapping
   '((array . "Α")
     (boolean . "β")
     (class . "γ")
@@ -1478,7 +1478,10 @@ end of the match."
     (snippet . "υ")
     (string . "φ")
     (struct . "Χ")
-    (variable . "ѱ")))
+    (variable . "ѱ"))
+  "List of text icons."
+  :type 'list
+  :group 'company)
 
 (defun company-text-icons-margin (candidate selected)
   "Margin function which returns unicode icons."
