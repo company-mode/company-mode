@@ -1479,9 +1479,8 @@ end of the match."
     (string . "φ")
     (struct . "Χ")
     (variable . "ѱ"))
-  "List of text icons."
-  :type 'list
-  :group 'company)
+  "Mapping of the text icons."
+  :type 'list)
 
 (defun company-text-icons-margin (candidate selected)
   "Margin function which returns unicode icons."
