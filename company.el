@@ -1506,6 +1506,8 @@ image for the returned kind image. Function is called with (nil nil) to get
 the default margin."
   :type '(choice
           (const :tag "Disabled" nil)
+          (const :tag "Detect icons theme base on conditions" company-detect-icons-margin)
+          (const :tag "TTY icons theme" company-text-icons-margin)
           (const :tag "VScode dark icons theme" company-vscode-dark-icons-margin)
           (const :tag "VScode light icons theme" company-vscode-light-icons-margin)
           (function :tag "Custom icon function.")))
