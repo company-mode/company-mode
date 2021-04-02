@@ -1324,23 +1324,27 @@ update if FORCE-UPDATE."
 
 (defun company--strip-duplicates (candidates)
   (let ((c2 candidates)
-        (annos 'unk))
+        (extras 'unk))
     (while c2
       (setcdr c2
               (let ((str (pop c2)))
                 (while (let ((str2 (car c2)))
                          (if (not (equal str str2))
                              (progn
-                               (setq annos 'unk)
+                               (setq extras 'unk)
                                nil)
-                           (when (eq annos 'unk)
-                             (setq annos (list (company-call-backend
-                                                'annotation str))))
-                           (let ((anno2 (company-call-backend
-                                         'annotation str2)))
-                             (if (member anno2 annos)
+                           (when (eq extras 'unk)
+                             (setq extras (list (cons (company-call-backend
+                                                       'annotation str)
+                                                      (company-call-backend
+                                                       'kind str)))))
+                           (let ((extra2 (cons (company-call-backend
+                                                'annotation str2)
+                                               (company-call-backend
+                                                'kind str2))))
+                             (if (member extra2 extras)
                                  t
-                               (push anno2 annos)
+                               (push extra2 extras)
                                nil))))
                   (pop c2))
                 c2)))))
