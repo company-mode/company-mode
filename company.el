@@ -1539,10 +1539,11 @@ end of the match."
 
 (defun company-dot-icons-margin (candidate _selected)
   "Margin function that uses a colored dot to display completion kind."
-  (propertize company-dot-icons-format 'face
-              (or (assoc-default (company-call-backend 'kind candidate)
-                                 company-dot-icons-face-mapping)
-                  (assoc-default t company-dot-icons-face-mapping))))
+  (when-let ((kind (company-call-backend 'kind candidate))
+             (face (or (assoc-default kind
+                                      company-dot-icons-face-mapping)
+                       (assoc-default t company-dot-icons-face-mapping))))
+    (propertize company-dot-icons-format 'face face)))
 
 (defun company-detect-icons-margin (candidate selected)
   "Margin function which picks from vscodes icons or unicode icons
