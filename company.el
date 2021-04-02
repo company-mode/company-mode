@@ -1383,7 +1383,6 @@ end of the match."
     (keyword . "symbol-keyword.svg")
     (method . "symbol-method.svg")
     (function . "symbol-method.svg")
-    (misc . "symbol-misc.svg")
     (module . "symbol-namespace.svg")
     (numeric . "symbol-numeric.svg")
     (operator . "symbol-operator.svg")
@@ -1395,7 +1394,8 @@ end of the match."
     (struct . "symbol-structure.svg")
     (text . "symbol-key.svg")
     (value . "symbol-enumerator.svg")
-    (variable . "symbol-variable.svg")))
+    (variable . "symbol-variable.svg")
+    (t . "symbol-misc.svg")))
 
 (defconst company-icons-root
   (file-name-as-directory
@@ -1413,7 +1413,8 @@ end of the match."
   (if-let ((ws (window-system))
            (candidate candidate)
            (kind (company-call-backend 'kind candidate))
-           (icon-file (alist-get kind icon-mapping)))
+           (icon-file (or (alist-get kind icon-mapping)
+                          (alist-get t icon-mapping))))
       (let* ((bkg (face-attribute (if selected
                                       'company-tooltip-selection
                                     'company-tooltip)
@@ -1471,7 +1472,6 @@ end of the match."
     (keyword . "ν")
     (method . "λ")
     (function . "ƒ")
-    (misc . "ξ")
     (module . "Ο")
     (numeric . "π")
     (operator . "⊙")
@@ -1483,7 +1483,8 @@ end of the match."
     (struct . "Χ")
     (text . "μ")
     (value . "Ζ")
-    (variable . "ѱ"))
+    (variable . "ѱ")
+    (t . "ξ"))
   "Mapping of the text icons."
   :type 'list)
 
@@ -1495,7 +1496,8 @@ end of the match."
   "Margin function which returns unicode icons."
   (when-let ((candidate candidate)
              (kind (company-call-backend 'kind candidate))
-             (icon (alist-get kind company-text-icons-mapping)))
+             (icon (or (alist-get kind company-text-icons-mapping)
+                       (alist-get t company-text-icons-mapping))))
     (format company-text-icons-format icon)))
 
 (defcustom company-dot-icons-format "●"
