@@ -1498,6 +1498,50 @@ end of the match."
              (icon (alist-get kind company-text-icons-mapping)))
     (format company-text-icons-format icon)))
 
+(defcustom company-dot-icons-format "●"
+  "Format string for `company-dot-icons-margin'."
+  :type 'string)
+
+(defcustom company-dot-icons-face-mapping
+  '((array . font-lock-type-face)
+    (boolean . font-lock-builtin-face)
+    (class . font-lock-type-face)
+    (color . success)
+    (constant . font-lock-constant-face)
+    (enum-member . font-lock-builtin-face)
+    (enum . font-lock-builtin-face)
+    (field . font-lock-variable-name-face)
+    (file . font-lock-string-face)
+    (folder . font-lock-doc-face)
+    (interface . font-lock-type-face)
+    (keyword . font-lock-keyword-face)
+    (method . font-lock-function-name-face)
+    (function . font-lock-function-name-face)
+    (module . font-lock-type-face)
+    (numeric . font-lock-builtin-face)
+    (operator . font-lock-comment-delimiter-face)
+    (parameter . font-lock-builtin-face)
+    (property . font-lock-variable-name-face)
+    ; (ruler . nil)
+    (snippet . font-lock-string-face)
+    (string . font-lock-string-face)
+    (struct . font-lock-variable-name-face)
+    ; (text . nil)
+    (value . font-lock-builtin-face)
+    (variable . font-lock-variable-name-face)
+    (t . deemphasized))
+  "Faces mapping for `company-dot-icons-margin'."
+  :type '(repeat
+          (cons (symbol :tag "Kind name")
+                (face :tag "Face to use for it"))))
+
+(defun company-dot-icons-margin (candidate _selected)
+  "Margin function that uses a colored dot to display completion kind."
+  (propertize company-dot-icons-format 'face
+              (or (assoc-default (company-call-backend 'kind candidate)
+                                 company-dot-icons-face-mapping)
+                  (assoc-default t company-dot-icons-face-mapping))))
+
 (defun company-detect-icons-margin (candidate selected)
   "Margin function which picks from vscodes icons or unicode icons
 based on `display-graphic-p'."
@@ -1518,7 +1562,8 @@ the default margin."
   :type '(choice
           (const :tag "Disabled" nil)
           (const :tag "Detect icons theme base on conditions" company-detect-icons-margin)
-          (const :tag "TTY icons theme" company-text-icons-margin)
+          (const :tag "Text characters as icons" company-text-icons-margin)
+          (const :tag "Colored dots as icons" company-dot-icons-margin)
           (const :tag "VScode dark icons theme" company-vscode-dark-icons-margin)
           (const :tag "VScode light icons theme" company-vscode-light-icons-margin)
           (function :tag "Custom icon function.")))
