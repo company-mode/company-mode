@@ -1468,7 +1468,6 @@ end of the match."
     (file . "Ɩ")
     (folder . "⍳")
     (interface . "ϰ")
-    (key . "μ")
     (keyword . "ν")
     (method . "λ")
     (function . "ƒ")
@@ -1482,6 +1481,8 @@ end of the match."
     (snippet . "υ")
     (string . "φ")
     (struct . "Χ")
+    (text . "μ")
+    (value . "Ζ")
     (variable . "ѱ"))
   "Mapping of the text icons."
   :type 'list)
