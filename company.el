@@ -1486,12 +1486,16 @@ end of the match."
   "Mapping of the text icons."
   :type 'list)
 
-(defun company-text-icons-margin (candidate selected)
+(defcustom company-text-icons-format "%s "
+  "Format string for printing the text icons."
+  :type 'string)
+
+(defun company-text-icons-margin (candidate _selected)
   "Margin function which returns unicode icons."
   (when-let ((candidate candidate)
              (kind (company-call-backend 'kind candidate))
              (icon (alist-get kind company-text-icons-mapping)))
-    icon))
+    (format company-text-icons-format icon)))
 
 (defun company-detect-icons-margin (candidate selected)
   "Margin function which picks from vscodes icons or unicode icons
