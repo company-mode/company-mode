@@ -605,7 +605,7 @@ A character that is part of a valid completion never triggers auto-commit."
                  (function :tag "Predicate function"))
   :package-version '(company . "0.9.14"))
 
-(defcustom company-idle-delay .5
+(defcustom company-idle-delay .2
   "The idle delay in seconds until completion starts automatically.
 The prefix still has to satisfy `company-minimum-prefix-length' before that
 happens.  The value of nil means no idle completion."

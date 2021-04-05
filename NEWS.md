@@ -2,6 +2,7 @@
 
 ## Next
 
+* `company-idle-delay` default reduced to 0.2 (seconds).
 * The minimum required version of Emacs is now 25.1.
 * Both built-in options for `company-format-margin-function` require Emacs
   compiled with SVG support.
