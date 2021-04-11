@@ -1402,12 +1402,12 @@ end of the match."
    (expand-file-name "icons"
                      (file-name-directory (or load-file-name buffer-file-name)))))
 
-(defcustom company-icon-size '(auto-scale . 15)
+(defcustom company-icon-size '(auto-scale . 16)
   "Size of icons indicating completion kind in the popup."
-  :type '(choice (integer :tag "Size in pixels" :value 15)
+  :type '(choice (integer :tag "Size in pixels" :value 16)
                  (cons :tag "Size in pixels, scaled 2x on HiDPI screens"
                        (const auto-scale)
-                       (integer :value 15))))
+                       (integer :value 16))))
 
 (defun company--render-icons-margin (icon-mapping root-dir candidate selected)
   (if-let ((ws (window-system))
@@ -1422,10 +1422,12 @@ end of the match."
              (icon-size (cond
                          ((integerp company-icon-size)
                           company-icon-size)
+                         ;; XXX: Also consider smooth scaling, e.g. using
+                         ;; (aref (font-info (face-font 'default)) 2)
                          ((and (consp company-icon-size)
                                (eq 'auto-scale (car company-icon-size)))
                           (let ((base-size (cdr company-icon-size)))
-                            (if (> (frame-char-height)
+                            (if (> (default-font-height)
                                    (* 2 base-size))
                                 (* 2 base-size)
                               base-size)))))
