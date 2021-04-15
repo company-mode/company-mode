@@ -2370,6 +2370,8 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
 (defun company-complete-selection ()
   "Insert the selected candidate."
   (interactive)
+  (unless company-selection
+    (setq company-selection 0))
   (when (and (company-manual-begin) company-selection)
     (let ((result (nth company-selection company-candidates)))
       (company-finish result))))
