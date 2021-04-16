@@ -388,6 +388,7 @@ passed via standard input."
     (candidates (cons :async
                       (lambda (cb) (company-clang--candidates arg cb))))
     (meta       (company-clang--meta arg))
+    (kind (company-clang--kind arg))
     (annotation (company-clang--annotation arg))
     (post-completion (let ((anno (company-clang--annotation arg)))
                        (when (and company-clang-insert-arguments anno)
@@ -396,6 +397,23 @@ passed via standard input."
                              (company-template-objc-templatify anno)
                            (company-template-c-like-templatify
                             (concat arg anno))))))))
+
+(defun company-clang--kind (arg)
+  ;; XXX: Not very precise.
+  ;; E.g. it will say that an arg-less ObjC method is a variable (perhaps we
+  ;; could look around for brackets, etc, if there any actual users who's
+  ;; bothered by it).
+  ;; And we can't distinguish between local vars and struct fields.
+  ;; Or between keywords and macros.
+  (let ((meta (company-clang--meta arg)))
+    (cond
+     ((null meta) 'keyword)
+     ((string-match "(" meta)
+      (if (string-match-p (format "\\`%s *\\'" (regexp-quote arg))
+                          (substring meta 0 (match-beginning 0)))
+          'keyword ; Also macro, actually (no return type).
+        'function))
+     (t 'variable))))
 
 (provide 'company-clang)
 ;;; company-clang.el ends here
