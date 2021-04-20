@@ -4,12 +4,11 @@
 
 * `company-idle-delay` default reduced to 0.2 (seconds).
 * The minimum required version of Emacs is now 25.1.
-* Both built-in options for `company-format-margin-function` require Emacs
-  compiled with SVG support.
 * Added support for icons
   ([#1070](https://github.com/company-mode/company-mode/pull/1070)), disabled by
-  default.  New user option `company-format-margin-function`.  New backend
-  command `kind`.
+  default. New user option `company-format-margin-function`. New backend command
+  `kind`. Both built-in options for `company-format-margin-function` require
+  Emacs compiled with SVG support.
 * New user option `company-abort-on-unique-match`
   ([#1046](https://github.com/company-mode/company-mode/issues/1046)).
 * `company-select-mouse` is a new frontend action
