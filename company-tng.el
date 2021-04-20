@@ -1,6 +1,6 @@
 ;;; company-tng.el --- company-mode configuration for single-button interaction
 
-;; Copyright (C) 2017-2020  Free Software Foundation, Inc.
+;; Copyright (C) 2017-2021  Free Software Foundation, Inc.
 
 ;; Author: Nikita Leshenko
 
@@ -145,6 +145,17 @@ confirm the selection and finish the completion."
 
 (declare-function eglot--snippet-expansion-fn "eglot")
 
+(defvar company-tng-map
+  (let ((keymap (make-sparse-keymap)))
+    (set-keymap-parent keymap company-active-map)
+    (define-key keymap [return] nil)
+    (define-key keymap (kbd "RET") nil)
+    (define-key keymap [tab] 'company-select-next)
+    (define-key keymap (kbd "TAB") 'company-select-next)
+    (define-key keymap [backtab] 'company-select-previous)
+    (define-key keymap (kbd "S-TAB") 'company-select-previous)
+    keymap))
+
 ;;;###autoload
 (define-minor-mode company-tng-mode
  "This minor mode enables `company-tng-frontend'."
@@ -155,26 +166,28 @@ confirm the selection and finish the completion."
     (setq company-frontends
           (add-to-list 'company-frontends 'company-tng-frontend))
     (when company-tng-auto-configure
-      (setq company-require-match nil)
       (setq company-frontends '(company-tng-frontend
                                 company-pseudo-tooltip-frontend
                                 company-echo-metadata-frontend))
-      (setq company-clang-insert-arguments nil
+      (setq company-require-match nil
+            company-clang-insert-arguments nil
             company-semantic-insert-arguments nil
             company-rtags-insert-arguments nil
             lsp-enable-snippet nil)
       (advice-add #'eglot--snippet-expansion-fn :override #'ignore)
-      (let ((keymap company-active-map))
-        (define-key keymap [return] nil)
-        (define-key keymap (kbd "RET") nil)
-        (define-key keymap [tab] 'company-select-next)
-        (define-key keymap (kbd "TAB") 'company-select-next)
-        (define-key keymap [backtab] 'company-select-previous)
-        (define-key keymap (kbd "S-TAB") 'company-select-previous)))
+      (setq company-active-map company-tng-map))
     (setq company-selection-default nil))
    (t
     (setq company-frontends
           (delete 'company-tng-frontend company-frontends))
+    (when company-tng-auto-configure
+      (setq company-require-match 'company-explicit-action-p
+            company-clang-insert-arguments t
+            company-semantic-insert-arguments t
+            company-rtags-insert-arguments t
+            lsp-enable-snippet t)
+      (advice-remove #'eglot--snippet-expansion-fn #'ignore)
+      (setq company-active-map (keymap-parent company-tng-map)))
     (setq company-selection-default 0))))
 
 (provide 'company-tng)
