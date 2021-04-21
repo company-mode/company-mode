@@ -797,7 +797,7 @@ regular keymap (`company-mode-map'):
 keymap during active completions (`company-active-map'):
 
 \\{company-active-map}"
-  nil company-lighter company-mode-map
+  :lighter company-lighter
   (if company-mode
       (progn
         (add-hook 'pre-command-hook 'company-pre-command nil t)
@@ -2198,7 +2198,7 @@ each one wraps a part of the input string."
   "Search mode for completion candidates.
 Don't start this directly, use `company-search-candidates' or
 `company-filter-candidates'."
-  nil company-search-lighter nil
+  :lighter company-search-lighter
   (if company-search-mode
       (if (company-manual-begin)
           (progn
