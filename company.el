@@ -3156,6 +3156,11 @@ Returns a negative number if the tooltip should be displayed above point."
         (setq row (+ row height -1)
               above t))
 
+      ;; This can happen in Emacs versions which allow arbitrary scrolling,
+      ;; such as Yamamoto's Mac Port.
+      (unless (pos-visible-in-window-p (window-start))
+        (cl-decf row))
+
       (let (nl beg end ov args)
         (save-excursion
           (setq nl (< (move-to-window-line row) row)
