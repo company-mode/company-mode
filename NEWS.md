@@ -2,6 +2,20 @@
 
 ## Next
 
+* Default key bindings have changed, moving `company-select-next` and
+  `company-select-previous` from `M-n` and `M-p` to `C-n` and `C-p`. The
+  previous bindings still work, but show a warning and will be disabled soon. To
+  undo that change in your local configuration, do:
+
+```el
+(with-eval-after-load 'company
+  (dolist (map (list company-active-map company-search-map))
+    (define-key map (kbd "C-n") nil)
+    (define-key map (kbd "C-p") nil)
+    (define-key map (kbd "M-n") 'company-select-next)
+    (define-key map (kbd "M-p") 'company-select-previous)))
+```
+
 * `company-idle-delay` default reduced to 0.2 (seconds).
 * The minimum required version of Emacs is now 25.1.
 * Added support for icons
