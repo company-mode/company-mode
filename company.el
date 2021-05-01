@@ -224,6 +224,10 @@ visualization is active.
 `post-command': After every command that is executed while the
 visualization is active.
 
+`unhide': When an asynchronous backend is waiting for its completions.
+Only needed in frontends which hide their visualizations in `pre-command'
+for technical reasons.
+
 The visualized data is stored in `company-prefix', `company-candidates',
 `company-common', `company-selection', `company-point' and
 `company-search-string'."
@@ -672,6 +676,13 @@ return a string prefixed with one space."
   "If enabled, selecting item before first or after last wraps around."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
+
+(defcustom company-async-redisplay-delay 0.005
+  "Delay before redisplay when fetching candidates asynchronously.
+
+You might want to set this to a higher value if your backends respond
+quickly, to avoid redisplaying twice per each typed character."
+  :type 'number)
 
 (defvar company-async-wait 0.03
   "Pause between checks to see if the value's been set when turning an
@@ -1256,10 +1267,13 @@ update if FORCE-UPDATE."
                                            company-candidates-cache)))
                 (setq candidates (all-completions prefix prev))
                 (cl-return t)))))
-        (progn
-          ;; No cache match, call the backend.
+        ;; No cache match, call the backend.
+        (let ((refresh-timer (run-with-timer company-async-redisplay-delay
+                                             nil #'company--sneaky-refresh)))
           (setq candidates (company--preprocess-candidates
                             (company--fetch-candidates prefix)))
+          ;; If the backend is synchronous, no chance for the timer to run.
+          (cancel-timer refresh-timer)
           ;; Save in cache.
           (push (cons prefix candidates) company-candidates-cache)))
     ;; Only now apply the predicate and transformers.
@@ -1301,6 +1315,12 @@ update if FORCE-UPDATE."
         (prog1
             (and (consp res) res)
           (setq res 'exited))))))
+
+(defun company--sneaky-refresh ()
+  (when company-candidates (company-call-frontends 'unhide))
+  (let (inhibit-redisplay)
+    (redisplay))
+  (when company-candidates (company-call-frontends 'pre-command)))
 
 (defun company--flyspell-workaround-p ()
   ;; https://debbugs.gnu.org/23980
@@ -3252,6 +3272,7 @@ Returns a negative number if the tooltip should be displayed above point."
   "`company-mode' frontend similar to a tooltip but based on overlays."
   (cl-case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
+    (unhide (company-pseudo-tooltip-unhide))
     (post-command
      (unless (when (overlayp company-pseudo-tooltip-overlay)
                (let* ((ov company-pseudo-tooltip-overlay)
@@ -3294,7 +3315,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
   "`company-pseudo-tooltip-frontend', but not shown for single candidates."
-  (unless (and (eq command 'post-command)
+  (unless (and (memq command '(post-command unhide))
                (company--show-inline-p))
     (company-pseudo-tooltip-frontend command)))
 
@@ -3377,7 +3398,9 @@ Delay is determined by `company-tooltip-idle-delay'."
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
     (`pre-command (company-preview-hide))
-    (`post-command
+    ;; XXX: `unhide' could also try to do a better guess based on the last
+    ;; preview string and new input.
+    ((or 'post-command 'unhide)
      (when company-selection
        (company-preview-show-at-point (point)
                                       (nth company-selection company-candidates))))
@@ -3385,7 +3408,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-preview-if-just-one-frontend (command)
   "`company-preview-frontend', but only shown for single candidates."
-  (when (or (not (eq command 'post-command))
+  (when (or (not (memq command '(post-command unhide)))
             (company--show-inline-p))
     (company-preview-frontend command)))
 
@@ -3411,11 +3434,12 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-preview-common-frontend (command)
   "`company-mode' frontend preview the common part of candidates."
-  (when (or (not (eq command 'post-command))
+  (when (or (not (memq command '(post-command unhide)))
             (company-preview-common--show-p))
     (pcase command
       (`pre-command (company-preview-hide))
-      (`post-command (company-preview-show-at-point (point) company-common))
+      ((or 'post-command 'unhide)
+       (company-preview-show-at-point (point) company-common))
       (`hide (company-preview-hide)))))
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

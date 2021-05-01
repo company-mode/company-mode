@@ -2,6 +2,9 @@
 
 ## Next
 
+* Improved visual responsiveness with async backends
+  ([#1073](https://github.com/company-mode/company-mode/issues/1073)).
+* New user option `company-async-redisplay-delay`.
 * `company-idle-delay` default reduced to 0.2 (seconds).
 * The minimum required version of Emacs is now 25.1.
 * Added support for icons
