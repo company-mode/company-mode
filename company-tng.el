@@ -179,7 +179,9 @@ confirm the selection and finish the completion."
     (setq company-selection-default nil))
    (t
     (setq company-frontends
-          (delete 'company-tng-frontend company-frontends))
+          '(company-pseudo-tooltip-unless-just-one-frontend
+            company-preview-if-just-one-frontend
+            company-echo-metadata-frontend))
     (when company-tng-auto-configure
       (setq company-require-match 'company-explicit-action-p
             company-clang-insert-arguments t
