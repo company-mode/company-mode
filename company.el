@@ -3398,9 +3398,14 @@ Delay is determined by `company-tooltip-idle-delay'."
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
     (`pre-command (company-preview-hide))
-    ;; XXX: `unhide' could also try to do a better guess based on the last
-    ;; preview string and new input.
-    ((or 'post-command 'unhide)
+    (`unhide
+     (when company-selection
+       (let ((company-prefix (buffer-substring
+                              (- company-point (length company-prefix))
+                              (point))))
+         (company-preview-show-at-point (point)
+                                        (nth company-selection company-candidates)))))
+    (`post-command
      (when company-selection
        (company-preview-show-at-point (point)
                                       (nth company-selection company-candidates))))
