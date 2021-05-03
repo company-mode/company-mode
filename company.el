@@ -1582,16 +1582,15 @@ Only affects `company-text-icons-margin'."
     (propertize company-dot-icons-format 'face face)))
 
 (defun company-detect-icons-margin (candidate selected)
-  "Margin function which picks from vscodes icons or unicode icons
-based on `display-graphic-p'."
-  (if (display-graphic-p)
-      ;; Default to dark because who in their right mind uses light 😜
+  "Margin function which picks the appropriate icon set automatically."
+  (if (and (display-graphic-p)
+           (image-type-available-p 'svg))
       (cl-case (frame-parameter nil 'background-mode)
         ('light (company-vscode-light-icons-margin candidate selected))
         (t (company-vscode-dark-icons-margin candidate selected)))
     (company-text-icons-margin candidate selected)))
 
-(defcustom company-format-margin-function nil
+(defcustom company-format-margin-function #'company-detect-icons-margin
   "Function to format the margin.
 It accepts 2 params `candidate' and `selected' and can be used for
 inserting prefix/image before the completion items. Typically, the
