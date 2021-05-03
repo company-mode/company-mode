@@ -1439,6 +1439,7 @@ end of the match."
                                       'company-tooltip-selection
                                     'company-tooltip)
                                   :background))
+             (dfw (default-font-width))
              (icon-size (cond
                          ((integerp company-icon-size)
                           company-icon-size)
@@ -1447,7 +1448,6 @@ end of the match."
                          ((and (consp company-icon-size)
                                (eq 'auto-scale (car company-icon-size)))
                           (let ((base-size (cdr company-icon-size))
-                                (dfw (default-font-width))
                                 (dfh (default-font-height)))
                             (min
                              (if (> dfh (* 2 base-size))
@@ -1461,10 +1461,11 @@ end of the match."
                          :height icon-size
                          :ascent 'center
                          :background (unless (eq bkg 'unspecified)
-                                       bkg))))
+                                       bkg)))
+             (spacer-px-width (- (* 2 dfw) icon-size)))
         (concat
          (propertize " " 'display spec)
-         (propertize " " 'display `(space . (:width ,(- 2 (car (image-size spec))))))))
+         (propertize " " 'display `(space . (:width (,spacer-px-width))))))
     nil))
 
 (defun company-vscode-dark-icons-margin (candidate selected)
