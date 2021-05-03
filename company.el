@@ -1448,14 +1448,12 @@ end of the match."
                                (eq 'auto-scale (car company-icon-size)))
                           (let ((base-size (cdr company-icon-size))
                                 (dfw (default-font-width))
-                                size)
-                            (setq size (if (> (default-font-height)
-                                              (* 2 base-size))
-                                           (* 2 base-size)
-                                         base-size))
-                            (when (> size (* 2 dfw))
-                              (setq size (* 2 dfw)))
-                            size))))
+                                (dfh (default-font-height)))
+                            (min
+                             (if (> dfh (* 2 base-size))
+                                 (* 2 base-size)
+                               base-size)
+                             (* 2 dfw))))))
              (spec (list 'image
                          :file (expand-file-name icon-file root-dir)
                          :type 'svg
