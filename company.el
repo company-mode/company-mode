@@ -1540,8 +1540,9 @@ end of the match."
     ;; (text . nil)
     (value . font-lock-builtin-face)
     (variable . font-lock-variable-name-face)
-    (t . deemphasized))
-  "Faces mapping for `company-text-icons-margin' and `company-dot-icons-margin'."
+    (t . shadow))
+  "Faces mapping for `company-text-icons-margin' and `company-dot-icons-margin'.
+Only their values of :foreground attribute will be used."
   :type '(repeat
           (cons (symbol :tag "Kind name")
                 (face :tag "Face to use for it"))))
@@ -1570,7 +1571,7 @@ Only affects `company-text-icons-margin'."
      'face
      (if company-text-face-extra-attributes
          (append company-text-face-extra-attributes
-                 (list :inherit face))
+                 (list :foreground (face-attribute face :foreground)))
        face))))
 
 (defcustom company-dot-icons-format "●"
