@@ -1557,7 +1557,11 @@ Only affects `company-text-icons-margin'."
   "Format string for printing the text icons."
   :type 'string)
 
-(defun company-text-icons-margin (candidate _selected)
+(defcustom company-text-icons-add-background nil
+  "When non-nil, add special background to the characters."
+  :type 'boolean)
+
+(defun company-text-icons-margin (candidate selected)
   "Margin function which returns unicode icons."
   (when-let ((candidate candidate)
              (kind (company-call-backend 'kind candidate))
@@ -1569,10 +1573,27 @@ Only affects `company-text-icons-margin'."
     (propertize
      (format company-text-icons-format icon)
      'face
-     (if company-text-face-extra-attributes
-         (append company-text-face-extra-attributes
-                 (list :foreground (face-attribute face :foreground)))
-       face))))
+     `(,@company-text-face-extra-attributes
+       ,@(when company-text-icons-add-background
+           (list :background
+                 (company-text-icons--background face selected)))
+       :foreground ,(face-attribute face :foreground)))))
+
+(declare-function color-rgb-to-hex "color")
+(declare-function color-gradient "color")
+
+(defun company-text-icons--background (face selected)
+  (apply #'color-rgb-to-hex
+         (nth 0 (color-gradient
+                 (color-name-to-rgb
+                  (face-attribute
+                   (if selected
+                       'company-tooltip-selection
+                     'company-tooltip)
+                   :background))
+                 (color-name-to-rgb
+                  (face-attribute face :foreground))
+                 10))))
 
 (defcustom company-dot-icons-format "●"
   "Format string for `company-dot-icons-margin'."
