@@ -1515,7 +1515,7 @@ The format should be an alist of (KIND . CONF) where CONF is a list of the
 form (ICON FG BG) which is used to propertize the icon to be shown for a
 candidate of kind KIND. FG can either be color string or a face from which
 we can get a color string (using the :foreground face-property). BG must be
-of the same form as FG or a cons cell of (BG-WHEN-SELECTED . BG) which each
+of the same form as FG or a cons cell of (BG . BG-WHEN-SELECTED) which each
 should be of the same form as FG.
 
 The only mandatory element in CONF is ICON, you can omit both the FG and BG
@@ -1559,8 +1559,8 @@ See `company-text-icons-mapping'."
 (defun company-text-icons--face (fg bg selected)
   ;; Narrow to specific bg used for current candidate when a CONS cell.
   (when (consp bg)
-    (setq bg (if selected (car bg) (cdr bg))))
-  (let ((bg-color (if (facep bg) (face-attribute bg :foreground) bg))
+    (setq bg (if selected (cdr bg) (car bg))))
+  (let ((bg-color (if (facep bg) (face-attribute bg :background) bg))
         (fg-color (if (facep fg) (face-attribute fg :foreground) fg)))
     `(,@company-text-face-extra-attributes
       ,@(cond
