@@ -2,7 +2,8 @@
 
 ## Next
 
-* New user option `company-files-chop-trailing-slash'.
+* New user option `company-files-chop-trailing-slash`
+  ([#1042](https://github.com/company-mode/company-mode/issues/1042)).
 * Improved visual responsiveness with async backends
   ([#1073](https://github.com/company-mode/company-mode/issues/1073)). New user
   option `company-async-redisplay-delay`.
