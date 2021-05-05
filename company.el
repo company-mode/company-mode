@@ -1556,17 +1556,25 @@ See `company-text-icons-mapping'."
 (declare-function color-rgb-to-hex "color")
 (declare-function color-gradient "color")
 
+(cl-defsubst company-text-icons--extract-property (face property)
+  "Try to extract PROPERTY from FACE.
+If FACE isn't a valid face return FACE as is. If FACE doesn't have
+PROPERTY return nil."
+  (if (facep face)
+      (let ((value (face-attribute face property)))
+        (unless (eq value 'unspecified)
+          value))
+    face))
+
 (defun company-text-icons--face (fg bg selected)
-  (let ((fg-color (if (facep fg) (face-attribute fg :foreground) fg)))
+  (let ((fg-color (company-text-icons--extract-property fg :foreground)))
     `(,@company-text-face-extra-attributes
       ,@(and fg-color
              (list :foreground fg-color))
       ,@(let* ((bg-is-cons (consp bg))
                (bg (if bg-is-cons (if selected (cdr bg) (car bg)) bg))
-               (bg-color (if (facep bg) (face-attribute bg :background) bg))
-               (bg-color (unless (eq bg-color 'unspecified)
-                           bg-color))
-               (tooltip-bg-color (face-attribute
+               (bg-color (company-text-icons--extract-property bg :background))
+               (tooltip-bg-color (company-text-icons--extract-property
                                   (if selected
                                       'company-tooltip-selection
                                     'company-tooltip)
