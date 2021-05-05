@@ -1513,9 +1513,17 @@ end of the match."
   "Mapping of the text icons.
 The format should be an alist of (KIND . CONF) where CONF is a list of the
 form (ICON FG BG) which is used to propertize the icon to be shown for a
-candidate of kind KIND. FG must be a face symbol. BG can either be a hex
-color string or a cons of (BG-WHEN-SELECTED . BG) containing one of the
-above."
+candidate of kind KIND. FG can either be color string or a face from which
+we can get a color string (using the :foreground face-property). BG must be
+of the same form as FG or a cons cell of (BG-WHEN-SELECTED . BG) which each
+should be of the same form as FG.
+
+The only mandatory element in CONF is ICON, you can omit both the FG and BG
+fields without issue.
+
+When BG is omitted and `company-text-icons-add-background' is non-nil, a BG
+color will be generated using a gradient between the active tooltip color and
+the FG color."
   :type 'list)
 
 (defcustom company-text-face-extra-attributes '(:weight bold)
@@ -1529,7 +1537,8 @@ Only affects `company-text-icons-margin'."
   :type 'string)
 
 (defcustom company-text-icons-add-background nil
-  "When non-nil, add special background to the characters."
+  "When non-nil, generate a background color for text icons when none is given.
+See `company-text-icons-mapping'."
   :type 'boolean)
 
 (defun company-text-icons-margin (candidate selected)
@@ -1548,27 +1557,32 @@ Only affects `company-text-icons-margin'."
 (declare-function color-gradient "color")
 
 (defun company-text-icons--face (fg bg selected)
-  `(,@company-text-face-extra-attributes
-    ,@(cond
-       (bg (list :background
-                 (if (consp bg)
-                     (if selected (car bg) (cdr bg))
-                   bg)))
-       (company-text-icons-add-background
-        (list :background
-              (apply #'color-rgb-to-hex
-                     (nth 0 (color-gradient
-                             (color-name-to-rgb
-                              (face-attribute
-                               (if selected
-                                   'company-tooltip-selection
-                                 'company-tooltip)
-                               :background))
-                             (color-name-to-rgb
-                              (face-attribute fg :foreground))
-                             10))))))
-    ,@(when-let ((fg-color (face-attribute fg :foreground)))
-        (list :foreground fg-color))))
+  ;; Narrow to specific bg used for current candidate when a CONS cell.
+  (when (consp bg)
+    (setq bg (if selected (car bg) (cdr bg))))
+  (let ((bg-color (if (facep bg) (face-attribute bg :foreground) bg))
+        (fg-color (if (facep fg) (face-attribute fg :foreground) fg)))
+    `(,@company-text-face-extra-attributes
+      ,@(cond
+         ;; When bg is given, but the bg face has no color then don't set a
+         ;; bg color. Leave it as the default from `company-tooltip'.
+         (bg (and bg-color
+                  (list :background bg-color)))
+         ;; Otherwise try to generate a decent background from the foreground.
+         ((and fg-color
+               company-text-icons-add-background)
+          (when-let ((tooltip-bg-color (face-attribute
+                                        (if selected
+                                            'company-tooltip-selection
+                                          'company-tooltip)
+                                        :background)))
+            (list :background
+                  (apply #'color-rgb-to-hex
+                         (nth 0 (color-gradient (color-name-to-rgb tooltip-bg-color)
+                                                (color-name-to-rgb fg-color)
+                                                10)))))))
+      ,@(and fg-color
+             (list :foreground fg-color)))))
 
 (defcustom company-dot-icons-format "●"
   "Format string for `company-dot-icons-margin'."
