@@ -1557,32 +1557,42 @@ See `company-text-icons-mapping'."
 (declare-function color-gradient "color")
 
 (defun company-text-icons--face (fg bg selected)
-  ;; Narrow to specific bg used for current candidate when a CONS cell.
-  (when (consp bg)
-    (setq bg (if selected (cdr bg) (car bg))))
-  (let ((bg-color (if (facep bg) (face-attribute bg :background) bg))
-        (fg-color (if (facep fg) (face-attribute fg :foreground) fg)))
+  (let ((fg-color (if (facep fg) (face-attribute fg :foreground) fg)))
     `(,@company-text-face-extra-attributes
-      ,@(cond
-         ;; When bg is given, but the bg face has no color then don't set a
-         ;; bg color. Leave it as the default from `company-tooltip'.
-         (bg (and bg-color
-                  (list :background bg-color)))
-         ;; Otherwise try to generate a decent background from the foreground.
-         ((and fg-color
-               company-text-icons-add-background)
-          (when-let ((tooltip-bg-color (face-attribute
-                                        (if selected
-                                            'company-tooltip-selection
-                                          'company-tooltip)
-                                        :background)))
+      ,@(and fg-color
+             (list :foreground fg-color))
+      ,@(let* ((bg-is-cons (consp bg))
+               (bg (if bg-is-cons (if selected (cdr bg) (car bg)) bg))
+               (bg-color (if (facep bg) (face-attribute bg :background) bg))
+               (bg-color (unless (eq bg-color 'unspecified)
+                           bg-color))
+               (tooltip-bg-color (face-attribute
+                                  (if selected
+                                      'company-tooltip-selection
+                                    'company-tooltip)
+                                  :background)))
+          (cond
+           ((and company-text-icons-add-background selected
+                 (not bg-is-cons) bg-color tooltip-bg-color)
+            ;; Adjust the coloring of the background when *selected* but user hasn't
+            ;; specified an alternate background color for selected item icons.
+            (list :background
+                  (apply #'color-rgb-to-hex
+                         (nth 0 (color-gradient (color-name-to-rgb tooltip-bg-color)
+                                                (color-name-to-rgb bg-color)
+                                                2)))))
+           (bg
+            ;; When background is configured we use it as is, even if it doesn't
+            ;; constrast well with other candidates when selected.
+            (and bg-color
+                 (list :background bg-color)))
+           ((and company-text-icons-add-background fg-color tooltip-bg-color)
+            ;; Lastly attempt to generate a background from the foreground.
             (list :background
                   (apply #'color-rgb-to-hex
                          (nth 0 (color-gradient (color-name-to-rgb tooltip-bg-color)
                                                 (color-name-to-rgb fg-color)
-                                                10)))))))
-      ,@(and fg-color
-             (list :foreground fg-color)))))
+                                                10))))))))))
 
 (defcustom company-dot-icons-format "●"
   "Format string for `company-dot-icons-margin'."
