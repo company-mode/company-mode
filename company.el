@@ -1483,69 +1483,40 @@ end of the match."
                                 selected))
 
 (defcustom company-text-icons-mapping
-  '((array . "a")
-    (boolean . "b")
-    (class . "c")
-    (color . "#")
-    (constant . "c")
-    (enum-member . "e")
-    (enum . "e")
-    (field . "f")
-    (file . "f")
-    (folder . "d")
-    (interface . "i")
-    (keyword . "k")
-    (method . "m")
-    (function . "f")
-    (module . "{")
-    (numeric . "n")
-    (operator . "o")
-    (parameter . "p")
-    (property . "p")
-    (ruler . "r")
-    (snippet . "S")
-    (string . "s")
-    (struct . "s")
-    (text . "t")
-    (value . "v")
-    (variable . "v")
-    (t . "."))
-  "Mapping of the text icons."
+  '((array "a" font-lock-type-face)
+    (boolean "b" font-lock-builtin-face)
+    (class "c" font-lock-type-face)
+    (color "#" success)
+    (constant "c" font-lock-constant-face)
+    (enum-member "e" font-lock-builtin-face)
+    (enum "e" font-lock-builtin-face)
+    (field "f" font-lock-variable-name-face)
+    (file "f" font-lock-string-face)
+    (folder "d" font-lock-doc-face)
+    (interface "i" font-lock-type-face)
+    (keyword "k" font-lock-keyword-face)
+    (method "m" font-lock-function-name-face)
+    (function "f" font-lock-function-name-face)
+    (module "{" font-lock-type-face)
+    (numeric "n" font-lock-builtin-face)
+    (operator "o" font-lock-comment-delimiter-face)
+    (parameter "p" font-lock-builtin-face)
+    (property "p" font-lock-variable-name-face)
+    (ruler "r" shadow)
+    (snippet "S" font-lock-string-face)
+    (string "s" font-lock-string-face)
+    (struct "s" font-lock-variable-name-face)
+    (text "t" shadow)
+    (value "v" font-lock-builtin-face)
+    (variable "v" font-lock-variable-name-face)
+    (t "." shadow))
+  "Mapping of the text icons.
+The format should be an alist of (KIND . CONF) where CONF is a list of the
+form (ICON FG BG) which is used to propertize the icon to be shown for a
+candidate of kind KIND. FG must be a face symbol. BG can either be a hex
+color string or a cons of (BG-WHEN-SELECTED . BG) containing one of the
+above."
   :type 'list)
-
-(defcustom company-text-kind-face-mapping
-  '((array . font-lock-type-face)
-    (boolean . font-lock-builtin-face)
-    (class . font-lock-type-face)
-    (color . success)
-    (constant . font-lock-constant-face)
-    (enum-member . font-lock-builtin-face)
-    (enum . font-lock-builtin-face)
-    (field . font-lock-variable-name-face)
-    (file . font-lock-string-face)
-    (folder . font-lock-doc-face)
-    (interface . font-lock-type-face)
-    (keyword . font-lock-keyword-face)
-    (method . font-lock-function-name-face)
-    (function . font-lock-function-name-face)
-    (module . font-lock-type-face)
-    (numeric . font-lock-builtin-face)
-    (operator . font-lock-comment-delimiter-face)
-    (parameter . font-lock-builtin-face)
-    (property . font-lock-variable-name-face)
-    ;; (ruler . nil)
-    (snippet . font-lock-string-face)
-    (string . font-lock-string-face)
-    (struct . font-lock-variable-name-face)
-    ;; (text . nil)
-    (value . font-lock-builtin-face)
-    (variable . font-lock-variable-name-face)
-    (t . shadow))
-  "Faces mapping for `company-text-icons-margin' and `company-dot-icons-margin'.
-Only their values of :foreground attribute will be used."
-  :type '(repeat
-          (cons (symbol :tag "Kind name")
-                (face :tag "Face to use for it"))))
 
 (defcustom company-text-face-extra-attributes '(:weight bold)
   "Additional attributes to add to text icons' faces.
@@ -1565,47 +1536,53 @@ Only affects `company-text-icons-margin'."
   "Margin function which returns unicode icons."
   (when-let ((candidate candidate)
              (kind (company-call-backend 'kind candidate))
-             (icon (or (alist-get kind company-text-icons-mapping)
-                       (alist-get t company-text-icons-mapping)))
-             (face (or (assoc-default kind
-                                      company-text-kind-face-mapping)
-                       (assoc-default t company-text-kind-face-mapping))))
-    (propertize
-     (format company-text-icons-format icon)
-     'face
-     `(,@company-text-face-extra-attributes
-       ,@(when company-text-icons-add-background
-           (list :background
-                 (company-text-icons--background face selected)))
-       :foreground ,(face-attribute face :foreground)))))
+             (conf (or (alist-get kind company-text-icons-mapping)
+                       (alist-get t company-text-icons-mapping))))
+    (cl-destructuring-bind (icon &optional fg bg) conf
+      (propertize
+       (format company-text-icons-format icon)
+       'face
+       (company-text-icons--face fg bg selected)))))
 
 (declare-function color-rgb-to-hex "color")
 (declare-function color-gradient "color")
 
-(defun company-text-icons--background (face selected)
-  (apply #'color-rgb-to-hex
-         (nth 0 (color-gradient
-                 (color-name-to-rgb
-                  (face-attribute
-                   (if selected
-                       'company-tooltip-selection
-                     'company-tooltip)
-                   :background))
-                 (color-name-to-rgb
-                  (face-attribute face :foreground))
-                 10))))
+(defun company-text-icons--face (fg bg selected)
+  `(,@company-text-face-extra-attributes
+    ,@(cond
+       (bg (list :background
+                 (if (consp bg)
+                     (if selected (car bg) (cdr bg))
+                   bg)))
+       (company-text-icons-add-background
+        (list :background
+              (apply #'color-rgb-to-hex
+                     (nth 0 (color-gradient
+                             (color-name-to-rgb
+                              (face-attribute
+                               (if selected
+                                   'company-tooltip-selection
+                                 'company-tooltip)
+                               :background))
+                             (color-name-to-rgb
+                              (face-attribute fg :foreground))
+                             10))))))
+    ,@(when-let ((fg-color (face-attribute fg :foreground)))
+        (list :foreground fg-color))))
 
 (defcustom company-dot-icons-format "●"
   "Format string for `company-dot-icons-margin'."
   :type 'string)
 
-(defun company-dot-icons-margin (candidate _selected)
+(defun company-dot-icons-margin (candidate selected)
   "Margin function that uses a colored dot to display completion kind."
   (when-let ((kind (company-call-backend 'kind candidate))
-             (face (or (assoc-default kind
-                                      company-text-kind-face-mapping)
-                       (assoc-default t company-text-kind-face-mapping))))
-    (propertize company-dot-icons-format 'face face)))
+             (conf (or (assoc-default kind company-text-icons-mapping)
+                       (assoc-default t company-text-icons-mapping))))
+    (cl-destructuring-bind (_icon &optional fg bg) conf
+      (propertize company-dot-icons-format
+                  'face
+                  (company-text-icons--face fg bg selected)))))
 
 (defun company-detect-icons-margin (candidate selected)
   "Margin function which picks the appropriate icon set automatically."
