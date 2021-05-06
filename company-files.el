@@ -1,6 +1,6 @@
 ;;; company-files.el --- company-mode completion backend for file names
 
-;; Copyright (C) 2009-2011, 2014-2015  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2014-2021  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -37,6 +37,14 @@
 The values should use the same format as `completion-ignored-extensions'."
   :type '(const string)
   :package-version '(company . "0.9.1"))
+
+(defcustom company-files-chop-trailing-slash t
+  "Non-nil to remove the trailing slash after inserting directory name.
+
+This way it's easy to continue completion by typing `/' again.
+
+Set this to nil to disable that behavior."
+  :type 'boolean)
 
 (defun company-files--directory-files (dir prefix)
   ;; Don't use directory-files. It produces directories without trailing /.
@@ -128,7 +136,8 @@ The values should use the same format as `completion-ignored-extensions'."
        (string-prefix-p (car old) (car new))))
 
 (defun company-files--post-completion (arg)
-  (when (company-files--trailing-slash-p arg)
+  (when (and company-files-chop-trailing-slash
+             (company-files--trailing-slash-p arg))
     (delete-char -1)))
 
 ;;;###autoload

@@ -224,6 +224,10 @@ visualization is active.
 `post-command': After every command that is executed while the
 visualization is active.
 
+`unhide': When an asynchronous backend is waiting for its completions.
+Only needed in frontends which hide their visualizations in `pre-command'
+for technical reasons.
+
 The visualized data is stored in `company-prefix', `company-candidates',
 `company-common', `company-selection', `company-point' and
 `company-search-string'."
@@ -672,6 +676,13 @@ return a string prefixed with one space."
   "If enabled, selecting item before first or after last wraps around."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
+
+(defcustom company-async-redisplay-delay 0.005
+  "Delay before redisplay when fetching candidates asynchronously.
+
+You might want to set this to a higher value if your backends respond
+quickly, to avoid redisplaying twice per each typed character."
+  :type 'number)
 
 (defvar company-async-wait 0.03
   "Pause between checks to see if the value's been set when turning an
@@ -1275,10 +1286,13 @@ update if FORCE-UPDATE."
                                            company-candidates-cache)))
                 (setq candidates (all-completions prefix prev))
                 (cl-return t)))))
-        (progn
-          ;; No cache match, call the backend.
+        ;; No cache match, call the backend.
+        (let ((refresh-timer (run-with-timer company-async-redisplay-delay
+                                             nil #'company--sneaky-refresh)))
           (setq candidates (company--preprocess-candidates
                             (company--fetch-candidates prefix)))
+          ;; If the backend is synchronous, no chance for the timer to run.
+          (cancel-timer refresh-timer)
           ;; Save in cache.
           (push (cons prefix candidates) company-candidates-cache)))
     ;; Only now apply the predicate and transformers.
@@ -1320,6 +1334,12 @@ update if FORCE-UPDATE."
         (prog1
             (and (consp res) res)
           (setq res 'exited))))))
+
+(defun company--sneaky-refresh ()
+  (when company-candidates (company-call-frontends 'unhide))
+  (let (inhibit-redisplay)
+    (redisplay))
+  (when company-candidates (company-call-frontends 'pre-command)))
 
 (defun company--flyspell-workaround-p ()
   ;; https://debbugs.gnu.org/23980
@@ -1438,6 +1458,7 @@ end of the match."
                                       'company-tooltip-selection
                                     'company-tooltip)
                                   :background))
+             (dfw (default-font-width))
              (icon-size (cond
                          ((integerp company-icon-size)
                           company-icon-size)
@@ -1445,11 +1466,13 @@ end of the match."
                          ;; (aref (font-info (face-font 'default)) 2)
                          ((and (consp company-icon-size)
                                (eq 'auto-scale (car company-icon-size)))
-                          (let ((base-size (cdr company-icon-size)))
-                            (if (> (default-font-height)
-                                   (* 2 base-size))
-                                (* 2 base-size)
-                              base-size)))))
+                          (let ((base-size (cdr company-icon-size))
+                                (dfh (default-font-height)))
+                            (min
+                             (if (> dfh (* 2 base-size))
+                                 (* 2 base-size)
+                               base-size)
+                             (* 2 dfw))))))
              (spec (list 'image
                          :file (expand-file-name icon-file root-dir)
                          :type 'svg
@@ -1457,10 +1480,11 @@ end of the match."
                          :height icon-size
                          :ascent 'center
                          :background (unless (eq bkg 'unspecified)
-                                       bkg))))
+                                       bkg)))
+             (spacer-px-width (- (* 2 dfw) icon-size)))
         (concat
          (propertize " " 'display spec)
-         (propertize " " 'display `(space . (:width ,(- 2 (car (image-size spec))))))))
+         (propertize " " 'display `(space . (:width (,spacer-px-width))))))
     nil))
 
 (defun company-vscode-dark-icons-margin (candidate selected)
@@ -1478,105 +1502,149 @@ end of the match."
                                 selected))
 
 (defcustom company-text-icons-mapping
-  '((array . "Α")
-    (boolean . "β")
-    (class . "γ")
-    (color . "Δ")
-    (constant . "ε")
-    (enum-member . "ζ")
-    (enum . "Ζ")
-    (event . "η")
-    (field . "θ")
-    (file . "Ɩ")
-    (folder . "⍳")
-    (interface . "ϰ")
-    (keyword . "ν")
-    (method . "λ")
-    (function . "ƒ")
-    (module . "Ο")
-    (numeric . "π")
-    (operator . "⊙")
-    (parameter . "ρ")
-    (property . "σ")
-    (ruler . "τ")
-    (snippet . "υ")
-    (string . "φ")
-    (struct . "Χ")
-    (text . "μ")
-    (value . "Ζ")
-    (variable . "ѱ")
-    (t . "ξ"))
-  "Mapping of the text icons."
+  '((array "a" font-lock-type-face)
+    (boolean "b" font-lock-builtin-face)
+    (class "c" font-lock-type-face)
+    (color "#" success)
+    (constant "c" font-lock-constant-face)
+    (enum-member "e" font-lock-builtin-face)
+    (enum "e" font-lock-builtin-face)
+    (field "f" font-lock-variable-name-face)
+    (file "f" font-lock-string-face)
+    (folder "d" font-lock-doc-face)
+    (interface "i" font-lock-type-face)
+    (keyword "k" font-lock-keyword-face)
+    (method "m" font-lock-function-name-face)
+    (function "f" font-lock-function-name-face)
+    (module "{" font-lock-type-face)
+    (numeric "n" font-lock-builtin-face)
+    (operator "o" font-lock-comment-delimiter-face)
+    (parameter "p" font-lock-builtin-face)
+    (property "p" font-lock-variable-name-face)
+    (ruler "r" shadow)
+    (snippet "S" font-lock-string-face)
+    (string "s" font-lock-string-face)
+    (struct "%" font-lock-variable-name-face)
+    (text "w" shadow)
+    (value "v" font-lock-builtin-face)
+    (variable "v" font-lock-variable-name-face)
+    (t "." shadow))
+  "Mapping of the text icons.
+The format should be an alist of (KIND . CONF) where CONF is a list of the
+form (ICON FG BG) which is used to propertize the icon to be shown for a
+candidate of kind KIND. FG can either be color string or a face from which
+we can get a color string (using the :foreground face-property). BG must be
+of the same form as FG or a cons cell of (BG . BG-WHEN-SELECTED) which each
+should be of the same form as FG.
+
+The only mandatory element in CONF is ICON, you can omit both the FG and BG
+fields without issue.
+
+When BG is omitted and `company-text-icons-add-background' is non-nil, a BG
+color will be generated using a gradient between the active tooltip color and
+the FG color."
   :type 'list)
 
-(defcustom company-text-icons-format "%s "
+(defcustom company-text-face-extra-attributes '(:weight bold)
+  "Additional attributes to add to text icons' faces.
+If non-nil, an anonymous face will be generated.
+Only affects `company-text-icons-margin'."
+  :type 'list)
+
+(defcustom company-text-icons-format " %s "
   "Format string for printing the text icons."
   :type 'string)
 
-(defun company-text-icons-margin (candidate _selected)
+(defcustom company-text-icons-add-background nil
+  "When non-nil, generate a background color for text icons when none is given.
+See `company-text-icons-mapping'."
+  :type 'boolean)
+
+(defun company-text-icons-margin (candidate selected)
   "Margin function which returns unicode icons."
   (when-let ((candidate candidate)
              (kind (company-call-backend 'kind candidate))
-             (icon (or (alist-get kind company-text-icons-mapping)
+             (conf (or (alist-get kind company-text-icons-mapping)
                        (alist-get t company-text-icons-mapping))))
-    (format company-text-icons-format icon)))
+    (cl-destructuring-bind (icon &optional fg bg) conf
+      (propertize
+       (format company-text-icons-format icon)
+       'face
+       (company-text-icons--face fg bg selected)))))
+
+(declare-function color-rgb-to-hex "color")
+(declare-function color-gradient "color")
+
+(defun company-text-icons--extract-property (face property)
+  "Try to extract PROPERTY from FACE.
+If FACE isn't a valid face return FACE as is. If FACE doesn't have
+PROPERTY return nil."
+  (if (facep face)
+      (let ((value (face-attribute face property)))
+        (unless (eq value 'unspecified)
+          value))
+    face))
+
+(defun company-text-icons--face (fg bg selected)
+  (let ((fg-color (company-text-icons--extract-property fg :foreground)))
+    `(,@company-text-face-extra-attributes
+      ,@(and fg-color
+             (list :foreground fg-color))
+      ,@(let* ((bg-is-cons (consp bg))
+               (bg (if bg-is-cons (if selected (cdr bg) (car bg)) bg))
+               (bg-color (company-text-icons--extract-property bg :background))
+               (tooltip-bg-color (company-text-icons--extract-property
+                                  (if selected
+                                      'company-tooltip-selection
+                                    'company-tooltip)
+                                  :background)))
+          (cond
+           ((and company-text-icons-add-background selected
+                 (not bg-is-cons) bg-color tooltip-bg-color)
+            ;; Adjust the coloring of the background when *selected* but user hasn't
+            ;; specified an alternate background color for selected item icons.
+            (list :background
+                  (apply #'color-rgb-to-hex
+                         (nth 0 (color-gradient (color-name-to-rgb tooltip-bg-color)
+                                                (color-name-to-rgb bg-color)
+                                                2)))))
+           (bg
+            ;; When background is configured we use it as is, even if it doesn't
+            ;; constrast well with other candidates when selected.
+            (and bg-color
+                 (list :background bg-color)))
+           ((and company-text-icons-add-background fg-color tooltip-bg-color)
+            ;; Lastly attempt to generate a background from the foreground.
+            (list :background
+                  (apply #'color-rgb-to-hex
+                         (nth 0 (color-gradient (color-name-to-rgb tooltip-bg-color)
+                                                (color-name-to-rgb fg-color)
+                                                10))))))))))
 
 (defcustom company-dot-icons-format "●"
   "Format string for `company-dot-icons-margin'."
   :type 'string)
 
-(defcustom company-dot-icons-face-mapping
-  '((array . font-lock-type-face)
-    (boolean . font-lock-builtin-face)
-    (class . font-lock-type-face)
-    (color . success)
-    (constant . font-lock-constant-face)
-    (enum-member . font-lock-builtin-face)
-    (enum . font-lock-builtin-face)
-    (field . font-lock-variable-name-face)
-    (file . font-lock-string-face)
-    (folder . font-lock-doc-face)
-    (interface . font-lock-type-face)
-    (keyword . font-lock-keyword-face)
-    (method . font-lock-function-name-face)
-    (function . font-lock-function-name-face)
-    (module . font-lock-type-face)
-    (numeric . font-lock-builtin-face)
-    (operator . font-lock-comment-delimiter-face)
-    (parameter . font-lock-builtin-face)
-    (property . font-lock-variable-name-face)
-    ; (ruler . nil)
-    (snippet . font-lock-string-face)
-    (string . font-lock-string-face)
-    (struct . font-lock-variable-name-face)
-    ; (text . nil)
-    (value . font-lock-builtin-face)
-    (variable . font-lock-variable-name-face)
-    (t . deemphasized))
-  "Faces mapping for `company-dot-icons-margin'."
-  :type '(repeat
-          (cons (symbol :tag "Kind name")
-                (face :tag "Face to use for it"))))
-
-(defun company-dot-icons-margin (candidate _selected)
+(defun company-dot-icons-margin (candidate selected)
   "Margin function that uses a colored dot to display completion kind."
   (when-let ((kind (company-call-backend 'kind candidate))
-             (face (or (assoc-default kind
-                                      company-dot-icons-face-mapping)
-                       (assoc-default t company-dot-icons-face-mapping))))
-    (propertize company-dot-icons-format 'face face)))
+             (conf (or (assoc-default kind company-text-icons-mapping)
+                       (assoc-default t company-text-icons-mapping))))
+    (cl-destructuring-bind (_icon &optional fg bg) conf
+      (propertize company-dot-icons-format
+                  'face
+                  (company-text-icons--face fg bg selected)))))
 
 (defun company-detect-icons-margin (candidate selected)
-  "Margin function which picks from vscodes icons or unicode icons
-based on `display-graphic-p'."
-  (if (display-graphic-p)
-      ;; Default to dark because who in their right mind uses light 😜
+  "Margin function which picks the appropriate icon set automatically."
+  (if (and (display-graphic-p)
+           (image-type-available-p 'svg))
       (cl-case (frame-parameter nil 'background-mode)
         ('light (company-vscode-light-icons-margin candidate selected))
         (t (company-vscode-dark-icons-margin candidate selected)))
     (company-text-icons-margin candidate selected)))
 
-(defcustom company-format-margin-function nil
+(defcustom company-format-margin-function #'company-detect-icons-margin
   "Function to format the margin.
 It accepts 2 params `candidate' and `selected' and can be used for
 inserting prefix/image before the completion items. Typically, the
@@ -3273,6 +3341,7 @@ Returns a negative number if the tooltip should be displayed above point."
   "`company-mode' frontend similar to a tooltip but based on overlays."
   (cl-case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
+    (unhide (company-pseudo-tooltip-unhide))
     (post-command
      (unless (when (overlayp company-pseudo-tooltip-overlay)
                (let* ((ov company-pseudo-tooltip-overlay)
@@ -3315,7 +3384,7 @@ Returns a negative number if the tooltip should be displayed above point."
 
 (defun company-pseudo-tooltip-unless-just-one-frontend (command)
   "`company-pseudo-tooltip-frontend', but not shown for single candidates."
-  (unless (and (eq command 'post-command)
+  (unless (and (memq command '(post-command unhide))
                (company--show-inline-p))
     (company-pseudo-tooltip-frontend command)))
 
@@ -3398,6 +3467,13 @@ Delay is determined by `company-tooltip-idle-delay'."
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
     (`pre-command (company-preview-hide))
+    (`unhide
+     (when company-selection
+       (let ((company-prefix (buffer-substring
+                              (- company-point (length company-prefix))
+                              (point))))
+         (company-preview-show-at-point (point)
+                                        (nth company-selection company-candidates)))))
     (`post-command
      (when company-selection
        (company-preview-show-at-point (point)
@@ -3406,7 +3482,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-preview-if-just-one-frontend (command)
   "`company-preview-frontend', but only shown for single candidates."
-  (when (or (not (eq command 'post-command))
+  (when (or (not (memq command '(post-command unhide)))
             (company--show-inline-p))
     (company-preview-frontend command)))
 
@@ -3432,11 +3508,12 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-preview-common-frontend (command)
   "`company-mode' frontend preview the common part of candidates."
-  (when (or (not (eq command 'post-command))
+  (when (or (not (memq command '(post-command unhide)))
             (company-preview-common--show-p))
     (pcase command
       (`pre-command (company-preview-hide))
-      (`post-command (company-preview-show-at-point (point) company-common))
+      ((or 'post-command 'unhide)
+       (company-preview-show-at-point (point) company-common))
       (`hide (company-preview-hide)))))
 
 ;;; echo ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
