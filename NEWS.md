@@ -2,6 +2,21 @@
 
 ## Next
 
+* Default key bindings have been changed, moving `company-select-next` and
+  `company-select-previous` from `M-n` and `M-p` to `C-n` and `C-p`
+  ([#1098](https://github.com/company-mode/company-mode/pull/1098)). The
+  previous bindings still work, but show a warning and will be disabled soon. To
+  undo that change locally, do:
+
+```el
+(with-eval-after-load 'company
+  (dolist (map (list company-active-map company-search-map))
+    (define-key map (kbd "C-n") nil)
+    (define-key map (kbd "C-p") nil)
+    (define-key map (kbd "M-n") #'company-select-next)
+    (define-key map (kbd "M-p") #'company-select-previous)))
+```
+
 * New user option `company-files-chop-trailing-slash`
   ([#1042](https://github.com/company-mode/company-mode/issues/1042)).
 * Improved visual responsiveness with async backends
