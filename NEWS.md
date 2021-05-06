@@ -3,9 +3,10 @@
 ## Next
 
 * Default key bindings have been changed, moving `company-select-next` and
-  `company-select-previous` from `M-n` and `M-p` to `C-n` and `C-p`. The
+  `company-select-previous` from `M-n` and `M-p` to `C-n` and `C-p`
+  ([#1098](https://github.com/company-mode/company-mode/pull/1098)). The
   previous bindings still work, but show a warning and will be disabled soon. To
-  undo that change in your local configuration:
+  undo that change locally, do:
 
 ```el
 (with-eval-after-load 'company
