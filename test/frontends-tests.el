@@ -269,14 +269,14 @@
   (let* (company-show-numbers
          (company-candidates '("ArrayList"))
          (company-candidates-length 1)
-         (company-tooltip-maximum-width 9)
+         (company-tooltip-maximum-width 7)
          (company-package-root default-directory)
          (company-format-margin-function (lambda (candidate selected)
                                            "X"))
          (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
     (should (ert-equal-including-properties
              (cadr (company--create-lines 0 999))
-             #("XArrayList " 0 11
+             #("XArrayLi " 0 9
                (face (company-tooltip-selection company-tooltip)
                      mouse-face (company-tooltip-mouse)))))))
 
