@@ -5,7 +5,7 @@
 * Default key bindings have been changed, moving `company-select-next` and
   `company-select-previous` from `M-n` and `M-p` to `C-n` and `C-p`. The
   previous bindings still work, but show a warning and will be disabled soon. To
-  undo that change in your local configuration, do:
+  undo that change in your local configuration:
 
 ```el
 (with-eval-after-load 'company
