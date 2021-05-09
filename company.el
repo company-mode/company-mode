@@ -3538,20 +3538,17 @@ Delay is determined by `company-tooltip-idle-delay'."
         (message "%s" company-echo-last-msg)
       (message ""))))
 
-(defun company-echo-show-soon (&optional getter)
+(defun company-echo-show-soon (&optional getter delay)
   (company-echo-cancel)
-  (setq company-echo-timer (run-with-timer 0 nil 'company-echo-show getter)))
+  (setq company-echo-timer (run-with-timer (or delay company-echo-delay)
+                                           nil
+                                           'company-echo-show getter)))
 
 (defun company-echo-cancel (&optional unset)
   (when company-echo-timer
     (cancel-timer company-echo-timer))
   (when unset
     (setq company-echo-timer nil)))
-
-(defun company-echo-show-when-idle (&optional getter)
-  (company-echo-cancel)
-  (setq company-echo-timer
-        (run-with-idle-timer company-echo-delay nil 'company-echo-show getter)))
 
 (defun company-echo-format ()
   (let ((selection (or company-selection 0)))
@@ -3618,19 +3615,19 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-echo-frontend (command)
   "`company-mode' frontend showing the candidates in the echo area."
   (pcase command
-    (`post-command (company-echo-show-soon 'company-echo-format))
+    (`post-command (company-echo-show-soon 'company-echo-format 0))
     (`hide (company-echo-hide))))
 
 (defun company-echo-strip-common-frontend (command)
   "`company-mode' frontend showing the candidates in the echo area."
   (pcase command
-    (`post-command (company-echo-show-soon 'company-echo-strip-common-format))
+    (`post-command (company-echo-show-soon 'company-echo-strip-common-format 0))
     (`hide (company-echo-hide))))
 
 (defun company-echo-metadata-frontend (command)
   "`company-mode' frontend showing the documentation in the echo area."
   (pcase command
-    (`post-command (company-echo-show-when-idle 'company-fetch-metadata))
+    (`post-command (company-echo-show-soon 'company-fetch-metadata))
     (`hide (company-echo-hide))))
 
 (provide 'company)
