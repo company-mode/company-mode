@@ -1621,7 +1621,7 @@ PROPERTY return nil."
                                                 (color-name-to-rgb fg-color)
                                                 10))))))))))
 
-(defcustom company-dot-icons-format "●"
+(defcustom company-dot-icons-format "● "
   "Format string for `company-dot-icons-margin'."
   :type 'string)
 
