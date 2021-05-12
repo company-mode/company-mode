@@ -31,6 +31,10 @@
   dark icons. The default behavior is to choose the best one for the current
   theme automatically, or if the current frame is non-graphical or simply does
   not support rendering SVG images, fall back to text-based "icons".
+* User options `company-text-icons-mapping` and
+  `company-text-icons-add-background` control the looks and additional
+  decoration for the latter
+  ([#1088](https://github.com/company-mode/company-mode/issues/1088)).
 * New user option `company-abort-on-unique-match`
   ([#1046](https://github.com/company-mode/company-mode/issues/1046)).
 * `company-select-mouse` is a new frontend action
