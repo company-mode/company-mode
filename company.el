@@ -1671,11 +1671,15 @@ Keywords and function definition names are ignored."
             (cl-delete-if
              (lambda (candidate)
                (when (catch 'done
-                       (goto-char w-start)
+                       (goto-char (1- start-point))
+                       (while (search-backward candidate w-start t)
+                         (when (save-match-data
+                                 (company--occurrence-predicate))
+                           (throw 'done t)))
+                       (goto-char start-point)
                        (while (search-forward candidate w-end t)
-                         (when (and (not (eq (point) start-point))
-                                    (save-match-data
-                                      (company--occurrence-predicate)))
+                         (when (save-match-data
+                                 (company--occurrence-predicate))
                            (throw 'done t))))
                  (push
                   (cons candidate
