@@ -2,7 +2,8 @@
 
 ## Next
 
-* Change default colors for dark themes ([#949](https://github.com/company-mode/company-mode/issues/949)).
+* Default colors for dark themes have been changed
+  ([#949](https://github.com/company-mode/company-mode/issues/949)).
 * Default key bindings have been changed, moving `company-select-next` and
   `company-select-previous` from `M-n` and `M-p` to `C-n` and `C-p`
   ([#1098](https://github.com/company-mode/company-mode/pull/1098)). The
