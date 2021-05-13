@@ -77,20 +77,18 @@
   :group 'faces)
 
 (defface company-tooltip
-  '((default :foreground "black")
-    (((class color) (min-colors 88) (background light))
-     (:background "cornsilk"))
+  '((((class color) (min-colors 88) (background light))
+     (:foreground "black" :background "cornsilk"))
     (((class color) (min-colors 88) (background dark))
-     (:background "yellow"))
-    (t
-     (:background "yellow")))
+     (:background "gray26"))
+    (t (:foreground "black" :background "yellow")))
   "Face used for the tooltip.")
 
 (defface company-tooltip-selection
   '((((class color) (min-colors 88) (background light))
      (:background "light blue"))
     (((class color) (min-colors 88) (background dark))
-     (:background "orange1"))
+     (:background "gray31"))
     (t (:background "green")))
   "Face used for the selection in the tooltip.")
 
@@ -110,7 +108,7 @@
   '((((background light))
      :foreground "darkred")
     (((background dark))
-     :foreground "red"))
+     :foreground "pale turquoise"))
   "Face used for the common completion in the tooltip.")
 
 (defface company-tooltip-common-selection
@@ -121,7 +119,7 @@
   '((((background light))
      :foreground "firebrick4")
     (((background dark))
-     :foreground "red4"))
+     :foreground "LightCyan3"))
   "Face used for the completion annotation in the tooltip.")
 
 (defface company-tooltip-annotation-selection
@@ -132,38 +130,26 @@
   '((((background light))
      :background "darkred")
     (((background dark))
-     :background "red"))
+     :background "gray33"))
   "Face used for the tooltip scrollbar thumb.")
 
 (defface company-scrollbar-bg
   '((((background light))
      :background "wheat")
     (((background dark))
-     :background "gold"))
+     :background "gray28"))
   "Face used for the tooltip scrollbar background.")
 
 (defface company-preview
-  '((((background light))
-     :inherit (company-tooltip-selection company-tooltip))
-    (((background dark))
-     :background "blue4"
-     :foreground "wheat"))
+  '((default :inherit (company-tooltip-selection company-tooltip)))
   "Face used for the completion preview.")
 
 (defface company-preview-common
-  '((((background light))
-     :inherit company-tooltip-common-selection)
-    (((background dark))
-     :inherit company-preview
-     :foreground "red"))
+  '((default :inherit company-tooltip-common-selection))
   "Face used for the common part of the completion preview.")
 
 (defface company-preview-search
-  '((((background light))
-     :inherit company-tooltip-common-selection)
-    (((background dark))
-     :inherit company-preview
-     :background "blue1"))
+  '((default :inherit company-tooltip-common-selection))
   "Face used for the search string in the completion preview.")
 
 (defface company-echo nil
