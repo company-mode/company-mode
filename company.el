@@ -3335,7 +3335,18 @@ Returns a negative number if the tooltip should be displayed above point."
   "`company-mode' frontend similar to a tooltip but based on overlays."
   (cl-case command
     (pre-command (company-pseudo-tooltip-hide-temporarily))
-    (unhide (company-pseudo-tooltip-unhide))
+    (unhide
+     (let ((ov company-pseudo-tooltip-overlay))
+       (when (> (overlay-get ov 'company-height) 0)
+         ;; Sleight of hand: if the current line wraps, we adjust the
+         ;; start of the overlay so that the popup does not zig-zag,
+         ;; but don't update the popup's background.  This seems just
+         ;; non-annoying enough to avoid the work required for the latter.
+         (save-excursion
+           (vertical-motion 1)
+           (unless (= (point) (overlay-start ov))
+             (move-overlay ov (point) (overlay-end ov))))))
+     (company-pseudo-tooltip-unhide))
     (post-command
      (unless (when (overlayp company-pseudo-tooltip-overlay)
                (let* ((ov company-pseudo-tooltip-overlay)
