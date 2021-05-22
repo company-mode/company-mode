@@ -2,6 +2,13 @@
 
 ## Next
 
+* Variables and functions related to the quick-access functionality
+  have been renamed as follows:
+  - `company-show-numbers` to `company-show-quick-access`
+  - `company-show-numbers-function` to `company-quick-access-key-producer`
+  - `company-complete-number` to `company-complete-quick-access`
+  - `company--show-numbers` to `company-quick-access-digit`.
+  ([#1103](https://github.com/company-mode/company-mode/pull/1103)).
 * Default colors for dark themes have been changed
   ([#949](https://github.com/company-mode/company-mode/issues/949)).
 * Default key bindings have been changed, moving `company-select-next` and

@@ -645,16 +645,35 @@ commands in the `company-' namespace, abort completion."
                         (repeat :tag "Commands" function))
                  (repeat :tag "Commands" function)))
 
-(defcustom company-show-numbers nil
-  "If enabled, show quick-access numbers for the first ten candidates."
+(define-obsolete-variable-alias
+ 'company-show-numbers
+ 'company-show-quick-access
+ "0.10.0")
+
+(defcustom company-show-quick-access nil
+  "Show a quick-access column for the first ten candidates.
+
+Non-nil value enables a quick-access column on the right side of the tooltip,
+ unless the configured value is \\='left.
+If the value is nil, do not show a quick-access column.
+NOTE: A value of nil does not disable `M-(digit)' bindings.
+
+To customize shown quick-access keys, use `company-quick-access-key-producer'."
   :type '(choice (const :tag "off" nil)
                  (const :tag "left" 'left)
                  (const :tag "on" 't)))
 
-(defcustom company-show-numbers-function #'company--show-numbers
-  "Function called to get quick-access numbers for the first ten candidates.
+(define-obsolete-variable-alias
+ 'company-show-numbers-function
+ 'company-quick-access-key-producer
+ "0.10.0")
 
-The function receives the candidate number (starting from 1) and should
+(defcustom company-quick-access-key-producer #'company-quick-access-digit
+  "Function called to produce a quick-access key.
+
+The function called only if `company-show-quick-access'
+ is set to non-nil value.
+It receives the candidate number (starting from 1) and should
 return a string prefixed with one space."
   :type 'function)
 
@@ -710,7 +729,7 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (dotimes (i 10)
-      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
+      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-quick-access))
      keymap)
   "Keymap that is enabled during an active completion.")
 
@@ -2056,7 +2075,7 @@ prefix match (same case) will be prioritized."
                                           company-complete
                                           company-complete-common
                                           company-complete-selection
-                                          company-complete-number)
+                                          company-complete-quick-access)
   "List of commands after which idle completion is (still) disabled when
 `company-begin-commands' is t.")
 
@@ -2273,7 +2292,7 @@ each one wraps a part of the input string."
     (define-key keymap "\C-r" 'company-search-repeat-backward)
     (define-key keymap "\C-o" 'company-search-toggle-filtering)
     (dotimes (i 10)
-      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
+      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-quick-access))
     keymap)
   "Keymap used for incrementally searching the completion candidates.")
 
@@ -2521,11 +2540,18 @@ inserted."
       (when company-candidates
         (setq this-command 'company-complete-common)))))
 
-(defun company-complete-number (n)
+(define-obsolete-function-alias
+ 'company-complete-number
+ 'company-complete-quick-access
+ "0.10.0")
+
+(defun company-complete-quick-access (n)
   "Insert the Nth candidate visible in the tooltip.
-To show the number next to the candidates in some backends, enable
-`company-show-numbers'.  When called interactively, uses the last typed
-character, stripping the modifiers.  That character must be a digit."
+
+When called interactively, uses the last typed
+character, stripping the modifiers.  That character must be a digit.
+To enable a quick-access column for some backends, use
+`company-show-quick-access'."
   (interactive
    (list (let* ((type (event-basic-type last-command-event))
                 (char (if (characterp type)
@@ -2542,6 +2568,16 @@ character, stripping the modifiers.  That character must be a digit."
     (cl-decf n)
     (company-finish (nth (+ n company-tooltip-offset)
                          company-candidates))))
+
+(define-obsolete-function-alias
+ 'company--show-numbers
+ 'company-quick-access-digit
+ "0.10.0")
+
+(defun company-quick-access-digit (numbered)
+  "Produce a digit to show in a quick-access column.
+This function used as a default value of `company-quick-access-key-producer'."
+  (format " %d" (mod numbered 10)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -2985,9 +3021,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           new
           (company-safe-substring old (+ offset (length new)))))
 
-(defun company--show-numbers (numbered)
-  (format " %d" (mod numbered 10)))
-
 (defsubst company--window-height ()
   (if (fboundp 'window-screen-lines)
       (floor (window-screen-lines))
@@ -3155,7 +3188,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (setq width (min window-width
                      company-tooltip-maximum-width
                      (max company-tooltip-minimum-width
-                          (if company-show-numbers
+                          (if company-show-quick-access
                               (+ 2 width)
                             width))))
 
@@ -3164,7 +3197,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (setq company--tooltip-current-width width))
 
     (let ((items (nreverse items))
-          (numbered (if company-show-numbers 0 99999))
+          (numbered (if company-show-quick-access 0 99999))
           new)
       (when previous
         (push (company--scrollpos-line previous width) new))
@@ -3179,9 +3212,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           (when (< numbered 10)
             (cl-decf width 2)
             (cl-incf numbered)
-            (setf (if (eq company-show-numbers 'left) left right)
-                  (concat (funcall company-show-numbers-function numbered)
-                          (if (eq company-show-numbers 'left) left right))))
+            (setf (if (eq company-show-quick-access 'left) left right)
+                  (concat (funcall company-quick-access-key-producer numbered)
+                          (if (eq company-show-quick-access 'left) left right))))
           (push (concat
                  (company-fill-propertize str annotation
                                           width (equal i selection)
@@ -3561,7 +3594,7 @@ Delay is determined by `company-tooltip-idle-delay'."
           (len -1)
           ;; Roll to selection.
           (candidates (nthcdr selection company-candidates))
-          (i (if company-show-numbers selection 99999))
+          (i (if company-show-quick-access selection 99999))
           comp msg)
 
       (while candidates
@@ -3593,7 +3626,7 @@ Delay is determined by `company-tooltip-idle-delay'."
           (len (+ (length company-prefix) 2))
           ;; Roll to selection.
           (candidates (nthcdr selection company-candidates))
-          (i (if company-show-numbers selection 99999))
+          (i (if company-show-quick-access selection 99999))
           msg comp)
 
       (while candidates
