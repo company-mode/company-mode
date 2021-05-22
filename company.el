@@ -1671,7 +1671,8 @@ Keywords and function definition names are ignored."
             (cl-delete-if
              (lambda (candidate)
                (goto-char w-start)
-               (when (and (search-forward candidate w-end t)
+               (when (and (not (equal candidate ""))
+                          (search-forward candidate w-end t)
                           ;; ^^^ optimize for large lists where most elements
                           ;; won't have a match.
                           (catch 'done
