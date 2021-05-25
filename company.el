@@ -3634,6 +3634,7 @@ Delay is determined by `company-tooltip-idle-delay'."
   "`company-mode' frontend showing the documentation in the echo area."
   (pcase command
     (`post-command (company-echo-show-soon 'company-fetch-metadata))
+    (`unhide (company-echo-show))
     (`hide (company-echo-hide))))
 
 (provide 'company)
