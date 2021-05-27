@@ -156,8 +156,8 @@
   "Face used for completions in the echo area.")
 
 (defface company-echo-common
-  '((((background dark)) (:foreground "firebrick1"))
-    (((background light)) (:background "firebrick4")))
+  '((((background light)) (:foreground "firebrick4"))
+    (((background dark)) (:foreground "firebrick1")))
   "Face used for the common part of completions in the echo area.")
 
 ;; Too lazy to re-add :group to all defcustoms down below.
