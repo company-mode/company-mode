@@ -2987,7 +2987,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           (company-safe-substring old (+ offset (length new)))))
 
 (defun company--show-numbers (numbered)
-  (format " %d" (mod numbered 10)))
+  (format " %s" (if (<= numbered 10)
+                    (mod numbered 10)
+                  " ")))
 
 (defsubst company--window-height ()
   (if (fboundp 'window-screen-lines)
@@ -3177,7 +3179,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (left (nth 2 item))
                (right (company-space-string company-tooltip-margin))
                (width width))
-          (when (< numbered 10)
+          (when company-show-numbers
             (cl-decf width 2)
             (cl-incf numbered)
             (setf (if (eq company-show-numbers 'left) left right)
