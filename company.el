@@ -3564,19 +3564,18 @@ Delay is determined by `company-tooltip-idle-delay'."
           (len -1)
           ;; Roll to selection.
           (candidates (nthcdr selection company-candidates))
-          (i (if company-show-numbers selection 99999))
+          (numbered (if company-show-numbers selection 99999))
           comp msg)
 
       (while candidates
         (setq comp (company-reformat (company--clean-string (pop candidates)))
               len (+ len 1 (length comp)))
-        (if (< i 10)
-            ;; Add number.
+        (if (< numbered 10)
             (progn
-              (setq comp (propertize (format "%d: %s" i comp)
+              (cl-incf numbered)
+              (setq comp (propertize (format "%d: %s" (mod numbered 10) comp)
                                      'face 'company-echo))
               (cl-incf len 3)
-              (cl-incf i)
               ;; FIXME: Add support for the `match' backend action, and thus,
               ;; non-prefix matches.
               (add-text-properties 3 (+ 3 (string-width (or company-common "")))
@@ -3596,17 +3595,16 @@ Delay is determined by `company-tooltip-idle-delay'."
           (len (+ (length company-prefix) 2))
           ;; Roll to selection.
           (candidates (nthcdr selection company-candidates))
-          (i (if company-show-numbers selection 99999))
+          (numbered (if company-show-numbers selection 99999))
           msg comp)
 
       (while candidates
         (setq comp (company-strip-prefix (pop candidates))
               len (+ len 2 (length comp)))
-        (when (< i 10)
-          ;; Add number.
-          (setq comp (format "%s (%d)" comp i))
-          (cl-incf len 4)
-          (cl-incf i))
+        (when (< numbered 10)
+          (cl-incf numbered)
+          (setq comp (format "%s (%d)" comp (mod numbered 10)))
+          (cl-incf len 4))
         (if (>= len limit)
             (setq candidates nil)
           (push (propertize comp 'face 'company-echo) msg)))
