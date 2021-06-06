@@ -3180,11 +3180,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (right (company-space-string company-tooltip-margin))
                (width width))
           (when company-show-numbers
+            (let ((numbers-place
+                   (gv-ref (if (eq company-show-numbers 'left) left right))))
             (cl-decf width 2)
             (cl-incf numbered)
-            (setf (if (eq company-show-numbers 'left) left right)
+            (setf (gv-deref numbers-place)
                   (concat (funcall company-show-numbers-function numbered)
-                          (if (eq company-show-numbers 'left) left right))))
+                          (gv-deref numbers-place)))))
           (push (concat
                  (company-fill-propertize str annotation
                                           width (equal i selection)
