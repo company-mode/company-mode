@@ -3419,6 +3419,9 @@ Delay is determined by `company-tooltip-idle-delay'."
              (run-with-timer company-tooltip-idle-delay nil
                              'company-pseudo-tooltip-unless-just-one-frontend-with-delay
                              'post-command))))
+    (unhide
+     (when (overlayp company-pseudo-tooltip-overlay)
+       (company-pseudo-tooltip-unless-just-one-frontend command)))
     (t
      (company-pseudo-tooltip-unless-just-one-frontend command))))
 
