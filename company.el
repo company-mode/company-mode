@@ -2139,6 +2139,14 @@ each one wraps a part of the input string."
       (cl-incf i))))
 
 (defun company-search-keypad ()
+  "Prevent disabling of `company-search-mode' on a keypad number press.
+
+When in search mode, keypad numbers presses cause invocation
+of `company-search-other-char', which in turn disables search mode.
+To prevent this behavior, `company-search-map' binds keypad numbers
+to `company-search-keypad', which performs the explicit
+continuation of the search. As a result of the latter action,
+keypad input is treated as numbers to print."
   (interactive)
   (let* ((name (symbol-name last-command-event))
          (last-command-event (aref name (1- (length name)))))
@@ -2254,7 +2262,7 @@ each one wraps a part of the input string."
       (define-key keymap (vector i) 'company-search-printing-char)
       (cl-incf i))
     (dotimes (i 10)
-      (define-key keymap (read (format "[kp-%s]" i)) 'company-search-keypad))
+      (define-key keymap (kbd (format "<kp-%d>" i)) 'company-search-keypad))
     (let ((meta-map (make-sparse-keymap)))
       (define-key keymap (char-to-string meta-prefix-char) meta-map)
       (define-key keymap [escape] meta-map))
