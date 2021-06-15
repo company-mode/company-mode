@@ -3172,7 +3172,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
           (numbered (if company-show-numbers 0 99999))
           new)
       (when previous
-        (push (company--scrollpos-line previous width) new))
+        (push (company--scrollpos-line previous width left-margin-size) new))
 
       (dotimes (i len)
         (let* ((item (pop items))
@@ -3199,7 +3199,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                 new)))
 
       (when remainder
-        (push (company--scrollpos-line remainder width) new))
+        (push (company--scrollpos-line remainder width left-margin-size) new))
 
       (cons
        left-margin-size
@@ -3218,10 +3218,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                   'company-scrollbar-fg
                 'company-scrollbar-bg)))
 
-(defun company--scrollpos-line (text width)
+(defun company--scrollpos-line (text width right-margin-width)
   (propertize (concat (company-space-string company-tooltip-margin)
                       (company-safe-substring text 0 width)
-                      (company-space-string company-tooltip-margin))
+                      (company-space-string right-margin-width))
               'face 'company-tooltip))
 
 ;; show
