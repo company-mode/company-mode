@@ -126,6 +126,16 @@
   '((default :inherit company-tooltip-annotation))
   "Face used for the selected completion annotation in the tooltip.")
 
+(defface company-tooltip-quick-access
+  '((default :inherit company-tooltip-annotation))
+  "Face used for the quick-access keys shown in the tooltip."
+  :package-version '(company . "0.9.14"))
+
+(defface company-tooltip-quick-access-selection
+  '((default :inherit company-tooltip-annotation-selection))
+  "Face used for the selected quick-access keys shown in the tooltip."
+  :package-version '(company . "0.9.14"))
+
 (defface company-scrollbar-fg
   '((((background light))
      :background "darkred")
@@ -2993,6 +3003,14 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                     (mod numbered 10)
                   " ")))
 
+(defun company--format-quick-access-key (numbered selected)
+  "Produce a quick-access key to show beside a candidate."
+  (propertize (funcall company-show-numbers-function numbered)
+              'face
+              (if selected
+                  'company-tooltip-quick-access-selection
+                'company-tooltip-quick-access)))
+
 (defsubst company--window-height ()
   (if (fboundp 'window-screen-lines)
       (floor (window-screen-lines))
@@ -3180,18 +3198,18 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (annotation (cadr item))
                (left (nth 2 item))
                (right (company-space-string company-tooltip-margin))
-               (width width))
+               (width width)
+               (selected (equal selection i)))
           (when company-show-numbers
-            (let ((numbers-place
-                   (gv-ref (if (eq company-show-numbers 'left) left right))))
-            (cl-decf width 2)
-            (cl-incf numbered)
-            (setf (gv-deref numbers-place)
-                  (concat (funcall company-show-numbers-function numbered)
-                          (gv-deref numbers-place)))))
+            (let ((numbers-place (gv-ref (if (eq company-show-numbers 'left) left right))))
+              (cl-decf width 2)
+              (cl-incf numbered)
+              (setf (gv-deref numbers-place)
+                    (concat (company--format-quick-access-key numbered selected)
+                            (gv-deref numbers-place)))))
           (push (concat
                  (company-fill-propertize str annotation
-                                          width (equal i selection)
+                                          width selected
                                           left
                                           right)
                  (when scrollbar-bounds

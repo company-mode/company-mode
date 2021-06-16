@@ -2,6 +2,9 @@
 
 ## Next
 
+* New faces `company-tooltip-quick-access` and
+  `company-tooltip-quick-access-selection`
+  ([#303](https://github.com/company-mode/company-mode/issues/303)).
 * Default colors for dark themes have been changed
   ([#949](https://github.com/company-mode/company-mode/issues/949)).
 * Default key bindings have been changed, moving `company-select-next` and
