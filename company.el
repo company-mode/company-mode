@@ -3400,6 +3400,10 @@ Returns a negative number if the tooltip should be displayed above point."
                (company--show-inline-p))
     (company-pseudo-tooltip-frontend command)))
 
+(defun company-pseudo-tooltip--ujofwd-on-timer (command)
+  (when company-candidates
+    (company-pseudo-tooltip-unless-just-one-frontend-with-delay command)))
+
 (defun company-pseudo-tooltip-unless-just-one-frontend-with-delay (command)
   "`compandy-pseudo-tooltip-frontend', but shown after a delay.
 Delay is determined by `company-tooltip-idle-delay'."
@@ -3419,7 +3423,7 @@ Delay is determined by `company-tooltip-idle-delay'."
            (company-call-frontends 'post-command))
        (setq company-tooltip-timer
              (run-with-timer company-tooltip-idle-delay nil
-                             'company-pseudo-tooltip-unless-just-one-frontend-with-delay
+                             'company-pseudo-tooltip--ujofwd-on-timer
                              'post-command))))
     (unhide
      (when (overlayp company-pseudo-tooltip-overlay)
