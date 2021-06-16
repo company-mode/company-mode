@@ -3218,10 +3218,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                   'company-scrollbar-fg
                 'company-scrollbar-bg)))
 
-(defun company--scrollpos-line (text width right-margin-width)
+(defun company--scrollpos-line (text width fancy-margin-width)
   (propertize (concat (company-space-string company-tooltip-margin)
                       (company-safe-substring text 0 width)
-                      (company-space-string right-margin-width))
+                      (company-space-string fancy-margin-width))
               'face 'company-tooltip))
 
 ;; show
