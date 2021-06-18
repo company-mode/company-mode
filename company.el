@@ -2562,13 +2562,13 @@ To show hint numbers beside the candidates, enable `company-show-numbers'."
   (company--complete-nth (1- number)))
 
 (defun company--complete-nth (row)
-   "Insert a candidate visible on the tooltip's zero-based ROW."
-   (when (company-manual-begin)
-     (and (or (< row 0) (>= row (- company-candidates-length
-                                   company-tooltip-offset)))
-          (user-error "No candidate on the row number %d" row))
-     (company-finish (nth (+ row company-tooltip-offset)
-                          company-candidates))))
+  "Insert a candidate visible on the tooltip's zero-based ROW."
+  (when (company-manual-begin)
+    (and (or (< row 0) (>= row (- company-candidates-length
+                                  company-tooltip-offset)))
+         (user-error "No candidate on the row number %d" row))
+    (company-finish (nth (+ row company-tooltip-offset)
+                         company-candidates))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
