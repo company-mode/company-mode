@@ -2,6 +2,9 @@
 
 ## Next
 
+* `company-complete-number` declared obsolete in favor of
+   `company-complete-tooltip-row`
+  ([#1118](https://github.com/company-mode/company-mode/pull/1118)).
 * New faces `company-tooltip-quick-access` and
   `company-tooltip-quick-access-selection`
   ([#303](https://github.com/company-mode/company-mode/issues/303)).

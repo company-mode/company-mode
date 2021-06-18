@@ -720,7 +720,7 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (dotimes (i 10)
-      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
+      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-tooltip-row))
      keymap)
   "Keymap that is enabled during an active completion.")
 
@@ -2067,7 +2067,7 @@ prefix match (same case) will be prioritized."
                                           company-complete
                                           company-complete-common
                                           company-complete-selection
-                                          company-complete-number)
+                                          company-complete-tooltip-row)
   "List of commands after which idle completion is (still) disabled when
 `company-begin-commands' is t.")
 
@@ -2286,7 +2286,7 @@ each one wraps a part of the input string."
     (define-key keymap "\C-r" 'company-search-repeat-backward)
     (define-key keymap "\C-o" 'company-search-toggle-filtering)
     (dotimes (i 10)
-      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-number))
+      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-tooltip-row))
     keymap)
   "Keymap used for incrementally searching the completion candidates.")
 
@@ -2534,11 +2534,22 @@ inserted."
       (when company-candidates
         (setq this-command 'company-complete-common)))))
 
-(defun company-complete-number (n)
-  "Insert the Nth candidate visible in the tooltip.
-To show the number next to the candidates in some backends, enable
-`company-show-numbers'.  When called interactively, uses the last typed
-character, stripping the modifiers.  That character must be a digit."
+(define-obsolete-function-alias
+  'company-complete-number
+  'company-complete-tooltip-row
+  "0.9.14")
+
+(defun company-complete-tooltip-row (number)
+  "Insert a candidate visible on the tooltip's row NUMBER.
+
+Inserts one of the first ten candidates,
+numerated according to the current scrolling position.
+NUMBER 1 inserts a candidate visible on the first row.
+NUMBER 0 inserts a candidate visible on the tenth row of the tooltip.
+
+When called interactively, uses the last typed digit, stripping the modifiers.
+
+To show hint numbers beside the candidates, enable `company-show-numbers'."
   (interactive
    (list (let* ((type (event-basic-type last-command-event))
                 (char (if (characterp type)
@@ -2546,15 +2557,18 @@ character, stripping the modifiers.  That character must be a digit."
                           type
                         ;; Keypad number, if bound directly.
                         (car (last (string-to-list (symbol-name type))))))
-                (n (- char ?0)))
-           (if (zerop n) 10 n))))
-  (when (company-manual-begin)
-    (and (or (< n 1) (> n (- company-candidates-length
-                             company-tooltip-offset)))
-         (user-error "No candidate number %d" n))
-    (cl-decf n)
-    (company-finish (nth (+ n company-tooltip-offset)
-                         company-candidates))))
+                (number (- char ?0)))
+           (if (zerop number) 10 number))))
+  (company--complete-nth (1- number)))
+
+(defun company--complete-nth (row)
+   "Insert a candidate visible on the tooltip's zero-based ROW."
+   (when (company-manual-begin)
+     (and (or (< row 0) (>= row (- company-candidates-length
+                                   company-tooltip-offset)))
+          (user-error "No candidate on the row number %d" row))
+     (company-finish (nth (+ row company-tooltip-offset)
+                          company-candidates))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
