@@ -128,12 +128,12 @@
 
 (defface company-tooltip-quick-access
   '((default :inherit company-tooltip-annotation))
-  "Face used for the quick-access keys shown in the tooltip."
+  "Face used for the quick-access hints shown in the tooltip."
   :package-version '(company . "0.9.14"))
 
 (defface company-tooltip-quick-access-selection
   '((default :inherit company-tooltip-annotation-selection))
-  "Face used for the selected quick-access keys shown in the tooltip."
+  "Face used for the selected quick-access hints shown in the tooltip."
   :package-version '(company . "0.9.14"))
 
 (defface company-scrollbar-fg
@@ -655,18 +655,126 @@ commands in the `company-' namespace, abort completion."
                         (repeat :tag "Commands" function))
                  (repeat :tag "Commands" function)))
 
-(defcustom company-show-numbers nil
-  "If enabled, show quick-access numbers for the first ten candidates."
-  :type '(choice (const :tag "off" nil)
-                 (const :tag "left" 'left)
-                 (const :tag "on" 't)))
+(defun company-custom--set-quick-access (option value)
+  "Re-bind quick-access key sequences on OPTION VALUE change."
+  (when (boundp 'company-active-map)
+    (company-keymap--unbind-quick-access company-active-map))
+  (when (boundp 'company-search-map)
+    (company-keymap--unbind-quick-access company-search-map))
+  (custom-set-default option value)
+  (when (boundp 'company-active-map)
+    (company-keymap--bind-quick-access company-active-map))
+  (when (boundp 'company-search-map)
+    (company-keymap--bind-quick-access company-search-map)))
 
-(defcustom company-show-numbers-function #'company--show-numbers
+(defcustom company-quick-access-keys '("1" "2" "3" "4" "5" "6" "7" "8" "9" "0")
+  "Character strings used as a part of quick-access key sequences.
+To change this value without Customize interface, use `customize-set-variable'.
+
+To change the quick-access key sequences modifier, customize
+`company-quick-access-modifier'.
+
+If `company-show-quick-access' is non-nil, show quick-access hints
+beside the candidates."
+  :set #'company-custom--set-quick-access
+  :type '(choice
+          (const :tag "Digits" ("1" "2" "3" "4" "5" "6" "7" "8" "9" "0"))
+          (const :tag "QWERTY home row" ("a" "s" "d" "f" "g" "h" "j" "k" "l" ";"))
+          ;; TODO un-comment on removal of `M-n' `company--select-next-and-warn'.
+          ;; (const :tag "Dvorak home row" ("a" "o" "e" "u" "i" "d" "h" "t" "n" "s"))
+          (repeat :tag "User defined" string))
+  :package-version '(company . "0.9.14"))
+
+(defcustom company-quick-access-modifier 'meta
+  "Modifier key used for quick-access keys sequences.
+To change this value without Customize interface, use `customize-set-variable'.
+See `company-quick-access-keys' for more details."
+  :set #'company-custom--set-quick-access
+  :type '(choice (const :tag "Meta key" meta)
+                 (const :tag "Super key" super)
+                 (const :tag "Hyper key" hyper)
+                 (const :tag "Alt key" alt))
+  :package-version '(company . "0.9.14"))
+
+(defun company-keymap--quick-access-modifier ()
+  "Return string representation of the `company-quick-access-modifier'."
+  (if-let ((modifier (assoc-default company-quick-access-modifier
+                                    '((meta . "M")
+                                      (super . "s")
+                                      (hyper . "H")
+                                      (alt . "A")))))
+      modifier
+    (warn "company-quick-access-modifier value unknown: %S"
+          company-quick-access-modifier)
+    "M"))
+
+(defun company-keymap--unbind-quick-access (keymap)
+  (let ((modifier (company-keymap--quick-access-modifier)))
+    (dolist (key company-quick-access-keys)
+      (let ((key-seq (company-keymap--kbd-quick-access modifier key)))
+        (when (equal (lookup-key keymap key-seq) 'company-complete-quick-access)
+          (define-key keymap key-seq nil))))))
+
+(defun company-keymap--bind-quick-access (keymap)
+  (let ((modifier (company-keymap--quick-access-modifier)))
+    (dolist (key company-quick-access-keys)
+      (let ((key-seq (company-keymap--kbd-quick-access modifier key)))
+        (if (lookup-key keymap key-seq)
+            (warn "Key sequence %s already bound" (key-description key-seq))
+          (define-key keymap key-seq #'company-complete-quick-access))))))
+
+(defun company-keymap--kbd-quick-access (modifier key)
+  (kbd (format "%s-%s" modifier key)))
+
+(define-obsolete-variable-alias
+  'company-show-numbers
+  'company-show-quick-access
+  "0.9.14")
+
+(defcustom company-show-quick-access nil
+  "If non-nil, show quick-access hints beside the candidates.
+
+For a tooltip frontend, non-nil value enables a column with the hints
+on the right side of the tooltip, unless the configured value is `left'.
+
+To change the quick-access key bindings, customize `company-quick-access-keys'
+and `company-quick-access-modifier'.
+
+To change the shown quick-access hints, customize
+`company-quick-access-hint-function'."
+  :type '(choice (const :tag "off" nil)
+                 (const :tag "left" left)
+                 (const :tag "on" t)))
+
+(defcustom company-show-numbers-function nil
   "Function called to get quick-access numbers for the first ten candidates.
 
 The function receives the candidate number (starting from 1) and should
 return a string prefixed with one space."
   :type 'function)
+(make-obsolete-variable
+ 'company-show-numbers-function
+ "use `company-quick-access-hint-function' instead,
+but adjust the expected values appropriately."
+ "0.9.14")
+
+(defcustom company-quick-access-hint-function #'company-quick-access-hint-key
+  "Function called to get quick-access hints for the candidates.
+
+The function receives a candidate's 0-based number
+and should return a string.
+See `company-show-quick-access' for more details."
+  :type 'function)
+
+(defun company-quick-access-hint-key (candidate)
+  "Return a quick-access key for the CANDIDATE number.
+This is a default value of `company-quick-access-hint-function'."
+  (if company-show-numbers-function
+      (funcall company-show-numbers-function (1+ candidate))
+    (format "%s"
+            (if (< candidate (length company-quick-access-keys))
+                (nth candidate company-quick-access-keys)
+              ""))))
 
 (defcustom company-selection-wrap-around nil
   "If enabled, selecting item before first or after last wraps around."
@@ -719,8 +827,7 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-w" 'company-show-location)
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
-    (dotimes (i 10)
-      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-tooltip-row))
+    (company-keymap--bind-quick-access keymap)
      keymap)
   "Keymap that is enabled during an active completion.")
 
@@ -2285,8 +2392,7 @@ each one wraps a part of the input string."
     (define-key keymap "\C-s" 'company-search-repeat-forward)
     (define-key keymap "\C-r" 'company-search-repeat-backward)
     (define-key keymap "\C-o" 'company-search-toggle-filtering)
-    (dotimes (i 10)
-      (define-key keymap (read-kbd-macro (format "M-%d" i)) 'company-complete-tooltip-row))
+    (company-keymap--bind-quick-access keymap)
     keymap)
   "Keymap used for incrementally searching the completion candidates.")
 
@@ -2549,7 +2655,7 @@ When called interactively, uses the last typed digit, stripping the
 modifiers and translating 0 into 10, so `M-1' inserts the first visible
 candidate, and `M-0' insert to 10th one.
 
-To show hint numbers beside the candidates, enable `company-show-numbers'."
+To show hint numbers beside the candidates, enable `company-show-quick-access'."
   (interactive
    (list (let* ((type (event-basic-type last-command-event))
                 (char (if (characterp type)
@@ -2560,6 +2666,18 @@ To show hint numbers beside the candidates, enable `company-show-numbers'."
                 (number (- char ?0)))
            (if (zerop number) 10 number))))
   (company--complete-nth (1- number)))
+
+(defun company-complete-quick-access (row)
+  "Insert a candidate visible on a ROW matched by a quick-access key binding.
+See `company-quick-access-keys' for more details."
+  (interactive
+   (list (let* ((event-type (event-basic-type last-command-event))
+                (event-string (if (characterp event-type)
+                                  (string event-type)
+                                (error "Unexpected input"))))
+           (cl-position event-string company-quick-access-keys :test 'equal))))
+  (when row
+    (company--complete-nth row)))
 
 (defun company--complete-nth (row)
   "Insert a candidate visible on the tooltip's zero-based ROW."
@@ -3016,14 +3134,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
   (format " %s" (if (<= numbered 10)
                     (mod numbered 10)
                   " ")))
-
-(defun company--format-quick-access-key (numbered selected)
-  "Produce a quick-access key to show beside a candidate."
-  (propertize (funcall company-show-numbers-function numbered)
-              'face
-              (if selected
-                  'company-tooltip-quick-access-selection
-                'company-tooltip-quick-access)))
+(make-obsolete
+ 'company--show-numbers
+ "use `company-quick-access-hint-key' instead,
+but adjust the expected values appropriately."
+ "0.9.14")
 
 (defsubst company--window-height ()
   (if (fboundp 'window-screen-lines)
@@ -3192,7 +3307,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (setq width (min window-width
                      company-tooltip-maximum-width
                      (max company-tooltip-minimum-width
-                          (if company-show-numbers
+                          (if company-show-quick-access
                               (+ 2 width)
                             width))))
 
@@ -3201,7 +3316,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (setq company--tooltip-current-width width))
 
     (let ((items (nreverse items))
-          (numbered (if company-show-numbers 0 99999))
+          (row (if company-show-quick-access 0 99999))
           new)
       (when previous
         (push (company--scrollpos-line previous width left-margin-size) new))
@@ -3214,13 +3329,15 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                (right (company-space-string company-tooltip-margin))
                (width width)
                (selected (equal selection i)))
-          (when company-show-numbers
-            (let ((numbers-place (gv-ref (if (eq company-show-numbers 'left) left right))))
-              (cl-decf width 2)
-              (cl-incf numbered)
-              (setf (gv-deref numbers-place)
-                    (concat (company--format-quick-access-key numbered selected)
-                            (gv-deref numbers-place)))))
+          (when company-show-quick-access
+            (let ((quick-access (gv-ref (if (eq company-show-quick-access 'left)
+                                            left right)))
+                  (qa-hint (company-tooltip--format-quick-access-hint
+                            row selected)))
+              (cl-decf width (string-width qa-hint))
+              (setf (gv-deref quick-access)
+                    (concat qa-hint (gv-deref quick-access))))
+            (cl-incf row))
           (push (concat
                  (company-fill-propertize str annotation
                                           width selected
@@ -3255,6 +3372,15 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                       (company-safe-substring text 0 width)
                       (company-space-string fancy-margin-width))
               'face 'company-tooltip))
+
+(defun company-tooltip--format-quick-access-hint (row selected)
+  "Format a quick-access hint for outputting on a tooltip's ROW.
+Value of SELECTED determines the added face."
+  (propertize (format "%2s" (funcall company-quick-access-hint-function row))
+              'face
+              (if selected
+                  'company-tooltip-quick-access-selection
+                'company-tooltip-quick-access)))
 
 ;; show
 
@@ -3609,27 +3735,32 @@ Delay is determined by `company-tooltip-idle-delay'."
   (let ((selection (or company-selection 0)))
     (let ((limit (window-body-width (minibuffer-window)))
           (len -1)
-          ;; Roll to selection.
           (candidates (nthcdr selection company-candidates))
-          (numbered (if company-show-numbers selection 99999))
+          (numbered (if company-show-quick-access selection 99999))
+          (qa-keys-len (length company-quick-access-keys))
           comp msg)
 
       (while candidates
-        (setq comp (company-reformat (company--clean-string (pop candidates)))
+        (setq comp (propertize
+                    (company-reformat (company--clean-string (pop candidates)))
+                    'face
+                    'company-echo)
               len (+ len 1 (length comp)))
-        (if (< numbered 10)
-            (progn
-              (cl-incf numbered)
-              (setq comp (propertize (format "%d: %s" (mod numbered 10) comp)
-                                     'face 'company-echo))
-              (cl-incf len 3)
-              ;; FIXME: Add support for the `match' backend action, and thus,
-              ;; non-prefix matches.
-              (add-text-properties 3 (+ 3 (string-width (or company-common "")))
-                                   '(face company-echo-common) comp))
-          (setq comp (propertize comp 'face 'company-echo))
-          (add-text-properties 0 (string-width (or company-common ""))
-                               '(face company-echo-common) comp))
+        (let ((beg 0)
+              (end (string-width (or company-common ""))))
+          (when (< numbered qa-keys-len)
+            (let ((qa-hint
+                   (format "%s: " (funcall
+                                   company-quick-access-hint-function
+                                   numbered))))
+              (setq beg (string-width qa-hint)
+                    end (+ beg end))
+              (cl-incf len beg)
+              (setq comp (propertize (concat qa-hint comp) 'face 'company-echo)))
+            (cl-incf numbered))
+          ;; FIXME: Add support for the `match' backend action, and thus,
+          ;; non-prefix matches.
+          (add-text-properties beg end '(face company-echo-common) comp))
         (if (>= len limit)
             (setq candidates nil)
           (push comp msg)))
@@ -3640,18 +3771,21 @@ Delay is determined by `company-tooltip-idle-delay'."
   (let ((selection (or company-selection 0)))
     (let ((limit (window-body-width (minibuffer-window)))
           (len (+ (length company-prefix) 2))
-          ;; Roll to selection.
           (candidates (nthcdr selection company-candidates))
-          (numbered (if company-show-numbers selection 99999))
-          msg comp)
+          (numbered (if company-show-quick-access selection 99999))
+          (qa-keys-len (length company-quick-access-keys))
+          comp msg)
 
       (while candidates
         (setq comp (company-strip-prefix (pop candidates))
               len (+ len 2 (length comp)))
-        (when (< numbered 10)
-          (cl-incf numbered)
-          (setq comp (format "%s (%d)" comp (mod numbered 10)))
-          (cl-incf len 4))
+        (when (< numbered qa-keys-len)
+          (let ((qa-hint (format " (%s)"
+                                 (funcall company-quick-access-hint-function
+                                          numbered))))
+            (setq comp (concat comp qa-hint))
+            (cl-incf len (string-width qa-hint)))
+          (cl-incf numbered))
         (if (>= len limit)
             (setq candidates nil)
           (push (propertize comp 'face 'company-echo) msg)))

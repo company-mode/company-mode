@@ -131,24 +131,24 @@
           (should (string= (overlay-get ov 'company-display)
                            " 123     (4) \n 45          \n 67 (891011) \n")))))))
 
-(ert-deftest company-create-lines-shows-numbers ()
-  (let ((company-show-numbers t)
+(ert-deftest company-create-lines-shows-quick-access ()
+  (let ((company-show-quick-access t)
         (company-candidates '("x" "y" "z"))
         (company-candidates-length 3)
         (company-backend 'ignore))
     (should (equal '(" x 1 " " y 2 " " z 3 ")
                    (cdr (company--create-lines 0 999))))))
 
-(ert-deftest company-create-lines-shows-numbers-on-the-left ()
-  (let ((company-show-numbers 'left)
+(ert-deftest company-create-lines-shows-quick-access-on-the-left ()
+  (let ((company-show-quick-access 'left)
         (company-candidates '("x" "y" "z"))
         (company-candidates-length 3)
         (company-backend 'ignore))
     (should (equal '(" 1 x " " 2 y " " 3 z ")
                    (cdr (company--create-lines 0 999))))))
 
-(ert-deftest company-create-lines-combines-numbers-on-the-left-and-icons ()
-  (let ((company-show-numbers 'left)
+(ert-deftest company-create-lines-combines-quick-access-on-the-left-and-icons ()
+  (let ((company-show-quick-access 'left)
         (company-candidates '("x" "y" "z"))
         (company-format-margin-function (lambda (candidate selected)
                                           "X"))
@@ -219,7 +219,7 @@
 
 (ert-deftest company-create-lines-clears-out-non-printables ()
   :tags '(interactive)
-  (let (company-show-numbers
+  (let (company-show-quick-access
         (company-candidates (list
                              (decode-coding-string "avalis\351e" 'utf-8)
                              "avatar"))
@@ -231,7 +231,7 @@
 
 (ert-deftest company-create-lines-handles-multiple-width ()
   :tags '(interactive)
-  (let (company-show-numbers
+  (let (company-show-quick-access
         (company-candidates '("蛙蛙蛙蛙" "蛙abc"))
         (company-candidates-length 2)
         (company-backend 'ignore))
@@ -240,7 +240,7 @@
                    (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-handles-multiple-width-in-annotation ()
-  (let* (company-show-numbers
+  (let* (company-show-quick-access
          (alist '(("a" . " ︸") ("b" . " ︸︸")))
          (company-candidates (mapcar #'car alist))
          (company-candidates-length 2)
@@ -253,7 +253,7 @@
 
 (ert-deftest company-create-lines-with-multiple-width-and-keep-prefix ()
   :tags '(interactive)
-  (let* (company-show-numbers
+  (let* (company-show-quick-access
          (company-candidates '("MIRAI発売1カ月"
                                "MIRAI発売2カ月"))
          (company-candidates-length 2)
@@ -266,7 +266,7 @@
                    (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-with-format-function ()
-  (let* (company-show-numbers
+  (let* (company-show-quick-access
          (company-candidates '("ArrayList"))
          (company-candidates-length 1)
          (company-tooltip-maximum-width 7)
@@ -282,7 +282,7 @@
 
 (ert-deftest company-create-lines-with-icons-format-function ()
   :tags '(gui)
-  (let* (company-show-numbers
+  (let* (company-show-quick-access
          (company-icon-size 15)
          (company-candidates '("ArrayList"))
          (company-candidates-length 1)
