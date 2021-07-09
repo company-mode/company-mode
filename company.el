@@ -692,8 +692,7 @@ See `company-quick-access-keys' for more details."
   :set #'company-custom--set-quick-access
   :type '(choice (const :tag "Meta key" meta)
                  (const :tag "Super key" super)
-                 (const :tag "Hyper key" hyper)
-                 (const :tag "Alt key" alt))
+                 (const :tag "Hyper key" hyper))
   :package-version '(company . "0.9.14"))
 
 (defun company-keymap--quick-access-modifier ()
@@ -701,8 +700,7 @@ See `company-quick-access-keys' for more details."
   (if-let ((modifier (assoc-default company-quick-access-modifier
                                     '((meta . "M")
                                       (super . "s")
-                                      (hyper . "H")
-                                      (alt . "A")))))
+                                      (hyper . "H")))))
       modifier
     (warn "company-quick-access-modifier value unknown: %S"
           company-quick-access-modifier)
