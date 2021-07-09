@@ -2,21 +2,14 @@
 
 ## Next
 
-* New user options `company-quick-access-keys` and
-  `company-quick-access-modifier`
-  ([#1115](https://github.com/company-mode/company-mode/pull/1115)).
-* New function `company-complete-quick-access`
-  ([#1115](https://github.com/company-mode/company-mode/pull/1115)).
 * `company-show-numbers` has been renamed to `company-show-quick-access`
   ([#1115](https://github.com/company-mode/company-mode/pull/1115)).
-* `company-show-numbers-function` has been deprecated and its default
+  New user options `company-quick-access-keys` and
+  `company-quick-access-modifier`.
+  New command `company-complete-quick-access`.
+  `company-show-numbers-function` has been deprecated and its default
   value changed to `nil`. Use `company-quick-access-hint-function`
-  instead
-  ([#1115](https://github.com/company-mode/company-mode/pull/1115)).
-* `company--show-numbers` has been deprecated.
-  Use `company-quick-access-hint-key` instead, but adjust the default
-  values appropriately
-  ([#1115](https://github.com/company-mode/company-mode/pull/1115)).
+  instead. `company--show-numbers` has been deprecated.
 * `company-complete-number` has been renamed to
   `company-complete-tooltip-row`
   ([#1118](https://github.com/company-mode/company-mode/pull/1118)).
