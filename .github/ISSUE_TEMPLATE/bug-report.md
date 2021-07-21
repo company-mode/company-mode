@@ -17,28 +17,28 @@ You may find important clues in it for figuring out the cause of the issue.
 
 In particular, note the value on the line starting with `Used backend:`
 - Compare the value to the names of the [third-party backends](https://github.com/company-mode/company-mode/wiki/Third-Party-Packages).
-  -  It's highly probable that the issue should be reported to the corresponding third-party package.
+  -  It's likely that the issue should be reported to the corresponding third-party package instead.
 - If the value is `company-capf`, then one more clue is on the line starting with `Value of c-a-p-f:`
   -  The issue could have been caused by a function listed there.
-  -  Use `M-x find-function RET <function-name> RET` to identify to which package a function belongs.
+  -  Use `M-x find-function RET <function-name> RET` to identify which package it belongs to.
 
 #### Describe the issue
-Provide a clear and concise description of what the issue is.  
-Copy/paste the exact error message: lookup for it in the **\*Messages\*** buffer.
+Short description of the problem.
+Copy/paste the exact error message: you can find it in the **\*Messages\*** buffer.
 
 #### Steps to reproduce
-List the steps to reproduce the behavior.
+List the steps to reproduce the behavior. Ideally starting with a bare Emacs session: `emacs -Q` (if you can).
 
 #### Expected behavior
-Provide a clear and concise description of what you expected to happen.
+Description of what you expected to happen.
+
+#### The error backtrace
+If applicable, provide the backtrace of the error.
+To enable backtracing, run the command: `M-x toggle-debug-on-error` *before* reproducing the error.
+Copy/paste the text of the debugger’s backtrace. To disable backtracing, run the same command.
 
 #### Screenshots
 If applicable, add screenshots (not huge ones, please) to help explain your problem.
 
-#### The error backtrace
-If applicable, provide the backtrace of the error.  
-To enable backtracing, run the command: `M-x toggle-debug-on-error` *before* reproducing the error.  
-Copy/paste the text of the debugger’s backtrace. To disable backtracing, run the same command.
-
 #### Additional context
-Add any other context about the problem here.
+Add any other relevant information here.
