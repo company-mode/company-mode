@@ -2933,7 +2933,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defvar-local company-pseudo-tooltip-overlay nil)
 
-(defvar-local company-tooltip-offset 0)
+(defvar-local company-tooltip-offset 0
+  "Current scrolling state of the tooltip.
+Represented by the index of the first visible completion candidate
+from the candidates list.")
 
 (defvar-local company--tooltip-current-width 0)
 
