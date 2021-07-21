@@ -2,7 +2,7 @@
 
 [File a bug report](https://github.com/company-mode/company-mode/issues)
 
-[Ask a question](https://github.com/company-mode/company-mode/discussions/1)
+[Ask a question](https://github.com/company-mode/company-mode/discussions/categories/q-a)
 
 [Suggest a feature](https://github.com/company-mode/company-mode/discussions/categories/ideas)
 
