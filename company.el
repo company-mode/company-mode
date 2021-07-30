@@ -2526,24 +2526,6 @@ With ARG, move by that many elements."
         (company-set-selection (- company-selection
                                   company-tooltip-limit))))))
 
-(defvar company-pseudo-tooltip-overlay)
-
-(defvar company-tooltip-offset)
-
-(defun company--inside-tooltip-p (event-col-row row height)
-  (let* ((ovl company-pseudo-tooltip-overlay)
-         (column (overlay-get ovl 'company-column))
-         (width (overlay-get ovl 'company-width))
-         (evt-col (car event-col-row))
-         (evt-row (cdr event-col-row)))
-    (and (>= evt-col column)
-         (< evt-col (+ column width))
-         (if (> height 0)
-             (and (> evt-row row)
-                  (<= evt-row (+ row height) ))
-           (and (< evt-row row)
-                (>= evt-row (+ row height)))))))
-
 (defun company--event-col-row (event)
   (company--posn-col-row (event-start event)))
 
@@ -2676,6 +2658,11 @@ See `company-quick-access-keys' for more details."
            (cl-position event-string company-quick-access-keys :test 'equal))))
   (when row
     (company--complete-nth row)))
+
+(defvar-local company-tooltip-offset 0
+  "Current scrolling state of the tooltip.
+Represented by the index of the first visible completion candidate
+from the candidates list.")
 
 (defun company--complete-nth (row)
   "Insert a candidate visible on the tooltip's zero-based ROW."
@@ -2930,13 +2917,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (special-mode)))
 
 ;;; pseudo-tooltip ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defvar-local company-pseudo-tooltip-overlay nil)
-
-(defvar-local company-tooltip-offset 0
-  "Current scrolling state of the tooltip.
-Represented by the index of the first visible completion candidate
-from the candidates list.")
 
 (defvar-local company--tooltip-current-width 0)
 
@@ -3384,6 +3364,22 @@ Value of SELECTED determines the added face."
                 'company-tooltip-quick-access)))
 
 ;; show
+
+(defvar-local company-pseudo-tooltip-overlay nil)
+
+(defun company--inside-tooltip-p (event-col-row row height)
+  (let* ((ovl company-pseudo-tooltip-overlay)
+         (column (overlay-get ovl 'company-column))
+         (width (overlay-get ovl 'company-width))
+         (evt-col (car event-col-row))
+         (evt-row (cdr event-col-row)))
+    (and (>= evt-col column)
+         (< evt-col (+ column width))
+         (if (> height 0)
+             (and (> evt-row row)
+                  (<= evt-row (+ row height) ))
+           (and (< evt-row row)
+                (>= evt-row (+ row height)))))))
 
 (defun company--pseudo-tooltip-height ()
   "Calculate the appropriate tooltip height.
