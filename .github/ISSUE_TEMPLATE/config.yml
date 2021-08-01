@@ -1,19 +1,19 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "Ask a Question"
+  - name: "Discussions: Ask a question"
     url: https://github.com/company-mode/company-mode/discussions/categories/q-a
     about: Ask and answer questions
-  - name: "Feature Request"
+  - name: "Discussions: Feature request"
     url: https://github.com/company-mode/company-mode/discussions/categories/ideas
     about: Suggest a feature to implement
+  - name: "Discussions: Show & Tell"
+    url: https://github.com/company-mode/company-mode/discussions/categories/show-and-tell
+    about: Tell us about your package or configuration feat
   - name: "Company Intro"
     url: http://company-mode.github.io
     about: Quick-start installation and usage instructions
-  - name: "Community Knowledge Base: Tips & Tricks"
+  - name: "Company Wiki: Tips & Tricks"
     url: https://github.com/company-mode/company-mode/wiki/Tips-&-tricks
-    about: Search and share your findings
-  - name: "Community Knowledge Base: Show & Tell"
-    url: https://github.com/company-mode/company-mode/discussions/categories/show-and-tell
     about: Search and share your findings
   - name: "Additional Support: Emacs StackExchange"
     url: https://emacs.stackexchange.com/questions/tagged/company-mode
