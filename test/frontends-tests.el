@@ -150,7 +150,7 @@
 (ert-deftest company-create-lines-combines-quick-access-on-the-left-and-icons ()
   (let ((company-show-quick-access 'left)
         (company-candidates '("x" "y" "z"))
-        (company-format-margin-function (lambda (candidate selected)
+        (company-format-margin-function (lambda (_candidate _selected)
                                           "X"))
         (company-candidates-length 3)
         (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
@@ -270,8 +270,7 @@
          (company-candidates '("ArrayList"))
          (company-candidates-length 1)
          (company-tooltip-maximum-width 7)
-         (company-package-root default-directory)
-         (company-format-margin-function (lambda (candidate selected)
+         (company-format-margin-function (lambda (_candidate _selected)
                                            "X"))
          (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
     (should (ert-equal-including-properties
