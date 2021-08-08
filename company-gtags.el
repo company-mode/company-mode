@@ -76,7 +76,8 @@ completion."
                      company-gtags--executable-connection)
 
        ;; Else search and set as connection local for next uses.
-       (setq-local company-gtags--executable (executable-find "global" t))
+       (setq-local company-gtags--executable
+                   (with-no-warnings (executable-find "global" t)))
        (let* ((host (file-remote-p default-directory 'host))
               (symvars (intern (concat host "-vars")))) ;; profile name
 
