@@ -182,7 +182,7 @@
      "trait" "true" "try" "typealias" "val" "var" "when" "while")
     (lua-mode
      ;; https://www.lua.org/manual/5.3/manual.html
-     "and" "break" "do" "else" "elseif" "end" "false" "for" "function" "goto" " if"
+     "and" "break" "do" "else" "elseif" "end" "false" "for" "function" "goto" "if"
      "in" "local" "nil" "not" "or" "repeat" "return" "then" "true" "until" "while")
     (objc-mode
      "@catch" "@class" "@encode" "@end" "@finally" "@implementation"
