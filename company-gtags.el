@@ -67,8 +67,11 @@ completion."
   (cond
    ((not (eq company-gtags--executable 'unknown)) ;; the value is already cached
     company-gtags--executable)
-   ((and (version<= "27" emacs-version)           ;; can search remotely to set
-         (file-remote-p default-directory))
+   ((and  ;; Run remotely on supported versions of Emacs.
+     (fboundp 'with-connection-local-variables)
+     (fboundp 'connection-local-set-profile-variables)
+     (fboundp 'connection-local-set-profiles)
+     (file-remote-p default-directory))
 
     (with-connection-local-variables
      (if (boundp 'company-gtags--executable-connection)
