@@ -17,7 +17,7 @@ elpa: *.el
 	tar cvf company-$$version.tar --mode 644 "$$dir"
 
 clean:
-	@rm -rf company-*/ company-*.tar company-*.tar.bz2 *.elc ert.el
+	@rm -rf company-*/ company-*.tar company-*.tar.bz2 *.elc ert.el test/*.elc
 
 test:
 	${EMACS} -Q -nw -L . -l test/all.el \
@@ -33,3 +33,8 @@ test-batch:
 
 compile:
 	${EMACS} -Q --batch -L . -f batch-byte-compile company.el company-*.el
+
+compile-warn:
+	${EMACS} -Q --batch -L . \
+	--eval "(setq byte-compile-error-on-warn t)" \
+	-f batch-byte-compile company*.el test/*.el
