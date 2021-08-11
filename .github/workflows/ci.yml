@@ -19,6 +19,7 @@ on:
 
 jobs:
   check:
+    if: github.repository_owner == 'company-mode'
     runs-on: ubuntu-20.04
 
     strategy:
