@@ -1551,6 +1551,10 @@ end of the match."
                        (const auto-scale)
                        (integer :value 16))))
 
+(defcustom company-icon-margin 2
+  "Width of the margin that shows the icons, in characters."
+  :type 'integer)
+
 (defun company--render-icons-margin (icon-mapping root-dir candidate selected)
   (if-let ((ws (window-system))
            (candidate candidate)
@@ -1575,7 +1579,7 @@ end of the match."
                              (if (> dfh (* 2 base-size))
                                  (* 2 base-size)
                                base-size)
-                             (* 2 dfw))))))
+                             (* company-icon-margin dfw))))))
              (spec (list 'image
                          :file (expand-file-name icon-file root-dir)
                          :type 'svg
@@ -1584,10 +1588,11 @@ end of the match."
                          :ascent 'center
                          :background (unless (eq bkg 'unspecified)
                                        bkg)))
-             (spacer-px-width (- (* 2 dfw) icon-size)))
+             (spacer-px-width (- (* company-icon-margin dfw) icon-size)))
         (concat
          (propertize " " 'display spec)
-         (propertize " " 'display `(space . (:width (,spacer-px-width))))))
+         (propertize (company-space-string (1- company-icon-margin))
+                     'display `(space . (:width (,spacer-px-width))))))
     nil))
 
 (defun company-vscode-dark-icons-margin (candidate selected)

@@ -2,6 +2,7 @@
 
 ## Next
 
+* New user option `company-icon-margin`.
 * `company-show-numbers` has been renamed to `company-show-quick-access`
   ([#1115](https://github.com/company-mode/company-mode/pull/1115)).
   New user options `company-quick-access-keys` and
