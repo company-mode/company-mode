@@ -63,15 +63,17 @@ completion."
             (locate-dominating-file buffer-file-name "GTAGS"))
     company-gtags--tags-available-p))
 
+;; Avoid byte-compilation warnings on Emacs < 27.
+(declare-function with-connection-local-variables "files-x")
+(declare-function connection-local-set-profile-variables "files-x")
+(declare-function connection-local-set-profiles "files-x")
+
 (defun company-gtags--executable ()
   (cond
    ((not (eq company-gtags--executable 'unknown)) ;; the value is already cached
     company-gtags--executable)
-   ((and  ;; Run remotely on supported versions of Emacs.
-     (fboundp 'with-connection-local-variables)
-     (fboundp 'connection-local-set-profile-variables)
-     (fboundp 'connection-local-set-profiles)
-     (file-remote-p default-directory))
+   ((and (version<= "27" emacs-version)           ;; can search remotely to set
+         (file-remote-p default-directory))
 
     (with-connection-local-variables
      (if (boundp 'company-gtags--executable-connection)
