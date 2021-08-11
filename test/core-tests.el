@@ -587,7 +587,7 @@
       (should (= (company--row) 0)))))
 
 ;; Avoid compilation warnings on Emacs 25.
-(declare-function display-line-numbers-mode "ext:display-line-numbers")
+(declare-function display-line-numbers-mode "display-line-numbers")
 (declare-function line-number-display-width "indent.c")
 
 (ert-deftest company-column-with-line-numbers-display ()
