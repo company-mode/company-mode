@@ -28,6 +28,14 @@
 (require 'company)
 (require 'cl-lib)
 
+(defgroup company-keywords nil
+  "Completion backend for keywords."
+  :group 'company)
+
+(defcustom company-keywords-ignore-case nil
+  "Non-nil to ignore case in completion candidates."
+  :type 'boolean)
+
 (defun company-keywords-upper-lower (&rest lst)
   ;; Upcase order is different for _.
   (nconc (sort (mapcar 'upcase lst) 'string<) lst))
@@ -307,13 +315,14 @@
                  (not (company-in-string-or-comment))
                  (or (company-grab-symbol) 'stop)))
     (candidates
-     (let ((completion-ignore-case nil)
+     (let ((completion-ignore-case company-keywords-ignore-case)
            (symbols (cdr (assq major-mode company-keywords-alist))))
        (all-completions arg (if (consp symbols)
                                 symbols
                               (cdr (assq symbols company-keywords-alist))))))
     (kind 'keyword)
-    (sorted t)))
+    (sorted t)
+    (ignore-case company-keywords-ignore-case)))
 
 (provide 'company-keywords)
 ;;; company-keywords.el ends here
