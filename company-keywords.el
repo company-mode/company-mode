@@ -297,6 +297,25 @@
     (enh-ruby-mode . ruby-mode))
   "Alist mapping major-modes to sorted keywords for `company-keywords'.")
 
+(with-eval-after-load 'make-mode
+  (require 'seq)
+  (mapc
+   (lambda (mode-stmnts)
+     (setf (alist-get (car mode-stmnts) company-keywords-alist)
+           (seq-uniq
+            (append
+             makefile-special-targets-list
+             (mapcan #'identity
+                     (mapcar #'split-string
+                             (seq-filter #'stringp
+                                         (symbol-value (cdr mode-stmnts)))))))))
+   '((makefile-automake-mode . makefile-automake-statements)
+     (makefile-gmake-mode    . makefile-gmake-statements)
+     (makefile-makepp-mode   . makefile-makepp-statements)
+     (makefile-bsdmake-mode  . makefile-bsdmake-statements)
+     (makefile-imake-mode    . makefile-statements)
+     (makefile-mode          . makefile-statements))))
+
 ;;;###autoload
 (defun company-keywords (command &optional arg &rest ignored)
   "`company-mode' backend for programming language keywords."
