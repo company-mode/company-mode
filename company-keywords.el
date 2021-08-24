@@ -27,6 +27,7 @@
 
 (require 'company)
 (require 'cl-lib)
+(eval-when-compile (require 'make-mode))
 
 (defun company-keywords-upper-lower (&rest lst)
   ;; Upcase order is different for _.
@@ -298,17 +299,17 @@
   "Alist mapping major-modes to sorted keywords for `company-keywords'.")
 
 (with-eval-after-load 'make-mode
-  (require 'seq)
   (mapc
    (lambda (mode-stmnts)
      (setf (alist-get (car mode-stmnts) company-keywords-alist)
-           (seq-uniq
-            (append
-             makefile-special-targets-list
-             (mapcan #'identity
-                     (mapcar #'split-string
-                             (seq-filter #'stringp
-                                         (symbol-value (cdr mode-stmnts)))))))))
+           (cl-remove-duplicates
+            (append makefile-special-targets-list
+                    (cl-mapcan #'identity
+                               (mapcar
+                                #'split-string
+                                (cl-remove-if-not
+                                 #'stringp
+                                 (symbol-value (cdr mode-stmnts)))))))))
    '((makefile-automake-mode . makefile-automake-statements)
      (makefile-gmake-mode    . makefile-gmake-statements)
      (makefile-makepp-mode   . makefile-makepp-statements)
