@@ -303,13 +303,15 @@
    (lambda (mode-stmnts)
      (setf (alist-get (car mode-stmnts) company-keywords-alist)
            (cl-remove-duplicates
-            (append makefile-special-targets-list
-                    (cl-mapcan #'identity
-                               (mapcar
-                                #'split-string
-                                (cl-remove-if-not
-                                 #'stringp
-                                 (symbol-value (cdr mode-stmnts)))))))))
+            (sort (append makefile-special-targets-list
+                          (cl-mapcan #'identity
+                                     (mapcar
+                                      #'split-string
+                                      (cl-remove-if-not
+                                       #'stringp
+                                       (symbol-value (cdr mode-stmnts))))))
+                  #'string<)
+            :test #'string=)))
    '((makefile-automake-mode . makefile-automake-statements)
      (makefile-gmake-mode    . makefile-gmake-statements)
      (makefile-makepp-mode   . makefile-makepp-statements)
