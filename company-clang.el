@@ -39,9 +39,10 @@
   :type 'file)
 
 (defcustom company-clang-begin-after-member-access t
-  "When non-nil, automatic completion will start whenever the current
-symbol is preceded by \".\", \"->\" or \"::\", ignoring
-`company-minimum-prefix-length'.
+  "When non-nil, start automatic completion after member access operators.
+
+Automatic completion starts whenever the current symbol is preceded by
+\".\", \"->\" or \"::\", ignoring `company-minimum-prefix-length'.
 
 If `company-begin-commands' is a list, it should include `c-electric-lt-gt'
 and `c-electric-colon', for automatic completion right after \">\" and
@@ -59,7 +60,7 @@ it.  That allows the flags use relative file names within the project."
   :safe 'booleanp)
 
 (defcustom company-clang-arguments nil
-  "Additional arguments to pass to clang when completing.
+  "A list of additional arguments to pass to clang when completing.
 Prefix files (-include ...) can be selected with `company-clang-set-prefix'
 or automatically through a custom `company-clang-prefix-guesser'."
   :type '(repeat (string :tag "Argument")))
