@@ -55,8 +55,8 @@ Buffer-local values are allowed, but usually not necessary.
 If a backend is added globally, checking a major mode in the prefix function is a must.
 
 Examples:
-- https://github.com/tigersoldier/company-lsp#usage
 - https://github.com/pythonic-emacs/company-anaconda#usage
+- https://github.com/vspinu/company-math#activation
 
 
 ### Copyright Assignment
