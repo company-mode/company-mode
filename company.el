@@ -2256,7 +2256,7 @@ each one wraps a part of the input string."
   (let ((re (funcall company-search-regexp-function text))
         (i 0))
     (cl-dolist (line lines)
-      (when (string-match-p re line (length company-prefix))
+      (when (string-match-p re line)
         (cl-return i))
       (cl-incf i))))
 
@@ -3028,7 +3028,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (when (let ((re (funcall company-search-regexp-function
                              company-search-string)))
             (and (not (string= re ""))
-                 (string-match re value (length company-prefix))))
+                 (string-match re value)))
       (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
         (let ((beg (+ margin mbeg))
               (end (+ margin mend))
