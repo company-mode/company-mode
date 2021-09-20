@@ -175,17 +175,23 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                        1)))
 
 (defun company-dabbrev--filter (prefix candidates)
-  (let ((completion-ignore-case company-dabbrev-ignore-case))
-    (all-completions prefix candidates)))
+  "Keep items that sastifies PREFIX in CANDIDATES."
+  (let* ((completion-ignore-case company-dabbrev-ignore-case)
+         (cands (completion-all-completions prefix candidates nil (length prefix)
+                                            (completion-metadata prefix candidates nil)))
+         (last (last cands))
+         (base-size (and (numberp (cdr last)) (cdr last))))
+    (when base-size (setcdr last nil))
+    cands))
 
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest ignored)
   "dabbrev-like `company-mode' completion backend."
   (interactive (list 'interactive))
-  (cl-case command
-    (interactive (company-begin-backend 'company-dabbrev))
-    (prefix (company-dabbrev--prefix))
-    (candidates
+  (pcase command
+    (`interactive (company-begin-backend 'company-dabbrev))
+    (`prefix (company-dabbrev--prefix))
+    (`candidates
      (let* ((case-fold-search company-dabbrev-ignore-case)
             (words (company-dabbrev--search (company-dabbrev--make-regexp)
                                             company-dabbrev-time-limit
@@ -199,9 +205,11 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
        (if downcase-p
            (mapcar 'downcase words)
          words)))
-    (kind 'text)
-    (ignore-case company-dabbrev-ignore-case)
-    (duplicates t)))
+    (`kind 'text)
+    (`ignore-case company-dabbrev-ignore-case)
+    (`match (company--match-from-face arg))
+    (`duplicates t)
+    (`no-cache t)))
 
 (provide 'company-dabbrev)
 ;;; company-dabbrev.el ends here

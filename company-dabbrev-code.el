@@ -81,25 +81,30 @@ also `company-dabbrev-code-time-limit'."
 The backend looks for all symbols in the current buffer that aren't in
 comments or strings."
   (interactive (list 'interactive))
-  (cl-case command
-    (interactive (company-begin-backend 'company-dabbrev-code))
-    (prefix (and (or (eq t company-dabbrev-code-modes)
-                     (apply #'derived-mode-p company-dabbrev-code-modes))
-                 (or company-dabbrev-code-everywhere
-                     (not (company-in-string-or-comment)))
-                 (or (company-grab-symbol) 'stop)))
-    (candidates (let ((case-fold-search company-dabbrev-code-ignore-case))
-                  (company-dabbrev--search
-                   (company-dabbrev-code--make-regexp arg)
-                   company-dabbrev-code-time-limit
-                   (pcase company-dabbrev-code-other-buffers
-                     (`t (list major-mode))
-                     (`code company-dabbrev-code-modes)
-                     (`all `all))
-                   (not company-dabbrev-code-everywhere))))
-    (kind 'text)
-    (ignore-case company-dabbrev-code-ignore-case)
-    (duplicates t)))
+  (pcase command
+    (`interactive (company-begin-backend 'company-dabbrev-code))
+    (`prefix (and (or (eq t company-dabbrev-code-modes)
+                      (apply #'derived-mode-p company-dabbrev-code-modes))
+                  (or company-dabbrev-code-everywhere
+                      (not (company-in-string-or-comment)))
+                  (or (company-grab-symbol) 'stop)))
+    (`candidates (let ((case-fold-search company-dabbrev-code-ignore-case))
+                   (company-dabbrev--filter
+                    arg
+                    (company-dabbrev--search
+                     (company-dabbrev-code--make-regexp
+                      (substring arg 0 company-minimum-prefix-length))
+                     company-dabbrev-code-time-limit
+                     (pcase company-dabbrev-code-other-buffers
+                       (`t (list major-mode))
+                       (`code company-dabbrev-code-modes)
+                       (`all `all))
+                     (not company-dabbrev-code-everywhere)))))
+    (`kind 'text)
+    (`ignore-case company-dabbrev-code-ignore-case)
+    (`match (company--match-from-face arg))
+    (`duplicates t)
+    (`no-cache t)))
 
 (provide 'company-dabbrev-code)
 ;;; company-dabbrev-code.el ends here

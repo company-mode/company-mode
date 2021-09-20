@@ -2805,6 +2805,28 @@ from the candidates list.")
           (set-window-start nil (point)))))))
 (put 'company-show-location 'company-keep t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun company--match-from-face (str)
+  "Calculate `:company-match' function return via STR's face."
+  (let* ((match-start nil) (pos -1)
+         (prop-value nil)  (faces nil)
+         (has-face-p nil)  chunks
+         (limit (length str)))
+    (while (< pos limit)
+      (setq pos
+            (if (< pos 0) 0 (next-property-change pos str limit)))
+      (setq prop-value (or (get-text-property pos 'face str)
+                           (get-text-property pos 'font-lock-face str))
+            faces (if (listp prop-value) prop-value (list prop-value))
+            has-face-p (memq 'completions-common-part faces))
+      (cond ((and (not match-start) has-face-p)
+             (setq match-start pos))
+            ((and match-start (not has-face-p))
+             (push (cons match-start pos) chunks)
+             (setq match-start nil))))
+    (nreverse chunks)))
+
 ;;; package functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar-local company-callback nil)
