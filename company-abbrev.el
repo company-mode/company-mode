@@ -45,7 +45,8 @@
                  (delete "" (all-completions arg global-abbrev-table))
                  (delete "" (all-completions arg local-abbrev-table))))
     (kind 'snippet)
-    (meta (abbrev-expansion arg))))
+    (meta (abbrev-expansion arg))
+    (post-completion (expand-abbrev))))
 
 (provide 'company-abbrev)
 ;;; company-abbrev.el ends here
