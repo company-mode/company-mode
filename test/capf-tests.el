@@ -86,9 +86,8 @@
        (ert-equal-including-properties
         render
         #("with-current-buffer"
-          0 4 (face (company-tooltip-common company-tooltip))   ; "with"
-          4 19 (face company-tooltip)))))))
-
+          0 5 (face (company-tooltip-common company-tooltip))   ; "with"
+          5 19 (face company-tooltip)))))))
 
 
 ;; Re. "perfect" highlighting of the non-prefix in company-capf matches, it is
