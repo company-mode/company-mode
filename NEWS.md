@@ -2,6 +2,8 @@
 
 ## Next
 
+* `company-yasnippet` respects the `condition` directive in snippets
+  ([#1179](https://github.com/company-mode/company-mode/issues/1179)).
 * New user option `company-icon-margin`.
 * `company-show-numbers` has been renamed to `company-show-quick-access`
   ([#1115](https://github.com/company-mode/company-mode/pull/1115)).

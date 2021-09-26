@@ -35,6 +35,9 @@
 (declare-function yas--template-expand-env "yasnippet")
 (declare-function yas--warning "yasnippet")
 (declare-function yas-minor-mode "yasnippet")
+(declare-function yas--require-template-specific-condition-p "yasnippet")
+(declare-function yas--template-can-expand-p "yasnippet")
+(declare-function yas--template-condition "yasnippet")
 
 (defvar company-yasnippet-annotation-fn
   (lambda (name)
@@ -86,6 +89,7 @@ It has to accept one argument: the snippet's name.")
   (cl-mapcan
    (lambda (table)
      (let ((keyhash (yas--table-hash table))
+           (requirement (yas--require-template-specific-condition-p))
            res)
        (when keyhash
          (maphash
@@ -94,13 +98,15 @@ It has to accept one argument: the snippet's name.")
                        (string-prefix-p key-prefix key))
               (maphash
                (lambda (name template)
-                 (push
-                  (propertize key
-                              'yas-annotation name
-                              'yas-template template
-                              'yas-prefix-offset (- (length key-prefix)
-                                                    (length prefix)))
-                  res))
+                 (when (yas--template-can-expand-p
+                        (yas--template-condition template) requirement)
+                   (push
+                    (propertize key
+                                'yas-annotation name
+                                'yas-template template
+                                'yas-prefix-offset (- (length key-prefix)
+                                                      (length prefix)))
+                    res)))
                value)))
           keyhash))
        res))
