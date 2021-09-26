@@ -2975,10 +2975,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company--common-or-matches (value)
   (let ((matches (company-call-backend 'match value)))
     (when (and matches
+               company-common
                (listp matches)
                (= 1 (length matches))
                (= 0 (caar matches))
-               (> (string-width  company-common) (cdar matches)))
+               (> (string-width company-common) (cdar matches)))
       (setq matches nil))
     (when (integerp matches)
       (setq matches `((0 . ,matches))))
