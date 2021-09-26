@@ -2972,12 +2972,20 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (pop copy))
     (apply 'concat pieces)))
 
+(defun company--common-or-matches (value)
+  (let ((matches (company-call-backend 'match value)))
+    (when (and matches
+               (= 1 (length matches))
+               (= 0 (caar matches))
+               (> (string-width  company-common) (cdar matches)))
+      (setq matches nil))
+    (or matches
+        (and company-common (string-width company-common))
+        0)))
+
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
-         (common (or (company-call-backend 'match value)
-                     (if company-common
-                         (string-width company-common)
-                       0)))
+         (common (company--common-or-matches value))
          (_ (setq value (company-reformat (company--pre-render value))
                   annotation (and annotation (company--pre-render annotation t))))
          (ann-ralign company-tooltip-align-annotations)

@@ -2,6 +2,11 @@
 
 ## Next
 
+* `company-tooltip-common` highlightings with non-prefix and prefix matching
+  backends are more compatible: if the non-prefix matching backend's completions
+  all have a common part, and so the current prefix can be expanded with
+  `company-complete-common`, that part is now also highlighted with that face
+  ([#519](https://github.com/company-mode/company-mode/issues/519)).
 * `company-yasnippet` respects the `condition` directive in snippets
   ([#1179](https://github.com/company-mode/company-mode/issues/1179)).
 * New user option `company-icon-margin`.
