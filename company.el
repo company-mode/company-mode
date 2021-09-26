@@ -3608,11 +3608,16 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-preview-show-at-point (pos completion)
   (company-preview-hide)
 
-  (setq completion (copy-sequence (company--pre-render completion)))
-  (add-face-text-property 0 (length completion) 'company-preview
-                          nil completion)
-  (add-face-text-property 0 (length company-common) 'company-preview-common
-                          nil completion)
+  (let ((company-common (and company-common
+                             (string-prefix-p company-prefix company-common)
+                             company-common) ))
+    (setq completion (copy-sequence (company--pre-render completion)))
+    (add-face-text-property 0 (length completion) 'company-preview
+                            nil completion)
+
+    ;; TODO: Add support for the `match' backend command.
+    (add-face-text-property 0 (length company-common) 'company-preview-common
+                            nil completion)
 
     ;; Add search string
     (and (string-match (funcall company-search-regexp-function
@@ -3622,7 +3627,9 @@ Delay is determined by `company-tooltip-idle-delay'."
            (add-face-text-property mbeg mend 'company-preview-search
                                    nil completion)))
 
-    (setq completion (company-strip-prefix completion))
+    (setq completion (if company-common
+                         (company-strip-prefix completion)
+                       completion))
 
     (and (equal pos (point))
          (not (equal completion ""))
@@ -3645,7 +3652,7 @@ Delay is determined by `company-tooltip-idle-delay'."
       (let ((ov company-preview-overlay))
         (overlay-put ov (if ptf-workaround 'display 'after-string)
                      completion)
-        (overlay-put ov 'window (selected-window)))))
+        (overlay-put ov 'window (selected-window))))))
 
 (defun company-preview-hide ()
   (when company-preview-overlay
