@@ -2975,13 +2975,16 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company--common-or-matches (value)
   (let ((matches (company-call-backend 'match value)))
     (when (and matches
+               (listp matches)
                (= 1 (length matches))
                (= 0 (caar matches))
                (> (string-width  company-common) (cdar matches)))
       (setq matches nil))
+    (when (integerp matches)
+      (setq matches `((0 . ,matches))))
     (or matches
-        (and company-common (string-width company-common))
-        0)))
+        (and company-common `((0 . ,(string-width company-common))))
+        nil)))
 
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
@@ -3024,7 +3027,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                               t line))
     (cl-loop
      with width = (- width (length right))
-     for (comp-beg . comp-end) in (if (integerp common) `((0 . ,common)) common)
+     for (comp-beg . comp-end) in common
      for inline-beg = (+ margin comp-beg)
      for inline-end = (min (+ margin comp-end) width)
      when (< inline-beg width)
@@ -3608,16 +3611,17 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-preview-show-at-point (pos completion)
   (company-preview-hide)
 
-  (let ((company-common (and company-common
-                             (string-prefix-p company-prefix company-common)
-                             company-common) ))
+  (let* ((company-common (and company-common
+                              (string-prefix-p company-prefix company-common)
+                              company-common))
+         (common (company--common-or-matches completion)))
     (setq completion (copy-sequence (company--pre-render completion)))
     (add-face-text-property 0 (length completion) 'company-preview
                             nil completion)
 
-    ;; TODO: Add support for the `match' backend command.
-    (add-face-text-property 0 (length company-common) 'company-preview-common
-                            nil completion)
+    (cl-loop for (beg . end) in common
+             do (add-face-text-property beg end 'company-preview-common
+                                        nil completion))
 
     ;; Add search string
     (and (string-match (funcall company-search-regexp-function
