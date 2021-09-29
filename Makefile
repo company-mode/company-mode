@@ -1,6 +1,6 @@
 EMACS=emacs
 
-.PHONY: ert test test-batch
+.PHONY: package elpa clean test test-gui test-batch compile compile-warn
 
 package: *.el
 	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
