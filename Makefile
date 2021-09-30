@@ -1,5 +1,12 @@
 EMACS = emacs
+
 ALL_TARGETS = help package clean test test-gui test-batch compile compile-warn
+
+TAR_OPTIONS = cjvf
+ifneq ($(shell uname -s), Darwin)
+	TAR_OPTIONS += --mode 644
+endif
+
 
 .PHONY: ${ALL_TARGETS}
 
@@ -9,7 +16,7 @@ help:
 
 package: *.el
 	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
-	tar cjvf company-$$ver.tar.bz2 --mode 644 $$(find . -name \*.el)
+	tar ${TAR_OPTIONS} company-$$ver.tar.bz2 $$(find . -name \*.el)
 
 clean:
 	@rm -rf company-*/ company-*.tar.bz2 *.elc ert.el test/*.elc
