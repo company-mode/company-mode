@@ -15,8 +15,9 @@ help:
 	@for t in ${ALL_TARGETS}; do echo "- "$$t; done
 
 package: *.el
-	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
-	tar ${TAR_OPTIONS} company-$$ver.tar.bz2 $$(find . -name \*.el)
+	@VERSION=$$(awk '/Version:/{print $$3;exit}' company.el); \
+	FILES=$$(find . \! -name .\* -a \( -maxdepth 1 -name \*.el -o -name icons \) ); \
+	tar ${TAR_OPTIONS} company-$$VERSION.tar.bz2 $$FILES
 
 clean:
 	@rm -rf company-*.tar.bz2 *.elc test/*.elc
