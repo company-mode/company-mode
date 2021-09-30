@@ -1,6 +1,11 @@
-EMACS=emacs
+EMACS = emacs
+ALL_TARGETS = help package clean test test-gui test-batch compile compile-warn
 
-.PHONY: package clean test test-gui test-batch compile compile-warn
+.PHONY: ${ALL_TARGETS}
+
+help:
+	@echo Targets:
+	@for t in ${ALL_TARGETS}; do echo "- "$$t; done
 
 package: *.el
 	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
