@@ -1,23 +1,26 @@
-EMACS=emacs
+EMACS = emacs
 
-.PHONY: ert test test-batch
+ALL_TARGETS = help package clean test test-gui test-batch compile compile-warn
+
+TAR_OPTIONS = cjvf
+ifneq ($(shell uname -s), Darwin)
+	TAR_OPTIONS += --mode 644
+endif
+
+
+.PHONY: ${ALL_TARGETS}
+
+help:
+	@echo Targets:
+	@for t in ${ALL_TARGETS}; do echo "- "$$t; done
 
 package: *.el
-	@ver=`grep -o "Version: .*" company.el | cut -c 10-`; \
-	tar cjvf company-$$ver.tar.bz2 --mode 644 $$(find . -name \*.el)
-
-elpa: *.el
-	@version=`grep -o "Version: .*" company.el | cut -c 10-`; \
-	dir=company-$$version; \
-	mkdir -p "$$dir"; \
-	cp $$(find . -name \*.el) company-$$version; \
-	echo "(define-package \"company\" \"$$version\" \
-	\"Modular in-buffer completion framework\")" \
-	> "$$dir"/company-pkg.el; \
-	tar cvf company-$$version.tar --mode 644 "$$dir"
+	@VERSION=$$(awk '/Version:/{print $$3;exit}' company.el); \
+	FILES=$$(find . \! -name .\* -a \( -maxdepth 1 -name \*.el -o -name icons \) ); \
+	tar ${TAR_OPTIONS} company-$$VERSION.tar.bz2 $$FILES
 
 clean:
-	@rm -rf company-*/ company-*.tar company-*.tar.bz2 *.elc ert.el test/*.elc
+	@rm -rf company-*.tar.bz2 *.elc test/*.elc
 
 test:
 	${EMACS} -Q -nw -L . -l test/all.el \
