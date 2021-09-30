@@ -19,7 +19,7 @@ package: *.el
 	tar ${TAR_OPTIONS} company-$$ver.tar.bz2 $$(find . -name \*.el)
 
 clean:
-	@rm -rf company-*/ company-*.tar.bz2 *.elc ert.el test/*.elc
+	@rm -rf company-*.tar.bz2 *.elc test/*.elc
 
 test:
 	${EMACS} -Q -nw -L . -l test/all.el \
