@@ -2989,7 +2989,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
-         (company-common (company--clean-string company-common))
+         (company-common (and company-common (company--clean-string company-common)))
          (common (company--common-or-matches value))
          (_ (setq value (company-reformat (company--pre-render value))
                   annotation (and annotation (company--pre-render annotation t))))
