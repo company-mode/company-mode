@@ -92,6 +92,10 @@
     (t (:background "green")))
   "Face used for the selection in the tooltip.")
 
+(defface company-tooltip-deprecated
+  '((t (:inherit default :strike-through t)))
+  "Face used for the deprecated items.")
+
 (defface company-tooltip-search
   '((default :inherit highlight))
   "Face used for the search string in the tooltip.")
@@ -402,6 +406,9 @@ duplicates are removed by company, candidates with equal string values will
 be kept if they have different annotations.  For that to work properly,
 backends should store the related information on candidates using text
 properties.
+
+`deprecated': The second argument is a completion candidate.  Return
+non-nil if the completion candidate is deprecated.
 
 `match': The second argument is a completion candidate.  Return a positive
 integer, the index after the end of text matching `prefix' within the
@@ -3054,6 +3061,10 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                     nil line)))))
     (when selected
       (add-face-text-property 0 width 'company-tooltip-selection t line))
+
+    (when (company-call-backend 'deprecated value)
+      (add-face-text-property 0 width 'company-tooltip-deprecated t line))
+
     (add-face-text-property 0 width 'company-tooltip t line)
     line))
 

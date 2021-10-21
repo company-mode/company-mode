@@ -2,6 +2,8 @@
 
 ## Next
 
+* New backend command, `deprecated`. It returns whether the completion item is
+  deprecated or not.
 * `company-tooltip-common` highlightings with non-prefix and prefix matching
   backends are more compatible: if the non-prefix matching backend's completions
   all have a common part, and so the current prefix can be expanded with
@@ -134,7 +136,7 @@
 * `company-idle-delay` now accepts a function which generates the idle time or
   nil indicating no idle completion.
 * Add custom variable `company-show-numbers-function` to make numbers of
-  candidates customizable. 
+  candidates customizable.
 * When a symbol is already typed in full, calling `M-x company-complete` will
   now run its post-completion action (e.g. inserting method parameters
   template). Calling `M-x company-manual-begin` or invoking a backend command

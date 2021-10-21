@@ -323,6 +323,17 @@
              #(" bar "
                0 5 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))))
 
+(ert-deftest company-fill-propertize-deprecated ()
+  (let ((company-search-string "foo")
+        (company-backend (lambda (c &rest _) (pcase c (`deprecated t))))
+        (company-prefix ""))
+    (should (ert-equal-including-properties
+             (company-fill-propertize "barfoo" nil 5 t "" " ")
+             #("barfo "
+               0 3 (face (company-tooltip-selection company-tooltip-deprecated company-tooltip) mouse-face (company-tooltip-mouse))
+               3 5 (face (company-tooltip-search-selection company-tooltip-selection company-tooltip-deprecated company-tooltip) mouse-face (company-tooltip-mouse))
+               5 6 (face (company-tooltip-selection company-tooltip-deprecated company-tooltip) mouse-face (company-tooltip-mouse)))))))
+
 (ert-deftest company-fill-propertize-overrides-face-property ()
   (let ((company-backend #'ignore)
         (company-prefix "")
