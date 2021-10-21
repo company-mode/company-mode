@@ -153,6 +153,10 @@ so we can't just use the preceding variable instead.")
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-kind)))
        (when f (funcall f arg))))
+    (`deprecated
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :company-deprecated)))
+       (when f (funcall f arg))))
     (`require-match
      (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
