@@ -332,7 +332,7 @@
              #("barfo "
                0 3 (face (company-tooltip-selection company-tooltip-deprecated company-tooltip) mouse-face (company-tooltip-mouse))
                3 5 (face (company-tooltip-search-selection company-tooltip-selection company-tooltip-deprecated company-tooltip) mouse-face (company-tooltip-mouse))
-               5 6 (face (company-tooltip-selection company-tooltip-deprecated company-tooltip) mouse-face (company-tooltip-mouse)))))))
+               5 6 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))))
 
 (ert-deftest company-fill-propertize-overrides-face-property ()
   (let ((company-backend #'ignore)
