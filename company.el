@@ -93,7 +93,7 @@
   "Face used for the selection in the tooltip.")
 
 (defface company-tooltip-deprecated
-  '((t (:inherit default :strike-through t)))
+  '((t (:strike-through t)))
   "Face used for the deprecated items.")
 
 (defface company-tooltip-search
