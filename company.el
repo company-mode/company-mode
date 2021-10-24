@@ -3648,7 +3648,9 @@ Delay is determined by `company-tooltip-idle-delay'."
            (add-face-text-property mbeg mend 'company-preview-search
                                    nil completion)))
 
-    (setq completion (if company-common
+    (setq completion (if (string-prefix-p company-prefix completion
+                                          (eq (company-call-backend 'ignore-case)
+                                              'keep-prefix))
                          (company-strip-prefix completion)
                        completion))
 
