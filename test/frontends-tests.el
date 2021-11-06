@@ -83,7 +83,8 @@
     (save-window-excursion
       (set-window-buffer nil (current-buffer))
       (save-excursion (insert "\n"))
-      (let ((company-backend #'ignore))
+      (let ((company-backend #'ignore)
+            (company-prefix ""))
         (company-preview-show-at-point (point) "123")
         (let* ((ov company-preview-overlay)
                (str (overlay-get ov 'after-string)))
