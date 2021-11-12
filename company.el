@@ -3506,6 +3506,9 @@ Returns a negative number if the tooltip should be displayed above point."
       ;; Beat outline's folding overlays.
       ;; And Flymake (53). And Flycheck (110).
       (overlay-put ov 'priority 111)
+      ;; visual-line-mode
+      (when (memq (char-before (overlay-start ov)) '(?\s ?\t))
+        (setq disp (concat "\n" disp)))
       ;; No (extra) prefix for the first line.
       (overlay-put ov 'line-prefix "")
       (overlay-put ov 'before-string disp)

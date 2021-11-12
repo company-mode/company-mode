@@ -2,6 +2,8 @@
 
 ## Next
 
+* Better compatibility with `visyal-line-mdoe`
+  ([#1257](https://github.com/company-mode/company-mode/issues/1257)).
 * Better compatibility with `org-indent-mode`
   ([#1252](https://github.com/company-mode/company-mode/issues/1252)).
 * New backend command, `deprecated`. It returns whether the completion item is
