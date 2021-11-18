@@ -1541,7 +1541,7 @@ end of the match."
     (string . "symbol-string.svg")
     (struct . "symbol-structure.svg")
     (text . "symbol-key.svg")
-    (type-parameter "symbol-parameter.svg")
+    (type-parameter . "symbol-parameter.svg")
     (unit . "symbol-ruler.svg")
     (value . "symbol-enumerator.svg")
     (variable . "symbol-variable.svg")
