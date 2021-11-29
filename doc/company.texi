@@ -3,7 +3,7 @@
 @setfilename company.info
 @settitle Company User Manual
 @set VERSION 0.9.14snapshot
-@set UPDATED 28 December 2021
+@set UPDATED 8 January 2022
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -494,20 +494,11 @@ enabled @emph{company-mode} in the mode line.  The default value is
 @samp{company}.
 @end defopt
 
-@anchor{company-auto-commit}
-@defopt company-auto-commit
+@defopt company-insertion-on-trigger
 One more pair of the user options may instruct Company to complete
 with the selected candidate by typing one of the
-@code{company-auto-commit-chars} @footnote{The options
-@code{company-auto-commit} and @code{company-auto-commit-chars} used
-to be called @code{company-auto-complete} and
-@code{company-auto-complete-chars} respectively, which was in more
-accordance with the terminology given in this manual.  But the
-resulting combination of the words @samp{auto-complete} present in
-those names made it seem the role of these user options was to
-configure Company's auto-start behavior.  Hence, it was chosen to
-rename the options to, hopefully, less confusing names.}.  The user
-option @code{company-auto-commit} can be enabled or disabled by
+@code{company-insertion-triggers}.  The user option
+@code{company-insertion-on-trigger} can be enabled or disabled by
 setting its value to one of: @code{nil}, @code{t}, or a predicate
 function name.
 @ifnothtml
@@ -519,16 +510,17 @@ See @uref{https://www.gnu.org/software/emacs/manual/html_node/eintr/Wrong-Type-o
 @end ifhtml
 @end defopt
 
-@anchor{company-auto-commit-chars}
-@defopt company-auto-commit-chars
-This option acts only when @code{company-auto-commit} is enabled.  The
-value can be one of: a string of characters, a list of syntax
-description characters (@pxref{Syntax Class Table,,,elisp}), or a
-predicate function.  By default, @code{company-auto-commit-chars} is
-set to the list of the syntax characters: @w{@code{(?\ ?\) ?.)}},
-which translates to the whitespaces, close parenthesis, and
-punctuation.  The particular convenience of this user option values is
-they do not act as triggers when they are part of valid completion.
+@defopt company-insertion-triggers
+This option has an effect only when
+@w{@code{company-insertion-on-trigger}} is enabled.  The value can be
+one of: a string of characters, a list of syntax description
+characters (@pxref{Syntax Class Table,,,elisp}), or a predicate
+function.  By default, this user option is set to the list of the
+syntax characters: @w{@code{(?\ ?\) ?.)}}, which translates to the
+whitespaces, close parenthesis, and punctuation.  It is safe to
+configure the value to a character that can potentially be part of a
+valid completion; in this case, Company does not treat such characters
+as triggers.
 @end defopt
 
 @subheading Hooks
