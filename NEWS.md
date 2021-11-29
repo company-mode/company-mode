@@ -2,6 +2,8 @@
 
 ## Next
 
+* New command `company-complete-common-or-show-delayed-tooltip`
+  ([#1214](https://github.com/company-mode/company-mode/discussions/1214)).
 * Better compatibility with `visual-line-mdoe`
   ([#1257](https://github.com/company-mode/company-mode/issues/1257)).
 * Better compatibility with `org-indent-mode`
