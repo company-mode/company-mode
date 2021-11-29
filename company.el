@@ -1659,14 +1659,15 @@ The only mandatory element in CONF is ICON, you can omit both the FG and BG
 fields without issue.
 
 When BG is omitted and `company-text-icons-add-background' is non-nil, a BG
-color will be generated using a gradient between the active tooltip color and
+color is generated using a gradient between the active tooltip color and
 the FG color."
   :type 'list)
 
 (defcustom company-text-face-extra-attributes '(:weight bold)
-  "Additional attributes to add to text icons' faces.
-If non-nil, an anonymous face will be generated.
-Only affects `company-text-icons-margin'."
+  "Additional attributes to add to text/dot icons faces.
+If non-nil, an anonymous face is generated.
+
+Affects `company-text-icons-margin' and `company-dot-icons-margin'."
   :type 'list)
 
 (defcustom company-text-icons-format " %s "
@@ -1674,7 +1675,7 @@ Only affects `company-text-icons-margin'."
   :type 'string)
 
 (defcustom company-text-icons-add-background nil
-  "When non-nil, generate a background color for text icons when none is given.
+  "Generate a background color for text/dot icons when none is given.
 See `company-text-icons-mapping'."
   :type 'boolean)
 
