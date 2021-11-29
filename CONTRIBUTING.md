@@ -20,7 +20,7 @@ Help on improving, fixing, and writing documentation is also wanted.
 See these ideas on where to start:
 - Add and edit pages in [`Company` Wiki](https://github.com/company-mode/company-mode/wiki).
 - Share your findings in [`Discussions`](https://github.com/company-mode/company-mode/discussions/categories/show-and-tell).
-- Write a [manual](https://github.com/company-mode/company-mode/issues/926).
+- Improve the [user manual](https://github.com/company-mode/company-mode/issues/926).
 
 
 ### Backend Integration
