@@ -140,19 +140,29 @@
   "Face used for the selected quick-access hints shown in the tooltip."
   :package-version '(company . "0.9.14"))
 
-(defface company-scrollbar-fg
+(define-obsolete-face-alias
+ 'company-scrollbar-fg
+ 'company-tooltip-scrollbar-thumb
+ "0.9.14")
+
+(defface company-tooltip-scrollbar-thumb
   '((((background light))
      :background "darkred")
     (((background dark))
      :background "gray33"))
-  "Face used for the tooltip scrollbar thumb.")
+  "Face used for the tooltip scrollbar thumb (bar).")
 
-(defface company-scrollbar-bg
+(define-obsolete-face-alias
+ 'company-scrollbar-bg
+ 'company-tooltip-scrollbar-track
+ "0.9.14")
+
+(defface company-tooltip-scrollbar-track
   '((((background light))
      :background "wheat")
     (((background dark))
      :background "gray28"))
-  "Face used for the tooltip scrollbar background.")
+  "Face used for the tooltip scrollbar track (trough).")
 
 (defface company-preview
   '((default :inherit (company-tooltip-selection company-tooltip)))
@@ -3384,8 +3394,8 @@ but adjust the expected values appropriately."
 (defun company--scrollbar (i bounds)
   (propertize " " 'face
               (if (and (>= i (car bounds)) (<= i (cdr bounds)))
-                  'company-scrollbar-fg
-                'company-scrollbar-bg)))
+                  'company-tooltip-scrollbar-thumb
+                'company-tooltip-scrollbar-track)))
 
 (defun company--scrollpos-line (text width fancy-margin-width)
   (propertize (concat (company-space-string company-tooltip-margin)
