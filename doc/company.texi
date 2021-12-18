@@ -292,15 +292,19 @@ the commands of the out-of-the-box Company.
 @kindex C-n
 @cindex select
 @findex company-select-next-or-abort
-Select the next candidate (@code{company-complete-next-or-abort}).
+@findex company-select-next
+Select the next candidate (@code{company-select-next-or-abort},
+@w{@code{company-select-next}}).
 
 @item C-p
 @itemx M-p
 @kindex C-p
 @cindex select
-@findex company-complete-previous-or-abort
+@findex company-select-previous-or-abort
+@findex company-select-previous
 Select the previous candidate
-(@code{company-complete-previous-or-abort}).
+(@code{company-select-previous-or-abort},
+@w{@code{company-select-previous}}).
 
 @item RET
 @itemx <return>
@@ -931,6 +935,12 @@ completion candidate in the echo area.
 
 @img{echo-meta}
 @end defun
+
+@sp 1
+The last pair of the built-in frontends isn't that commonly used and
+not as full-featured as the previously reviewed @emph{tooltip-} and
+@emph{preview-} frontends, but still, feel free to play with them and
+have some fun!
 
 @defun company-echo-frontend
 This frontend outputs all the available completion candidates in the
