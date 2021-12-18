@@ -386,23 +386,6 @@ a command can be unbound from a key.  For instance:
   (define-key company-active-map (kbd "RET") nil))
 @end lisp
 
-@c TODO:
-@c Maybe list some of the others, not mentioned yet, ``core'' commands:
-@c company-manual-begin
-@c company-select-next
-@c company-select-previous
-@c company-select-first
-@c company-select-last
-@c company-next-page
-@c company-previous-page
-@c company-select-next-if-tooltip-visible-or-complete-selection
-@c company-version
-@c But that should not confuse a newbie with too much information.
-@c Or maybe describe how to list all the available commands
-@c in a simple way (would it be M-x occur <interactive> ?).
-@c Might be provide a separate reference with Company commands
-@c and user options.
-
 @node Customization
 @chapter Customization
 
@@ -541,13 +524,6 @@ punctuation.  The particular convenience of
 @code{company-auto-commit-chars} is that they do not act as a trigger
 when they are a part of valid completion.
 @end defopt
-
-@c TODO: Maybe also describe the following options.
-@c@defopt company-begin-commands
-@c@defopt company-continue-commands
-@c@defopt company-abort-on-unique-match
-@c@defopt company-abort-manual-when-too-short
-@c@defopt company-async-redisplay-delay
 
 @subheading Hooks
 
@@ -697,24 +673,15 @@ displayed by the current tooltip page.
 @img{tooltip-offset-display}
 @end defopt
 
-@c TODO: what is the correct description / behavior?
-@c Maybe improve the docstring.
-@c Does it influence minimal height of the tooltip
-@c together with company-tooltip-limit?
-@c Can we say it ``Controls the position of a tooltip above
-@c or below the point''?
-@c Does this option control two different things: height and position?
-@c @defopt company-tooltip-minimum
-@c Sets the minimum height of a tooltip (also influenced by
-@c @code{company-tooltip-limit}).  If this quantity of lines is not
-@c available in the window, then the tooltip is displayed above the
-@c point.
+@defopt company-tooltip-minimum
+When the number of lines between the point and the bottom of the
+window is less than @code{company-tooltip-minimum} value, then the
+tooltip is displayed above the point.
 
-@c @c This doesn't work the way I expect it to.
-@c @lisp
-@c (setq company-tooltip-minimum 20)
-@c @end lisp
-@c @end defopt
+@lisp
+(setq company-tooltip-minimum 4)
+@end lisp
+@end defopt
 
 @defopt company-tooltip-flip-when-above
 This is one of the fancy features Company has to suggest.  When this
@@ -1230,15 +1197,12 @@ backend(s), as shown in the following concise example:
 @node Package Backends
 @section Package Backends
 
-@c TODO: Maybe extend some of the backends description
-@c and/or list user options of such backends.
-
 @cindex package backends
 @cindex bundled backends
 @cindex backends
-The following sections review commonly used backends bundled with
-Company.  Each section is devoted to one of the roughly outlined
-groups of the backends.
+The following sections give a short overview of the commonly used
+backends bundled with Company.  Each section is devoted to one of the
+roughly outlined groups of the backends.
 
 Some of the backends expose several user options for customization.
 To see the list of the user options, we suggest doing one of the
