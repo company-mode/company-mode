@@ -678,22 +678,31 @@ displayed by the current tooltip page.
 @end defopt
 
 @defopt company-tooltip-minimum
-When the number of lines between the point and the bottom of the
-window is less than @code{company-tooltip-minimum} value, then the
-tooltip is displayed above the point.
+This user option acts only when a tooltip is shown close to the bottom
+of a window.  It guarantees visibility of this number of completion
+candidates below point.  When the number of lines between point and
+the bottom of a window is less than @w{@code{company-tooltip-minimum}}
+value, the tooltip is displayed above point.
 
 @lisp
 (setq company-tooltip-minimum 4)
 @end lisp
+
+@img{tooltip-minimum-below}
+
+@ifnothtml
+@sp 1
+@end ifnothtml
+
+@img{tooltip-minimum-above}
 @end defopt
 
 @defopt company-tooltip-flip-when-above
 This is one of the fancy features Company has to suggest.  When this
-setting is enabled, no matter if a tooltip is shown above or below the
-point, the candidates are always listed starting near the point.
-(Putting it differently, the candidates are mirrored horizontally if a
-tooltip changes its position, instead of being commonly listed
-top-to-bottom.)
+setting is enabled, no matter if a tooltip is shown above or below
+point, the candidates are always listed starting near point.  (Putting
+it differently, the candidates are mirrored horizontally if a tooltip
+changes its position, instead of being commonly listed top-to-bottom.)
 
 @lisp
 (setq company-tooltip-flip-when-above t)
@@ -882,7 +891,7 @@ Frontends in this group output a completion candidate or a common part
 of the candidates temporarily inline, as if a word had already been
 completed @footnote{The candidates retrieved according to
 @code{non-prefix} matches (@pxref{Terminology}) may be shown in full
-after the point.}.
+after point.}.
 
 @defun company-preview-if-just-one-frontend
 This is one of the frontends enabled by default.  This frontend
