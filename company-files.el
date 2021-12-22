@@ -33,9 +33,9 @@
   :group 'company)
 
 (defcustom company-files-exclusions nil
-  "File name extensions and directory names to ignore.
+  "A list of file name extensions and directory names to ignore.
 The values should use the same format as `completion-ignored-extensions'."
-  :type '(const string)
+  :type '(repeat (string :tag "File extension or directory name"))
   :package-version '(company . "0.9.1"))
 
 (defcustom company-files-chop-trailing-slash t
@@ -59,7 +59,7 @@ Set this to nil to disable that behavior."
     (file-error nil)))
 
 (defun company-files--exclusions-filtered (completions)
-  (let* ((dir-exclusions (cl-delete-if-not #'company-files--trailing-slash-p
+  (let* ((dir-exclusions (cl-remove-if-not #'company-files--trailing-slash-p
                                            company-files-exclusions))
          (file-exclusions (cl-set-difference company-files-exclusions
                                              dir-exclusions)))

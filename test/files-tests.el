@@ -46,3 +46,12 @@
     (should-not (member (expand-file-name "company.el" company-dir)
                         (company-files 'candidates
                                        company-dir)))))
+
+(ert-deftest company-files-candidates-excluding-dir-and-files ()
+  (let* ((company-files-exclusions '("test/" ".el"))
+         company-files--completion-cache
+         (files-candidates (company-files 'candidates company-dir)))
+    (should-not (member (expand-file-name "test/" company-dir)
+                        files-candidates))
+    (should-not (member (expand-file-name "company.el" company-dir)
+                        files-candidates))))
