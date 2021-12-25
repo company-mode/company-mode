@@ -123,7 +123,7 @@ chosen for successful completion.  And each of the candidates contains
 the initially typed characters: either only at the beginning
 (so-called @dfn{prefix matches}), or also inside (@dfn{non-prefix
 matches}) of a candidate @footnote{A good starting point to learn
-about types of matches is to play with Emacs' user option
+about types of matches is to play with the Emacs's user option
 @code{completion-styles}.  For illustrations on how Company visualizes
 the matches, @pxref{Frontends}.}.
 
@@ -934,8 +934,8 @@ The look of the preview is controlled by the following faces:
 @cindex echo
 @cindex face
 @cindex company-echo
-The frontends listed in this section display information in the Emacs'
-echo area, @ref{Echo Area,,,emacs}.
+The frontends listed in this section display information in the
+Emacs's echo area, @ref{Echo Area,,,emacs}.
 
 @defun company-echo-metadata-frontend
 This frontend is a part of the predefined frontends set.  Its
@@ -988,7 +988,7 @@ the faces @w{@code{company-echo}} and @code{company-echo-common}.
 By default, when @emph{company-mode} is in action, a key binding
 @kbd{C-s} starts looking for matches to additionally typed characters
 among the displayed candidates.  When a search is initiated, an
-indicator @w{@samp{Search: CHARACTERS}} is shown in the Emacs' mode
+indicator @w{@samp{Search: CHARACTERS}} is shown in the Emacs's mode
 line.
 
 @kindex C-g
@@ -1243,11 +1243,11 @@ A completion for symbol names typically assists programmers working
 with the source code.
 
 @defun company-capf
-In Emacs' world, the current tendency is to have the completion logic
-executed by @w{@code{completion-at-point-functions}} (@acronym{CAPF})
-implementations.  [Among the other things, this is what the popular
-packages that support language server protocol (@acronym{LSP}) also
-rely on.]
+In the Emacs's world, the current tendency is to have the completion
+logic executed by @w{@code{completion-at-point-functions}}
+(@acronym{CAPF}) implementations.  [Among the other things, this is
+what the popular packages that support language server protocol
+(@acronym{LSP}) also rely on.]
 
 Since @emph{company-capf} works as a bridge to the standard
 @acronym{CAPF} facility, it is probably the most often used and
