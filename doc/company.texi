@@ -2,14 +2,16 @@
 @c %**start of header
 @setfilename company.info
 @settitle Company User Manual
-@set VERSION 0.9.14
+@set VERSION 0.9.14snapshot
+@set UPDATED 25 December 2021
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
 @c %**end of header
 
 @copying
-This user manual is for Company version @value{VERSION}.
+This user manual is for Company version @value{VERSION}
+@w{(@value{UPDATED})}.
 
 Copyright @copyright{} 2021 Free Software Foundation, Inc.
 
@@ -28,6 +30,7 @@ any later version published by the Free Software Foundation.
 @titlepage
 @title Company User Manual
 @subtitle for version @value{VERSION}
+@subtitle @value{UPDATED}
 @page
 @vskip 0pt plus 1filll
 @insertcopying
@@ -1223,8 +1226,9 @@ The following sections give a short overview of the commonly used
 backends bundled with Company.  Each section is devoted to one of the
 roughly outlined groups of the backends.
 
-Some of the backends expose several user options for customization.
-To see the list of the user options, we suggest doing one of the
+Some of the backends expose user options for customization; a few of
+these options are introduced below.  For those who would like to fetch
+the full list of a backend's user options, we suggest doing one of the
 following:
 
 @itemize
@@ -1232,8 +1236,8 @@ following:
 Execute command @code{M-x customize-group @key{RET} <backend-name>}.
 
 @item
-Open the source file of the backend and run @code{M-x occur @key{RET}
-^(defcustom}.
+Open the source file of the backend and run @w{@code{M-x occur
+@key{RET} ^(defcustom}}.
 @end itemize
 
 @node Symbol Names Completion
@@ -1266,9 +1270,9 @@ For more details on @acronym{CAPF}, @ref{Completion in Buffers,,,elisp}.
 @end defun
 
 @defun company-dabbrev-code
-This backend works similarly to the Emacs built-in package
-@emph{dabbrev}, parsing completion candidates from the text in open
-buffer(s).  Internally, its based on the backend
+This backend works similarly to the built-in Emacs package
+@emph{dabbrev}, searching for completion candidates in the text
+available in the open buffer(s).  Internally, its based on the backend
 @emph{company-dabbrev} (@pxref{Natural Language Completion}).
 @end defun
 
@@ -1305,22 +1309,136 @@ switching to @emph{company-capf} backend.
 @subsection Natural Language Completion
 
 @defun company-dabbrev
-This backend works similarly to the Emacs built-in package
-@emph{dabbrev}, parsing completion candidates from the text entered
-into the open buffer(s).
+This backend works similarly to the built-in Emacs package
+@emph{dabbrev}, searching for completion candidates in the open
+buffer(s) text(s).  It is one of the often used backends, and it has
+several interesting options for configuration.  Let's review a few of
+them.
+
+@defopt company-dabbrev-minimum-length
+This option sets the minimum length of a completion candidate to
+collect from the text.  The default value of @samp{4} is intended to
+prevent potential performance issues.  But in many scenarios, it may
+be acceptable to lower this value.  Note that this option also affects
+the behavior of the @emph{company-dabbrev-code} backend.
+
+@lisp
+(setq company-dabbrev-minimum-length 2)
+@end lisp
+@end defopt
+
+@defopt company-dabbrev-other-buffers
+By default, @emph{company-dabbrev} collects completion candidates from
+all not ignored buffers (see more on that below).  This behavior can
+be changed to collecting candidates from the current buffer only (by
+setting the value to @samp{nil}) or from the buffers with the same
+major mode:
+
+@lisp
+(setq company-dabbrev-other-buffers t)
+@end lisp
+@end defopt
+
+@defopt company-dabbrev-ignore-buffers
+The value of this option should be a regexp or a predicate function
+that can be used to match a buffer name.  The matched buffers are
+omitted from the search for completion candidates.
+@end defopt
+
+The last two options described here relate to handling uppercase and
+lowercase letters in completion candidates.  The illustrative examples
+given below can be reproduced in the @samp{*scratch*} buffer, with the
+word @samp{Enjoy} typed in, and with this initial setup:
+
+@lisp
+(setq-local company-backends '(company-dabbrev)
+            company-dabbrev-other-buffers nil
+            company-dabbrev-ignore-case nil
+            company-dabbrev-downcase nil)
+@end lisp
+
+@defopt company-dabbrev-ignore-case
+This user option controls whether the case is ignored when collecting
+completion candidates.  When the option is set to @code{nil},
+@samp{Enjoy} is suggested as a completion candidate for the typed
+@samp{Enj} letters, but not for @samp{enj}.  When the option is set to
+@code{t}, @samp{Enjoy} is suggested as a candidate for both @samp{Enj}
+and @samp{enj} input; note that @samp{enj} prefix is ``overwritten''
+by completing with the @samp{Enjoy} candidate.  The third, default,
+type of behavior solves this issue, keeping the case of the typed
+prefix (and still collecting candidates case-insensitively):
+
+@lisp
+(setq company-dabbrev-ignore-case 'keep-prefix)
+@end lisp
+
+Now we can type @samp{enj}, complete it with the suggested
+@samp{Enjoy}, and @emph{enjoy} the result.
+@end defopt
+
+@defopt company-dabbrev-downcase
+This user option controls whether completion candidates are down-cased
+before their display.  When the option is set to @code{nil}, no
+transformation is performed; in the environment described above,
+typing @samp{Enj} results in the candidate @samp{Enjoy} being
+suggested.  When the option is set to @code{t}, the down-cased
+candidate @samp{enjoy} is suggested.  By default, this option is set
+to @code{case-replace}, meaning taking a value of the Emacs's variable
+@code{case-replace} (@code{t} is the current default).
+@end defopt
+
 @end defun
 
+@sp 1
 @defun company-ispell
 This backend returns completion candidates collected by @emph{Ispell},
 a built-in Emacs package that performs spell-checking.
-@xref{Spelling,,Checking and Correcting Spelling,emacs}.
+@xref{Spelling,,Checking and Correcting Spelling,emacs}.  Note that
+@emph{Ispell} uses only one dictionary at a time (combining several
+dictionaries into one file is an accepted practice).  By default,
+@emph{company-ispell} suggests candidates from a dictionary specified
+by the Emacs's setting @code{ispell-complete-word-dict}.
+
+@defopt company-ispell-dictionary
+Optionally, set a file path for @emph{company-ispell} to use another
+dictionary.
+@end defopt
+
 @end defun
 
 @node File Paths Completion
 @subsection File Paths Completion
 
 @defun company-files
-This backend can be used to retrieve file paths completion candidates.
+This backend can be used to retrieve completion candidates for the
+absolute and relative paths in the directory structure of an operating
+system.  The behavior of the @emph{company-files} backend can be
+adjusted with the two user options.
+
+@defopt company-files-exclusions
+It may be desirable to exclude directories or files from the list of
+suggested completion candidates.  For example, someone's setup might
+look this way:
+
+@lisp
+(setq company-files-exclusions '(".git/" ".DS_Store"))
+@end lisp
+@end defopt
+
+@defopt company-files-chop-trailing-slash
+This setting is enabled by default, which results in stripping off a
+trailing slash from an inserted directory name.  On typing a trailing
+slash, the process of completion gets started again, from inside the
+just inserted directory.
+
+Setting @w{@code{company-files-chop-trailing-slash}} to @code{nil}
+makes directory names to be inserted as is, with a trailing slash.  In
+this case, the completion process can be continued, for example,
+either by explicitly calling @emph{company-files} backend
+@w{(@pxref{Backends Usage Basics})} or by starting typing a name of a
+file/directory known to be located under the inserted directory.
+@end defopt
+
 @end defun
 
 @node Templates Expansion
@@ -1338,13 +1456,14 @@ their expansions.
 
 @defun company-tempo
 A backend for users of
-@uref{https://www.lysator.liu.se/~davidk/elisp/, Tempo}, a built-in
-Emacs package for creating and inserting (expanding) templates.
+@uref{https://www.lysator.liu.se/~davidk/elisp/, Tempo}, one more
+built-in Emacs package for creating and inserting (expanding)
+templates.
 @end defun
 
 @defun company-yasnippet
-Used as a completion backend for a third-party template system
-@uref{https://github.com/joaotavora/yasnippet, YASnippet}.
+Used as a completion backend for a quite popular third-party template
+system @uref{https://github.com/joaotavora/yasnippet, YASnippet}.
 @end defun
 
 @node Candidates Post-Processing
