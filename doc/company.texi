@@ -3,7 +3,7 @@
 @setfilename company.info
 @settitle Company User Manual
 @set VERSION 0.9.14snapshot
-@set UPDATED 25 December 2021
+@set UPDATED 27 December 2021
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -923,13 +923,13 @@ The look of the preview is controlled by the following faces:
 @code{company-preview}, @code{company-preview-common}, and
 @code{company-preview-search}.
 
-@itemize @w{}
-@item
 @img{preview-light}
 
-@item
+@ifnothtml
+@sp 1
+@end ifnothtml
+
 @img{preview-dark}
-@end itemize
 
 @node Echo Frontends
 @section Echo Frontends
@@ -1066,16 +1066,19 @@ If @code{company-show-quick-access} is enabled, @emph{tooltip-} and
 (setq company-show-quick-access 'left)
 @end lisp
 
-@itemize @w{}
-@item
 @img{tooltip-quick-access}
 
-@item
+@ifnothtml
+@sp 1
+@end ifnothtml
+
 @img{echo-qa}
 
-@item
+@ifnothtml
+@sp 1
+@end ifnothtml
+
 @img{echo-strip-qa}
-@end itemize
 
 @cindex custom
 @cindex configure
@@ -1233,11 +1236,19 @@ following:
 
 @itemize
 @item
-Execute command @code{M-x customize-group @key{RET} <backend-name>}.
+Execute command @w{@kbd{M-x customize-group @key{RET}
+<backend-name>}}.
 
 @item
-Open the source file of the backend and run @w{@code{M-x occur
+Open the source file of the backend and run @w{@kbd{M-x occur
 @key{RET} ^(defcustom}}.
+
+@itemize @minus
+@item
+Optionally, search for the matches with @w{@kbd{M-x isearch @key{RET}
+(defcustom}}.
+@end itemize
+
 @end itemize
 
 @node Symbol Names Completion
@@ -1248,7 +1259,7 @@ with the source code.
 
 @defun company-capf
 In the Emacs's world, the current tendency is to have the completion
-logic executed by @w{@code{completion-at-point-functions}}
+logic provided by @w{@code{completion-at-point-functions}}
 (@acronym{CAPF}) implementations.  [Among the other things, this is
 what the popular packages that support language server protocol
 (@acronym{LSP}) also rely on.]
@@ -1271,9 +1282,9 @@ For more details on @acronym{CAPF}, @ref{Completion in Buffers,,,elisp}.
 
 @defun company-dabbrev-code
 This backend works similarly to the built-in Emacs package
-@emph{dabbrev}, searching for completion candidates in the text
-available in the open buffer(s).  Internally, its based on the backend
-@emph{company-dabbrev} (@pxref{Natural Language Completion}).
+@emph{dabbrev}, searching for completion candidates inside the
+contents of the open buffer(s).  Internally, its based on the backend
+@emph{company-dabbrev} (@pxref{Text Completion}).
 @end defun
 
 @defun company-keywords
@@ -1305,15 +1316,15 @@ Emacs' @acronym{CAPF} facility, therefore a user may consider
 switching to @emph{company-capf} backend.
 @end defun
 
-@node Natural Language Completion
-@subsection Natural Language Completion
+@node Text Completion
+@subsection Text Completion
 
 @defun company-dabbrev
 This backend works similarly to the built-in Emacs package
-@emph{dabbrev}, searching for completion candidates in the open
-buffer(s) text(s).  It is one of the often used backends, and it has
-several interesting options for configuration.  Let's review a few of
-them.
+@emph{dabbrev}, searching for completion candidates inside the
+contents of the open buffer(s).  It is one of the often used backends,
+and it has several interesting options for configuration.  Let's
+review a few of them.
 
 @defopt company-dabbrev-minimum-length
 This option sets the minimum length of a completion candidate to
@@ -1462,7 +1473,7 @@ templates.
 @end defun
 
 @defun company-yasnippet
-Used as a completion backend for a quite popular third-party template
+Used as a completion backend for the popular third-party template
 system @uref{https://github.com/joaotavora/yasnippet, YASnippet}.
 @end defun
 
