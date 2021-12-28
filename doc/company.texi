@@ -527,9 +527,8 @@ description characters (@pxref{Syntax Class Table,,,elisp}), or a
 predicate function.  By default, @code{company-auto-commit-chars} is
 set to the list of the syntax characters: @w{@code{(?\ ?\) ?.)}},
 which translates to the whitespaces, close parenthesis, and
-punctuation.  The particular convenience of
-@code{company-auto-commit-chars} is that they do not act as a trigger
-when they are a part of valid completion.
+punctuation.  The particular convenience of this user option values is
+they do not act as triggers when they are part of valid completion.
 @end defopt
 
 @subheading Hooks
@@ -1550,7 +1549,7 @@ issue to the corresponding third-party package maintainer(s).
 If the used backend is @samp{company-capf}, then take a look at the
 line starting with @samp{Value of c-a-p-f:}.  The issue could have
 been caused by a function listed there.  To identify to which package
-it belongs, type @w{@kbd{M-x find-function @key{RET} FUNCTION-NAME
+it belongs, type @w{@kbd{M-x find-function @key{RET} <function-name>
 @key{RET}}}.
 @end itemize
 
