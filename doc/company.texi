@@ -3,7 +3,7 @@
 @setfilename company.info
 @settitle Company User Manual
 @set VERSION 0.9.14snapshot
-@set UPDATED 27 December 2021
+@set UPDATED 28 December 2021
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -1251,11 +1251,8 @@ Optionally, search for the matches with @w{@kbd{M-x isearch @key{RET}
 
 @end itemize
 
-@node Symbol Names Completion
-@subsection Symbol Names Completion
-
-A completion for symbol names typically assists programmers working
-with the source code.
+@node Code Completion
+@subsection Code Completion
 
 @defun company-capf
 In the Emacs's world, the current tendency is to have the completion
@@ -1417,8 +1414,8 @@ dictionary.
 
 @end defun
 
-@node File Paths Completion
-@subsection File Paths Completion
+@node File Name Completion
+@subsection File Name Completion
 
 @defun company-files
 This backend can be used to retrieve completion candidates for the
@@ -1452,8 +1449,8 @@ file/directory known to be located under the inserted directory.
 
 @end defun
 
-@node Templates Expansion
-@subsection Templates Expansion
+@node Template Expansion
+@subsection Template Expansion
 
 @cindex template
 @cindex expansion
