@@ -17,7 +17,7 @@ install-info: company.info
 	install-info --info-dir=${INFO_INSTALL_DIR} $^
 
 company.html/: \
-	HTML_CSS_URL ?= http://company-mode.github.io/stylesheets/stylesheet.css
+	HTML_CSS_URL ?= https://company-mode.github.io/stylesheets/stylesheet.css
 	--css-ref=${HTML_CSS_URL}
 #	HTML_CSS_FILE ?= ../../company-mode.github.com/stylesheets/stylesheet.css
 #	--css-include=${HTML_CSS_FILE}
