@@ -1011,7 +1011,7 @@ Searches for words separated with spaces in the given order.
 Searches for words separated with spaces in any order.
 @end defun
 
-@defun company-search-words-in-any-order-regexp
+@defun company-search-flex-regexp
 Searches for characters in the given order, with anything in between.
 @end defun
 
