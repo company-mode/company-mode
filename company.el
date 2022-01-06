@@ -2645,7 +2645,9 @@ inserted."
   (when (company-manual-begin)
     (if (or company-selection-changed
             (and (eq real-last-command 'company-complete)
-                 (eq last-command 'company-complete-common)))
+                 (eq last-command 'company-complete-common))
+            (not company-common)
+            (equal company-prefix company-common))
         (call-interactively 'company-complete-selection)
       (call-interactively 'company-complete-common)
       (when company-candidates
