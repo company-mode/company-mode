@@ -7,7 +7,7 @@
 * Faces `company-scrollbar-fg` and `company-scrollbar-bg` have been renamed to
   `company-tooltip-scrollbar-thumb` and `company-tooltip-scrollbar-track`
   respectively.
-* Better compatibility with `visual-line-mdoe`
+* Better compatibility with `visual-line-mode`
   ([#1257](https://github.com/company-mode/company-mode/issues/1257)).
 * Better compatibility with `org-indent-mode`
   ([#1252](https://github.com/company-mode/company-mode/issues/1252)).
