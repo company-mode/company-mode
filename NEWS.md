@@ -4,6 +4,9 @@
 
 * New command `company-complete-common-or-show-delayed-tooltip`
   ([#1214](https://github.com/company-mode/company-mode/discussions/1214)).
+* Faces `company-scrollbar-fg` and `company-scrollbar-bg` have been renamed to
+  `company-tooltip-scrollbar-thumb` and `company-tooltip-scrollbar-track`
+  respectively.
 * Better compatibility with `visual-line-mdoe`
   ([#1257](https://github.com/company-mode/company-mode/issues/1257)).
 * Better compatibility with `org-indent-mode`
