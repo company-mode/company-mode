@@ -2609,6 +2609,18 @@ With ARG, move by that many elements."
               (current-prefix-arg arg))
           (call-interactively 'company-select-next))))))
 
+(defun company-complete-common-or-show-delayed-tooltip ()
+  "Insert the common part of all candidates, or show a tooltip."
+  (interactive)
+  (when (company-manual-begin)
+    (let ((tick (buffer-chars-modified-tick)))
+      (call-interactively 'company-complete-common)
+      (when (eq tick (buffer-chars-modified-tick))
+          (let ((company-tooltip-idle-delay 0.0))
+            (company-complete)
+            (and company-candidates
+                 (company-call-frontends 'post-command)))))))
+
 (defun company-indent-or-complete-common (arg)
   "Indent the current line or region, or complete the common part."
   (interactive "P")
