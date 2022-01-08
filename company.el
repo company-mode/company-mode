@@ -1468,12 +1468,22 @@ update if FORCE-UPDATE."
   (and (bound-and-true-p flyspell-mode)
        (version< emacs-version "27")))
 
+(defun string-less-ignore-case-p (string1 string2)
+  "Return non-nil if string1 < string2 case-insensitively."
+  (let ((res (compare-strings string1 0 nil string2 0 nil t)))
+    (and (numberp res) (< res 0))))
+
 (defun company--preprocess-candidates (candidates)
   (cl-assert (cl-every #'stringp candidates))
   (unless (company-call-backend 'sorted)
     (setq candidates (sort candidates 'string<)))
   (when (company-call-backend 'duplicates)
     (company--strip-duplicates candidates))
+  ;; The duplicate stripping only works if the candidates are sorted
+  ;; case-sensitively, so for case-insensitive listing we must sort again.
+  (when (and (company-call-backend 'ignore-case)
+             (not (company-call-backend 'sorted)))
+    (setq candidates (sort candidates 'string-less-ignore-case-p)))
   candidates)
 
 (defun company--postprocess-candidates (candidates)

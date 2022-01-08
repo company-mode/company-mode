@@ -2,6 +2,8 @@
 
 ## Next
 
+* Improved sorting of case-insensitive completions
+  ([#1290](https://github.com/company-mode/company-mode/issues/1290)).
 * New command `company-complete-common-or-show-delayed-tooltip`
   ([#1214](https://github.com/company-mode/company-mode/discussions/1214)).
 * Faces `company-scrollbar-fg` and `company-scrollbar-bg` have been renamed to
