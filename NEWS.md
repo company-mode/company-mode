@@ -2,6 +2,9 @@
 
 ## Next
 
+* `company-auto-commit` and `company-auto-commit-chars` have been renamed to
+  `company-insertion-on-trigger` and `company-insertion-triggers` respectively
+  ([#1270](https://github.com/company-mode/company-mode/pull/1270)).
 * New command `company-complete-common-or-show-delayed-tooltip`
   ([#1214](https://github.com/company-mode/company-mode/discussions/1214)).
 * Faces `company-scrollbar-fg` and `company-scrollbar-bg` have been renamed to

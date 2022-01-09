@@ -566,7 +566,8 @@ doesn't match anything or finish it manually, e.g. with RET."
 This can be a function do determine if a match is required.
 
 This can be overridden by the backend, if it returns t or `never' to
-`require-match'.  `company-auto-commit' also takes precedence over this."
+`require-match'.  `company-insertion-on-trigger' also takes precedence over
+this."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
@@ -578,11 +579,18 @@ This can be overridden by the backend, if it returns t or `never' to
   'company-auto-commit
   "0.9.14")
 
-(defcustom company-auto-commit nil
-  "Determines whether to auto-commit.
-If this is enabled, all characters from `company-auto-commit-chars'
-trigger insertion of the selected completion candidate.
-This can also be a function."
+(define-obsolete-variable-alias
+  'company-auto-commit
+  'company-insertion-on-trigger
+  "0.9.14")
+
+(defcustom company-insertion-on-trigger nil
+  "If enabled, allow triggering insertion of the selected candidate.
+This can also be a predicate function, for example,
+`company-explicit-action-p'.
+
+See `company-insertion-triggers' for more details on how to define
+triggers."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
@@ -595,16 +603,24 @@ This can also be a function."
   'company-auto-commit-chars
   "0.9.14")
 
-(defcustom company-auto-commit-chars '(?\  ?\) ?.)
-  "Determines which characters trigger auto-commit.
-See `company-auto-commit'.  If this is a string, each character in it
-triggers auto-commit.  If it is a list of syntax description characters (see
-`modify-syntax-entry'), characters with any of those syntaxes do that.
+(define-obsolete-variable-alias
+  'company-auto-commit-chars
+  'company-insertion-triggers
+  "0.9.14")
 
-This can also be a function, which is called with the new input and should
-return non-nil if company should auto-commit.
+(defcustom company-insertion-triggers '(?\  ?\) ?.)
+  "Determine triggers for `company-insertion-on-trigger'.
 
-A character that is part of a valid completion never triggers auto-commit."
+If this is a string, then each character in it can trigger insertion of the
+selected candidate.  If it is a list of syntax description characters (see
+`modify-syntax-entry'), then characters with any of those syntaxes can act
+as triggers.
+
+This can also be a function, which is called with the new input.  To
+trigger insertion, the function should return a non-nil value.
+
+Note that a character that is part of a valid completion never triggers
+insertion."
   :type '(choice (string :tag "Characters")
                  (set :tag "Syntax"
                       (const :tag "Whitespace" ?\ )
@@ -1954,18 +1970,20 @@ prefix match (same case) will be prioritized."
                  (funcall company-require-match)
                (eq company-require-match t))))))
 
-(defun company-auto-commit-p (input)
-  "Return non-nil if INPUT should trigger auto-commit."
-  (and (if (functionp company-auto-commit)
-           (funcall company-auto-commit)
-         company-auto-commit)
-       (if (functionp company-auto-commit-chars)
-           (funcall company-auto-commit-chars input)
-         (if (consp company-auto-commit-chars)
+(defun company-insertion-on-trigger-p (input)
+  "Return non-nil if INPUT should trigger insertion.
+For more details see `company-insertion-on-trigger' and
+`company-insertion-triggers'."
+  (and (if (functionp company-insertion-on-trigger)
+           (funcall company-insertion-on-trigger)
+         company-insertion-on-trigger)
+       (if (functionp company-insertion-triggers)
+           (funcall company-insertion-triggers input)
+         (if (consp company-insertion-triggers)
              (memq (char-syntax (string-to-char input))
-                   company-auto-commit-chars)
+                   company-insertion-triggers)
            (string-match (regexp-quote (substring input 0 1))
-                          company-auto-commit-chars)))))
+                         company-insertion-triggers)))))
 
 (defun company--incremental-p ()
   (and (> (point) company-point)
@@ -2030,8 +2048,8 @@ prefix match (same case) will be prioritized."
       (company-update-candidates c)
       c)
      ((and (characterp last-command-event)
-           (company-auto-commit-p (string last-command-event)))
-      ;; auto-commit
+           (company-insertion-on-trigger-p (string last-command-event)))
+      ;; Insertion on trigger.
       (save-excursion
         (goto-char company-point)
         (company-complete-selection)

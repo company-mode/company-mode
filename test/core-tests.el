@@ -273,7 +273,7 @@
     (insert "ab")
     (company-mode)
     (let (company-frontends
-          company-auto-commit
+          company-insertion-on-trigger
           (company-require-match t)
           (company-backends
            (list (lambda (command &optional _)
@@ -373,13 +373,13 @@
       (should (string= "a" (buffer-string)))
       (should (null company-candidates)))))
 
-(ert-deftest company-auto-commit-explicit ()
+(ert-deftest company-insertion-on-trigger-explicit ()
   (with-temp-buffer
     (insert "ab")
     (company-mode)
     (let (company-frontends
-          (company-auto-commit 'company-explicit-action-p)
-          (company-auto-commit-chars '(? ))
+          (company-insertion-on-trigger 'company-explicit-action-p)
+          (company-insertion-triggers '(? ))
           (company-backends
            (list (lambda (command &optional _)
                    (cl-case command
@@ -391,14 +391,14 @@
         (company-call 'self-insert-command 1))
       (should (string= "abcd " (buffer-string))))))
 
-(ert-deftest company-auto-commit-with-electric-pair ()
+(ert-deftest company-insertion-on-trigger-with-electric-pair ()
   (with-temp-buffer
     (insert "foo(ab)")
     (forward-char -1)
     (company-mode)
     (let (company-frontends
-          (company-auto-commit t)
-          (company-auto-commit-chars '(? ?\)))
+          (company-insertion-on-trigger t)
+          (company-insertion-triggers '(? ?\)))
           (company-backends
            (list (lambda (command &optional _)
                    (cl-case command
@@ -416,13 +416,13 @@
           (electric-pair-mode -1)))
       (should (string= "foo(abcd)" (buffer-string))))))
 
-(ert-deftest company-no-auto-commit-when-idle ()
+(ert-deftest company-no-insertion-on-trigger-when-idle ()
   (with-temp-buffer
     (insert "ab")
     (company-mode)
     (let (company-frontends
-          (company-auto-commit 'company-explicit-action-p)
-          (company-auto-commit-chars '(? ))
+          (company-insertion-on-trigger 'company-explicit-action-p)
+          (company-insertion-triggers '(? ))
           (company-minimum-prefix-length 2)
           (company-backends
            (list (lambda (command &optional _)
