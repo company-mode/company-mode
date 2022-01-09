@@ -576,7 +576,7 @@ this."
 
 (define-obsolete-variable-alias
   'company-auto-complete
-  'company-auto-commit
+  'company-insertion-on-trigger
   "0.9.14")
 
 (define-obsolete-variable-alias
@@ -600,7 +600,7 @@ triggers."
 
 (define-obsolete-variable-alias
   'company-auto-complete-chars
-  'company-auto-commit-chars
+  'company-insertion-triggers
   "0.9.14")
 
 (define-obsolete-variable-alias
