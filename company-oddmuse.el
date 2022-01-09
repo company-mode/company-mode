@@ -1,6 +1,6 @@
 ;;; company-oddmuse.el --- company-mode completion backend for oddmuse-mode
 
-;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 

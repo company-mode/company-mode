@@ -1,6 +1,6 @@
 ;;; frontends-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015, 2016  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2017, 2020-2021  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 

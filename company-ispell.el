@@ -1,6 +1,6 @@
 ;;; company-ispell.el --- company-mode completion backend using Ispell
 
-;; Copyright (C) 2009-2011, 2013-2016  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016, 2018, 2021  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 

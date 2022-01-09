@@ -1,6 +1,6 @@
 ;;; company-bbdb.el --- company-mode completion backend for BBDB in message-mode
 
-;; Copyright (C) 2013-2014, 2016  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2016, 2020  Free Software Foundation, Inc.
 
 ;; Author: Jan Tatarik <jan.tatarik@gmail.com>
 

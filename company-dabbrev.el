@@ -1,6 +1,6 @@
 ;;; company-dabbrev.el --- dabbrev-like company-mode completion backend  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009, 2011, 2014, 2015, 2016  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2018, 2021  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
