@@ -1,6 +1,6 @@
 ;;; company-template.el --- utility library for template expansion
 
-;; Copyright (C) 2009, 2010, 2014-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2010, 2013-2017, 2019  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 

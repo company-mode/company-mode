@@ -1,6 +1,6 @@
 ;;; company-etags.el --- company-mode completion backend for etags
 
-;; Copyright (C) 2009-2011, 2014  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2015, 2018-2019  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 

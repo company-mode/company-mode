@@ -1,6 +1,6 @@
 ;;; cmake-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2017  Free Software Foundation, Inc.
+;; Copyright (C) 2017, 2018  Free Software Foundation, Inc.
 
 ;; Author: Zuogong Yue
 

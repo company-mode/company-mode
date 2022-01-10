@@ -1,6 +1,6 @@
 ;;; company-semantic.el --- company-mode completion backend using Semantic
 
-;; Copyright (C) 2009-2011, 2013-2016  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2018  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
