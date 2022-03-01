@@ -108,6 +108,11 @@ In other words, it is a package for retrieving, manipulating, and
 displaying text completion candidates. It aims to assist developers,
 writers, and scientists during code and text writing.
 
+@menu
+* Terminology::
+* Structure::
+@end menu
+
 @node Terminology
 @section Terminology
 
@@ -189,6 +194,13 @@ file @w{(@pxref{Init File,,,emacs})}:
 @chapter Getting Started
 
 This chapter provides basic instructions for Company setup and usage.
+
+@menu
+* Installation::
+* Initial Setup::
+* Usage Basics::
+* Commands::
+@end menu
 
 @node Installation
 @section Installation
@@ -404,6 +416,11 @@ configuration: via customization interface (for more details,
 @w{(@pxref{Init File,,,emacs})}.  Naturally, Company can be configured
 by both of these approaches.
 
+@menu
+* Customization Interface::
+* Configuration File::
+@end menu
+
 @node Customization Interface
 @section Customization Interface
 
@@ -559,6 +576,15 @@ output into the three groups: @dfn{tooltip-}, @dfn{preview-}, and
 of this chapter.  The sections that follow are dedicated to the ways
 the displayed candidates can be searched, filtered, and
 quick-accessed.
+
+@menu
+* Tooltip Frontends::
+* Preview Frontends::
+* Echo Frontends::
+* Candidates Search::
+* Filter Candidates::
+* Quick Access a Candidate::
+@end menu
 
 @node Tooltip Frontends
 @section Tooltip Frontends
@@ -1128,6 +1154,13 @@ company-backends} for insightful details about backends.
 Nevertheless, the fundamental concepts are described in this user
 manual too.
 
+@menu
+* Backends Usage Basics::
+* Grouped Backends::
+* Package Backends::
+* Candidates Post-Processing::
+@end menu
+
 @node Backends Usage Basics
 @section Backends Usage Basics
 
@@ -1241,6 +1274,13 @@ Optionally, search for the matches with @w{@kbd{M-x isearch @key{RET}
 @end itemize
 
 @end itemize
+
+@menu
+* Code Completion::
+* Text Completion::
+* File Name Completion::
+* Template Expansion::
+@end menu
 
 @node Code Completion
 @subsection Code Completion
@@ -1574,6 +1614,13 @@ The backtrace of the error, which you can get by running the command:
 
 @node Index
 @unnumbered Index
+
+@menu
+* Key Index::
+* Variable Index::
+* Function Index::
+* Concept Index::
+@end menu
 
 @node Key Index
 @unnumberedsec Key Index
