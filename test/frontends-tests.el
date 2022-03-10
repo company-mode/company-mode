@@ -368,15 +368,6 @@
       (should (equal (get-text-property 4 'face res)
                      '(annotation company-tooltip-annotation company-tooltip))))))
 
-(ert-deftest company-column-with-composition ()
-  :tags '(interactive)
-  (with-temp-buffer
-    (save-window-excursion
-      (set-window-buffer nil (current-buffer))
-      (insert "lambda ()")
-      (compose-region 1 (1+ (length "lambda")) "\\")
-      (should (= (company--column) 4)))))
-
 (ert-deftest company-plainify ()
   (let ((tab-width 8))
     (should (equal-including-properties
