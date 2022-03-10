@@ -231,17 +231,20 @@
      "ucfirst" "umask" "undef" "unless" "unlink" "unpack" "unshift" "untie"
      "until" "use" "utime" "values" "vec" "wait" "waitpid"
      "wantarray" "warn" "while" "write" "x" "xor" "y")
-    (php-mode
+    (php-mode ;; https://www.php.net/manual/reserved.php
+     "Closure" "Generator" "Exception" "Error" "Throwable"
      "__CLASS__" "__DIR__" "__FILE__" "__FUNCTION__" "__LINE__" "__METHOD__"
-     "__NAMESPACE__" "_once" "abstract" "and" "array" "as" "break" "case"
-     "catch" "cfunction" "class" "clone" "const" "continue" "declare"
-     "default" "die" "do" "echo" "else" "elseif" "empty" "enddeclare"
-     "endfor" "endforeach" "endif" "endswitch" "endwhile" "eval" "exception"
-     "exit" "extends" "final" "for" "foreach" "function" "global"
-     "goto" "if" "implements" "include" "instanceof" "interface"
-     "isset" "list" "namespace" "new" "old_function" "or" "php_user_filter"
-     "print" "private" "protected" "public" "require" "require_once" "return"
-     "static" "switch" "this" "throw" "try" "unset" "use" "var" "while" "xor")
+     "__NAMESPACE__" "__TRAIT__"
+     "abstract" "and" "array" "as" "bool" "break" "callable" "case" "catch"
+     "class" "clone" "const" "continue" "declare" "default" "die" "do" "echo"
+     "else" "elseif" "empty" "enddeclare" "endfor" "endforeach" "endif"
+     "endswitch" "endwhile" "enum" "eval" "exit" "extends" "false" "float"
+     "final" "finally" "for" "foreach" "fn" "function" "global" "goto" "if"
+     "implements" "include" "include_once" "instanceof" "insteadof" "interface"
+     "isset" "iterable" "list" "match" "namespace" "new" "null" "object" "or"
+     "print" "private" "protected" "public" "readonly" "require" "require_once"
+     "return" "self" "static" "string" "switch" "this" "throw" "trait" "true"
+     "try" "unset" "use" "var" "void" "while" "xor" "yield" "yeild from")
     (python-mode
      ;; https://docs.python.org/3/reference/lexical_analysis.html#keywords
      "False" "None" "True" "and" "as" "assert" "break" "class" "continue" "def"
@@ -303,6 +306,7 @@
     (cperl-mode . perl-mode)
     (jde-mode . java-mode)
     (ess-julia-mode . julia-mode)
+    (phps-mode . php-mode)
     (enh-ruby-mode . ruby-mode))
   "Alist mapping major-modes to sorted keywords for `company-keywords'.")
 
