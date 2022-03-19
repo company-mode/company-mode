@@ -497,9 +497,10 @@
 
 (defvar ct-sorted nil)
 
+;; FIXME: When Emacs 29+ only: just replace with equal-including-properties.
 (defun ct-equal-including-properties (list1 list2)
   (or (and (not list1) (not list2))
-      (and (ert-equal-including-properties (car list1) (car list2))
+      (and (company--equal-including-properties (car list1) (car list2))
            (ct-equal-including-properties (cdr list1) (cdr list2)))))
 
 (ert-deftest company-strips-duplicates-returns-nil ()

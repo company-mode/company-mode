@@ -81,7 +81,7 @@
       ;; remove text properties that aren't relevant to our test
       (company--remove-but-these-properties render '(face))
       (should
-       (ert-equal-including-properties
+       (company--equal-including-properties
         render
         #("with-current-buffer"
           0 5 (face (company-tooltip-common company-tooltip))   ; "with"
@@ -111,7 +111,7 @@
       ;; remove text properties that aren't relevant to our test
       (company--remove-but-these-properties render '(face))
       (should
-       (ert-equal-including-properties
+       (company--equal-including-properties
         render
         #("with-current-buffer"
           0 1 (face (company-tooltip-common company-tooltip))   ; "w"
@@ -135,7 +135,7 @@
       ;; remove text properties that aren't relevant to our test
       (company--remove-but-these-properties render '(face))
       (should
-       (ert-equal-including-properties
+       (company--equal-including-properties
         render
         #("with-current-buffer"
           0 14 (face (company-tooltip-common company-tooltip)); "with-current-b"

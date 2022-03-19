@@ -274,7 +274,7 @@
          (company-format-margin-function (lambda (_candidate _selected)
                                            "X"))
          (company-backend (lambda (c &rest _) (pcase c (`kind 'class)))))
-    (should (ert-equal-including-properties
+    (should (company--equal-including-properties
              (cadr (company--create-lines 0 999))
              #("XArrayLi " 0 9
                (face (company-tooltip-selection company-tooltip)
@@ -308,18 +308,18 @@
   (let ((company-search-string "foo")
         (company-backend #'ignore)
         (company-prefix ""))
-    (should (ert-equal-including-properties
+    (should (company--equal-including-properties
              (company-fill-propertize "barfoo" nil 6 t nil nil)
              #("barfoo"
                0 3 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse))
                3 6 (face (company-tooltip-search-selection company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))
-    (should (ert-equal-including-properties
+    (should (company--equal-including-properties
              (company-fill-propertize "barfoo" nil 5 t "" " ")
              #("barfo "
                0 3 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse))
                3 5 (face (company-tooltip-search-selection company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse))
                5 6 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))
-    (should (ert-equal-including-properties
+    (should (company--equal-including-properties
              (company-fill-propertize "barfoo" nil 3 t " " " ")
              #(" bar "
                0 5 (face (company-tooltip-selection company-tooltip) mouse-face (company-tooltip-mouse)))))))
@@ -328,7 +328,7 @@
   (let ((company-search-string "foo")
         (company-backend (lambda (c &rest _) (pcase c (`deprecated t))))
         (company-prefix ""))
-    (should (ert-equal-including-properties
+    (should (company--equal-including-properties
              (company-fill-propertize "barfoo" nil 5 t "" " ")
              #("barfo "
                0 3 (face (company-tooltip-selection company-tooltip-deprecated company-tooltip) mouse-face (company-tooltip-mouse))
@@ -340,7 +340,7 @@
         (company-prefix "")
         (str1 (propertize "str1" 'face 'foo))
         (str2 (propertize "str2" 'face 'foo)))
-    (should (ert-equal-including-properties
+    (should (company--equal-including-properties
              (company-fill-propertize str1 str2 8 nil nil nil)
              #("str1str2"
                0 4 (face company-tooltip mouse-face (company-tooltip-mouse))

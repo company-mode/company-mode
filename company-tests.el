@@ -20,6 +20,7 @@
 ;; along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.
 
 (require 'company)
+(require 'ert)
 
 (defvar company-dir (file-name-directory (or load-file-name
                                              buffer-file-name)))
@@ -35,5 +36,10 @@
     (apply command args)
     (let ((this-command command))
       (run-hooks 'post-command-hook))))
+
+(defalias 'company--equal-including-properties
+  (if (version< "29" emacs-version)
+      'equal-including-properties
+    'ert-equal-including-properties))
 
 (provide 'company-tests)
