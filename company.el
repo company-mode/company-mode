@@ -2527,7 +2527,8 @@ and invoke the normal binding.
 
 With ARG, move by that many elements."
   (interactive "p")
-  (if (> company-candidates-length 1)
+  (if (or (not company-selection)
+          (> company-candidates-length 1))
       (company-select-next arg)
     (company-abort)
     (company--unread-this-command-keys)))
