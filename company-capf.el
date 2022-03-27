@@ -165,8 +165,16 @@ so we can't just use the preceding variable instead.")
     ))
 
 (defun company-capf--annotation (arg)
-  (let* ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
-                       :annotation-function))
+  (let* ((f (or (plist-get (nthcdr 4 company-capf--current-completion-data)
+                           :annotation-function)
+                ;; FIXME: Add a test.
+                (cdr (assq 'annotation-function
+                           (completion-metadata
+                            (buffer-substring (nth 1 company-capf--current-completion-data)
+                                              (nth 2 company-capf--current-completion-data))
+                            (nth 3 company-capf--current-completion-data)
+                            (plist-get (nthcdr 4 company-capf--current-completion-data)
+                                       :predicate))))))
          (annotation (when f (funcall f arg))))
     (if (and company-format-margin-function
              (equal annotation " <f>") ; elisp-completion-at-point, pre-icons
