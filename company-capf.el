@@ -67,8 +67,20 @@ so we can't just use the preceding variable instead.")
              (completion-at-point-functions (company--capf-workaround))
              (data (run-hook-wrapped 'completion-at-point-functions
                                      ;; Ignore misbehaving functions.
-                                     #'completion--capf-wrapper 'optimist)))
+                                     #'company--capf-wrapper 'optimist)))
     (when (and (consp (cdr data)) (integer-or-marker-p (nth 1 data))) data)))
+
+(defun company--capf-wrapper (fun which)
+  (let ((buffer-read-only t)
+        (inhibit-read-only nil)
+        (completion-in-region-function
+         (lambda (beg end coll pred)
+           (throw 'company--illegal-completion-in-region
+                  (list fun beg end coll :predicate pred)))))
+    (catch 'company--illegal-completion-in-region
+      (condition-case nil
+          (completion--capf-wrapper fun which)
+        (buffer-read-only nil)))))
 
 (declare-function python-shell-get-process "python")
 
