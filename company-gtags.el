@@ -48,7 +48,7 @@
   :package-version '(company . "0.8.1"))
 
 (defvar-local company-gtags--tags-available-p 'unknown)
-(defvar-local company-gtags--executable 'unknown)
+(defvar company-gtags--executable nil)
 
 (defcustom company-gtags-modes '(prog-mode jde-mode)
   "Modes that use `company-gtags'.
@@ -70,30 +70,28 @@ completion."
 
 (defun company-gtags--executable ()
   (cond
-   ((not (eq company-gtags--executable 'unknown)) ;; the value is already cached
+   ((or (not (file-remote-p default-directory))        ;; not remote
+        (local-variable-p 'company-gtags--executable)) ;; the value is already local
     company-gtags--executable)
-   ((and (version<= "27" emacs-version)           ;; can search remotely to set
-         (file-remote-p default-directory))
-
-    (with-connection-local-variables
-     (if (boundp 'company-gtags--executable-connection)
-         (setq-local company-gtags--executable     ;; use if defined as connection-local
-                     company-gtags--executable-connection)
-
-       ;; Else search and set as connection local for next uses.
-       (setq-local company-gtags--executable
-                   (with-no-warnings (executable-find "global" t)))
-       (let* ((host (file-remote-p default-directory 'host))
-              (symvars (intern (concat host "-vars")))) ;; profile name
-
-         (connection-local-set-profile-variables
-          symvars
-          `((company-gtags--executable-connection . ,company-gtags--executable)))
-
-         (connection-local-set-profiles `(:machine ,host) symvars))
-       company-gtags--executable)))
-   (t     ;; use default value (searched locally)
-    company-gtags-executable)))
+   ((when-let* (((version<= "27" emacs-version))       ;; search remote and set connection-local
+	        (criteria (connection-local-criteria-for-default-directory))
+	        (symvars (intern (format "company-gtags--%s-vars"
+                                         (file-remote-p default-directory))))
+	        (enable-connection-local-variables t))
+      (unless (alist-get symvars connection-local-profile-alist)
+        (with-connection-local-variables
+         (let ((gtags-executable (if (local-variable-p 'company-gtags-executable)
+			             company-gtags-executable
+			           (file-name-nondirectory company-gtags-executable))))
+	   (connection-local-set-profile-variables
+	    symvars
+	    `((company-gtags--executable . ,(executable-find gtags-executable t))))
+	   (connection-local-set-profiles criteria symvars))))
+      (hack-connection-local-variables-apply criteria)
+      t)
+    company-gtags--executable)
+   (t     ;; If here it means that it is an old emacs and the value es not local...
+    (make-local-variable company-gtags--executable))))
 
 (defun company-gtags--fetch-tags (prefix)
   (with-temp-buffer
