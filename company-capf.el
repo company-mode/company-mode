@@ -57,13 +57,25 @@ so we can't just use the preceding variable instead.")
               (list (current-buffer) (point) (buffer-chars-modified-tick) data))
         data))))
 
+(defun company--contains (elt lst)
+  (when-let ((cur (car lst)))
+    (cond
+     ((symbolp cur)
+      (or (eq elt cur)
+          (company--contains elt (cdr lst))))
+     ((listp cur)
+      (or (company--contains elt cur)
+          (company--contains elt (cdr lst)))))))
+
 (defun company--capf-data-real ()
   (cl-letf* (((default-value 'completion-at-point-functions)
-              ;; Ignore tags-completion-at-point-function because it subverts
-              ;; company-etags in the default value of company-backends, where
-              ;; the latter comes later.
-              (remove 'tags-completion-at-point-function
-                      (default-value 'completion-at-point-functions)))
+              (if (company--contains 'company-etags company-backends)
+                  ;; Ignore tags-completion-at-point-function because it subverts
+                  ;; company-etags in the default value of company-backends, where
+                  ;; the latter comes later.
+                  (remove 'tags-completion-at-point-function
+                          (default-value 'completion-at-point-functions))
+                (default-value 'completion-at-point-functions)))
              (completion-at-point-functions (company--capf-workaround))
              (data (run-hook-wrapped 'completion-at-point-functions
                                      ;; Ignore misbehaving functions.
