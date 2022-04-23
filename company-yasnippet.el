@@ -119,6 +119,7 @@ It has to accept one argument: the snippet's name.")
     (with-current-buffer (company-doc-buffer)
       (let ((buffer-file-name file-name))
         (yas-minor-mode 1)
+        (set (make-local-variable 'yas-prompt-functions) '(yas-no-prompt))
         (condition-case error
             (yas-expand-snippet (yas--template-content template))
           (error
