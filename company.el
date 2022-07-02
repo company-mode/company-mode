@@ -513,7 +513,7 @@ without duplicates."
                  (company-sort-by-backend-importance))
           (const :tag "Prefer case sensitive prefix"
                  (company-sort-prefer-same-case-prefix))
-          (repeat :tag "User defined" (function))))
+          (repeat :tag "User defined" function)))
 
 (defcustom company-completion-started-hook nil
   "Hook run when company starts completing.
@@ -571,7 +571,7 @@ this."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
-                        'company-explicit-action-p)
+                        company-explicit-action-p)
                  (const :tag "On" t)))
 
 (define-obsolete-variable-alias
@@ -594,7 +594,7 @@ triggers."
   :type '(choice (const :tag "Off" nil)
                  (function :tag "Predicate function")
                  (const :tag "On, if user interaction took place"
-                        'company-explicit-action-p)
+                        company-explicit-action-p)
                  (const :tag "On" t))
   :package-version '(company . "0.9.14"))
 
@@ -670,7 +670,7 @@ pre-defined list.  See `company-idle-delay'.
 Alternatively, any command with a non-nil `company-begin' property is
 treated as if it was on this list."
   :type '(choice (const :tag "Any command" t)
-                 (const :tag "Self insert command" '(self-insert-command))
+                 (const :tag "Self insert command" (self-insert-command))
                  (repeat :tag "Commands" function))
   :package-version '(company . "0.8.4"))
 
@@ -1689,14 +1689,14 @@ fields without issue.
 When BG is omitted and `company-text-icons-add-background' is non-nil, a BG
 color is generated using a gradient between the active tooltip color and
 the FG color."
-  :type 'list)
+  :type '(repeat sexp))
 
 (defcustom company-text-face-extra-attributes '(:weight bold)
   "Additional attributes to add to text/dot icons faces.
 If non-nil, an anonymous face is generated.
 
 Affects `company-text-icons-margin' and `company-dot-icons-margin'."
-  :type 'list)
+  :type '(plist :tag "Face property list"))
 
 (defcustom company-text-icons-format " %s "
   "Format string for printing the text icons."
