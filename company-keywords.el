@@ -193,6 +193,15 @@
      ;; https://www.lua.org/manual/5.3/manual.html
      "and" "break" "do" "else" "elseif" "end" "false" "for" "function" "goto" "if"
      "in" "local" "nil" "not" "or" "repeat" "return" "then" "true" "until" "while")
+    (nim-mode
+     ;; https://nim-lang.org/docs/manual.html#lexical-analysis-identifiers-amp-keywords
+     "addr" "and" "as" "asm" "bind" "block" "break" "case" "cast" "concept" "const" "continue"
+     "converter" "defer" "discard" "distinct" "div" "do" "elif" "else" "end" "enum" "except"
+     "export" "finally" "for" "from" "func" "if" "import" "in" "include" "interface" "is" "isnot"
+     "iterator" "let" "macro" "method" "mixin" "mod" "nil" "not" "notin" "object" "of" "or" "out"
+     "proc" "ptr" "raise" "ref" "return" "shl" "shr" "static" "template" "try" "tuple" "type"
+     "using" "var" "when" "while" "xor" "yield"
+     )
     (objc-mode
      "@catch" "@class" "@encode" "@end" "@finally" "@implementation"
      "@interface" "@private" "@protected" "@protocol" "@public"
