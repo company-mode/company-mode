@@ -61,8 +61,9 @@
      "xor" "xor_eq")
     (c-mode
      ;; from https://en.cppreference.com/w/c/keyword
-     "_Alignas" "_Alignof" "_Atomic" "_Bool" "_Complex" "_Generic" "_Imaginary"
-     "_Noreturn" "_Static_assert" "_Thread_local"
+     "_Alignas" "_Alignof" "_Atomic" "_Bool" "_Complex"
+     "_Decimal128" "_Decimal32" "_Decimal64" "_Generic" "_Imaginary"
+     "_Noreturn" "_Static_assert" "_Thread_local" "__asm__" "asm"
      "auto" "break" "case" "char" "const" "continue" "default" "do"
      "double" "else" "enum" "extern" "float" "for" "goto" "if" "inline"
      "int" "long" "register" "restrict" "return" "short" "signed" "sizeof"
