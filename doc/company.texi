@@ -353,7 +353,9 @@ Cancel @emph{company-mode} activity (@code{company-abort}).
 @cindex doc
 @findex company-show-doc-buffer
 Display a buffer with the documentation for the selected candidate
-(@w{@code{company-show-doc-buffer}}).
+(@w{@code{company-show-doc-buffer}}).  With a prefix argument it also
+toggles between temporary showing the documentation and keeping the
+documentation buffer up-to-date whenever the selection changes.
 
 @item C-w
 @kindex C-w

@@ -2,6 +2,10 @@
 
 ## Next
 
+* `company-show-doc-buffer` now can accept a prefix argument to toggle a new
+  variable `company-auto-update-doc`.  When this variable is non-nil, it keeps
+  the documentation buffer up-to-date whenever the selection changes
+  ([#1331](https://github.com/company-mode/company-mode/discussions/1331)).
 * `company-auto-commit` and `company-auto-commit-chars` have been renamed to
   `company-insertion-on-trigger` and `company-insertion-triggers` respectively
   ([#1270](https://github.com/company-mode/company-mode/pull/1270)).
