@@ -1341,8 +1341,9 @@ can retrieve meta-data for them."
                  (string-match-p "\\`company-" (symbol-name this-command)))))))
 
 (defvar company-auto-update-doc nil
-  "If non-nil, company updates the doc-buffer whenever the selection changes.
-Use `company-show-doc-buffer' to toggle this variable.")
+  "If non-nil, update the documentation buffer on each selection change.
+To toggle the value of this variable, call `company-show-doc-buffer' with a
+prefix argument.")
 
 (defun company-call-frontends (command)
   (when (and company-auto-update-doc
@@ -2849,8 +2850,9 @@ from the candidates list.")
 
 (defun company-show-doc-buffer (&optional toggle-auto-update)
   "Show the documentation buffer for the selection.
-Show it temporarily unless the variable `company-auto-update-doc' is
-non-nil.  The prefix argument TOGGLE-AUTO-UPDATE toggles this variable."
+With a prefix argument TOGGLE-AUTO-UPDATE, toggle the value of
+`company-auto-update-doc'.  When `company-auto-update-doc' is non-nil,
+automatically show the documentation buffer for each selection."
   (interactive "P")
   (when toggle-auto-update
     (setq company-auto-update-doc (not company-auto-update-doc)))

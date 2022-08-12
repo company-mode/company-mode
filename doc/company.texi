@@ -3,7 +3,7 @@
 @setfilename company.info
 @settitle Company User Manual
 @set VERSION 0.9.14snapshot
-@set UPDATED 8 January 2022
+@set UPDATED 12 August 2022
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -353,9 +353,10 @@ Cancel @emph{company-mode} activity (@code{company-abort}).
 @cindex doc
 @findex company-show-doc-buffer
 Display a buffer with the documentation for the selected candidate
-(@w{@code{company-show-doc-buffer}}).  With a prefix argument it also
-toggles between temporary showing the documentation and keeping the
-documentation buffer up-to-date whenever the selection changes.
+(@w{@code{company-show-doc-buffer}}).  With a prefix argument
+(@kbd{C-u C-h}, @kbd{C-u @key{f}}), this command toggles between
+temporary showing the documentation and keeping the documentation
+buffer up-to-date whenever the selection changes.
 
 @item C-w
 @kindex C-w
