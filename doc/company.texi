@@ -348,13 +348,13 @@ Insert the common part of all the candidates
 Cancel @emph{company-mode} activity (@code{company-abort}).
 
 @item C-h
-@itemx <f1>
+@itemx <F1>
 @kindex C-h
 @cindex doc
 @findex company-show-doc-buffer
 Display a buffer with the documentation for the selected candidate
 (@w{@code{company-show-doc-buffer}}).  With a prefix argument
-(@kbd{C-u C-h}, @kbd{C-u @key{f}}), this command toggles between
+(@kbd{C-u C-h}, @kbd{C-u @key{F1}}), this command toggles between
 temporary showing the documentation and keeping the documentation
 buffer up-to-date whenever the selection changes.
 
