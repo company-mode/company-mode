@@ -105,6 +105,11 @@
      "super" "switch" "synchronized" "template" "this" "throw" "true" "try"
      "typedef" "typeid" "typeof" "ubyte" "ucent" "uint" "ulong" "union"
      "unittest" "ushort" "version" "void" "volatile" "wchar" "while" "with")
+    (erlang-mode
+     ;; from https://www.erlang.org/docs/20/reference_manual/introduction.html#id63536
+     "after" "and" "andalso" "band" "begin" "bnot" "bor" "bsl" "bsr" "bxor"
+     "case" "catch" "cond" "div" "end" "fun" "if" "let" "not" "of" "or" "orelse"
+     "receive" "rem" "try" "when" "xor")
     (f90-mode .
      ;; from f90.el
      ;; ".AND." ".GE." ".GT." ".LT." ".LE." ".NE." ".OR." ".TRUE." ".FALSE."
