@@ -1075,7 +1075,7 @@ If EXPRESSION is non-nil, return the match string for the respective
 parenthesized expression in REGEXP.
 Matching is limited to the current line."
   (let ((inhibit-field-text-motion t))
-    (company-grab regexp expression (point-at-bol))))
+    (company-grab regexp expression (line-beginning-position))))
 
 (defun company-grab-symbol ()
   "If point is at the end of a symbol, return it.

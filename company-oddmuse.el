@@ -1,6 +1,6 @@
 ;;; company-oddmuse.el --- company-mode completion backend for oddmuse-mode
 
-;; Copyright (C) 2009-2011, 2013-2016  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016, 2022  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -48,7 +48,7 @@
     (interactive (company-begin-backend 'company-oddmuse))
     (prefix (let ((case-fold-search nil))
               (and (memq major-mode '(oddmuse-mode yaoddmuse-mode))
-                   (looking-back company-oddmuse-link-regexp (point-at-bol))
+                   (looking-back company-oddmuse-link-regexp (line-beginning-position))
                    (or (match-string 1)
                        (match-string 2)))))
     (candidates (all-completions arg (company-oddmuse-get-page-table)))))
