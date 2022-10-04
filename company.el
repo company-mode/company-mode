@@ -1795,7 +1795,7 @@ PROPERTY return nil."
   (if (and (display-graphic-p)
            (image-type-available-p 'svg))
       (cl-case (frame-parameter nil 'background-mode)
-        ('light (company-vscode-light-icons-margin candidate selected))
+        (light (company-vscode-light-icons-margin candidate selected))
         (t (company-vscode-dark-icons-margin candidate selected)))
     (company-text-icons-margin candidate selected)))
 
