@@ -2887,7 +2887,7 @@ automatically show the documentation buffer for each selection."
 
 (defvar-local company-callback nil)
 
-(defun company-remove-callback (&optional ignored)
+(defun company-remove-callback (&optional _ignored)
   (remove-hook 'company-completion-finished-hook company-callback t)
   (remove-hook 'company-completion-cancelled-hook 'company-remove-callback t)
   (remove-hook 'company-completion-finished-hook 'company-remove-callback t))
@@ -2921,7 +2921,7 @@ successfully completes the input.
 Example: \(company-begin-with \\='\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
   (let ((begin-marker (copy-marker (point) t)))
     (company-begin-backend
-     (lambda (command &optional arg &rest ignored)
+     (lambda (command &optional arg &rest _ignored)
        (pcase command
          (`prefix
           (when (equal (point) (marker-position begin-marker))

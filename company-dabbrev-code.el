@@ -76,7 +76,7 @@ also `company-dabbrev-code-time-limit'."
           "\\(\\sw\\|\\s_\\)*\\_>"))
 
 ;;;###autoload
-(defun company-dabbrev-code (command &optional arg &rest ignored)
+(defun company-dabbrev-code (command &optional arg &rest _ignored)
   "dabbrev-like `company-mode' backend for code.
 The backend looks for all symbols in the current buffer that aren't in
 comments or strings."
