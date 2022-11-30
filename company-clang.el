@@ -357,7 +357,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
          (string-to-number (match-string-no-properties 2)))
       0)))
 
-(defun company-clang (command &optional arg &rest ignored)
+(defun company-clang (command &optional arg &rest _ignored)
   "`company-mode' completion backend for Clang.
 Clang is a parser for C and ObjC.  Clang version 1.1 or newer is required.
 

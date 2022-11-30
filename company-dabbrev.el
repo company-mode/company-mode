@@ -179,7 +179,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     (all-completions prefix candidates)))
 
 ;;;###autoload
-(defun company-dabbrev (command &optional arg &rest ignored)
+(defun company-dabbrev (command &optional arg &rest _ignored)
   "dabbrev-like `company-mode' completion backend."
   (interactive (list 'interactive))
   (cl-case command
