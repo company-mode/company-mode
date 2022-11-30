@@ -193,7 +193,7 @@ first in the candidates list."
          (match-string 0 doc))))
 
 ;;;###autoload
-(defun company-elisp (command &optional arg &rest ignored)
+(defun company-elisp (command &optional arg &rest _ignored)
   "`company-mode' completion backend for Emacs Lisp."
   (interactive (list 'interactive))
   (cl-case command

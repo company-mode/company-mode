@@ -414,7 +414,7 @@ Returns \"\" if no property found, but feasible at this position."
   "A regular expression matching CSS tags.")
 
 ;;;###autoload
-(defun company-css (command &optional arg &rest ignored)
+(defun company-css (command &optional arg &rest _ignored)
   "`company-mode' completion backend for `css-mode'."
   (interactive (list 'interactive))
   (cl-case command
