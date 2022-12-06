@@ -268,6 +268,10 @@
      "print" "private" "protected" "public" "readonly" "require" "require_once"
      "return" "self" "static" "string" "switch" "this" "throw" "trait" "true"
      "try" "unset" "use" "var" "void" "while" "xor" "yield" "yield from")
+    (purescript-mode ;; purescript-font-lock.el
+     "ado" "case" "class" "data" "default" "deriving" "do" "else" "if" "import"
+     "in" "infix" "infixl" "infixr" "instance" "let" "module" "newtype" "of"
+     "then" "type" "where")
     (python-mode
      ;; https://docs.python.org/3/reference/lexical_analysis.html#keywords
      "False" "None" "True" "and" "as" "assert" "break" "class" "continue" "def"
