@@ -63,6 +63,7 @@
     (interactive (company-begin-backend 'company-tempo))
     (prefix (or (car (tempo-find-match-string tempo-match-finder)) ""))
     (candidates (all-completions arg (tempo-build-collection)))
+    (kind 'snippet)
     (meta (company-tempo-meta arg))
     (post-completion (when company-tempo-expand (company-tempo-insert arg)))
     (sorted t)))
