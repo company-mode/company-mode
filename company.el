@@ -1633,10 +1633,21 @@ end of the match."
                          :background (unless (eq bkg 'unspecified)
                                        bkg)))
              (spacer-px-width (- (* company-icon-margin dfw) icon-size)))
-        (concat
-         (propertize " " 'display spec)
-         (propertize (company-space-string (1- company-icon-margin))
-                     'display `(space . (:width (,spacer-px-width))))))
+        (cond
+         ((<= company-icon-margin 2)
+          (concat
+           (propertize " " 'display spec)
+           (propertize (company-space-string (1- company-icon-margin))
+                       'display `(space . (:width (,spacer-px-width))))))
+         (t
+          (let* ((spacer-left (/ spacer-px-width 2))
+                 (spacer-right (- spacer-px-width spacer-left)))
+            (concat
+             (propertize (company-space-string 1)
+                         'display `(space . (:width (,spacer-left))))
+             (propertize " " 'display spec)
+             (propertize (company-space-string (- company-icon-margin 2))
+                         'display `(space . (:width (,spacer-right)))))))))
     nil))
 
 (defun company-vscode-dark-icons-margin (candidate selected)
