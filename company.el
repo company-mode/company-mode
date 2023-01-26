@@ -1620,7 +1620,7 @@ end of the match."
                           (let ((base-size (cdr company-icon-size))
                                 (dfh (default-font-height)))
                             (min
-                             (if (> dfh (* 2 base-size))
+                             (if (>= dfh (* 2 base-size))
                                  (* 2 base-size)
                                base-size)
                              (* company-icon-margin dfw))))))
