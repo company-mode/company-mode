@@ -49,3 +49,16 @@
         (s (propertize "s" 'meta "struct (anonymous) s")))
     (should (null (company-clang 'annotation u)))
     (should (null (company-clang 'annotation s)))))
+
+(ert-deftest company-clang-pattern-to-match-empty ()
+  (should (equal (company-clang--pattern-to-match "else")
+                 "else")))
+
+(ert-deftest company-clang-pattern-to-match-with-paren ()
+  (should (equal (company-clang--pattern-to-match "else if (<#expression#>)")
+                 "else if ")))
+
+(ert-deftest company-clang-pattern-to-match-no-paren ()
+  (should (equal (company-clang--pattern-to-match
+                  "[#size_t#]sizeof(<#expression-or-type#>)")
+                 "sizeof")))

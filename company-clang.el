@@ -119,10 +119,9 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 ;; parsing ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: Handle Pattern (syntactic hints would be neat).
 ;; Do we ever see OVERLOAD (or OVERRIDE)?
 (defconst company-clang--completion-pattern
-  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:]*\\)\\(?:\\(?: (InBase)\\)? : \\(.*\\)$\\)?$")
+  "^COMPLETION: \\_<\\(%s[a-zA-Z0-9_:]*\\|Pattern\\)\\(?:\\(?: (InBase)\\)? : \\(.*\\)$\\)?$")
 
 (defconst company-clang--error-buffer-name "*clang-error*")
 
@@ -138,14 +137,14 @@ or automatically through a custom `company-clang-prefix-guesser'."
                          (regexp-quote prefix)))
         (case-fold-search nil)
         (results (make-hash-table :test 'equal :size (/ (point-max) 100)))
-        lines match)
+        lines)
     (while (re-search-forward pattern nil t)
-      (setq match (match-string-no-properties 1))
-      (unless (equal match "Pattern")
-        (save-match-data
+      (let ((match (match-string-no-properties 1))
+            (meta (match-string-no-properties 2)))
+        (when (equal match "Pattern")
+          (setq match (company-clang--pattern-to-match meta)))
           (when (string-match ":" match)
-            (setq match (substring match 0 (match-beginning 0)))))
-        (let ((meta (match-string-no-properties 2)))
+            (setq match (substring match 0 (match-beginning 0))))
           ;; Avoiding duplicates:
           ;; https://github.com/company-mode/company-mode/issues/841
           (cond
@@ -154,7 +153,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
             (puthash match meta results))
            ;; Or it's the first time we see this completion
            ((eq (gethash match results 'none) 'none)
-            (puthash match nil results))))))
+            (puthash match nil results)))))
     (maphash
      (lambda (match meta)
        (when meta
@@ -162,6 +161,15 @@ or automatically through a custom `company-clang-prefix-guesser'."
        (push match lines))
      results)
     lines))
+
+(defun company-clang--pattern-to-match (pat)
+  (let ((start 0)
+        (end nil))
+    (when (string-match "#]" pat)
+      (setq start (match-end 0)))
+    (when (string-match "[ \(]<#" pat start)
+      (setq end (match-beginning 0)))
+    (substring pat start end)))
 
 (defun company-clang--meta (candidate)
   (get-text-property 0 'meta candidate))
@@ -178,6 +186,8 @@ or automatically through a custom `company-clang-prefix-guesser'."
           (delete-region pt (point)))
         (buffer-string)))))
 
+;; TODO: Parse the original formatting here, rather than guess.
+;; Strip it every time in the `meta' handler instead.
 (defun company-clang--annotation-1 (candidate)
   (let ((meta (company-clang--meta candidate)))
     (cond
