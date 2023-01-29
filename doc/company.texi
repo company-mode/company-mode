@@ -31,6 +31,7 @@ any later version published by the Free Software Foundation.
 @title Company User Manual
 @subtitle for version @value{VERSION}
 @subtitle @value{UPDATED}
+@author YugaEgo (@email{yet@@ego.team})
 @page
 @vskip 0pt plus 1filll
 @insertcopying
