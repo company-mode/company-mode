@@ -3741,6 +3741,10 @@ Delay is determined by `company-tooltip-idle-delay'."
                          (company-strip-prefix completion)
                        completion))
 
+    (when (string-prefix-p "\n" completion)
+      (setq completion (concat (propertize " " 'face 'company-preview) "\n"
+                               (substring completion 1))))
+
     (and (equal pos (point))
          (not (equal completion ""))
          (add-text-properties 0 1 '(cursor 1) completion))
