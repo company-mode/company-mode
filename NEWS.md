@@ -2,6 +2,9 @@
 
 ## Next
 
+* When a snippet name is typed in full, completion does not abort now (only
+  affects completions which have `snippet` kind),
+  ([#205](https://github.com/company-mode/company-mode/issues/205)).
 * `company-show-doc-buffer` now can accept a prefix argument to toggle a new
   variable `company-auto-update-doc`.  When this variable is non-nil, it keeps
   the documentation buffer up-to-date whenever the selection changes
