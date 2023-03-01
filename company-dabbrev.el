@@ -35,10 +35,13 @@
 (defcustom company-dabbrev-other-buffers 'all
   "Determines whether `company-dabbrev' should search other buffers.
 If `all', search all other buffers, except the ignored ones.  If t, search
-buffers with the same major mode.  See also `company-dabbrev-time-limit'."
+buffers with the same major mode.  This can also be a function that take a
+parameter of the current buffer and returns a list of major modes to search.
+See also `company-dabbrev-time-limit'."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "Same major mode" t)
-                 (const :tag "All" all)))
+                 (const :tag "All" all)
+                 (function :tag "Function to return similar major-modes" group)))
 
 (defcustom company-dabbrev-ignore-buffers "\\`[ *]"
   "Regexp matching the names of buffers to ignore.
@@ -196,6 +199,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                            company-dabbrev-time-limit
                            (pcase company-dabbrev-other-buffers
                              (`t (list major-mode))
+                             ((pred functionp) (funcall company-dabbrev-other-buffers (current-buffer)))
                              (`all `all))))
 
 ;;;###autoload

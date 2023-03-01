@@ -48,13 +48,16 @@ complete only symbols, not text in comments or strings.  In other modes
 (defcustom company-dabbrev-code-other-buffers t
   "Determines whether `company-dabbrev-code' should search other buffers.
 If `all', search all other buffers, except the ignored ones.  If t, search
-buffers with the same major mode.  If `code', search all buffers with major
-modes in `company-dabbrev-code-modes', or derived from one of them.  See
-also `company-dabbrev-code-time-limit'."
+buffers with the same major mode.  If `code', search all
+buffers with major modes in `company-dabbrev-code-modes', or derived from one of
+them.  This can also be a function that take a parameter of the current
+buffer and returns a list of major modes to search.
+See also `company-dabbrev-code-time-limit'."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "Same major mode" t)
                  (const :tag "Code major modes" code)
-                 (const :tag "All" all)))
+                 (const :tag "All" all)
+                 (function :tag "Function to return similar major-modes" group)))
 
 (defcustom company-dabbrev-code-time-limit .1
   "Determines how long `company-dabbrev-code' should look for matches."
@@ -132,6 +135,7 @@ comments or strings."
          (pcase company-dabbrev-code-other-buffers
            (`t (list major-mode))
            (`code company-dabbrev-code-modes)
+           ((pred functionp) (funcall company-dabbrev-code-other-buffers (current-buffer)))
            (`all `all))
          (not company-dabbrev-code-everywhere)))
       :expire t

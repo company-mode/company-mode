@@ -2,6 +2,8 @@
 
 # Next
 
+* `company-dabbrev-other-buffers` and `company-dabbrev-code-other-buffers` can
+  now take a function as its value (#[1485](https://github.com/company-mode/company-mode/issues/1485))
 * Completion works in the middle of a symbol
   (#[1474](https://github.com/company-mode/company-mode/pull/1474)).
 * New user option `company-inhibit-inside-symbols`. Set it to `t` to switch
