@@ -832,6 +832,17 @@ asynchronous call into synchronous.")
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defvar company-select-next-or-abort-cmd
+  '(menu-item "company-select-next-or-abort"
+              company-select-next
+              :filter company--select-next-or-abort-filter))
+
+(defvar company-select-previous-or-abort-cmd
+  `(menu-item "company-select-previous-or-abort"
+              company-select-previous
+              :filter ,(lambda (cmd)
+                         (company--select-next-or-abort-filter cmd t))))
+
 (defvar company-mode-map (make-sparse-keymap)
   "Keymap used by `company-mode'.")
 
@@ -841,16 +852,22 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-g" 'company-abort)
     (define-key keymap (kbd "M-n") 'company--select-next-and-warn)
     (define-key keymap (kbd "M-p") 'company--select-previous-and-warn)
-    (define-key keymap (kbd "C-n") 'company-select-next-or-abort)
-    (define-key keymap (kbd "C-p") 'company-select-previous-or-abort)
-    (define-key keymap (kbd "<down>") 'company-select-next-or-abort)
-    (define-key keymap (kbd "<up>") 'company-select-previous-or-abort)
+    (define-key keymap (kbd "C-n") company-select-next-or-abort-cmd)
+    (define-key keymap (kbd "C-p") company-select-previous-or-abort-cmd)
+    (define-key keymap (kbd "<down>") company-select-next-or-abort-cmd)
+    (define-key keymap (kbd "<up>") company-select-previous-or-abort-cmd)
     (define-key keymap [remap scroll-up-command] 'company-next-page)
     (define-key keymap [remap scroll-down-command] 'company-previous-page)
     (define-key keymap [down-mouse-1] 'ignore)
     (define-key keymap [down-mouse-3] 'ignore)
-    (define-key keymap [mouse-1] 'company-complete-mouse)
-    (define-key keymap [mouse-3] 'company-select-mouse)
+    (define-key keymap [mouse-1]
+                '(menu-item "company-complete-mouse"
+                            company-complete-selection
+                            :filter company--mouse-select-filter))
+    (define-key keymap [mouse-3]
+                '(menu-item "company-select-mouse"
+                            ignore
+                            :filter company--mouse-select-filter))
     (define-key keymap [up-mouse-1] 'ignore)
     (define-key keymap [up-mouse-3] 'ignore)
     (define-key keymap [return] 'company-complete-selection)
@@ -863,7 +880,7 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (company-keymap--bind-quick-access keymap)
-     keymap)
+    keymap)
   "Keymap that is enabled during an active completion.")
 
 (defvar company--disabled-backends nil)
@@ -2181,7 +2198,12 @@ For more details see `company-insertion-on-trigger' and
   company-candidates)
 
 (defun company-pre-command ()
+  (defvar company-search-mode)
   (company--electric-restore-window-configuration)
+  (when company-search-mode
+    (unless (string-match-p "\\`company-\\(?:search\\|filter\\|-?select\\)-"
+                            this-command)
+      (company-search-mode 0)))
   (unless (company-keep this-command)
     (condition-case-unless-debug err
         (when company-candidates
@@ -2404,12 +2426,6 @@ each one wraps a part of the input string."
   (company-set-selection company--search-old-selection t)
   (setq company-selection-changed company--search-old-changed))
 
-(defun company-search-other-char ()
-  (interactive)
-  (company--search-assert-enabled)
-  (company-search-mode 0)
-  (company--unread-this-command-keys))
-
 (defun company-search-delete-char ()
   (interactive)
   (company--search-assert-enabled)
@@ -2433,10 +2449,6 @@ each one wraps a part of the input string."
           (while l
             (set-char-table-default table (car l) 'company-search-printing-char)
             (setq l (cdr l))))))
-    (define-key keymap [t] 'company-search-other-char)
-    (while (< i ?\s)
-      (define-key keymap (make-string 1 i) 'company-search-other-char)
-      (cl-incf i))
     (while (< i 256)
       (define-key keymap (vector i) 'company-search-printing-char)
       (cl-incf i))
@@ -2445,15 +2457,12 @@ each one wraps a part of the input string."
     (let ((meta-map (make-sparse-keymap)))
       (define-key keymap (char-to-string meta-prefix-char) meta-map)
       (define-key keymap [escape] meta-map))
-    (define-key keymap (vector meta-prefix-char t) 'company-search-other-char)
-    (define-key keymap (kbd "C-n") 'company-select-next-or-abort)
-    (define-key keymap (kbd "C-p") 'company-select-previous-or-abort)
+    (define-key keymap (kbd "C-n") company-select-next-or-abort-cmd)
+    (define-key keymap (kbd "C-p") company-select-previous-or-abort-cmd)
     (define-key keymap (kbd "M-n") 'company--select-next-and-warn)
     (define-key keymap (kbd "M-p") 'company--select-previous-and-warn)
-    (define-key keymap (kbd "<down>") 'company-select-next-or-abort)
-    (define-key keymap (kbd "<up>") 'company-select-previous-or-abort)
-    (define-key keymap "\e\e\e" 'company-search-other-char)
-    (define-key keymap [escape escape escape] 'company-search-other-char)
+    (define-key keymap (kbd "<down>") company-select-next-or-abort-cmd)
+    (define-key keymap (kbd "<up>") company-select-previous-or-abort-cmd)
     (define-key keymap (kbd "DEL") 'company-search-delete-char)
     (define-key keymap [backspace] 'company-search-delete-char)
     (define-key keymap "\C-g" 'company-search-abort)
@@ -2554,6 +2563,10 @@ With ARG, move by that many elements."
     (company-abort)
     (company--unread-this-command-keys)))
 
+(make-obsolete 'company-select-next-or-abort
+               "Use the variable `company-select-next-or-abort-cmd' instead."
+               nil)
+
 (defun company-select-previous-or-abort (&optional arg)
   "Select the previous candidate if more than one, else abort
 and invoke the normal binding.
@@ -2564,6 +2577,17 @@ With ARG, move by that many elements."
       (company-select-previous arg)
     (company-abort)
     (company--unread-this-command-keys)))
+
+(make-obsolete 'company-select-previous-or-abort
+               "Use the variable `company-select-previous-or-abort-cmd' instead."
+               nil)
+
+(defun company--select-next-or-abort-filter (cmd &optional previous)
+  (if (or (not (or previous company-selection))
+          (> company-candidates-length 1))
+      cmd
+    (company-abort)
+    nil))
 
 (defun company-select-first ()
   "Select the first completion candidate."
@@ -2603,6 +2627,13 @@ With ARG, move by that many elements."
 (defvar company-mouse-event nil
   "Holds the mouse event from `company-select-mouse'.
 For use in the `select-mouse' frontend action.  `let'-bound.")
+
+(defun company--mouse-select-filter (cmd)
+  (let ((company-mouse-event last-command-event))
+    (if (cl-some #'identity (company-call-frontends 'select-mouse))
+        cmd
+      (company-abort)
+      nil)))
 
 (defun company-select-mouse (event)
   "Select the candidate picked by the mouse."
