@@ -1,6 +1,6 @@
 ;;; company-clang.el --- company-mode completion backend for Clang  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -163,6 +163,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
     lines))
 
 (defun company-clang--pattern-to-match (pat)
+  (message "pat %s" pat)
   (let ((start 0)
         (end nil))
     (when (string-match "#]" pat)
