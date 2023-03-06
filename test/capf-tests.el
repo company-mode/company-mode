@@ -1,6 +1,6 @@
 ;;; capf-tests.el --- company tests for the company-capf backend  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018-2019, 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2018-2019, 2021-2023  Free Software Foundation, Inc.
 
 ;; Author: João Távora <joaotavora@gmail.com>
 ;; Keywords:
@@ -70,11 +70,11 @@
 (ert-deftest company-basic-capf-highlighting ()
   "Test basic `company-capf' support, with basic prefix completion."
   (company-capf-with-buffer
-    "(with|)"
+    "(with-lo|)"
     (company-mode)
     (company-complete)
     (should company-candidates)
-    (let* ((cand (car (member "with-current-buffer" company-candidates)))
+    (let* ((cand (car (member "with-local-quit" company-candidates)))
            (render
             (and cand
                  (company-fill-propertize cand nil (length cand) nil nil nil))))
@@ -83,9 +83,9 @@
       (should
        (company--equal-including-properties
         render
-        #("with-current-buffer"
-          0 5 (face (company-tooltip-common company-tooltip))   ; "with"
-          5 19 (face company-tooltip)))))))
+        #("with-local-quit"
+          0 10 (face (company-tooltip-common company-tooltip))   ; "with"
+          10 15 (face company-tooltip)))))))
 
 
 ;; Re. "perfect" highlighting of the non-prefix in company-capf matches, it is
