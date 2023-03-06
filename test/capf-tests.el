@@ -70,11 +70,11 @@
 (ert-deftest company-basic-capf-highlighting ()
   "Test basic `company-capf' support, with basic prefix completion."
   (company-capf-with-buffer
-    "(with-lo|)"
+    "(with-ti|)"
     (company-mode)
     (company-complete)
     (should company-candidates)
-    (let* ((cand (car (member "with-local-quit" company-candidates)))
+    (let* ((cand (car (member "with-timeout-suspend" company-candidates)))
            (render
             (and cand
                  (company-fill-propertize cand nil (length cand) nil nil nil))))
@@ -83,9 +83,9 @@
       (should
        (company--equal-including-properties
         render
-        #("with-local-quit"
-          0 10 (face (company-tooltip-common company-tooltip))   ; "with"
-          10 15 (face company-tooltip)))))))
+        #("with-timeout-suspend"
+          0 12 (face (company-tooltip-common company-tooltip))   ; "with"
+          12 20 (face company-tooltip)))))))
 
 
 ;; Re. "perfect" highlighting of the non-prefix in company-capf matches, it is
