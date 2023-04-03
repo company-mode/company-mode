@@ -2,6 +2,9 @@
 
 ## Next
 
+* `company-tooltip-align-annotations` can be set to a number, and be taken to
+  mean the minimum padding between the text and annotation
+  ([#1376](https://github.com/company-mode/company-mode/discussions/1376)).
 * When a snippet name is typed in full, completion does not abort now (only
   affects completions which have `snippet` kind),
   ([#205](https://github.com/company-mode/company-mode/issues/205)).

@@ -300,8 +300,12 @@ This doesn't include the margins and the scroll bar."
                  (const :tag "Two lines" lines)))
 
 (defcustom company-tooltip-align-annotations nil
-  "When non-nil, align annotations to the right tooltip border."
-  :type 'boolean
+  "When non-nil, align annotations to the right tooltip border.
+
+When the value is a number, maintain at least this many spaces between the
+completion text and its annotation."
+  :type '(choice (const :tag "Align to the right" t)
+                 (number :tag "Align to the right with minimum spacing"))
   :package-version '(company . "0.7.1"))
 
 (defcustom company-tooltip-flip-when-above nil
@@ -3087,11 +3091,11 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
          (ann-ralign company-tooltip-align-annotations)
          (ann-truncate (< width
                           (+ (length value) (length annotation)
-                             (if ann-ralign 1 0))))
+                             (or ann-ralign 0))))
          (ann-start (+ margin
                        (if ann-ralign
                            (if ann-truncate
-                               (1+ (length value))
+                               (+ (length value) ann-ralign)
                              (- width (length annotation)))
                          (length value))))
          (ann-end (min (+ ann-start (length annotation)) (+ margin width)))
@@ -3099,7 +3103,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                        (if (or ann-truncate (not ann-ralign))
                            (company-safe-substring
                             (concat value
-                                    (when (and annotation ann-ralign) " ")
+                                    (when (and annotation ann-ralign)
+                                      (company-space-string ann-ralign))
                                     annotation)
                             0 width)
                          (concat
@@ -3327,6 +3332,10 @@ but adjust the expected values appropriately."
 (defun company--create-lines (selection limit)
   (let ((len company-candidates-length)
         (window-width (company--window-width))
+        (company-tooltip-align-annotations
+         (if (eq company-tooltip-align-annotations t)
+             1
+           company-tooltip-align-annotations))
         left-margins
         left-margin-size
         lines
@@ -3400,7 +3409,8 @@ but adjust the expected values appropriately."
         (push (list value annotation left) items)
         (setq width (max (+ (length value)
                             (if (and annotation company-tooltip-align-annotations)
-                                (1+ (length annotation))
+                                (+ (length annotation)
+                                   company-tooltip-align-annotations)
                               (length annotation)))
                          width))))
 
