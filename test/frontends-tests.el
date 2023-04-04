@@ -111,6 +111,27 @@
           (should (string= (overlay-get ov 'company-display)
                            " 123(4) \n 45     \n")))))))
 
+(ert-deftest company-pseudo-tooltip-show-with-annotations-padding-2 ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (save-window-excursion
+      (set-window-buffer nil (current-buffer))
+      (insert " ")
+      (save-excursion (insert "\n"))
+      (let ((company-candidates-length 3)
+            (company-backend (lambda (action &optional arg &rest _ignore)
+                               (when (eq action 'annotation)
+                                 (cdr (assoc arg '(("123" . "(4)")
+                                                   ("67" . "(891011)")))))))
+            (company-candidates '("123" "45" "67"))
+            (company-tooltip-annotation-padding 2))
+        (company-pseudo-tooltip-show-at-point (point) 0)
+        (let ((ov company-pseudo-tooltip-overlay))
+          ;; With margins.
+          (should (eq (overlay-get ov 'company-width) 14))
+          (should (string= (overlay-get ov 'company-display)
+                           " 123  (4)     \n 45           \n 67  (891011) \n")))))))
+
 (ert-deftest company-pseudo-tooltip-show-with-annotations-right-aligned ()
   :tags '(interactive)
   (with-temp-buffer
@@ -132,7 +153,7 @@
           (should (string= (overlay-get ov 'company-display)
                            " 123     (4) \n 45          \n 67 (891011) \n")))))))
 
-(ert-deftest company-pseudo-tooltip-show-with-annotations-padding-2 ()
+(ert-deftest company-pseudo-tooltip-show-with-annotations-right-padding-2 ()
   :tags '(interactive)
   (with-temp-buffer
     (save-window-excursion
@@ -145,7 +166,8 @@
                                  (cdr (assoc arg '(("123" . "(4)")
                                                    ("67" . "(891011)")))))))
             (company-candidates '("123" "45" "67"))
-            (company-tooltip-align-annotations 2))
+            (company-tooltip-align-annotations t)
+            (company-tooltip-annotation-padding 2))
         (company-pseudo-tooltip-show-at-point (point) 0)
         (let ((ov company-pseudo-tooltip-overlay))
           ;; With margins.
