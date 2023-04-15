@@ -2,6 +2,9 @@
 
 ## Next
 
+* `company-echo-show` (and related featuers, most importantly,
+  `company-echo-metadata-frontend`) now should stop interfering with the echo
+  area and ElDoc when the current backend returns no `meta`.
 * New user option `company-tooltip-annotation-padding`
   ([#1376](https://github.com/company-mode/company-mode/discussions/1376)).
 * When a snippet name is typed in full, completion does not abort now (only

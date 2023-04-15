@@ -3862,13 +3862,18 @@ Delay is determined by `company-tooltip-idle-delay'."
   :package-version '(company . "0.9.3"))
 
 (defun company-echo-show (&optional getter)
-  (when getter
-    (setq company-echo-last-msg (funcall getter)))
-  (let ((message-log-max nil)
+  (let ((last-msg company-echo-last-msg)
+        (message-log-max nil)
         (message-truncate-lines company-echo-truncate-lines))
-    (if company-echo-last-msg
+    (when getter
+      (setq company-echo-last-msg (funcall getter)))
+    ;; Avoid modifying the echo area if we don't have anything to say, and we
+    ;; didn't put the previous message there (thus there's nothing to clear),
+    ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=62816#20
+    (if (not (member company-echo-last-msg '(nil "")))
         (message "%s" company-echo-last-msg)
-      (message ""))))
+      (unless (member last-msg '(nil ""))
+        (message "")))))
 
 (defun company-echo-show-soon (&optional getter delay)
   (company-echo-cancel)
