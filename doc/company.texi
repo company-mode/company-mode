@@ -3,7 +3,7 @@
 @setfilename company.info
 @settitle Company User Manual
 @set VERSION 0.9.14snapshot
-@set UPDATED 12 August 2022
+@set UPDATED 16 April 2023
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -13,7 +13,7 @@
 This user manual is for Company version @value{VERSION}
 @w{(@value{UPDATED})}.
 
-Copyright @copyright{} 2021-2022  Free Software Foundation, Inc.
+Copyright @copyright{} 2021-2023  Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -184,8 +184,8 @@ Also, Company is bundled with an alternative workflow configuration
 @dfn{company-tng} --- defining @code{company-tng-frontend},
 @code{company-tng-mode}, and @w{@code{company-tng-map}} --- that
 allows performing completion with just @key{TAB}.  To enable this
-configuration, add the following line to the Emacs initialization
-file @w{(@pxref{Init File,,,emacs})}:
+configuration, add the following line to the Emacs initialization file
+(@pxref{Init File,,,emacs}):
 
 @lisp
 (add-hook 'after-init-hook 'company-tng-mode)
@@ -242,7 +242,7 @@ specifies otherwise) configurations.
 @findex global-company-mode
 To have Company always enabled for the following sessions, add the
 line @w{@code{(global-company-mode)}} to the Emacs configuration file
-@w{(@pxref{Init File,,,emacs})}.
+(@pxref{Init File,,,emacs}).
 
 @node Usage Basics
 @section Usage Basics
@@ -417,8 +417,8 @@ a command can be unbound from a key.  For instance:
 Emacs provides two equally acceptable ways for user preferences
 configuration: via customization interface (for more details,
 @pxref{Easy Customization,,,emacs}) and a configuration file
-@w{(@pxref{Init File,,,emacs})}.  Naturally, Company can be configured
-by both of these approaches.
+(@pxref{Init File,,,emacs}).  Naturally, Company can be configured by
+both of these approaches.
 
 @menu
 * Customization Interface::
@@ -671,6 +671,18 @@ annotations to the right side of the tooltip.
 @end lisp
 
 @img{tooltip-annotations}
+
+@end defopt
+
+@defopt company-tooltip-annotation-padding
+Adds left padding to the candidates' annotations.  It is disabled by
+default.  If @code{company-tooltip-align-annotations} is enabled,
+@code{company-tooltip-annotation-padding} defines the minimum spacing
+between a candidate and annotation, with the default value of 1.
+
+@lisp
+(setq company-tooltip-annotation-padding 1)
+@end lisp
 
 @end defopt
 
@@ -1478,7 +1490,7 @@ Setting @w{@code{company-files-chop-trailing-slash}} to @code{nil}
 makes directory names to be inserted as is, with a trailing slash.  In
 this case, the completion process can be continued, for example,
 either by explicitly calling @emph{company-files} backend
-@w{(@pxref{Backends Usage Basics})} or by starting typing a name of a
+(@pxref{Backends Usage Basics}) or by starting typing a name of a
 file/directory known to be located under the inserted directory.
 @end defopt
 
