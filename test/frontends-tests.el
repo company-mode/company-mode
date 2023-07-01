@@ -59,6 +59,22 @@
         (should (string= (overlay-get ov 'company-display)
                          "  123 \nc 45  c\nddd\n")))))))
 
+(ert-deftest company-pseudo-tooltip-show-at-point-RTL ()
+  :tags '(interactive)
+  (with-temp-buffer
+    (save-window-excursion
+    (set-window-buffer nil (current-buffer))
+    (setq bidi-display-reordering t)
+    (setq bidi-paragraph-direction 'right-to-left)
+    (insert "انا مثال للكتابة بالعربية")
+    (search-backward "مثال")
+    (let ((company-candidates-length 2)
+          (company-candidates '("123" "45"))
+          (company-backend 'ignore))
+      (company-pseudo-tooltip-show-at-point (point) 0)
+      (let ((ov company-pseudo-tooltip-overlay))
+        (should (eq (overlay-get ov 'company-column) 5)))))))
+
 (ert-deftest company-pseudo-tooltip-edit-updates-width ()
   :tags '(interactive)
   (with-temp-buffer
