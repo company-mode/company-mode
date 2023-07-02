@@ -486,7 +486,7 @@
              "-*-foobar zz"))))
 
 (ert-deftest company-modify-line-with-invisible-prop ()
-  (let ((str "-*-foobar")
+  (let ((str (copy-sequence "-*-foobar"))
         (buffer-invisibility-spec '((outline . t) t)))
     (put-text-property 1 2 'invisible 'foo str)
     (should (equal
