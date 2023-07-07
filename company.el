@@ -2785,6 +2785,12 @@ from the candidates list.")
       (aref company-space-strings len)
     (make-string len ?\ )))
 
+(defun company--string-width (str)
+  (if (display-graphic-p)
+      (ceiling (/ (string-pixel-width str)
+                  (float (default-font-width))))
+    (string-width str)))
+
 (defun company-safe-substring (str from &optional to)
   (let ((bis buffer-invisibility-spec))
     (if (> from (string-width str))
@@ -2802,6 +2808,15 @@ from the candidates list.")
                           (when (> padding 0)
                             (company-space-string padding)))))
             (buffer-substring beg (point-max))))))))
+
+(defun company-safe-substring-2 (str from &optional to)
+  (let ((ll (length str)))
+    (if (> from ll)
+        ""
+      (if to
+          (concat (substring str from (min to ll))
+                  (company-space-string (max 0 (- to ll))))
+        (substring str from)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -3112,14 +3127,14 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
          (ann-end (min (+ ann-start (length annotation)) (+ margin width)))
          (line (concat left
                        (if (or ann-truncate (not ann-ralign))
-                           (company-safe-substring
+                           (company-safe-substring-2
                             (concat value
                                     (when annotation
                                       (company-space-string ann-padding))
                                     annotation)
                             0 width)
                          (concat
-                          (company-safe-substring value 0
+                          (company-safe-substring-2 value 0
                                                   (- width (length annotation)))
                           annotation))
                        right)))
@@ -3195,7 +3210,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company--clean-string (str)
   (replace-regexp-in-string
-   "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]"
+   "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]+"
    (lambda (match)
      (cond
       ((match-beginning 1)
@@ -3208,9 +3223,17 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       ((match-beginning 2)
        ;; Zero-width non-breakable space.
        "")
-      ((> (string-width match) 1)
+      ((> (company--string-width match) 1)
        (concat
-        (make-string (1- (string-width match)) ?\ufeff)
+        (propertize
+         (make-string (- (company--string-width match)
+                         (length match))
+                      ?\ufeff)
+         'display
+         ;; !! Experimental stuff.
+         `(space . (:width (,(- (* (default-font-width)
+                                   (company--string-width match))
+                                (string-pixel-width match))))))
         match))
       (t match)))
    str))
@@ -3220,7 +3243,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 (defun company-buffer-lines (beg end)
   (goto-char beg)
   (let (lines lines-moved)
-    (while (and (not (eobp)) ; http://debbugs.gnu.org/19553
+    (while (and (not (eobp))            ; http://debbugs.gnu.org/19553
                 (> (setq lines-moved (vertical-motion 1)) 0)
                 (<= (point) end))
       (let ((bound (min end (point))))
@@ -3454,7 +3477,7 @@ but adjust the expected values appropriately."
                                             left right)))
                   (qa-hint (company-tooltip--format-quick-access-hint
                             row selected)))
-              (cl-decf width (string-width qa-hint))
+              (cl-decf width (company--string-width qa-hint))
               (setf (gv-deref quick-access)
                     (concat qa-hint (gv-deref quick-access))))
             (cl-incf row))
@@ -3566,7 +3589,7 @@ Returns a negative number if the tooltip should be displayed above point."
           (overlay-put ov 'company-display
                        (apply 'company--replacement-string
                               lines column-offset args))
-          (overlay-put ov 'company-width (string-width (car lines))))
+          (overlay-put ov 'company-width (company--string-width (car lines))))
 
         (overlay-put ov 'company-column column)
         (overlay-put ov 'company-height height))))
@@ -3583,7 +3606,7 @@ Returns a negative number if the tooltip should be displayed above point."
          (lines (cdr lines-and-offset))
          (column-offset (car lines-and-offset)))
     (overlay-put company-pseudo-tooltip-overlay 'company-width
-                 (string-width (car lines)))
+                 (company--string-width (car lines)))
     (overlay-put company-pseudo-tooltip-overlay 'company-display
                  (apply 'company--replacement-string
                         lines column-offset
@@ -3907,13 +3930,13 @@ Delay is determined by `company-tooltip-idle-delay'."
                     'company-echo)
               len (+ len 1 (length comp)))
         (let ((beg 0)
-              (end (string-width (or company-common ""))))
+              (end (company--string-width (or company-common ""))))
           (when (< numbered qa-keys-len)
             (let ((qa-hint
                    (format "%s: " (funcall
                                    company-quick-access-hint-function
                                    numbered))))
-              (setq beg (string-width qa-hint)
+              (setq beg (company--string-width qa-hint)
                     end (+ beg end))
               (cl-incf len beg)
               (setq comp (propertize (concat qa-hint comp) 'face 'company-echo)))
@@ -3944,7 +3967,7 @@ Delay is determined by `company-tooltip-idle-delay'."
                                  (funcall company-quick-access-hint-function
                                           numbered))))
             (setq comp (concat comp qa-hint))
-            (cl-incf len (string-width qa-hint)))
+            (cl-incf len (company--string-width qa-hint)))
           (cl-incf numbered))
         (if (>= len limit)
             (setq candidates nil)
