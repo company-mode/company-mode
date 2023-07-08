@@ -2798,11 +2798,11 @@ from the candidates list.")
       (with-temp-buffer
         (setq buffer-invisibility-spec bis)
         (insert str)
-        (move-to-column from)
+        (vertical-motion (cons from 0))
         (let ((beg (point)))
           (if to
               (progn
-                (move-to-column to)
+                (vertical-motion (cons to 0))
                 (concat (buffer-substring beg (point))
                         (let ((padding (- to (current-column))))
                           (when (> padding 0)
