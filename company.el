@@ -3223,18 +3223,17 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       ((match-beginning 2)
        ;; Zero-width non-breakable space.
        "")
-      ((> (company--string-width match) 1)
-       (concat
-        (propertize
-         (make-string (- (company--string-width match)
-                         (length match))
-                      ?\ufeff)
-         'display
-         ;; !! Experimental stuff.
-         `(space . (:width (,(- (* (default-font-width)
-                                   (company--string-width match))
-                                (string-pixel-width match))))))
-        match))
+      ((let ((msw (company--string-width match)))
+         (when (> msw 1)
+           (concat
+            (propertize
+             (make-string (- msw (length match)) ?\ufeff)
+             'display
+             ;; !! Experimental stuff.
+             `(space . (:width (,(- (* (default-font-width)
+                                       msw)
+                                    (string-pixel-width match))))))
+            match))))
       (t match)))
    str))
 
