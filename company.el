@@ -2791,25 +2791,45 @@ from the candidates list.")
                   (float (default-font-width))))
     (string-width str)))
 
-(defun company-safe-substring (str from &optional to)
-  (let ((bis buffer-invisibility-spec))
-    (if (> from (string-width str))
-        ""
-      (with-temp-buffer
-        (setq buffer-invisibility-spec bis)
-        (insert str)
-        (vertical-motion (cons from 0))
-        (let ((beg (point)))
-          (if to
-              (progn
-                (vertical-motion (cons to 0))
-                (concat (buffer-substring beg (point))
-                        (let ((padding (- to (current-column))))
-                          (when (> padding 0)
-                            (company-space-string padding)))))
-            (buffer-substring beg (point-max))))))))
+;; TODO: Add a bunch of tests!
+(defun company-safe-pixel-substring (str from &optional to)
+  (let ((from-chars (ceiling (/ from (frame-char-width))))
+        (to-chars (and to (ceiling (/ to (frame-char-width)))))
+        (lstr (length str))
+        spw-from spw-to
+        front back)
+    (while (and (< from-chars lstr)
+                (>
+                 (setq spw-from
+                       (string-pixel-width (substring str 0 from-chars)))
+                 from))
+      (cl-decf from-chars))
+    (if (>= from-chars lstr)
+        (if to
+            (propertize " " 'display `(space . (:width (,(- to from)))))
+          "")
+      (while (and to
+                  (< to-chars lstr)
+                  (>
+                   (setq spw-to
+                         (string-pixel-width (substring str 0 to-chars)))
+                   to))
+        (cl-decf to-chars))
+      (when (< spw-from from)
+        (cl-incf from-chars)
+        (setq front (propertize " " 'display
+                                `(space . (:width (,(- (string-pixel-width
+                                                        (substring str 0 from-chars))
+                                                       from)))))))
+      (unless spw-to (setq to-chars lstr))
+      (when (and to (or (not spw-to) (< spw-to to)))
+        (setq back (propertize " " 'display
+                               `(space . (:width (,(- to
+                                                      (string-pixel-width
+                                                       (substring str 0 to-chars)))))))))
+      (concat front (substring str from-chars to-chars) back))))
 
-(defun company-safe-substring-2 (str from &optional to)
+(defun company-safe-substring (str from &optional to)
   (let ((ll (length str)))
     (if (> from ll)
         ""
@@ -3127,14 +3147,14 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
          (ann-end (min (+ ann-start (length annotation)) (+ margin width)))
          (line (concat left
                        (if (or ann-truncate (not ann-ralign))
-                           (company-safe-substring-2
+                           (company-safe-substring
                             (concat value
                                     (when annotation
                                       (company-space-string ann-padding))
                                     annotation)
                             0 width)
                          (concat
-                          (company-safe-substring-2 value 0
+                          (company-safe-substring value 0
                                                   (- width (length annotation)))
                           annotation))
                        right)))
@@ -3264,9 +3284,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (nreverse lines)))
 
 (defun company-modify-line (old new offset)
-  (concat (company-safe-substring old 0 offset)
-          new
-          (company-safe-substring old (+ offset (length new)))))
+  (if (not new)
+      ;; Avoid modifying OLD, e.g. to avoid "blinking" with half-spaces for
+      ;; double-width (or usually fractional) characters.
+      old
+    (concat (company-safe-pixel-substring old 0 offset)
+            new
+            (company-safe-pixel-substring old (+ offset (string-pixel-width new))))))
 
 (defun company--show-numbers (numbered)
   (format " %s" (if (<= numbered 10)
@@ -3338,7 +3362,7 @@ but adjust the expected values appropriately."
         (push (pop old) new)))
     ;; length into old lines.
     (while old
-      (push (company-modify-line (pop old) (pop lines) column)
+      (push (company-modify-line (pop old) (pop lines) (* column (frame-char-width)))
             new))
     ;; Append whole new lines.
     (while lines
