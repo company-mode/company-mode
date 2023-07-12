@@ -2785,9 +2785,33 @@ from the candidates list.")
       (aref company-space-strings len)
     (make-string len ?\ )))
 
+(defalias 'company--string-pixel-width
+  (if (fboundp 'string-pixel-width)
+      ;; Emacs 29.1+
+      'string-pixel-width
+    (lambda (string)
+      (if (zerop (length string))
+          0
+        ;; Keeping a work buffer around is more efficient than creating a
+        ;; new temporary buffer.
+        (with-current-buffer (get-buffer-create " *string-pixel-width*")
+          ;; `display-line-numbers-mode' is enabled in internal buffers
+          ;; that breaks width calculation, so need to disable (bug#59311)
+          (when (bound-and-true-p display-line-numbers-mode)
+            (display-line-numbers-mode -1))
+          (delete-region (point-min) (point-max))
+          (insert string)
+          (let ((wb (window-buffer)))
+            (unwind-protect
+                (progn
+                  (set-window-buffer nil (current-buffer))
+                  (car
+                   (window-text-pixel-size nil nil nil 55555)))
+              (set-window-buffer nil wb))))))))
+
 (defun company--string-width (str)
   (if (display-graphic-p)
-      (ceiling (/ (string-pixel-width str)
+      (ceiling (/ (company--string-pixel-width str)
                   (float (default-font-width))))
     (string-width str)))
 
@@ -2801,7 +2825,7 @@ from the candidates list.")
     (while (and (< from-chars lstr)
                 (>
                  (setq spw-from
-                       (string-pixel-width (substring str 0 from-chars)))
+                       (company--string-pixel-width (substring str 0 from-chars)))
                  from))
       (cl-decf from-chars))
     (if (>= from-chars lstr)
@@ -2812,20 +2836,20 @@ from the candidates list.")
                   (< to-chars lstr)
                   (>
                    (setq spw-to
-                         (string-pixel-width (substring str 0 to-chars)))
+                         (company--string-pixel-width (substring str 0 to-chars)))
                    to))
         (cl-decf to-chars))
       (when (< spw-from from)
         (cl-incf from-chars)
         (setq front (propertize " " 'display
-                                `(space . (:width (,(- (string-pixel-width
+                                `(space . (:width (,(- (company--string-pixel-width
                                                         (substring str 0 from-chars))
                                                        from)))))))
       (unless spw-to (setq to-chars lstr))
       (when (and to (or (not spw-to) (< spw-to to)))
         (setq back (propertize " " 'display
                                `(space . (:width (,(- to
-                                                      (string-pixel-width
+                                                      (company--string-pixel-width
                                                        (substring str 0 to-chars)))))))))
       (concat front (substring str from-chars to-chars) back))))
 
@@ -3252,7 +3276,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
              ;; !! Experimental stuff.
              `(space . (:width (,(- (* (default-font-width)
                                        msw)
-                                    (string-pixel-width match))))))
+                                    (company--string-pixel-width match))))))
             match))))
       (t match)))
    str))
@@ -3290,7 +3314,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       old
     (concat (company-safe-pixel-substring old 0 offset)
             new
-            (company-safe-pixel-substring old (+ offset (string-pixel-width new))))))
+            (company-safe-pixel-substring old (+ offset (company--string-pixel-width new))))))
 
 (defun company--show-numbers (numbered)
   (format " %s" (if (<= numbered 10)
