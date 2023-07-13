@@ -2816,6 +2816,9 @@ from the candidates list.")
     (string-width str)))
 
 ;; TODO: Add a bunch of tests!
+;;
+;; FIXME: Could work better with text-scale-mode.  But that requires copying
+;; face-remapping-alist into " *string-pixel-width*" and using default-font-width.
 (defun company-safe-pixel-substring (str from &optional to)
   (let ((from-chars (ceiling (/ from (frame-char-width))))
         (to-chars (and to (ceiling (/ to (frame-char-width)))))
