@@ -2823,7 +2823,7 @@ from the candidates list.")
         spw-from spw-to
         spw-from-prev
         front back)
-    (while (and (< from-chars lstr)
+    (while (and (<= from-chars lstr)
                 (>
                  (setq spw-from
                        (company--string-pixel-width (substring str 0 from-chars)))
