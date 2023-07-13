@@ -2821,12 +2821,14 @@ from the candidates list.")
         (to-chars (and to (ceiling (/ to (frame-char-width)))))
         (lstr (length str))
         spw-from spw-to
+        spw-from-prev
         front back)
     (while (and (< from-chars lstr)
                 (>
                  (setq spw-from
                        (company--string-pixel-width (substring str 0 from-chars)))
                  from))
+      (setq spw-from-prev spw-from)
       (cl-decf from-chars))
     (if (>= from-chars lstr)
         (if to
@@ -2842,15 +2844,18 @@ from the candidates list.")
       (when (< spw-from from)
         (cl-incf from-chars)
         (setq front (propertize " " 'display
-                                `(space . (:width (,(- (company--string-pixel-width
-                                                        (substring str 0 from-chars))
+                                `(space . (:width (,(- (or
+                                                        spw-from-prev
+                                                        (company--string-pixel-width
+                                                         (substring str 0 from-chars)))
                                                        from)))))))
       (unless spw-to (setq to-chars lstr))
       (when (and to (or (not spw-to) (< spw-to to)))
         (setq back (propertize " " 'display
                                `(space . (:width (,(- to
-                                                      (company--string-pixel-width
-                                                       (substring str 0 to-chars)))))))))
+                                                      (or
+                                                       spw-to
+                                                       (company--string-pixel-width str)))))))))
       (concat front (substring str from-chars to-chars) back))))
 
 (defun company-safe-substring (str from &optional to)
