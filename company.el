@@ -2823,19 +2823,21 @@ from the candidates list.")
         spw-from spw-to
         spw-from-prev
         front back)
-    (while (and (<= from-chars lstr)
-                (>
-                 (setq spw-from
-                       (company--string-pixel-width (substring str 0 from-chars)))
-                 from))
+    (when (> from-chars lstr)
+      (setq from-chars lstr))
+    (while (>
+            (setq spw-from
+                  (company--string-pixel-width (substring str 0 from-chars)))
+            from)
       (setq spw-from-prev spw-from)
       (cl-decf from-chars))
     (if (>= from-chars lstr)
         (if to
             (propertize " " 'display `(space . (:width (,(- to from)))))
           "")
+      (when (and to-chars (> to-chars lstr))
+        (setq to-chars lstr))
       (while (and to
-                  (< to-chars lstr)
                   (>
                    (setq spw-to
                          (company--string-pixel-width (substring str 0 to-chars)))
