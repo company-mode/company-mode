@@ -2826,6 +2826,19 @@ from the candidates list.")
         spw-from spw-to
         spw-from-prev
         front back)
+    (when buffer-invisibility-spec
+      (let ((fi 0) (ti 0))
+        (while (<= fi from-chars)
+          (when (and (< from-chars lstr)
+                     (get-text-property fi 'invisible str))
+            (cl-incf from-chars))
+          (cl-incf fi))
+        (when to-chars
+          (while (<= ti to-chars)
+            (when (and (< to-chars lstr)
+                       (get-text-property ti 'invisible str))
+              (cl-incf to-chars))
+            (cl-incf ti)))))
     (when (> from-chars lstr)
       (setq from-chars lstr))
     (while (>

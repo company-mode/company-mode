@@ -490,7 +490,7 @@
         (buffer-invisibility-spec '((outline . t) t)))
     (put-text-property 1 2 'invisible 'foo str)
     (should (equal
-             (company-modify-line str "zz" 4)
+             (company-modify-line str "zz" (* 3 (frame-char-width)))
              "-*-fzzbar"))))
 
 (ert-deftest company-scrollbar-bounds ()
