@@ -1331,8 +1331,7 @@ can retrieve meta-data for them."
   ;; It's mory efficient to fix it only when they are displayed.
   ;; FIXME: Adopt the current text's capitalization instead?
   (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
-      (let ((prefix (company--clean-string company-prefix)))
-        (concat prefix (substring candidate (length prefix))))
+      (concat company-prefix (substring candidate (length company-prefix)))
     candidate))
 
 (defun company--should-complete ()
@@ -3176,10 +3175,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company-fill-propertize (value annotation width selected left right)
   (let* ((margin (length left))
-         (company-common (and company-common (company--clean-string company-common)))
          (common (company--common-or-matches value))
-         (_ (setq value (company-reformat (company--pre-render value))
-                  annotation (and annotation (company--pre-render annotation t))))
+         (_ (setq value
+                  (company--clean-string
+                   (company-reformat (company--pre-render value)))
+                  annotation (and annotation
+                                  (company--clean-string
+                                   (company--pre-render annotation t)))))
          (ann-ralign company-tooltip-align-annotations)
          (ann-padding (or company-tooltip-annotation-padding 0))
          (ann-truncate (< width
@@ -3276,33 +3278,41 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
         str)))
 
 (defun company--clean-string (str)
-  (replace-regexp-in-string
-   "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]+"
-   (lambda (match)
-     (cond
-      ((match-beginning 1)
-       ;; FIXME: Better char for 'non-printable'?
-       ;; We shouldn't get any of these, but sometimes we might.
-       ;; The official "replacement character" is not supported by some fonts.
-       ;;"\ufffd"
-       "?"
-       )
-      ((match-beginning 2)
-       ;; Zero-width non-breakable space.
-       "")
-      ((let ((msw (company--string-width match)))
-         (when (> msw 1)
-           (concat
-            (propertize
-             (make-string (- msw (length match)) ?\ufeff)
-             'display
-             ;; !! Experimental stuff.
-             `(space . (:width (,(- (* (default-font-width)
-                                       msw)
-                                    (company--string-pixel-width match))))))
-            match))))
-      (t match)))
-   str))
+  (let* ((add-pixels 0)
+         (add-length 0)
+         (new-str
+          (replace-regexp-in-string
+           "\\([^[:graph:] ]\\)\\|\\(\ufeff\\)\\|[[:multibyte:]]+"
+           (lambda (match)
+             (cond
+              ((match-beginning 1)
+               ;; FIXME: Better char for 'non-printable'?
+               ;; We shouldn't get any of these, but sometimes we might.
+               ;; The official "replacement character" is not supported by some fonts.
+               ;;"\ufffd"
+               "?"
+               )
+              ((match-beginning 2)
+               ;; Zero-width non-breakable space.
+               "")
+              (t
+               ;; FIXME: Maybe move that counting later to a non-replacement loop.
+               (let ((msw (company--string-width match)))
+                 (cl-incf add-pixels
+                          (- (* (default-font-width)
+                                msw)
+                             (company--string-pixel-width match)))
+                 (cl-incf add-length (- msw (length match)))
+                 match
+                 ))
+              ))
+           str)))
+    (if (= 0 add-length)
+        new-str
+      (concat new-str
+              (propertize
+               (make-string add-length ?\ufeff)
+               'display `(space . (:width (,add-pixels))))))))
 
 ;;; replace
 
@@ -3503,18 +3513,16 @@ but adjust the expected values appropriately."
              (annotation (company-call-backend 'annotation value))
              (left (or (pop left-margins)
                        (company-space-string left-margin-size))))
-        (setq value (company--clean-string value))
         (when annotation
-          (setq annotation (company--clean-string annotation))
           (when company-tooltip-align-annotations
             ;; `lisp-completion-at-point' adds a space.
             (setq annotation (string-trim-left annotation))))
         (push (list value annotation left) items)
-        (setq width (max (+ (length value)
+        (setq width (max (+ (company--string-width value)
                             (if annotation
-                                (+ (length annotation)
+                                (+ (company--string-width annotation)
                                    company-tooltip-annotation-padding)
-                              (length annotation)))
+                              0))
                          width))))
 
     (setq width (min window-width
