@@ -495,6 +495,16 @@
              (company-modify-line str "zz" (* 4 (frame-char-width)))
              "-*-fzzbar"))))
 
+(ert-deftest company-modify-line-with-prettify ()
+  (with-temp-buffer
+    (insert "lambda foo bar")
+    (setq-local prettify-symbols-alist '(("lambda" . ?λ)))
+    (prettify-symbols-mode)
+    (font-lock-ensure (point-min) (point-max))
+    (should (equal
+             (company-modify-line (buffer-string) "zz" (* 3 (frame-char-width)))
+             "lambda fzz bar"))))
+
 (ert-deftest company-scrollbar-bounds ()
   (should (equal nil (company--scrollbar-bounds 0 3 3)))
   (should (equal nil (company--scrollbar-bounds 0 4 3)))
