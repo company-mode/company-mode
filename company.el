@@ -2814,66 +2814,80 @@ from the candidates list.")
                   (float (default-font-width))))
     (string-width str)))
 
-;; TODO: Add a bunch of tests!
-;;
+;; TODO: Add more tests!
 ;; FIXME: Could work better with text-scale-mode.  But that requires copying
-;; face-remapping-alist into " *string-pixel-width*" and using default-font-width.
+;; face-remapping-alist into " *string-pixel-width*".
 (defun company-safe-pixel-substring (str from &optional to)
-  (let ((from-chars (ceiling (/ from (frame-char-width))))
-        (to-chars (and to (ceiling (/ to (frame-char-width)))))
-        (lstr (length str))
+  (let ((from-chars 0)
+        (to-chars 0)
         spw-from spw-to
-        spw-from-prev
-        front back)
-    (when buffer-invisibility-spec
-      (let ((fi 0) (ti 0))
-        (while (<= fi from-chars)
-          (when (and (< from-chars lstr)
-                     (get-text-property fi 'invisible str))
-            (cl-incf from-chars))
-          (cl-incf fi))
-        (when to-chars
-          (while (<= ti to-chars)
-            (when (and (< to-chars lstr)
-                       (get-text-property ti 'invisible str))
-              (cl-incf to-chars))
-            (cl-incf ti)))))
-    (when (> from-chars lstr)
-      (setq from-chars lstr))
-    (while (>
-            (setq spw-from
-                  (company--string-pixel-width (substring str 0 from-chars)))
-            from)
-      (setq spw-from-prev spw-from)
-      (cl-decf from-chars))
-    (if (>= from-chars lstr)
-        (if to
-            (propertize " " 'display `(space . (:width (,(- to from)))))
-          "")
-      (when (and to-chars (> to-chars lstr))
-        (setq to-chars lstr))
-      (while (and to
-                  (>
-                   (setq spw-to
-                         (company--string-pixel-width (substring str 0 to-chars)))
-                   to))
-        (cl-decf to-chars))
-      (when (< spw-from from)
-        (cl-incf from-chars)
-        (setq front (propertize " " 'display
-                                `(space . (:width (,(- (or
-                                                        spw-from-prev
-                                                        (company--string-pixel-width
-                                                         (substring str 0 from-chars)))
-                                                       from)))))))
-      (unless spw-to (setq to-chars lstr))
-      (when (and to (or (not spw-to) (< spw-to to)))
-        (setq back (propertize " " 'display
-                               `(space . (:width (,(- to
-                                                      (or
-                                                       spw-to
-                                                       (company--string-pixel-width str)))))))))
-      (concat front (substring str from-chars to-chars) back))))
+        spw-from-prev spw-to-prev
+        front back
+        (orig-buf (window-buffer))
+        (bis buffer-invisibility-spec)
+        window-configuration-change-hook)
+    (with-current-buffer (get-buffer-create " *company-sps*")
+      (unwind-protect
+          (progn
+            (delete-region (point-min) (point-max))
+            (insert str)
+            (setq-local buffer-invisibility-spec bis)
+            (set-window-buffer nil (current-buffer) t)
+
+            (vertical-motion (cons (/ from (default-font-width)) 0))
+            (setq from-chars (point))
+            (while (and (<
+                         (setq spw-from
+                               (car
+                                (window-text-pixel-size nil (point-min) (point) 55555)))
+                         from)
+                        (not (eolp)))
+              (when (<= spw-from from)
+                (setq from-chars (point)))
+              (forward-char 1)
+              (setq spw-from-prev spw-from))
+
+            (when (and (/= from-chars (point-max)) (> spw-from from))
+              (goto-char from-chars)
+              (forward-char 1)
+              (setq from-chars (point)))
+
+            (if (= from-chars (point-max))
+                (if to
+                    (propertize " " 'display `(space . (:width (,(- to from)))))
+                  "")
+              (if (not to)
+                  (setq to-chars (point-max))
+                (vertical-motion (cons (/ to (default-font-width)) 0))
+                (setq to-chars (point))
+                (while (and (not (eolp))
+                            (<
+                             (setq spw-to
+                                   (car
+                                    (window-text-pixel-size nil (point-min) (point) 55555)))
+                             to))
+                  (when (<= spw-to to)
+                    (setq to-chars (point)))
+                  (forward-char 1)
+                  (setq spw-to-prev spw-to)))
+
+              (unless spw-from-prev (setq spw-from-prev spw-from))
+              (unless spw-to-prev (setq spw-to-prev spw-to))
+
+              (when (> spw-from from)
+                (setq front (propertize " " 'display
+                                        `(space . (:width (,(- spw-from from)))))))
+              (when (and to (or (not spw-to) (> spw-to to)))
+                (setq back (propertize
+                            " " 'display
+                            `(space . (:width (,(- to
+                                                   (or
+                                                    spw-to-prev
+                                                    (car (window-text-pixel-size
+                                                          nil (point-min) to-chars 55555)))
+                                                   )))))))
+              (concat front (buffer-substring from-chars to-chars) back)))
+        (set-window-buffer nil orig-buf t)))))
 
 (defun company-safe-substring (str from &optional to)
   (let ((ll (length str)))
