@@ -1294,6 +1294,8 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 (defvar company-timer nil)
 (defvar company-tooltip-timer nil)
 
+(defvar company--saved-window-configuration nil)
+
 (defsubst company-strip-prefix (str)
   (substring str (length company-prefix)))
 
@@ -2170,6 +2172,9 @@ For more details see `company-insertion-on-trigger' and
     (company-search-mode 0)
     (company-call-frontends 'hide)
     (company-enable-overriding-keymap nil)
+    (when company--saved-window-configuration
+      (set-window-configuration company--saved-window-configuration)
+      (setq company--saved-window-configuration nil))
     (when prefix
       (if (stringp result)
           (let ((company-backend backend))
@@ -2884,7 +2889,11 @@ automatically show the documentation buffer for each selection."
   (when toggle-auto-update
     (setq company-auto-update-doc (not company-auto-update-doc)))
   (if company-auto-update-doc
-      (company--show-doc-buffer)
+      (progn
+        (unless company--saved-window-configuration
+          (setq company--saved-window-configuration
+                (current-window-configuration)))
+        (company--show-doc-buffer))
     (company--electric-do
       (company--show-doc-buffer))))
 (put 'company-show-doc-buffer 'company-keep t)
