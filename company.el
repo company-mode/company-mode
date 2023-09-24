@@ -865,6 +865,7 @@ asynchronous call into synchronous.")
     (define-key keymap [up-mouse-3] 'ignore)
     (define-key keymap [return] 'company-complete-selection)
     (define-key keymap (kbd "RET") 'company-complete-selection)
+    (define-key keymap (kbd "M-RET") 'company-complete-selection-show-doc)
     (define-key keymap [tab] 'company-complete-common)
     (define-key keymap (kbd "TAB") 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
@@ -2645,6 +2646,13 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
   (when (and (company-manual-begin) company-selection)
     (let ((result (nth company-selection company-candidates)))
       (company-finish result))))
+
+(defun company-complete-selection-show-doc ()
+  "Insert the selected candidate and show its documentation."
+  (interactive)
+  (setq company--saved-window-configuration nil)
+  (company--show-doc-buffer)
+  (company-complete-selection))
 
 (defun company-complete-common ()
   "Insert the common part of all candidates."

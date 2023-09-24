@@ -2,6 +2,7 @@
 
 ## Next
 
+* New command `company-complete-selection-show-doc` bound to `M-RET`.
 * `company-echo-show` (and related featuers, most importantly,
   `company-echo-metadata-frontend`) now should stop interfering with the echo
   area and ElDoc when the current backend returns no `meta`.
