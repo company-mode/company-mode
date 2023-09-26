@@ -2227,7 +2227,9 @@ For more details see `company-insertion-on-trigger' and
               (progn
                 (company-call-frontends 'post-command)
                 (when company-auto-update-doc
-                  (company-show-doc-buffer)))
+                  (condition-case nil
+                      (company-show-doc-buffer)
+                    (user-error nil))))
             (let ((delay (company--idle-delay)))
              (and (numberp delay)
                   (not defining-kbd-macro)
@@ -2862,11 +2864,7 @@ from the candidates list.")
         (selection (or company-selection 0)))
       (let* ((selected (nth selection company-candidates))
              (doc-buffer (or (company-call-backend 'doc-buffer selected)
-                             (if company-auto-update-doc
-                                 (company-doc-buffer
-                                  (format "%s: No documentation available"
-                                          selected))
-                               (user-error "No documentation available"))))
+                             (user-error "No documentation available")))
              start)
         (when (consp doc-buffer)
           (setq start (cdr doc-buffer)
