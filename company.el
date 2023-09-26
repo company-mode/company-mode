@@ -1360,9 +1360,6 @@ To toggle the value of this variable, call `company-show-doc-buffer' with a
 prefix argument.")
 
 (defun company-call-frontends (command)
-  (when (and company-auto-update-doc
-             (memq command '(update show)))
-    (company-show-doc-buffer))
   (cl-loop for frontend in company-frontends collect
            (condition-case-unless-debug err
                (funcall frontend command)
@@ -2227,7 +2224,10 @@ For more details see `company-insertion-on-trigger' and
             (let (company-idle-delay) ; Against misbehavior while debugging.
               (company--perform)))
           (if company-candidates
-              (company-call-frontends 'post-command)
+              (progn
+                (company-call-frontends 'post-command)
+                (when company-auto-update-doc
+                  (company-show-doc-buffer)))
             (let ((delay (company--idle-delay)))
              (and (numberp delay)
                   (not defining-kbd-macro)
@@ -2883,10 +2883,8 @@ automatically show the documentation buffer for each selection."
   (interactive "P")
   (when toggle-auto-update
     (setq company-auto-update-doc (not company-auto-update-doc)))
-  (if company-auto-update-doc
-      (company--show-doc-buffer)
-    (company--electric-do
-      (company--show-doc-buffer))))
+  (company--electric-do
+    (company--show-doc-buffer)))
 (put 'company-show-doc-buffer 'company-keep t)
 
 (defun company-show-location ()
