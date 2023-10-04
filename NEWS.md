@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2023-10-04 (0.10.0)
 
 * `company-echo-show` (and related featuers, most importantly,
   `company-echo-metadata-frontend`) now should stop interfering with the echo

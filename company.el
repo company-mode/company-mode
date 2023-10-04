@@ -3,9 +3,9 @@
 ;; Copyright (C) 2009-2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
-;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
+;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.9.13
+;; Version: 0.10.0
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "25.1"))
 
