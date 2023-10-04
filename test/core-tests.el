@@ -122,7 +122,8 @@
     (should (equal "abcd" company-common))))
 
 (ert-deftest company-multi-backend-with-lambdas ()
-  (let ((company-backend
+  (let ((company-minimum-prefix-length 1)
+        (company-backend
          (list (lambda (command &optional _ &rest _r)
                  (cl-case command
                    (prefix "z")
@@ -134,7 +135,8 @@
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
 
 (ert-deftest company-multi-backend-filters-backends-by-prefix ()
-  (let ((company-backend
+  (let ((company-minimum-prefix-length 1)
+        (company-backend
          (list (lambda (command &optional _ &rest _r)
                  (cl-case command
                    (prefix (cons "z" t))
@@ -150,25 +152,29 @@
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "e" "f")))))
 
 (ert-deftest company-multi-backend-remembers-candidate-backend ()
-  (let ((company-backend
+  (let ((company-minimum-prefix-length 0)
+        (company-backend
          (list (lambda (command &optional _)
                  (cl-case command
+                   (prefix "")
                    (ignore-case nil)
                    (annotation "1")
                    (candidates '("a" "c"))
                    (post-completion "13")))
                (lambda (command &optional _)
                  (cl-case command
+                   (prefix "")
                    (ignore-case t)
                    (annotation "2")
                    (candidates '("b" "d"))
                    (post-completion "42")))
                (lambda (command &optional _)
                  (cl-case command
+                   (prefix "")
                    (annotation "3")
                    (candidates '("e"))
                    (post-completion "74"))))))
-    (let ((candidates (company-calculate-candidates nil nil)))
+    (let ((candidates (company-calculate-candidates "" nil)))
       (should (equal candidates '("a" "b" "c" "d" "e")))
       (should (equal t (company-call-backend 'ignore-case)))
       (should (equal "1" (company-call-backend 'annotation (nth 0 candidates))))
@@ -179,7 +185,8 @@
       (should (equal "74" (company-call-backend 'post-completion (nth 4 candidates)))))))
 
 (ert-deftest company-multi-backend-handles-keyword-with ()
-  (let ((primo (lambda (command &optional _)
+  (let ((company-minimum-prefix-length 1)
+        (primo (lambda (command &optional _)
                  (cl-case command
                    (prefix "a")
                    (candidates '("abb" "abc" "abd")))))
@@ -195,7 +202,8 @@
                      (company-call-backend 'candidates "a"))))))
 
 (ert-deftest company-multi-backend-handles-keyword-separate ()
-  (let ((one (lambda (command &optional _)
+  (let ((company-minimum-prefix-length 1)
+        (one (lambda (command &optional _)
                (cl-case command
                  (prefix "a")
                  (candidates (list "aa" "ca" "ba")))))
@@ -213,6 +221,50 @@
       (should-not (company-call-backend 'duplicates))
       (should (equal '("aa" "ba" "ca" "ab" "bb" "cc" "bc" "ac")
                      (company-call-backend 'candidates "a"))))))
+
+(ert-deftest company-multi-backend-handles-length-overrides-separately ()
+  (let ((company-minimum-prefix-length 2)
+        (one (lambda (command &optional _)
+               (cl-case command
+                 (prefix "a")
+                 (candidates (list "aa" "ca" "ba")))))
+        (two (lambda (command &optional _)
+               (cl-case command
+                 (prefix (cons "a" 2))
+                 (candidates (list "bb" "ab")))))
+        (tri (lambda (command &optional _)
+               (cl-case command
+                 (prefix "")
+                 (candidates (list "cc" "bc" "ac"))))))
+    (let ((company-backend (list one two tri)))
+      (should (equal '("bb" "ab")
+                     (company-call-backend 'candidates "a"))))
+    (let ((company-backend (list one two tri))
+          (company--manual-prefix "a"))
+      (should (equal '("aa" "ca" "ba" "bb" "ab")
+                     (company-call-backend 'candidates "a"))))))
+
+(ert-deftest company-multi-backend-handles-clears-cache-when-needed ()
+  (let* ((company-minimum-prefix-length 2)
+         (one (lambda (command &optional _)
+                (cl-case command
+                  (prefix "aa")
+                  (candidates (list "aa")))))
+         (two (lambda (command &optional _)
+                (cl-case command
+                  (prefix (cons "aa" t))
+                  (candidates (list "aab" )))))
+         (tri (lambda (command &optional _)
+                (cl-case command
+                  (prefix "")
+                  (candidates (list "aac")))))
+         (company--multi-uncached-backends (list one tri)))
+    (let ((company-backend (list one two tri)))
+      (should
+       (equal (company-call-backend 'no-cache) t))
+      (should (equal company--multi-uncached-backends (list tri)))
+      (should (equal '("aa" "aab")
+                     (company-call-backend 'candidates "aa"))))))
 
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer

@@ -1165,6 +1165,8 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
     (error (error "Company: backend %s error \"%s\" with args %s"
                   company-backend (error-message-string err) args))))
 
+(defvar company--multi-uncached-backends nil)
+
 (defun company--multi-backend-adapter (backends command &rest args)
   (let ((backends (cl-loop for b in backends
                            when (or (keywordp b)
@@ -1182,6 +1184,22 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
        (company--multi-backend-adapter-candidates backends (car args) separate))
       (`sorted separate)
       (`duplicates (not separate))
+      ((and `no-cache
+            (pred (lambda (_)
+                    (let* (found
+                           (uncached company--multi-uncached-backends))
+                      (dolist (backend backends)
+                        (when
+                            (and (member backend uncached)
+                                 (company--good-prefix-p
+                                  (let ((company-backend backend))
+                                    (company-call-backend 'prefix))))
+                          (setq found t
+                                company--multi-uncached-backends
+                                (delete backend
+                                        company--multi-uncached-backends))))
+                      found))))
+       t)
       ((or `prefix `ignore-case `no-cache `require-match)
        (let (value)
          (cl-dolist (backend backends)
@@ -1200,10 +1218,16 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 
 (defun company--multi-backend-adapter-candidates (backends prefix separate)
   (let ((pairs (cl-loop for backend in backends
-                        when (equal (company--prefix-str
-                                     (let ((company-backend backend))
-                                       (company-call-backend 'prefix)))
-                                    prefix)
+                        when (let ((bp (let ((company-backend backend))
+                                         (company-call-backend 'prefix))))
+                               (and
+                                ;; It's important that the lengths match.
+                                (equal (company--prefix-str bp) prefix)
+                                ;; One might override min-length, another not.
+                                (if (company--good-prefix-p bp)
+                                    t
+                                  (push backend company--multi-uncached-backends)
+                                  nil)))
                         collect (cons (funcall backend 'candidates prefix)
                                       (company--multi-candidates-mapper
                                        backend
@@ -2160,6 +2184,7 @@ For more details see `company-insertion-on-trigger' and
           company--manual-action nil
           company--manual-prefix nil
           company--point-max nil
+          company--multi-uncached-backends nil
           company-point nil)
     (when company-timer
       (cancel-timer company-timer))
