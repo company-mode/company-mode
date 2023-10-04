@@ -1181,7 +1181,9 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 
     (pcase command
       (`candidates
-       (company--multi-backend-adapter-candidates backends (car args) separate))
+       (company--multi-backend-adapter-candidates backends
+                                                  (nth 0 args) (nth 1 args)
+                                                  separate))
       (`sorted separate)
       (`duplicates (not separate))
       ((and `no-cache
@@ -1193,7 +1195,8 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
                             (and (member backend uncached)
                                  (company--good-prefix-p
                                   (let ((company-backend backend))
-                                    (company-call-backend 'prefix))))
+                                    (company-call-backend 'prefix))
+                                  (nth 1 args)))
                           (setq found t
                                 company--multi-uncached-backends
                                 (delete backend
@@ -1216,7 +1219,7 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
                               (car backends))))
              (apply backend command args))))))))
 
-(defun company--multi-backend-adapter-candidates (backends prefix separate)
+(defun company--multi-backend-adapter-candidates (backends prefix min-length separate)
   (let ((pairs (cl-loop for backend in backends
                         when (let ((bp (let ((company-backend backend))
                                          (company-call-backend 'prefix))))
@@ -1224,7 +1227,7 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
                                 ;; It's important that the lengths match.
                                 (equal (company--prefix-str bp) prefix)
                                 ;; One might override min-length, another not.
-                                (if (company--good-prefix-p bp)
+                                (if (company--good-prefix-p bp min-length)
                                     t
                                   (push backend company--multi-uncached-backends)
                                   nil)))
@@ -1471,7 +1474,8 @@ update if FORCE-UPDATE."
         (let ((refresh-timer (run-with-timer company-async-redisplay-delay
                                              nil #'company--sneaky-refresh)))
           (setq candidates (company--preprocess-candidates
-                            (company--fetch-candidates prefix)))
+                            (company--fetch-candidates prefix
+                                                       (company--prefix-min-length))))
           ;; If the backend is synchronous, no chance for the timer to run.
           (cancel-timer refresh-timer)
           ;; Save in cache.
@@ -1487,15 +1491,15 @@ update if FORCE-UPDATE."
        (not (eq (company-call-backend 'kind (car candidates))
                 'snippet))))
 
-(defun company--fetch-candidates (prefix)
+(defun company--fetch-candidates (prefix min-length)
   (let* ((non-essential (not (company-explicit-action-p)))
          (inhibit-redisplay t)
          (c (if (or company-selection-changed
                     ;; FIXME: This is not ideal, but we have not managed to deal
                     ;; with these situations in a better way yet.
                     (company-require-match-p))
-                (company-call-backend 'candidates prefix)
-              (company-call-backend-raw 'candidates prefix))))
+                (company-call-backend 'candidates prefix min-length)
+              (company-call-backend-raw 'candidates prefix min-length))))
     (if (not (eq (car c) :async))
         c
       (let ((res 'none))
@@ -2069,24 +2073,30 @@ For more details see `company-insertion-on-trigger' and
     company-candidates)
    (t (company-cancel))))
 
-(defun company--good-prefix-p (prefix)
+(defun company--good-prefix-p (prefix min-length)
   (and (stringp (company--prefix-str prefix)) ;excludes 'stop
        (or (eq (cdr-safe prefix) t)
-           (let ((len (or (cdr-safe prefix) (length prefix))))
-             (if company--manual-prefix
-                 (or (not company-abort-manual-when-too-short)
-                     ;; Must not be less than minimum or initial length.
-                     (>= len (min company-minimum-prefix-length
-                                  (length company--manual-prefix))))
-               (>= len company-minimum-prefix-length))))))
+           (>= (or (cdr-safe prefix) (length prefix))
+               min-length))))
+
+(defun company--prefix-min-length ()
+  (if company--manual-prefix
+      (if company-abort-manual-when-too-short
+          ;; Must not be less than minimum or initial length.
+          (min company-minimum-prefix-length
+               (length company--manual-prefix))
+        0)
+    company-minimum-prefix-length))
 
 (defun company--continue ()
-  (when (company-call-backend 'no-cache company-prefix)
+  (when (company-call-backend 'no-cache company-prefix
+                              (company--prefix-min-length))
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (ignore-case (company-call-backend 'ignore-case))
-         (c (when (and (company--good-prefix-p new-prefix)
+         (c (when (and (company--good-prefix-p new-prefix
+                                               (company--prefix-min-length))
                        (setq new-prefix (company--prefix-str new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
@@ -2128,7 +2138,8 @@ For more details see `company-insertion-on-trigger' and
                     (company-call-backend 'prefix)))
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
-        (when (company--good-prefix-p prefix)
+        (when (company--good-prefix-p prefix
+                                      (company--prefix-min-length))
           (let ((ignore-case (company-call-backend 'ignore-case)))
             (setq company-prefix (company--prefix-str prefix)
                   company-backend backend
@@ -3011,7 +3022,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (when (or (stringp prefix) (consp prefix))
       (let ((company-backend backend))
         (condition-case nil
-            (setq cc (company-call-backend 'candidates (company--prefix-str prefix))
+            (setq cc (company-call-backend 'candidates (company--prefix-str prefix)
+                                           (company--prefix-min-length))
                   annotations
                   (mapcar
                    (lambda (c) (cons c (company-call-backend 'annotation c)))
