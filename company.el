@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.10.0
+;; Version: 0.10.1
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -702,15 +702,18 @@ commands in the `company-' namespace, abort completion."
 
 (defun company-custom--set-quick-access (option value)
   "Re-bind quick-access key sequences on OPTION VALUE change."
-  (when (boundp 'company-active-map)
-    (company-keymap--unbind-quick-access company-active-map))
-  (when (boundp 'company-search-map)
-    (company-keymap--unbind-quick-access company-search-map))
+  ;; When upgrading from an earlier version of company, might not be.
+  (when (fboundp #'company-keymap--unbind-quick-access)
+    (when (boundp 'company-active-map)
+      (company-keymap--unbind-quick-access company-active-map))
+    (when (boundp 'company-search-map)
+      (company-keymap--unbind-quick-access company-search-map)))
   (custom-set-default option value)
-  (when (boundp 'company-active-map)
-    (company-keymap--bind-quick-access company-active-map))
-  (when (boundp 'company-search-map)
-    (company-keymap--bind-quick-access company-search-map)))
+  (when (fboundp #'company-keymap--bind-quick-access)
+    (when (boundp 'company-active-map)
+      (company-keymap--bind-quick-access company-active-map))
+    (when (boundp 'company-search-map)
+      (company-keymap--bind-quick-access company-search-map))))
 
 (defcustom company-quick-access-keys '("1" "2" "3" "4" "5" "6" "7" "8" "9" "0")
   "Character strings used as a part of quick-access key sequences.

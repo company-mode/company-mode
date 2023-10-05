@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+## 2023-10-06 (0.10.1)
+
+* Fix upgrading from 0.9.13 when the package is already loaded
+  ([#1406](https://github.com/company-mode/company-mode/issues/1406)).
+
 ## 2023-10-04 (0.10.0)
 
 * `company-echo-show` (and related featuers, most importantly,
