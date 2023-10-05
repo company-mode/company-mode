@@ -134,17 +134,17 @@
 (defface company-tooltip-quick-access
   '((default :inherit company-tooltip-annotation))
   "Face used for the quick-access hints shown in the tooltip."
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defface company-tooltip-quick-access-selection
   '((default :inherit company-tooltip-annotation-selection))
   "Face used for the selected quick-access hints shown in the tooltip."
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (define-obsolete-face-alias
  'company-scrollbar-fg
  'company-tooltip-scrollbar-thumb
- "0.9.14")
+ "0.10.0")
 
 (defface company-tooltip-scrollbar-thumb
   '((((background light))
@@ -156,7 +156,7 @@
 (define-obsolete-face-alias
  'company-scrollbar-bg
  'company-tooltip-scrollbar-track
- "0.9.14")
+ "0.10.0")
 
 (defface company-tooltip-scrollbar-track
   '((((background light))
@@ -286,7 +286,7 @@ This doesn't include the margins and the scroll bar."
 (defcustom company-tooltip-width-grow-only nil
   "When non-nil, the tooltip width is not allowed to decrease."
   :type 'boolean
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
@@ -317,7 +317,7 @@ padding is either 0 or 1 space.  This variable allows to override that
 value to increase the padding.  When annotations are right-aligned, it sets
 the minimum padding, and otherwise just the constant one."
   :type 'number
-  :package-version '(company "0.9.14"))
+  :package-version '(company "0.10.0"))
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
@@ -587,12 +587,12 @@ this."
 (define-obsolete-variable-alias
   'company-auto-complete
   'company-insertion-on-trigger
-  "0.9.14")
+  "0.10.0")
 
 (define-obsolete-variable-alias
   'company-auto-commit
   'company-insertion-on-trigger
-  "0.9.14")
+  "0.10.0")
 
 (defcustom company-insertion-on-trigger nil
   "If enabled, allow triggering insertion of the selected candidate.
@@ -606,17 +606,17 @@ triggers."
                  (const :tag "On, if user interaction took place"
                         company-explicit-action-p)
                  (const :tag "On" t))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (define-obsolete-variable-alias
   'company-auto-complete-chars
   'company-insertion-triggers
-  "0.9.14")
+  "0.10.0")
 
 (define-obsolete-variable-alias
   'company-auto-commit-chars
   'company-insertion-triggers
-  "0.9.14")
+  "0.10.0")
 
 (defcustom company-insertion-triggers '(?\  ?\) ?.)
   "Determine triggers for `company-insertion-on-trigger'.
@@ -648,7 +648,7 @@ insertion."
                       (const :tag "Generic string fence." ?|)
                       (const :tag "Generic comment fence." ?!))
                  (function :tag "Predicate function"))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defcustom company-idle-delay .2
   "The idle delay in seconds until completion starts automatically.
@@ -728,7 +728,7 @@ beside the candidates."
           ;; TODO un-comment on removal of `M-n' `company--select-next-and-warn'.
           ;; (const :tag "Dvorak home row" ("a" "o" "e" "u" "i" "d" "h" "t" "n" "s"))
           (repeat :tag "User defined" string))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defcustom company-quick-access-modifier 'meta
   "Modifier key used for quick-access keys sequences.
@@ -739,7 +739,7 @@ See `company-quick-access-keys' for more details."
                  (const :tag "Super key" super)
                  (const :tag "Hyper key" hyper)
                  (const :tag "Control key" control))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defun company-keymap--quick-access-modifier ()
   "Return string representation of the `company-quick-access-modifier'."
@@ -774,7 +774,7 @@ See `company-quick-access-keys' for more details."
 (define-obsolete-variable-alias
   'company-show-numbers
   'company-show-quick-access
-  "0.9.14")
+  "0.10.0")
 
 (defcustom company-show-quick-access nil
   "If non-nil, show quick-access hints beside the candidates.
@@ -801,7 +801,7 @@ return a string prefixed with one space."
  'company-show-numbers-function
  "use `company-quick-access-hint-function' instead,
 but adjust the expected values appropriately."
- "0.9.14")
+ "0.10.0")
 
 (defcustom company-quick-access-hint-function #'company-quick-access-hint-key
   "Function called to get quick-access hints for the candidates.
@@ -2722,7 +2722,7 @@ inserted."
 (define-obsolete-function-alias
   'company-complete-number
   'company-complete-tooltip-row
-  "0.9.14")
+  "0.10.0")
 
 (defun company-complete-tooltip-row (number)
   "Insert a candidate visible on the tooltip's row NUMBER.
@@ -3250,7 +3250,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
  'company--show-numbers
  "use `company-quick-access-hint-key' instead,
 but adjust the expected values appropriately."
- "0.9.14")
+ "0.10.0")
 
 (defsubst company--window-height ()
   (if (fboundp 'window-screen-lines)
