@@ -2232,7 +2232,8 @@ For more details see `company-insertion-on-trigger' and
                 (when company-auto-update-doc
                   (condition-case nil
                       (company-show-doc-buffer)
-                    (user-error nil))))
+                    (user-error nil)
+                    (quit nil))))
             (let ((delay (company--idle-delay)))
              (and (numberp delay)
                   (not defining-kbd-macro)
