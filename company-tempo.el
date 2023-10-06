@@ -61,7 +61,7 @@
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-tempo))
-    (prefix (or (car (tempo-find-match-string tempo-match-finder)) ""))
+    (prefix (or (car (tempo-find-match-string tempo-match-finder)) nil))
     (candidates (all-completions arg (tempo-build-collection)))
     (kind 'snippet)
     (meta (company-tempo-meta arg))
