@@ -2,6 +2,7 @@
 
 ## Next
 
+* More `company-auto-update-doc`-related fixes.
 * Better handling of `C-g` performed inside a `doc-buffer` handler
   ([#1408](https://github.com/company-mode/company-mode/issues/1408)).
 

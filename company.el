@@ -2849,7 +2849,7 @@ from the candidates list.")
 
 (defmacro company--electric-do (&rest body)
   (declare (indent 0) (debug t))
-  `(when (company-manual-begin)
+  `(when company-candidates
      (cl-assert (null company--electric-saved-window-configuration))
      (setq company--electric-saved-window-configuration (current-window-configuration))
      (let ((height (window-height))
