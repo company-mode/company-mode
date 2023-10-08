@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-## Next
+## 2023-10-08 (0.10.2)
 
 * More `company-auto-update-doc`-related fixes.
 * Better handling of `C-g` performed inside a `doc-buffer` handler
