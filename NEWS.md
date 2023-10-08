@@ -5,6 +5,17 @@
 * The "length override" behavior in grouped backends now acts on each backend
   separately ([#1405](https://github.com/company-mode/company-mode/pull/1405)).
 
+## 2023-10-08 (0.10.2)
+
+* More `company-auto-update-doc`-related fixes.
+* Better handling of `C-g` performed inside a `doc-buffer` handler
+  ([#1408](https://github.com/company-mode/company-mode/issues/1408)).
+
+## 2023-10-06 (0.10.1)
+
+* Fix upgrading from 0.9.13 when the package is already loaded
+  ([#1406](https://github.com/company-mode/company-mode/issues/1406)).
+
 ## 2023-10-04 (0.10.0)
 
 * `company-echo-show` (and related featuers, most importantly,
