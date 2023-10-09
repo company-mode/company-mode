@@ -1168,6 +1168,9 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
     (error (error "Company: backend %s error \"%s\" with args %s"
                   company-backend (error-message-string err) args))))
 
+(defvar-local company--multi-uncached-backends nil)
+(defvar-local company--multi-min-prefix nil)
+
 (defun company--multi-backend-adapter (backends command &rest args)
   (let ((backends (cl-loop for b in backends
                            when (or (keywordp b)
@@ -1182,9 +1185,30 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 
     (pcase command
       (`candidates
-       (company--multi-backend-adapter-candidates backends (car args) separate))
+       (company--multi-backend-adapter-candidates backends
+                                                  (car args)
+                                                  (or company--multi-min-prefix 0)
+                                                  separate))
+      (`set-min-prefix (setq company--multi-min-prefix (car args)))
       (`sorted separate)
       (`duplicates (not separate))
+      ((and `no-cache
+            (pred (lambda (_)
+                    (let* (found
+                           (uncached company--multi-uncached-backends))
+                      (dolist (backend backends)
+                        (when
+                            (and (member backend uncached)
+                                 (company--good-prefix-p
+                                  (let ((company-backend backend))
+                                    (company-call-backend 'prefix))
+                                  (or company--multi-min-prefix 0)))
+                          (setq found t
+                                company--multi-uncached-backends
+                                (delete backend
+                                        company--multi-uncached-backends))))
+                      found))))
+       t)
       ((or `prefix `ignore-case `no-cache `require-match)
        (let (value)
          (cl-dolist (backend backends)
@@ -1201,12 +1225,18 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
                               (car backends))))
              (apply backend command args))))))))
 
-(defun company--multi-backend-adapter-candidates (backends prefix separate)
+(defun company--multi-backend-adapter-candidates (backends prefix min-length separate)
   (let ((pairs (cl-loop for backend in backends
-                        when (equal (company--prefix-str
-                                     (let ((company-backend backend))
-                                       (company-call-backend 'prefix)))
-                                    prefix)
+                        when (let ((bp (let ((company-backend backend))
+                                         (company-call-backend 'prefix))))
+                               (and
+                                ;; It's important that the lengths match.
+                                (equal (company--prefix-str bp) prefix)
+                                ;; One might override min-length, another not.
+                                (if (company--good-prefix-p bp min-length)
+                                    t
+                                  (push backend company--multi-uncached-backends)
+                                  nil)))
                         collect (cons (funcall backend 'candidates prefix)
                                       (company--multi-candidates-mapper
                                        backend
@@ -2048,16 +2078,20 @@ For more details see `company-insertion-on-trigger' and
     company-candidates)
    (t (company-cancel))))
 
-(defun company--good-prefix-p (prefix)
+(defun company--good-prefix-p (prefix min-length)
   (and (stringp (company--prefix-str prefix)) ;excludes 'stop
        (or (eq (cdr-safe prefix) t)
-           (let ((len (or (cdr-safe prefix) (length prefix))))
-             (if company--manual-prefix
-                 (or (not company-abort-manual-when-too-short)
-                     ;; Must not be less than minimum or initial length.
-                     (>= len (min company-minimum-prefix-length
-                                  (length company--manual-prefix))))
-               (>= len company-minimum-prefix-length))))))
+           (>= (or (cdr-safe prefix) (length prefix))
+               min-length))))
+
+(defun company--prefix-min-length ()
+  (if company--manual-prefix
+      (if company-abort-manual-when-too-short
+          ;; Must not be less than minimum or initial length.
+          (min company-minimum-prefix-length
+               (length company--manual-prefix))
+        0)
+    company-minimum-prefix-length))
 
 (defun company--continue ()
   (when (company-call-backend 'no-cache company-prefix)
@@ -2065,7 +2099,8 @@ For more details see `company-insertion-on-trigger' and
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (ignore-case (company-call-backend 'ignore-case))
-         (c (when (and (company--good-prefix-p new-prefix)
+         (c (when (and (company--good-prefix-p new-prefix
+                                               (company--prefix-min-length))
                        (setq new-prefix (company--prefix-str new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
@@ -2094,7 +2129,8 @@ For more details see `company-insertion-on-trigger' and
      (t (company--continue-failed new-prefix)))))
 
 (defun company--begin-new ()
-  (let (prefix c)
+  (let ((min-prefix (company--prefix-min-length))
+        prefix c)
     (cl-dolist (backend (if company-backend
                             ;; prefer manual override
                             (list company-backend)
@@ -2107,8 +2143,10 @@ For more details see `company-insertion-on-trigger' and
                     (company-call-backend 'prefix)))
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
-        (when (company--good-prefix-p prefix)
+        (when (company--good-prefix-p prefix min-prefix)
           (let ((ignore-case (company-call-backend 'ignore-case)))
+            ;; Keep this undocumented, esp. while only 1 backend needs it.
+            (company-call-backend 'set-min-prefix min-prefix)
             (setq company-prefix (company--prefix-str prefix)
                   company-backend backend
                   c (company-calculate-candidates company-prefix ignore-case))
@@ -2163,6 +2201,8 @@ For more details see `company-insertion-on-trigger' and
           company--manual-action nil
           company--manual-prefix nil
           company--point-max nil
+          company--multi-uncached-backends nil
+          company--multi-min-prefix nil
           company-point nil)
     (when company-timer
       (cancel-timer company-timer))

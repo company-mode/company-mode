@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+# Next
+
+* The "length override" behavior in grouped backends now acts on each backend
+  separately ([#1405](https://github.com/company-mode/company-mode/pull/1405)).
+
 ## 2023-10-08 (0.10.2)
 
 * More `company-auto-update-doc`-related fixes.
