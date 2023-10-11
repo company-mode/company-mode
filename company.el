@@ -1133,6 +1133,15 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
         (car (setq ppss (cdr ppss)))
         (nth 3 ppss))))
 
+(defun company-substitute-prefix (prefix strings)
+  (let ((len (length prefix)))
+    (mapcar
+     (lambda (s)
+       (if (eq t (compare-strings prefix 0 len s 0 len))
+           s
+         (concat prefix (substring s len))))
+     strings)))
+
 (defvar company--cache (make-hash-table :test #'equal :size 10))
 
 (cl-defun company-cache-fetch (key

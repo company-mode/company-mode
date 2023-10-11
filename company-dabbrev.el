@@ -70,10 +70,7 @@ candidate is inserted, even some of its characters have different case."
 
 The value of nil means keep them as-is.
 `case-replace' means use the value of `case-replace'.
-Any other value means downcase.
-
-If you set this value to nil, you may also want to set
-`company-dabbrev-ignore-case' to any value other than `keep-prefix'."
+Any other value means downcase."
   :type '(choice
           (const :tag "Keep as-is" nil)
           (const :tag "Downcase" t)
@@ -177,8 +174,13 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                        1)))
 
 (defun company-dabbrev--filter (prefix candidates)
-  (let ((completion-ignore-case company-dabbrev-ignore-case))
-    (all-completions prefix candidates)))
+  (let* ((completion-ignore-case company-dabbrev-ignore-case)
+         (filtered (all-completions prefix candidates))
+         (lp (length prefix)))
+    (if (and (eq company-dabbrev-ignore-case 'keep-prefix)
+             (not (= lp 0)))
+        (company-substitute-prefix prefix filtered)
+      filtered)))
 
 (defun company-dabbrev--fetch ()
   (let ((words (company-dabbrev--search (company-dabbrev--make-regexp)
@@ -207,7 +209,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                            :expire t)))
     (kind 'text)
     (no-cache t)
-    (ignore-case company-dabbrev-ignore-case)
+    (ignore-case (and company-dabbrev-ignore-case t))
     (duplicates t)))
 
 (provide 'company-dabbrev)

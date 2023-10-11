@@ -80,12 +80,14 @@ If nil, use `ispell-complete-word-dict'."
        (if (string= arg "")
            ;; Small optimization.
            all-words
-         ;; Work around issue #284.
-         (all-completions arg all-words))))
+         (company-substitute-prefix
+          arg
+          ;; Work around issue #284.
+          (all-completions arg all-words)))))
     (kind 'text)
     (no-cache t)
     (sorted t)
-    (ignore-case 'keep-prefix)))
+    (ignore-case t)))
 
 (provide 'company-ispell)
 ;;; company-ispell.el ends here
