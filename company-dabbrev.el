@@ -114,7 +114,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                    (when (and (>= (length match) company-dabbrev-minimum-length)
                               (not (and company-dabbrev-ignore-invisible
                                         (invisible-p (match-beginning 0)))))
-                     (push match symbols)))))
+                     (puthash match t symbols)))))
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
@@ -147,7 +147,9 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 (defun company-dabbrev--search (regexp &optional limit other-buffer-modes
                                 ignore-comments)
   (let* ((start (current-time))
-         (symbols (company-dabbrev--search-buffer regexp (point) nil start limit
+         (symbols (company-dabbrev--search-buffer regexp (point)
+                                                  (make-hash-table :test 'equal)
+                                                  start limit
                                                   ignore-comments)))
     (when other-buffer-modes
       (cl-dolist (buffer (delq (current-buffer) (buffer-list)))

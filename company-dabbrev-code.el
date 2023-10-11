@@ -89,14 +89,16 @@ comments or strings."
                      (not (company-in-string-or-comment)))
                  (or (company-grab-symbol) 'stop)))
     (candidates (let ((case-fold-search company-dabbrev-code-ignore-case))
-                  (company-dabbrev--search
-                   (company-dabbrev-code--make-regexp arg)
-                   company-dabbrev-code-time-limit
-                   (pcase company-dabbrev-code-other-buffers
-                     (`t (list major-mode))
-                     (`code company-dabbrev-code-modes)
-                     (`all `all))
-                   (not company-dabbrev-code-everywhere))))
+                  (all-completions
+                   ""
+                   (company-dabbrev--search
+                    (company-dabbrev-code--make-regexp arg)
+                    company-dabbrev-code-time-limit
+                    (pcase company-dabbrev-code-other-buffers
+                      (`t (list major-mode))
+                      (`code company-dabbrev-code-modes)
+                      (`all `all))
+                    (not company-dabbrev-code-everywhere)))))
     (kind 'text)
     (ignore-case company-dabbrev-code-ignore-case)
     (duplicates t)))
