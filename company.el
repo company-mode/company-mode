@@ -1133,6 +1133,33 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
         (car (setq ppss (cdr ppss)))
         (nth 3 ppss))))
 
+(defvar company--cache (make-hash-table :test #'equal :size 10))
+
+(cl-defun company-cache-fetch (key
+                               fetcher
+                               &key expire &key check-tag)
+  "Fetch the value assigned to KEY in the cache.
+When not found, or when found to be stale, calls FETCHER to compute the
+result.  When EXPIRE is non-nil, the value will be deleted at the end of
+completion.  CHECK-TAG, when present, is saved as well, and the entry will
+be recomputed when this value changes."
+  ;; We could make EXPIRE accept a time value as well.
+  (let ((res (gethash key company--cache 'none))
+        value)
+    (if (and (not (eq res 'none))
+             (or (not check-tag)
+                 (equal check-tag (assoc-default :check-tag res))))
+        (assoc-default :value res)
+      (setq res (list (cons :value (setq value (funcall fetcher)))))
+      (if expire (push '(:expire . t) res))
+      (if check-tag (push `(:check-tag . ,check-tag) res))
+      (puthash key res company--cache)
+      value)))
+
+(defun company-cache-delete (key)
+  "Delete KEY from cache."
+  (remhash key company--cache))
+
 (defun company-call-backend (&rest args)
   (company--force-sync #'company-call-backend-raw args company-backend))
 
@@ -2204,6 +2231,10 @@ For more details see `company-insertion-on-trigger' and
           company--multi-uncached-backends nil
           company--multi-min-prefix nil
           company-point nil)
+    (maphash (lambda (k v)
+               (when (assoc-default :expire v)
+                 (remhash k company--cache)))
+             company--cache)
     (when company-timer
       (cancel-timer company-timer))
     (company-echo-cancel t)

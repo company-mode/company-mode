@@ -1,6 +1,6 @@
 ;;; company-dabbrev.el --- dabbrev-like company-mode completion backend  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2018, 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2018, 2021-2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -180,6 +180,19 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
   (let ((completion-ignore-case company-dabbrev-ignore-case))
     (all-completions prefix candidates)))
 
+(defun company-dabbrev--fetch ()
+  (let ((words (company-dabbrev--search (company-dabbrev--make-regexp)
+                                        company-dabbrev-time-limit
+                                        (pcase company-dabbrev-other-buffers
+                                          (`t (list major-mode))
+                                          (`all `all))))
+        (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
+                        case-replace
+                      company-dabbrev-downcase)))
+    (if downcase-p
+        (mapcar 'downcase words)
+      words)))
+
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest _ignored)
   "dabbrev-like `company-mode' completion backend."
@@ -188,20 +201,12 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     (interactive (company-begin-backend 'company-dabbrev))
     (prefix (company-dabbrev--prefix))
     (candidates
-     (let* ((case-fold-search company-dabbrev-ignore-case)
-            (words (company-dabbrev--search (company-dabbrev--make-regexp)
-                                            company-dabbrev-time-limit
-                                            (pcase company-dabbrev-other-buffers
-                                              (`t (list major-mode))
-                                              (`all `all))))
-            (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
-                            case-replace
-                          company-dabbrev-downcase)))
-       (setq words (company-dabbrev--filter arg words))
-       (if downcase-p
-           (mapcar 'downcase words)
-         words)))
+     (company-dabbrev--filter
+      arg
+      (company-cache-fetch 'dabbrev-candidates #'company-dabbrev--fetch
+                           :expire t)))
     (kind 'text)
+    (no-cache t)
     (ignore-case company-dabbrev-ignore-case)
     (duplicates t)))
 

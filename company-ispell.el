@@ -1,6 +1,6 @@
 ;;; company-ispell.el --- company-mode completion backend using Ispell
 
-;; Copyright (C) 2009-2011, 2013-2016, 2018, 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016, 2018, 2021, 2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -33,29 +33,34 @@
   "Completion backend using Ispell."
   :group 'company)
 
+(defun company--set-dictionary (symbol value)
+  (set-default-toplevel-value symbol value)
+  (company-cache-delete 'ispell-candidates))
+
 (defcustom company-ispell-dictionary nil
   "Dictionary to use for `company-ispell'.
 If nil, use `ispell-complete-word-dict'."
   :type '(choice (const :tag "default (nil)" nil)
-                 (file :tag "dictionary" t)))
+                 (file :tag "dictionary" t))
+  :set #'company--set-dictionary)
 
 (defvar company-ispell-available 'unknown)
-
-(defalias 'company-ispell--lookup-words
-  (if (fboundp 'ispell-lookup-words)
-      'ispell-lookup-words
-    'lookup-words))
 
 (defun company-ispell-available ()
   (when (eq company-ispell-available 'unknown)
     (condition-case err
         (progn
-          (company-ispell--lookup-words "WHATEVER")
+          (ispell-lookup-words "WHATEVER")
           (setq company-ispell-available t))
       (error
        (message "Company-Ispell: %s" (error-message-string err))
        (setq company-ispell-available nil))))
   company-ispell-available)
+
+(defun company--ispell-dict ()
+  (or company-ispell-dictionary
+      ispell-complete-word-dict
+      ispell-alternate-dictionary))
 
 ;;;###autoload
 (defun company-ispell (command &optional arg &rest ignored)
@@ -66,16 +71,19 @@ If nil, use `ispell-complete-word-dict'."
     (prefix (when (company-ispell-available)
               (company-grab-word)))
     (candidates
-     (let ((words (company-ispell--lookup-words
-                   arg
-                   (or company-ispell-dictionary ispell-complete-word-dict)))
-           (completion-ignore-case t))
+     (let* ((dict (company--ispell-dict))
+            (all-words
+             (company-cache-fetch 'ispell-candidates
+                                  (lambda () (ispell-lookup-words "" dict))
+                                  :check-tag dict))
+            (completion-ignore-case t))
        (if (string= arg "")
            ;; Small optimization.
-           words
+           all-words
          ;; Work around issue #284.
-         (all-completions arg words))))
+         (all-completions arg all-words))))
     (kind 'text)
+    (no-cache t)
     (sorted t)
     (ignore-case 'keep-prefix)))
 
