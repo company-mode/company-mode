@@ -2766,7 +2766,8 @@ inserted."
         (call-interactively 'company-complete-selection)
       (call-interactively 'company-complete-common)
       (when company-candidates
-        (setq this-command 'company-complete-common)))))
+        (setq this-command 'company-complete-common)))
+    this-command))
 
 (define-obsolete-function-alias
   'company-complete-number
