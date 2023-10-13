@@ -2000,6 +2000,10 @@ prefix match (same case) will be prioritized."
 
 ;;;###autoload
 (defun company-manual-begin ()
+  "Start the completion interface.
+
+Unlike `company-complete-selection' or `company-complete', this command
+doesn't cause any immediate changes to the buffer text."
   (interactive)
   (company-assert-enabled)
   (setq company--manual-action t)
