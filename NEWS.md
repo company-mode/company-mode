@@ -2,6 +2,13 @@
 
 # Next
 
+* The backend command `keep-prefix` is being phased out.  The built-in backends
+  implement it internally now, which resolved a number of sharp edges (mostly)
+  around "grouped" backends.  To make that easier, several helpers were added,
+  such as `company-cache-fetch` and `company-substitute-prefix`
+  ([#1411](https://github.com/company-mode/company-mode/pull/1411)).  And
+  `company-ispell` uses the cache to keep the currently selected dictionary
+  loaded in memory between completions.
 * The "length override" behavior in grouped backends now acts on each backend
   separately ([#1405](https://github.com/company-mode/company-mode/pull/1405)).
 
