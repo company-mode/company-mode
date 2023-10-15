@@ -176,24 +176,26 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 (defun company-dabbrev--filter (prefix candidates)
   (let* ((completion-ignore-case company-dabbrev-ignore-case)
          (filtered (all-completions prefix candidates))
-         (lp (length prefix)))
+         (lp (length prefix))
+         (downcase (if (eq company-dabbrev-downcase 'case-replace)
+                       case-replace
+                     company-dabbrev-downcase)))
+    (when downcase
+      (let ((ptr filtered))
+        (while ptr
+          (setcar ptr (downcase (car ptr)))
+          (setq ptr (cdr ptr)))))
     (if (and (eq company-dabbrev-ignore-case 'keep-prefix)
              (not (= lp 0)))
         (company-substitute-prefix prefix filtered)
       filtered)))
 
 (defun company-dabbrev--fetch ()
-  (let ((words (company-dabbrev--search (company-dabbrev--make-regexp)
-                                        company-dabbrev-time-limit
-                                        (pcase company-dabbrev-other-buffers
-                                          (`t (list major-mode))
-                                          (`all `all))))
-        (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
-                        case-replace
-                      company-dabbrev-downcase)))
-    (if downcase-p
-        (mapcar 'downcase words)
-      words)))
+  (company-dabbrev--search (company-dabbrev--make-regexp)
+                           company-dabbrev-time-limit
+                           (pcase company-dabbrev-other-buffers
+                             (`t (list major-mode))
+                             (`all `all))))
 
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest _ignored)
