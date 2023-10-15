@@ -183,11 +183,12 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
       filtered)))
 
 (defun company-dabbrev--fetch ()
-  (let ((words (company-dabbrev--search (company-dabbrev--make-regexp)
-                                        company-dabbrev-time-limit
-                                        (pcase company-dabbrev-other-buffers
-                                          (`t (list major-mode))
-                                          (`all `all))))
+  (let ((words (hash-table-keys
+                (company-dabbrev--search (company-dabbrev--make-regexp)
+                                         company-dabbrev-time-limit
+                                         (pcase company-dabbrev-other-buffers
+                                           (`t (list major-mode))
+                                           (`all `all)))))
         (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
                         case-replace
                       company-dabbrev-downcase)))
