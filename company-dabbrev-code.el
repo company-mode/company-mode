@@ -88,7 +88,8 @@ comments or strings."
                  (or company-dabbrev-code-everywhere
                      (not (company-in-string-or-comment)))
                  (or (company-grab-symbol) 'stop)))
-    (candidates (let ((case-fold-search company-dabbrev-code-ignore-case))
+    (candidates (let ((case-fold-search company-dabbrev-code-ignore-case)
+                      (completion-ignore-case company-dabbrev-code-ignore-case))
                   (all-completions
                    ""
                    (company-dabbrev--search
