@@ -1142,6 +1142,26 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
          (concat prefix (substring s len))))
      strings)))
 
+(defun company--match-from-capf-face (str)
+  "Compute `match' result from a CAPF's completion fontification."
+  (let* ((match-start nil) (pos -1)
+         (prop-value nil)  (faces nil)
+         (has-face-p nil)  chunks
+         (limit (length str)))
+    (while (< pos limit)
+      (setq pos
+            (if (< pos 0) 0 (next-property-change pos str limit)))
+      (setq prop-value (or (get-text-property pos 'face str)
+                           (get-text-property pos 'font-lock-face str))
+            faces (if (listp prop-value) prop-value (list prop-value))
+            has-face-p (memq 'completions-common-part faces))
+      (cond ((and (not match-start) has-face-p)
+             (setq match-start pos))
+            ((and match-start (not has-face-p))
+             (push (cons match-start pos) chunks)
+             (setq match-start nil))))
+    (nreverse chunks)))
+
 (defvar company--cache (make-hash-table :test #'equal :size 10))
 
 (cl-defun company-cache-fetch (key

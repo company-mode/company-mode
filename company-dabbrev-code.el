@@ -127,6 +127,8 @@ comments or strings."
     (kind 'text)
     (no-cache t)
     (ignore-case company-dabbrev-code-ignore-case)
+    (match (when company-dabbrev-code-completion-styles
+             (company--match-from-capf-face arg)))
     (duplicates t)))
 
 (defun company-dabbrev-code--filter (prefix table)
