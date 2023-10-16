@@ -89,7 +89,7 @@ also `company-dabbrev-code-time-limit'."
                              (substring prefix 0 2)
                            prefix)))
              (mapconcat #'regexp-quote
-                        (string-split prefix "" t)
+                        (mapcar #'string prefix)
                         "\\(\\sw\\|\\s_\\)*"))))))
     (concat "\\_<" prefix-re "\\(\\sw\\|\\s_\\)*\\_>")))
 
