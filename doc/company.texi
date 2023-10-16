@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename company.info
 @settitle Company User Manual
-@set VERSION 0.9.14snapshot
+@set VERSION 0.10.0
 @set UPDATED 16 April 2023
 @documentencoding UTF-8
 @documentlanguage en

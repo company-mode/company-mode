@@ -3,9 +3,9 @@
 ;; Copyright (C) 2009-2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
-;; Maintainer: Dmitry Gutov <dgutov@yandex.ru>
+;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.9.13
+;; Version: 0.10.2
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -134,17 +134,17 @@
 (defface company-tooltip-quick-access
   '((default :inherit company-tooltip-annotation))
   "Face used for the quick-access hints shown in the tooltip."
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defface company-tooltip-quick-access-selection
   '((default :inherit company-tooltip-annotation-selection))
   "Face used for the selected quick-access hints shown in the tooltip."
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (define-obsolete-face-alias
  'company-scrollbar-fg
  'company-tooltip-scrollbar-thumb
- "0.9.14")
+ "0.10.0")
 
 (defface company-tooltip-scrollbar-thumb
   '((((background light))
@@ -156,7 +156,7 @@
 (define-obsolete-face-alias
  'company-scrollbar-bg
  'company-tooltip-scrollbar-track
- "0.9.14")
+ "0.10.0")
 
 (defface company-tooltip-scrollbar-track
   '((((background light))
@@ -286,7 +286,7 @@ This doesn't include the margins and the scroll bar."
 (defcustom company-tooltip-width-grow-only nil
   "When non-nil, the tooltip width is not allowed to decrease."
   :type 'boolean
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
@@ -317,7 +317,7 @@ padding is either 0 or 1 space.  This variable allows to override that
 value to increase the padding.  When annotations are right-aligned, it sets
 the minimum padding, and otherwise just the constant one."
   :type 'number
-  :package-version '(company "0.9.14"))
+  :package-version '(company "0.10.0"))
 
 (defvar company-safe-backends
   '((company-abbrev . "Abbrev")
@@ -587,12 +587,12 @@ this."
 (define-obsolete-variable-alias
   'company-auto-complete
   'company-insertion-on-trigger
-  "0.9.14")
+  "0.10.0")
 
 (define-obsolete-variable-alias
   'company-auto-commit
   'company-insertion-on-trigger
-  "0.9.14")
+  "0.10.0")
 
 (defcustom company-insertion-on-trigger nil
   "If enabled, allow triggering insertion of the selected candidate.
@@ -606,17 +606,17 @@ triggers."
                  (const :tag "On, if user interaction took place"
                         company-explicit-action-p)
                  (const :tag "On" t))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (define-obsolete-variable-alias
   'company-auto-complete-chars
   'company-insertion-triggers
-  "0.9.14")
+  "0.10.0")
 
 (define-obsolete-variable-alias
   'company-auto-commit-chars
   'company-insertion-triggers
-  "0.9.14")
+  "0.10.0")
 
 (defcustom company-insertion-triggers '(?\  ?\) ?.)
   "Determine triggers for `company-insertion-on-trigger'.
@@ -648,7 +648,7 @@ insertion."
                       (const :tag "Generic string fence." ?|)
                       (const :tag "Generic comment fence." ?!))
                  (function :tag "Predicate function"))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defcustom company-idle-delay .2
   "The idle delay in seconds until completion starts automatically.
@@ -702,15 +702,18 @@ commands in the `company-' namespace, abort completion."
 
 (defun company-custom--set-quick-access (option value)
   "Re-bind quick-access key sequences on OPTION VALUE change."
-  (when (boundp 'company-active-map)
-    (company-keymap--unbind-quick-access company-active-map))
-  (when (boundp 'company-search-map)
-    (company-keymap--unbind-quick-access company-search-map))
+  ;; When upgrading from an earlier version of company, might not be.
+  (when (fboundp #'company-keymap--unbind-quick-access)
+    (when (boundp 'company-active-map)
+      (company-keymap--unbind-quick-access company-active-map))
+    (when (boundp 'company-search-map)
+      (company-keymap--unbind-quick-access company-search-map)))
   (custom-set-default option value)
-  (when (boundp 'company-active-map)
-    (company-keymap--bind-quick-access company-active-map))
-  (when (boundp 'company-search-map)
-    (company-keymap--bind-quick-access company-search-map)))
+  (when (fboundp #'company-keymap--bind-quick-access)
+    (when (boundp 'company-active-map)
+      (company-keymap--bind-quick-access company-active-map))
+    (when (boundp 'company-search-map)
+      (company-keymap--bind-quick-access company-search-map))))
 
 (defcustom company-quick-access-keys '("1" "2" "3" "4" "5" "6" "7" "8" "9" "0")
   "Character strings used as a part of quick-access key sequences.
@@ -728,7 +731,7 @@ beside the candidates."
           ;; TODO un-comment on removal of `M-n' `company--select-next-and-warn'.
           ;; (const :tag "Dvorak home row" ("a" "o" "e" "u" "i" "d" "h" "t" "n" "s"))
           (repeat :tag "User defined" string))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defcustom company-quick-access-modifier 'meta
   "Modifier key used for quick-access keys sequences.
@@ -739,7 +742,7 @@ See `company-quick-access-keys' for more details."
                  (const :tag "Super key" super)
                  (const :tag "Hyper key" hyper)
                  (const :tag "Control key" control))
-  :package-version '(company . "0.9.14"))
+  :package-version '(company . "0.10.0"))
 
 (defun company-keymap--quick-access-modifier ()
   "Return string representation of the `company-quick-access-modifier'."
@@ -774,7 +777,7 @@ See `company-quick-access-keys' for more details."
 (define-obsolete-variable-alias
   'company-show-numbers
   'company-show-quick-access
-  "0.9.14")
+  "0.10.0")
 
 (defcustom company-show-quick-access nil
   "If non-nil, show quick-access hints beside the candidates.
@@ -801,7 +804,7 @@ return a string prefixed with one space."
  'company-show-numbers-function
  "use `company-quick-access-hint-function' instead,
 but adjust the expected values appropriately."
- "0.9.14")
+ "0.10.0")
 
 (defcustom company-quick-access-hint-function #'company-quick-access-hint-key
   "Function called to get quick-access hints for the candidates.
@@ -1041,10 +1044,10 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defun company-install-map ()
   (unless (or (cdar company-emulation-alist)
               (null company-my-keymap))
-    (setf (cdar company-emulation-alist) company-my-keymap)))
+    (setq-local company-emulation-alist `((t . ,company-my-keymap)))))
 
 (defun company-uninstall-map ()
-  (setf (cdar company-emulation-alist) nil))
+  (kill-local-variable 'company-emulation-alist))
 
 (defun company--company-command-p (keys)
   "Checks if the keys are part of company's overriding keymap"
@@ -1130,6 +1133,62 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
         (car (setq ppss (cdr ppss)))
         (nth 3 ppss))))
 
+(defun company-substitute-prefix (prefix strings)
+  (let ((len (length prefix)))
+    (mapcar
+     (lambda (s)
+       (if (eq t (compare-strings prefix 0 len s 0 len))
+           s
+         (concat prefix (substring s len))))
+     strings)))
+
+(defun company--match-from-capf-face (str)
+  "Compute `match' result from a CAPF's completion fontification."
+  (let* ((match-start nil) (pos -1)
+         (prop-value nil)  (faces nil)
+         (has-face-p nil)  chunks
+         (limit (length str)))
+    (while (< pos limit)
+      (setq pos
+            (if (< pos 0) 0 (next-property-change pos str limit)))
+      (setq prop-value (or (get-text-property pos 'face str)
+                           (get-text-property pos 'font-lock-face str))
+            faces (if (listp prop-value) prop-value (list prop-value))
+            has-face-p (memq 'completions-common-part faces))
+      (cond ((and (not match-start) has-face-p)
+             (setq match-start pos))
+            ((and match-start (not has-face-p))
+             (push (cons match-start pos) chunks)
+             (setq match-start nil))))
+    (nreverse chunks)))
+
+(defvar company--cache (make-hash-table :test #'equal :size 10))
+
+(cl-defun company-cache-fetch (key
+                               fetcher
+                               &key expire &key check-tag)
+  "Fetch the value assigned to KEY in the cache.
+When not found, or when found to be stale, calls FETCHER to compute the
+result.  When EXPIRE is non-nil, the value will be deleted at the end of
+completion.  CHECK-TAG, when present, is saved as well, and the entry will
+be recomputed when this value changes."
+  ;; We could make EXPIRE accept a time value as well.
+  (let ((res (gethash key company--cache 'none))
+        value)
+    (if (and (not (eq res 'none))
+             (or (not check-tag)
+                 (equal check-tag (assoc-default :check-tag res))))
+        (assoc-default :value res)
+      (setq res (list (cons :value (setq value (funcall fetcher)))))
+      (if expire (push '(:expire . t) res))
+      (if check-tag (push `(:check-tag . ,check-tag) res))
+      (puthash key res company--cache)
+      value)))
+
+(defun company-cache-delete (key)
+  "Delete KEY from cache."
+  (remhash key company--cache))
+
 (defun company-call-backend (&rest args)
   (company--force-sync #'company-call-backend-raw args company-backend))
 
@@ -1165,6 +1224,9 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
     (error (error "Company: backend %s error \"%s\" with args %s"
                   company-backend (error-message-string err) args))))
 
+(defvar-local company--multi-uncached-backends nil)
+(defvar-local company--multi-min-prefix nil)
+
 (defun company--multi-backend-adapter (backends command &rest args)
   (let ((backends (cl-loop for b in backends
                            when (or (keywordp b)
@@ -1179,9 +1241,30 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 
     (pcase command
       (`candidates
-       (company--multi-backend-adapter-candidates backends (car args) separate))
+       (company--multi-backend-adapter-candidates backends
+                                                  (car args)
+                                                  (or company--multi-min-prefix 0)
+                                                  separate))
+      (`set-min-prefix (setq company--multi-min-prefix (car args)))
       (`sorted separate)
       (`duplicates (not separate))
+      ((and `no-cache
+            (pred (lambda (_)
+                    (let* (found
+                           (uncached company--multi-uncached-backends))
+                      (dolist (backend backends)
+                        (when
+                            (and (member backend uncached)
+                                 (company--good-prefix-p
+                                  (let ((company-backend backend))
+                                    (company-call-backend 'prefix))
+                                  (or company--multi-min-prefix 0)))
+                          (setq found t
+                                company--multi-uncached-backends
+                                (delete backend
+                                        company--multi-uncached-backends))))
+                      found))))
+       t)
       ((or `prefix `ignore-case `no-cache `require-match)
        (let (value)
          (cl-dolist (backend backends)
@@ -1198,12 +1281,18 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
                               (car backends))))
              (apply backend command args))))))))
 
-(defun company--multi-backend-adapter-candidates (backends prefix separate)
+(defun company--multi-backend-adapter-candidates (backends prefix min-length separate)
   (let ((pairs (cl-loop for backend in backends
-                        when (equal (company--prefix-str
-                                     (let ((company-backend backend))
-                                       (company-call-backend 'prefix)))
-                                    prefix)
+                        when (let ((bp (let ((company-backend backend))
+                                         (company-call-backend 'prefix))))
+                               (and
+                                ;; It's important that the lengths match.
+                                (equal (company--prefix-str bp) prefix)
+                                ;; One might override min-length, another not.
+                                (if (company--good-prefix-p bp min-length)
+                                    t
+                                  (push backend company--multi-uncached-backends)
+                                  nil)))
                         collect (cons (funcall backend 'candidates prefix)
                                       (company--multi-candidates-mapper
                                        backend
@@ -1359,9 +1448,6 @@ To toggle the value of this variable, call `company-show-doc-buffer' with a
 prefix argument.")
 
 (defun company-call-frontends (command)
-  (when (and company-auto-update-doc
-             (memq command '(update show)))
-    (company-show-doc-buffer))
   (cl-loop for frontend in company-frontends collect
            (condition-case-unless-debug err
                (funcall frontend command)
@@ -1969,6 +2055,10 @@ prefix match (same case) will be prioritized."
 
 ;;;###autoload
 (defun company-manual-begin ()
+  "Start the completion interface.
+
+Unlike `company-complete-selection' or `company-complete', this command
+doesn't cause any immediate changes to the buffer text."
   (interactive)
   (company-assert-enabled)
   (setq company--manual-action t)
@@ -2047,16 +2137,20 @@ For more details see `company-insertion-on-trigger' and
     company-candidates)
    (t (company-cancel))))
 
-(defun company--good-prefix-p (prefix)
+(defun company--good-prefix-p (prefix min-length)
   (and (stringp (company--prefix-str prefix)) ;excludes 'stop
        (or (eq (cdr-safe prefix) t)
-           (let ((len (or (cdr-safe prefix) (length prefix))))
-             (if company--manual-prefix
-                 (or (not company-abort-manual-when-too-short)
-                     ;; Must not be less than minimum or initial length.
-                     (>= len (min company-minimum-prefix-length
-                                  (length company--manual-prefix))))
-               (>= len company-minimum-prefix-length))))))
+           (>= (or (cdr-safe prefix) (length prefix))
+               min-length))))
+
+(defun company--prefix-min-length ()
+  (if company--manual-prefix
+      (if company-abort-manual-when-too-short
+          ;; Must not be less than minimum or initial length.
+          (min company-minimum-prefix-length
+               (length company--manual-prefix))
+        0)
+    company-minimum-prefix-length))
 
 (defun company--continue ()
   (when (company-call-backend 'no-cache company-prefix)
@@ -2064,7 +2158,8 @@ For more details see `company-insertion-on-trigger' and
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (ignore-case (company-call-backend 'ignore-case))
-         (c (when (and (company--good-prefix-p new-prefix)
+         (c (when (and (company--good-prefix-p new-prefix
+                                               (company--prefix-min-length))
                        (setq new-prefix (company--prefix-str new-prefix))
                        (= (- (point) (length new-prefix))
                           (- company-point (length company-prefix))))
@@ -2093,7 +2188,8 @@ For more details see `company-insertion-on-trigger' and
      (t (company--continue-failed new-prefix)))))
 
 (defun company--begin-new ()
-  (let (prefix c)
+  (let ((min-prefix (company--prefix-min-length))
+        prefix c)
     (cl-dolist (backend (if company-backend
                             ;; prefer manual override
                             (list company-backend)
@@ -2106,8 +2202,10 @@ For more details see `company-insertion-on-trigger' and
                     (company-call-backend 'prefix)))
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
-        (when (company--good-prefix-p prefix)
+        (when (company--good-prefix-p prefix min-prefix)
           (let ((ignore-case (company-call-backend 'ignore-case)))
+            ;; Keep this undocumented, esp. while only 1 backend needs it.
+            (company-call-backend 'set-min-prefix min-prefix)
             (setq company-prefix (company--prefix-str prefix)
                   company-backend backend
                   c (company-calculate-candidates company-prefix ignore-case))
@@ -2162,7 +2260,13 @@ For more details see `company-insertion-on-trigger' and
           company--manual-action nil
           company--manual-prefix nil
           company--point-max nil
+          company--multi-uncached-backends nil
+          company--multi-min-prefix nil
           company-point nil)
+    (maphash (lambda (k v)
+               (when (assoc-default :expire v)
+                 (remhash k company--cache)))
+             company--cache)
     (when company-timer
       (cancel-timer company-timer))
     (company-echo-cancel t)
@@ -2226,7 +2330,14 @@ For more details see `company-insertion-on-trigger' and
             (let (company-idle-delay) ; Against misbehavior while debugging.
               (company--perform)))
           (if company-candidates
-              (company-call-frontends 'post-command)
+              (progn
+                (company-call-frontends 'post-command)
+                (when company-auto-update-doc
+                  (condition-case nil
+                      (unless (company--electric-command-p)
+                        (company-show-doc-buffer))
+                    (user-error nil)
+                    (quit nil))))
             (let ((delay (company--idle-delay)))
              (and (numberp delay)
                   (not defining-kbd-macro)
@@ -2714,12 +2825,13 @@ inserted."
         (call-interactively 'company-complete-selection)
       (call-interactively 'company-complete-common)
       (when company-candidates
-        (setq this-command 'company-complete-common)))))
+        (setq this-command 'company-complete-common)))
+    this-command))
 
 (define-obsolete-function-alias
   'company-complete-number
   'company-complete-tooltip-row
-  "0.9.14")
+  "0.10.0")
 
 (defun company-complete-tooltip-row (number)
   "Insert a candidate visible on the tooltip's row NUMBER.
@@ -2925,16 +3037,19 @@ from the candidates list.")
   '(scroll-other-window scroll-other-window-down mwheel-scroll)
   "List of Commands that won't break out of electric commands.")
 
+(defun company--electric-command-p ()
+  (memq this-command company--electric-commands))
+
 (defun company--electric-restore-window-configuration ()
   "Restore window configuration (after electric commands)."
   (when (and company--electric-saved-window-configuration
-             (not (memq this-command company--electric-commands)))
+             (not (company--electric-command-p)))
     (set-window-configuration company--electric-saved-window-configuration)
     (setq company--electric-saved-window-configuration nil)))
 
 (defmacro company--electric-do (&rest body)
   (declare (indent 0) (debug t))
-  `(when (company-manual-begin)
+  `(when company-candidates
      (cl-assert (null company--electric-saved-window-configuration))
      (setq company--electric-saved-window-configuration (current-window-configuration))
      (let ((height (window-height))
@@ -2957,11 +3072,7 @@ from the candidates list.")
         (selection (or company-selection 0)))
       (let* ((selected (nth selection company-candidates))
              (doc-buffer (or (company-call-backend 'doc-buffer selected)
-                             (if company-auto-update-doc
-                                 (company-doc-buffer
-                                  (format "%s: No documentation available"
-                                          selected))
-                               (user-error "No documentation available"))))
+                             (user-error "No documentation available")))
              start)
         (when (consp doc-buffer)
           (setq start (cdr doc-buffer)
@@ -2978,10 +3089,8 @@ automatically show the documentation buffer for each selection."
   (interactive "P")
   (when toggle-auto-update
     (setq company-auto-update-doc (not company-auto-update-doc)))
-  (if company-auto-update-doc
-      (company--show-doc-buffer)
-    (company--electric-do
-      (company--show-doc-buffer))))
+  (company--electric-do
+    (company--show-doc-buffer)))
 (put 'company-show-doc-buffer 'company-keep t)
 
 (defun company-show-location ()
@@ -3371,7 +3480,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
  'company--show-numbers
  "use `company-quick-access-hint-key' instead,
 but adjust the expected values appropriately."
- "0.9.14")
+ "0.10.0")
 
 (defsubst company--window-height ()
   (if (fboundp 'window-screen-lines)

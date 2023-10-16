@@ -1,6 +1,6 @@
 ;;; company-dabbrev-code.el --- dabbrev-like company-mode backend for code  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2016, 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016, 2021-2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -69,11 +69,29 @@ also `company-dabbrev-code-time-limit'."
   "Non-nil to ignore case when collecting completion candidates."
   :type 'boolean)
 
+(defcustom company-dabbrev-code-completion-styles nil
+  "Non-nil to use the completion styles for fuzzy matching."
+  :type '(choice (const :tag "Prefix matching only" nil)
+                 (const :tag "Matching according to `completion-styles'" t)
+                 (list :tag "Custom list of styles" symbol)))
+
 (defun company-dabbrev-code--make-regexp (prefix)
-  (concat "\\_<" (if (equal prefix "")
-                     "\\([a-zA-Z]\\|\\s_\\)"
-                   (regexp-quote prefix))
-          "\\(\\sw\\|\\s_\\)*\\_>"))
+  (let ((prefix-re
+         (cond
+          ((equal prefix "")
+           "\\([a-zA-Z]\\|\\s_\\)")
+          ((not company-dabbrev-code-completion-styles)
+           (regexp-quote prefix))
+          (t
+           ;; Use the cache at least after 2 chars.  We could also cache
+           ;; earlier, for users who set company-min-p-l to 1 or 0.
+           (let ((prefix (if (>= (length prefix) 2)
+                             (substring prefix 0 2)
+                           prefix)))
+             (mapconcat #'regexp-quote
+                        (mapcar #'string prefix)
+                        "\\(\\sw\\|\\s_\\)*"))))))
+    (concat "\\_<" prefix-re "\\(\\sw\\|\\s_\\)*\\_>")))
 
 ;;;###autoload
 (defun company-dabbrev-code (command &optional arg &rest _ignored)
@@ -88,18 +106,46 @@ comments or strings."
                  (or company-dabbrev-code-everywhere
                      (not (company-in-string-or-comment)))
                  (or (company-grab-symbol) 'stop)))
-    (candidates (let ((case-fold-search company-dabbrev-code-ignore-case))
-                  (company-dabbrev--search
-                   (company-dabbrev-code--make-regexp arg)
-                   company-dabbrev-code-time-limit
-                   (pcase company-dabbrev-code-other-buffers
-                     (`t (list major-mode))
-                     (`code company-dabbrev-code-modes)
-                     (`all `all))
-                   (not company-dabbrev-code-everywhere))))
+    (candidates
+     (let* ((case-fold-search company-dabbrev-code-ignore-case)
+            (regexp (company-dabbrev-code--make-regexp arg)))
+       (company-dabbrev-code--filter
+        arg
+        (company-cache-fetch
+         'dabbrev-code-candidates
+         (lambda ()
+           (company-dabbrev--search
+            regexp
+            company-dabbrev-code-time-limit
+            (pcase company-dabbrev-code-other-buffers
+              (`t (list major-mode))
+              (`code company-dabbrev-code-modes)
+              (`all `all))
+            (not company-dabbrev-code-everywhere)))
+         :expire t
+         :check-tag regexp))))
     (kind 'text)
+    (no-cache t)
     (ignore-case company-dabbrev-code-ignore-case)
+    (match (when company-dabbrev-code-completion-styles
+             (company--match-from-capf-face arg)))
     (duplicates t)))
+
+(defun company-dabbrev-code--filter (prefix table)
+  (let ((completion-ignore-case company-dabbrev-code-ignore-case)
+        (completion-styles (if (listp company-dabbrev-code-completion-styles)
+                               company-dabbrev-code-completion-styles
+                             completion-styles))
+        res)
+    (if (not company-dabbrev-code-completion-styles)
+        (all-completions prefix table)
+      (setq res (completion-all-completions
+                 prefix
+                 table
+                 nil (length prefix)))
+      (if (numberp (cdr (last res)))
+          (setcdr (last res) nil))
+      res)))
 
 (provide 'company-dabbrev-code)
 ;;; company-dabbrev-code.el ends here

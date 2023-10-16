@@ -1,6 +1,6 @@
 ;;; company-dabbrev.el --- dabbrev-like company-mode completion backend  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2018, 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2018, 2021-2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -70,10 +70,7 @@ candidate is inserted, even some of its characters have different case."
 
 The value of nil means keep them as-is.
 `case-replace' means use the value of `case-replace'.
-Any other value means downcase.
-
-If you set this value to nil, you may also want to set
-`company-dabbrev-ignore-case' to any value other than `keep-prefix'."
+Any other value means downcase."
   :type '(choice
           (const :tag "Keep as-is" nil)
           (const :tag "Downcase" t)
@@ -114,7 +111,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                    (when (and (>= (length match) company-dabbrev-minimum-length)
                               (not (and company-dabbrev-ignore-invisible
                                         (invisible-p (match-beginning 0)))))
-                     (push match symbols)))))
+                     (puthash match t symbols)))))
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
@@ -147,7 +144,9 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 (defun company-dabbrev--search (regexp &optional limit other-buffer-modes
                                 ignore-comments)
   (let* ((start (current-time))
-         (symbols (company-dabbrev--search-buffer regexp (point) nil start limit
+         (symbols (company-dabbrev--search-buffer regexp (point)
+                                                  (make-hash-table :test 'equal)
+                                                  start limit
                                                   ignore-comments)))
     (when other-buffer-modes
       (cl-dolist (buffer (delq (current-buffer) (buffer-list)))
@@ -175,8 +174,28 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                        1)))
 
 (defun company-dabbrev--filter (prefix candidates)
-  (let ((completion-ignore-case company-dabbrev-ignore-case))
-    (all-completions prefix candidates)))
+  (let* ((completion-ignore-case company-dabbrev-ignore-case)
+         (filtered (all-completions prefix candidates))
+         (lp (length prefix))
+         (downcase (if (eq company-dabbrev-downcase 'case-replace)
+                       case-replace
+                     company-dabbrev-downcase)))
+    (when downcase
+      (let ((ptr filtered))
+        (while ptr
+          (setcar ptr (downcase (car ptr)))
+          (setq ptr (cdr ptr)))))
+    (if (and (eq company-dabbrev-ignore-case 'keep-prefix)
+             (not (= lp 0)))
+        (company-substitute-prefix prefix filtered)
+      filtered)))
+
+(defun company-dabbrev--fetch ()
+  (company-dabbrev--search (company-dabbrev--make-regexp)
+                           company-dabbrev-time-limit
+                           (pcase company-dabbrev-other-buffers
+                             (`t (list major-mode))
+                             (`all `all))))
 
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest _ignored)
@@ -186,21 +205,13 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     (interactive (company-begin-backend 'company-dabbrev))
     (prefix (company-dabbrev--prefix))
     (candidates
-     (let* ((case-fold-search company-dabbrev-ignore-case)
-            (words (company-dabbrev--search (company-dabbrev--make-regexp)
-                                            company-dabbrev-time-limit
-                                            (pcase company-dabbrev-other-buffers
-                                              (`t (list major-mode))
-                                              (`all `all))))
-            (downcase-p (if (eq company-dabbrev-downcase 'case-replace)
-                            case-replace
-                          company-dabbrev-downcase)))
-       (setq words (company-dabbrev--filter arg words))
-       (if downcase-p
-           (mapcar 'downcase words)
-         words)))
+     (company-dabbrev--filter
+      arg
+      (company-cache-fetch 'dabbrev-candidates #'company-dabbrev--fetch
+                           :expire t)))
     (kind 'text)
-    (ignore-case company-dabbrev-ignore-case)
+    (no-cache t)
+    (ignore-case (and company-dabbrev-ignore-case t))
     (duplicates t)))
 
 (provide 'company-dabbrev)

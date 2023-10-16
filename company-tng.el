@@ -140,7 +140,7 @@ confirm the selection and finish the completion."
   :type 'boolean)
 
 ;;;###autoload
-(define-obsolete-function-alias 'company-tng-configure-default 'company-tng-mode "0.9.14"
+(define-obsolete-function-alias 'company-tng-configure-default 'company-tng-mode "0.10.0"
   "Applies the default configuration to enable company-tng.")
 
 (declare-function eglot--snippet-expansion-fn "eglot")
