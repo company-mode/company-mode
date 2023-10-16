@@ -3752,7 +3752,7 @@ Returns a negative number if the tooltip should be displayed above point."
     (pre-command (company-pseudo-tooltip-hide-temporarily))
     (unhide
      (let ((ov company-pseudo-tooltip-overlay))
-       (when (> (overlay-get ov 'company-height) 0)
+       (when (and ov (> (overlay-get ov 'company-height) 0))
          ;; Sleight of hand: if the current line wraps, we adjust the
          ;; start of the overlay so that the popup does not zig-zag,
          ;; but don't update the popup's background.  This seems just
