@@ -1189,6 +1189,13 @@ be recomputed when this value changes."
   "Delete KEY from cache."
   (remhash key company--cache))
 
+(defun company-cache-expire ()
+  "Delete all keys from the cache that are set to be expired."
+  (maphash (lambda (k v)
+             (when (assoc-default :expire v)
+               (remhash k company--cache)))
+           company--cache))
+
 (defun company-call-backend (&rest args)
   (company--force-sync #'company-call-backend-raw args company-backend))
 
@@ -2264,10 +2271,7 @@ For more details see `company-insertion-on-trigger' and
           company--multi-uncached-backends nil
           company--multi-min-prefix nil
           company-point nil)
-    (maphash (lambda (k v)
-               (when (assoc-default :expire v)
-                 (remhash k company--cache)))
-             company--cache)
+    (company-cache-expire)
     (when company-timer
       (cancel-timer company-timer))
     (company-echo-cancel t)
