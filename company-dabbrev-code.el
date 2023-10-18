@@ -107,7 +107,8 @@ comments or strings."
                      (not (company-in-string-or-comment)))
                  (or (company-grab-symbol) 'stop)))
     (candidates
-     (let* ((case-fold-search company-dabbrev-code-ignore-case)
+     (let* ((case-fold-search (and company-dabbrev-code-ignore-case
+                                   (company-smart-ignore-case arg)))
             (regexp (company-dabbrev-code--make-regexp arg)))
        (company-dabbrev-code--filter
         arg
@@ -126,7 +127,8 @@ comments or strings."
          :check-tag regexp))))
     (kind 'text)
     (no-cache t)
-    (ignore-case company-dabbrev-code-ignore-case)
+    (ignore-case (and company-dabbrev-code-ignore-case
+                      (company-smart-ignore-case arg)))
     (match (when company-dabbrev-code-completion-styles
              (company--match-from-capf-face arg)))
     (duplicates t)))

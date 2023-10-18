@@ -1397,7 +1397,7 @@ be recomputed when this value changes."
   (when (> (length candidate) 0)
     (setq candidate (substring-no-properties candidate))
     ;; XXX: Return value we check here is subject to change.
-    (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
+    (if (eq (company-call-backend 'ignore-case company-prefix) 'keep-prefix)
         (insert (company-strip-prefix candidate))
       (unless (equal company-prefix candidate)
         (delete-region (- (point) (length company-prefix)) (point))
@@ -1426,7 +1426,7 @@ can retrieve meta-data for them."
   ;; company-ispell needs this, because the results are always lower-case
   ;; It's mory efficient to fix it only when they are displayed.
   ;; FIXME: Adopt the current text's capitalization instead?
-  (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
+  (if (eq (company-call-backend 'ignore-case company-prefix) 'keep-prefix)
       (let ((prefix (company--clean-string company-prefix)))
         (concat prefix (substring candidate (length prefix))))
     candidate))
@@ -1514,7 +1514,7 @@ update if FORCE-UPDATE."
     (setq company-selection company-selection-default
           company-candidates candidates))
   ;; Calculate common.
-  (let ((completion-ignore-case (company-call-backend 'ignore-case)))
+  (let ((completion-ignore-case (company-call-backend 'ignore-case company-prefix)))
     ;; We want to support non-prefix completion, so filtering is the
     ;; responsibility of each respective backend, not ours.
     ;; On the other hand, we don't want to replace non-prefix input in
@@ -1550,6 +1550,10 @@ update if FORCE-UPDATE."
           (push (cons prefix candidates) company-candidates-cache)))
     ;; Only now apply the predicate and transformers.
     (company--postprocess-candidates candidates)))
+
+(defun company-smart-ignore-case (prefix)
+  (let (case-fold-search)
+    (not (string-match-p "[[:upper:]]" prefix))))
 
 (defun company--unique-match-p (candidates prefix ignore-case)
   (and candidates
@@ -2165,7 +2169,7 @@ For more details see `company-insertion-on-trigger' and
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
-         (ignore-case (company-call-backend 'ignore-case))
+         (ignore-case (company-call-backend 'ignore-case new-prefix))
          (c (when (and (company--good-prefix-p new-prefix
                                                (company--prefix-min-length))
                        (setq new-prefix (company--prefix-str new-prefix))
@@ -2211,7 +2215,7 @@ For more details see `company-insertion-on-trigger' and
               (company--multi-backend-adapter backend 'prefix)))
       (when prefix
         (when (company--good-prefix-p prefix min-prefix)
-          (let ((ignore-case (company-call-backend 'ignore-case)))
+          (let ((ignore-case (company-call-backend 'ignore-case prefix)))
             ;; Keep this undocumented, esp. while only 1 backend needs it.
             (company-call-backend 'set-min-prefix min-prefix)
             (setq company-prefix (company--prefix-str prefix)
@@ -2475,7 +2479,8 @@ each one wraps a part of the input string."
                company-search-filtering
                (lambda (candidate) (string-match re candidate))))
          (cc (company-calculate-candidates company-prefix
-                                           (company-call-backend 'ignore-case))))
+                                           (company-call-backend 'ignore-case
+                                                                 company-prefix))))
     (unless cc (user-error "No match"))
     (company-update-candidates cc)))
 
@@ -3871,7 +3876,8 @@ Delay is determined by `company-tooltip-idle-delay'."
                                    nil completion)))
 
     (setq completion (if (string-prefix-p company-prefix completion
-                                          (eq (company-call-backend 'ignore-case)
+                                          (eq (company-call-backend 'ignore-case
+                                                                    company-prefix)
                                               'keep-prefix))
                          (company-strip-prefix completion)
                        completion))
@@ -3941,7 +3947,8 @@ Delay is determined by `company-tooltip-idle-delay'."
        (not (eq t (compare-strings company-prefix nil nil
                                    (car company-candidates) nil nil
                                    t)))
-       (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
+       (or (eq (company-call-backend 'ignore-case company-prefix)
+               'keep-prefix)
            (string-prefix-p company-prefix company-common))))
 
 (defun company-tooltip-visible-p ()
@@ -3952,7 +3959,8 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-preview-common--show-p ()
   "Returns whether the preview of common can be showed or not"
   (and company-common
-       (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
+       (or (eq (company-call-backend 'ignore-case company-prefix)
+               'keep-prefix)
            (string-prefix-p company-prefix company-common))))
 
 (defun company-preview-common-frontend (command)
