@@ -875,6 +875,8 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-w" 'company-show-location)
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
+    (define-key keymap (kbd "C->") 'company-doc-buffer-next)
+    (define-key keymap (kbd "C-<") 'company-doc-buffer-previous)
     (company-keymap--bind-quick-access keymap)
      keymap)
   "Keymap that is enabled during an active completion.")
@@ -1480,7 +1482,9 @@ update if FORCE-UPDATE."
                         (- selection offset)))))
   (when (or force-update (not (equal selection company-selection)))
     (setq company-selection selection
-          company-selection-changed t)
+          company-selection-changed t
+          company--candidate-variants 'none
+          company--variant-number 0)
     (company-call-frontends 'update)))
 
 (defun company--group-lighter (candidate base)
@@ -1493,7 +1497,9 @@ update if FORCE-UPDATE."
         (format "%s-<%s>" base name)))))
 
 (defun company-update-candidates (candidates)
-  (setq company-candidates-length (length candidates))
+  (setq company-candidates-length (length candidates)
+        company--candidate-variants 'none
+        company--variant-number 0)
   (if company-selection-changed
       ;; Try to restore the selection
       (let ((selected (and company-selection
@@ -2924,10 +2930,12 @@ from the candidates list.")
 (defvar-local company-last-metadata nil)
 
 (defun company-fetch-metadata ()
-  (let ((selected (nth (or company-selection 0) company-candidates)))
-    (unless (eq selected (car company-last-metadata))
+  (let ((selected (nth (or company-selection 0) company-candidates))
+        (variant (nth company--variant-number (company--candidate-variants))))
+    (unless (equal (cons selected variant) (car company-last-metadata))
       (setq company-last-metadata
-            (cons selected (company-call-backend 'meta selected))))
+            (cons (cons selected variant)
+                  (company-call-backend 'meta selected variant))))
     (cdr company-last-metadata)))
 
 (defun company-doc-buffer (&optional string)
@@ -2975,12 +2983,26 @@ from the candidates list.")
                                  unread-command-events))
     (clear-this-command-keys t)))
 
+(defvar-local company--candidate-variants 'none)
+(defvar-local company--variant-number 0)
+
+(defun company--candidate-variants ()
+  (when (eq company--candidate-variants 'none)
+    (setq company--candidate-variants (company-call-backend
+                                       'variants
+                                       (nth (or company-selection 0)
+                                            company-candidates))))
+  company--candidate-variants)
+
 (defun company--show-doc-buffer ()
   "Show the documentation buffer for the selection."
   (let ((other-window-scroll-buffer)
         (selection (or company-selection 0)))
       (let* ((selected (nth selection company-candidates))
-             (doc-buffer (or (company-call-backend 'doc-buffer selected)
+             (doc-buffer (or (company-call-backend
+                              'doc-buffer selected
+                              (nth company--variant-number
+                                   (company--candidate-variants)))
                              (user-error "No documentation available")))
              start)
         (when (consp doc-buffer)
@@ -3001,6 +3023,19 @@ automatically show the documentation buffer for each selection."
   (company--electric-do
     (company--show-doc-buffer)))
 (put 'company-show-doc-buffer 'company-keep t)
+
+(defun company-doc-buffer-next ()
+  (interactive)
+  (setq company--variant-number (min (1+ company--variant-number)
+                                     (1- (length (company--candidate-variants)))))
+  (unless company-auto-update-doc
+    (company-show-doc-buffer)))
+
+(defun company-doc-buffer-previous ()
+  (interactive)
+  (setq company--variant-number (max (1- company--variant-number) 0))
+  (unless company-auto-update-doc
+    (company-show-doc-buffer)))
 
 (defun company-show-location ()
   "Temporarily display a buffer showing the selected candidate in context."
