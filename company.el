@@ -1166,7 +1166,7 @@ matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
 
 (cl-defun company-cache-fetch (key
                                fetcher
-                               &key expire &key check-tag)
+                               &key expire check-tag)
   "Fetch the value assigned to KEY in the cache.
 When not found, or when found to be stale, calls FETCHER to compute the
 result.  When EXPIRE is non-nil, the value will be deleted at the end of
