@@ -114,7 +114,7 @@ so we can't just use the preceding variable instead.")
 
 (defvar-local company-capf--sorted nil)
 
-(defun company-capf (command &optional arg &rest _args)
+(defun company-capf (command &optional arg &rest rest)
   "`company-mode' backend using `completion-at-point-functions'."
   (interactive (list 'interactive))
   (pcase command
@@ -145,20 +145,24 @@ so we can't just use the preceding variable instead.")
     (`meta
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-docsig)))
-       (when f (funcall f arg))))
+       (when f (apply f arg rest))))
     (`doc-buffer
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-doc-buffer)))
-       (when f (funcall f arg))))
+       (when f (apply f arg rest))))
     (`location
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-location)))
-       (when f (funcall f arg))))
+       (when f (apply f arg rest))))
     (`annotation
      (company-capf--annotation arg))
     (`kind
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-kind)))
+       (when f (funcall f arg))))
+    (`variants
+     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                         :company-variants)))
        (when f (funcall f arg))))
     (`deprecated
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
