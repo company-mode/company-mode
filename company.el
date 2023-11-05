@@ -2946,7 +2946,7 @@ from the candidates list.")
             (setq-local buffer-invisibility-spec bis)
             (set-window-buffer nil (current-buffer) t)
 
-            (vertical-motion (cons (/ from (default-font-width)) 0))
+            (vertical-motion (cons (/ from (frame-char-width)) 0))
             (setq from-chars (point))
             (while (and (<
                          (setq spw-from
@@ -2970,7 +2970,7 @@ from the candidates list.")
                   "")
               (if (not to)
                   (setq to-chars (point-max))
-                (vertical-motion (cons (/ to (default-font-width)) 0))
+                (vertical-motion (cons (/ to (frame-char-width)) 0))
                 (setq to-chars (point))
                 (while (and (not (eolp))
                             (<
