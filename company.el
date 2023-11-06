@@ -3774,7 +3774,7 @@ Returns a negative number if the tooltip should be displayed above point."
           (setq nl (< (move-to-window-line row) row)
                 beg (point)
                 end (save-excursion
-                      (move-to-window-line (+ row (abs height)))
+                      (vertical-motion (abs height))
                       (point))
                 ov (make-overlay beg end nil t)
                 args (list (mapcar 'company-plainify
