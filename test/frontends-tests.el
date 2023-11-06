@@ -483,8 +483,10 @@
     (should (equal-including-properties
              (company-modify-line str "xx" 0)
              "xx-foobar"))
-    ;; `equal-including-properties' compares with `eq' in Emacs 28-.
-    (should (ert-equal-including-properties
+    (should (funcall
+             (if (version< emacs-version "29")
+                 #'ert-equal-including-properties
+               #'equal-including-properties)
              (company-modify-line str "zz" (* 10 (frame-char-width)))
              (concat "-*-foobar"
                      (propertize " " 'display `(space :width (,(frame-char-width))))
