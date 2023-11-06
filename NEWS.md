@@ -2,6 +2,9 @@
 
 # Next
 
+* The tooltip uses a more complex rendering approach, supporting double
+  width/CJK characters, as well as buffer text of different sizes
+  ([#1394](https://github.com/company-mode/company-mode/pull/1394)).
 * New user option `company-dabbrev-code-completion-styles`.  Use it to enable
   fuzzy matching in `company-dabbrev-code`
   ([#1215](https://github.com/company-mode/company-mode/pull/1215)).  An example
