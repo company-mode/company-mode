@@ -496,6 +496,7 @@
              "-*-fzzbar"))))
 
 (ert-deftest company-modify-line-with-prettify ()
+  :tags '(interactive)
   (with-temp-buffer
     (insert "lambda foo bar")
     (setq-local prettify-symbols-alist '(("lambda" . ?λ)))

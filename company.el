@@ -2933,7 +2933,7 @@ from the candidates list.")
   (let ((from-chars 0)
         (to-chars 0)
         spw-from spw-to
-        spw-from-prev spw-to-prev
+        spw-to-prev
         front back
         (orig-buf (window-buffer))
         (bis buffer-invisibility-spec)
@@ -2948,20 +2948,13 @@ from the candidates list.")
 
             (vertical-motion (cons (/ from (frame-char-width)) 0))
             (setq from-chars (point))
-            (while (and (<
-                         (setq spw-from
-                               (car
-                                (window-text-pixel-size nil (point-min) (point) 55555)))
-                         from)
+            (setq spw-from
+                  (car (window-text-pixel-size nil (point-min) (point) 55555)))
+            (while (and (< spw-from from)
                         (not (eolp)))
-              (when (<= spw-from from)
-                (setq from-chars (point)))
               (forward-char 1)
-              (setq spw-from-prev spw-from))
-
-            (when (and (/= from-chars (point-max)) (> spw-from from))
-              (goto-char from-chars)
-              (forward-char 1)
+              (setq spw-from
+                    (car (window-text-pixel-size nil (point-min) (point) 55555)))
               (setq from-chars (point)))
 
             (if (= from-chars (point-max))
@@ -2972,33 +2965,29 @@ from the candidates list.")
                   (setq to-chars (point-max))
                 (vertical-motion (cons (/ to (frame-char-width)) 0))
                 (setq to-chars (point))
-                (while (and (not (eolp))
-                            (<
-                             (setq spw-to
-                                   (car
-                                    (window-text-pixel-size nil (point-min) (point) 55555)))
-                             to))
-                  (when (<= spw-to to)
-                    (setq to-chars (point)))
+                (setq spw-to
+                      (car (window-text-pixel-size nil (point-min) (point) 55555)))
+                (while (and (< spw-to to)
+                            (not (eolp)))
+                  (setq spw-to-prev spw-to)
                   (forward-char 1)
-                  (setq spw-to-prev spw-to
-                        spw-to nil)))
+                  (setq spw-to
+                        (car (window-text-pixel-size nil (point-min) (point) 55555)))
+                  (when (<= spw-to to)
+                    (setq to-chars (point)))))
 
-              (unless spw-from-prev (setq spw-from-prev spw-from))
               (unless spw-to-prev (setq spw-to-prev spw-to))
 
               (when (> spw-from from)
                 (setq front (propertize " " 'display
                                         `(space . (:width (,(- spw-from from)))))))
-              (when (and to (or (not spw-to) (> spw-to to)))
+              (when (and to (/= spw-to to))
                 (setq back (propertize
                             " " 'display
                             `(space . (:width (,(- to
-                                                   (or
-                                                    spw-to-prev
-                                                    (car (window-text-pixel-size
-                                                          nil (point-min) to-chars 55555)))
-                                                   )))))))
+                                                   (if (< spw-to to)
+                                                       spw-to
+                                                     spw-to-prev))))))))
               (concat front (buffer-substring from-chars to-chars) back)))
         (set-window-buffer nil orig-buf t)))))
 
