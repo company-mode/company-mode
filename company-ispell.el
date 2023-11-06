@@ -1,4 +1,4 @@
-;;; company-ispell.el --- company-mode completion backend using Ispell
+;;; company-ispell.el --- company-mode completion backend using Ispell  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009-2011, 2013-2016, 2018, 2021, 2023  Free Software Foundation, Inc.
 
@@ -63,7 +63,7 @@ If nil, use `ispell-complete-word-dict'."
       ispell-alternate-dictionary))
 
 ;;;###autoload
-(defun company-ispell (command &optional arg &rest ignored)
+(defun company-ispell (command &optional arg &rest _ignored)
   "`company-mode' completion backend using Ispell."
   (interactive (list 'interactive))
   (cl-case command

@@ -1,6 +1,6 @@
-;;; company-oddmuse.el --- company-mode completion backend for oddmuse-mode
+;;; company-oddmuse.el --- company-mode completion backend for oddmuse-mode  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2016, 2022  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016, 2022, 2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -41,7 +41,7 @@
                     (oddmuse-make-completion-table oddmuse-wiki)))))
 
 ;;;###autoload
-(defun company-oddmuse (command &optional arg &rest ignored)
+(defun company-oddmuse (command &optional arg &rest _ignored)
   "`company-mode' completion backend for `oddmuse-mode'."
   (interactive (list 'interactive))
   (cl-case command

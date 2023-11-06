@@ -1,6 +1,6 @@
-;;; company-yasnippet.el --- company-mode completion backend for Yasnippet
+;;; company-yasnippet.el --- company-mode completion backend for Yasnippet  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2014-2015, 2020-2022  Free Software Foundation, Inc.
+;; Copyright (C) 2014-2015, 2020-2023  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
@@ -136,7 +136,7 @@ It has to accept one argument: the snippet's name.")
       (current-buffer))))
 
 ;;;###autoload
-(defun company-yasnippet (command &optional arg &rest ignore)
+(defun company-yasnippet (command &optional arg &rest _ignore)
   "`company-mode' backend for `yasnippet'.
 
 This backend should be used with care, because as long as there are

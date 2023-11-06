@@ -1,6 +1,6 @@
-;;; company-keywords.el --- A company backend for programming language keywords
+;;; company-keywords.el --- A company backend for programming language keywords  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2018, 2020-2022  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2018, 2020-2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -439,7 +439,7 @@
      (makefile-mode          . makefile-statements))))
 
 ;;;###autoload
-(defun company-keywords (command &optional arg &rest ignored)
+(defun company-keywords (command &optional arg &rest _ignored)
   "`company-mode' backend for programming language keywords."
   (interactive (list 'interactive))
   (cl-case command

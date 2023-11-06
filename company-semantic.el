@@ -1,6 +1,6 @@
-;;; company-semantic.el --- company-mode completion backend using Semantic
+;;; company-semantic.el --- company-mode completion backend using Semantic  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2018  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2018, 2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -130,7 +130,7 @@ and `c-electric-colon', for automatic completion right after \">\" and
     (company-grab-symbol)))
 
 ;;;###autoload
-(defun company-semantic (command &optional arg &rest ignored)
+(defun company-semantic (command &optional arg &rest _ignored)
   "`company-mode' completion backend using CEDET Semantic."
   (interactive (list 'interactive))
   (cl-case command

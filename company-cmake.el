@@ -1,6 +1,6 @@
-;;; company-cmake.el --- company-mode completion backend for CMake
+;;; company-cmake.el --- company-mode completion backend for CMake  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013-2015, 2017-2018, 2020  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2015, 2017-2018, 2020, 2023  Free Software Foundation, Inc.
 
 ;; Author: Chen Bin <chenbin DOT sh AT gmail>
 ;; Version: 0.2
@@ -94,12 +94,10 @@ They affect which types of symbols we get completion candidates for.")
     ))
 
 (defun company-cmake--parse (prefix content cmd)
-  (let ((start 0)
-        (pattern (format company-cmake--completion-pattern
+  (let ((pattern (format company-cmake--completion-pattern
                          (regexp-quote prefix)
                          (if (zerop (length prefix)) "+" "*")))
         (lines (split-string content "\n"))
-        match
         rlt)
     (dolist (line lines)
       (when (string-match pattern line)
@@ -185,7 +183,7 @@ They affect which types of symbols we get completion candidates for.")
     (and (eq (char-before (point)) ?\{)
          (eq (char-before (1- (point))) ?$))))
 
-(defun company-cmake (command &optional arg &rest ignored)
+(defun company-cmake (command &optional arg &rest _ignored)
   "`company-mode' completion backend for CMake.
 CMake is a cross-platform, open-source make system."
   (interactive (list 'interactive))

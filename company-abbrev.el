@@ -1,6 +1,6 @@
-;;; company-abbrev.el --- company-mode completion backend for abbrev
+;;; company-abbrev.el --- company-mode completion backend for abbrev  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2015, 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2015, 2021, 2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -29,12 +29,12 @@
 (require 'cl-lib)
 (require 'abbrev)
 
-(defun company-abbrev-insert (match)
+(defun company-abbrev-insert (_match)
   "Replace MATCH with the expanded abbrev."
   (expand-abbrev))
 
 ;;;###autoload
-(defun company-abbrev (command &optional arg &rest ignored)
+(defun company-abbrev (command &optional arg &rest _ignored)
   "`company-mode' completion backend for abbrev."
   (interactive (list 'interactive))
   (cl-case command

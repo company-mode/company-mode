@@ -1,6 +1,6 @@
-;;; company-etags.el --- company-mode completion backend for etags
+;;; company-etags.el --- company-mode completion backend for etags  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2015, 2018-2019  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2015, 2018-2019, 2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -85,7 +85,7 @@ Set it to t or to a list of major modes."
            (all-completions prefix (tags-completion-table))))))
 
 ;;;###autoload
-(defun company-etags (command &optional arg &rest ignored)
+(defun company-etags (command &optional arg &rest _ignored)
   "`company-mode' completion backend for etags."
   (interactive (list 'interactive))
   (cl-case command

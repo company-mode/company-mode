@@ -1,6 +1,6 @@
-;;; elisp-tests.el --- company-elisp tests
+;;; elisp-tests.el --- company-elisp tests  -*- lexical-binding: nil -*-
 
-;; Copyright (C) 2013-2015  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2015, 2023  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 

@@ -1,6 +1,6 @@
-;;; company-files.el --- company-mode completion backend for file names
+;;; company-files.el --- company-mode completion backend for file names  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2021  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2021, 2023  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -48,7 +48,7 @@ Set this to nil to disable that behavior."
 
 (defun company-files--directory-files (dir prefix)
   ;; Don't use directory-files. It produces directories without trailing /.
-  (condition-case err
+  (condition-case _err
       (let ((comp (sort (file-name-all-completions prefix dir)
                         (lambda (s1 s2) (string-lessp (downcase s1) (downcase s2))))))
         (when company-files-exclusions
@@ -141,7 +141,7 @@ Set this to nil to disable that behavior."
     (delete-char -1)))
 
 ;;;###autoload
-(defun company-files (command &optional arg &rest ignored)
+(defun company-files (command &optional arg &rest _ignored)
   "`company-mode' completion backend existing file names.
 Completions works for proper absolute and relative files paths.
 File paths with spaces are only supported inside strings."
