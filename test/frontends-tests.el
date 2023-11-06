@@ -291,6 +291,8 @@
 
 (ert-deftest company-create-lines-handles-multiple-width ()
   :tags '(interactive)
+  ;; XXX: Brittle.  This can fail with '-nw' because these chars have different
+  ;; widths in the terminal.
   (let (company-show-quick-access
         (company-candidates '("蛙蛙蛙蛙" "蛙abc"))
         (company-candidates-length 2)
