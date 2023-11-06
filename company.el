@@ -2981,7 +2981,8 @@ from the candidates list.")
                   (when (<= spw-to to)
                     (setq to-chars (point)))
                   (forward-char 1)
-                  (setq spw-to-prev spw-to)))
+                  (setq spw-to-prev spw-to
+                        spw-to nil)))
 
               (unless spw-from-prev (setq spw-from-prev spw-from))
               (unless spw-to-prev (setq spw-to-prev spw-to))
