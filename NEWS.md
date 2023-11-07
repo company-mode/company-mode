@@ -2,6 +2,7 @@
 
 # Next
 
+* New user option `company-tooltip-scrollbar-width` with default 0.4.
 * The tooltip uses a more complex rendering approach, supporting double
   width/CJK characters, as well as buffer text of different sizes
   ([#1394](https://github.com/company-mode/company-mode/pull/1394)).

@@ -299,6 +299,10 @@ This doesn't include the margins and the scroll bar."
   :type '(choice (const :tag "Scrollbar" scrollbar)
                  (const :tag "Two lines" lines)))
 
+(defcustom company-tooltip-scrollbar-width 0.4
+  "Width of the scrollbar thumb, in columns."
+  :type 'number)
+
 (defcustom company-tooltip-align-annotations nil
   "When non-nil, align annotations to the right tooltip border."
   :type 'boolean
@@ -3665,7 +3669,7 @@ but adjust the expected values appropriately."
                (str (car item))
                (annotation (cadr item))
                (left (nth 2 item))
-               (right (company-space-string company-tooltip-margin))
+               (right (company--right-margin))
                (width width)
                (selected (equal selection i)))
           (when company-show-quick-access
@@ -3701,10 +3705,27 @@ but adjust the expected values appropriately."
       (cons lower upper))))
 
 (defun company--scrollbar (i bounds)
-  (propertize " " 'face
-              (if (and (>= i (car bounds)) (<= i (cdr bounds)))
-                  'company-tooltip-scrollbar-thumb
-                'company-tooltip-scrollbar-track)))
+  (let* ((scroll-width (ceiling (* (default-font-width)
+                                   company-tooltip-scrollbar-width))))
+    (propertize " "
+                'display `(space . (:width (,scroll-width)))
+                'face
+                (if (and (>= i (car bounds)) (<= i (cdr bounds)))
+                    'company-tooltip-scrollbar-thumb
+                  'company-tooltip-scrollbar-track))))
+
+(defun company--right-margin ()
+  (if (or (not (eq company-tooltip-offset-display 'scrollbar))
+          (not (display-graphic-p))
+          (= company-tooltip-scrollbar-width 1))
+      (company-space-string company-tooltip-margin)
+    (let* ((scroll-width (ceiling (* (default-font-width)
+                                     company-tooltip-scrollbar-width)))
+           (rest-width (- (* (default-font-width) company-tooltip-margin)
+                          scroll-width)))
+      (propertize
+       (company-space-string company-tooltip-margin)
+       'display `(space . (:width (,rest-width)))))))
 
 (defun company--scrollpos-line (text width fancy-margin-width)
   (propertize (concat (company-space-string company-tooltip-margin)
