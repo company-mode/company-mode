@@ -2954,7 +2954,8 @@ from the candidates list.")
             (vertical-motion (cons (/ from (frame-char-width)) 0))
             (setq from-chars (point))
             (setq spw-from
-                  (car (window-text-pixel-size nil (point-min) (point) 55555)))
+                  (if (bobp) 0
+                    (car (window-text-pixel-size nil (point-min) (point) 55555))))
             (while (and (< spw-from from)
                         (not (eolp)))
               (forward-char 1)
@@ -2971,7 +2972,8 @@ from the candidates list.")
                 (vertical-motion (cons (/ to (frame-char-width)) 0))
                 (setq to-chars (point))
                 (setq spw-to
-                      (car (window-text-pixel-size nil (point-min) (point) 55555)))
+                      (if (bobp) 0
+                        (car (window-text-pixel-size nil (point-min) (point) 55555))))
                 (while (and (< spw-to to)
                             (not (eolp)))
                   (setq spw-to-prev spw-to)
