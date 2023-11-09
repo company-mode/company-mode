@@ -1058,14 +1058,15 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (declare-function line-number-display-width "indent.c")
 
 (defun company--posn-col-row (posn)
-  (let ((col (car (posn-col-row posn)))
+  (let ((col (car (posn-col-row posn t)))
         ;; `posn-col-row' doesn't work well with lines of different height.
         ;; `posn-actual-col-row' doesn't handle multiple-width characters.
         (row (cdr (or (posn-actual-col-row posn)
                       ;; When position is non-visible for some reason.
-                      (posn-col-row posn)))))
+                      (posn-col-row posn t)))))
     ;; posn-col-row return value relative to the left
     (when (eq (current-bidi-paragraph-direction) 'right-to-left)
+      ;; `remap' as 3rd argument to window-body-width is E30+ only :-(
       (let ((ww (window-body-width)))
         (setq col (- ww col))))
     (when (bound-and-true-p display-line-numbers)
@@ -2900,6 +2901,25 @@ from the candidates list.")
       (aref company-space-strings len)
     (make-string len ?\ )))
 
+;; XXX: This is really a hack, but one that we could really get rid of only by
+;; moving to the one-overlay-per-line scheme.
+(defmacro company--with-face-remappings (&rest body)
+  `(let ((fra-local (and (local-variable-p 'face-remapping-alist)
+                         face-remapping-alist))
+         (bufs (list (get-buffer-create " *string-pixel-width*")
+                     (get-buffer-create " *company-sps*"))))
+     (unwind-protect
+         (progn
+           (when fra-local
+             (dolist (buf bufs)
+               (with-current-buffer buf
+                 (setq-local face-remapping-alist fra-local))))
+           ,@body)
+       (dolist (buf bufs)
+         (and (buffer-live-p buf)
+              (with-current-buffer buf
+                (kill-local-variable 'face-remapping-alist)))))))
+
 (defalias 'company--string-pixel-width
   (if (fboundp 'string-pixel-width)
       ;; Emacs 29.1+
@@ -3484,17 +3504,24 @@ but adjust the expected values appropriately."
       (floor (window-screen-lines))
     (window-body-height)))
 
-(defun company--window-width ()
-  (let ((ww (window-body-width)))
+(defun company--window-width (&optional pixelwise)
+  (let ((ww (window-body-width nil pixelwise)))
     ;; Account for the line continuation column.
     (when (zerop (cadr (window-fringes)))
-      (cl-decf ww))
+      (cl-decf ww (if pixelwise (company--string-pixel-width ">") 1)))
     (when (bound-and-true-p display-line-numbers)
-      (cl-decf ww (+ 2 (line-number-display-width))))
+      (cl-decf ww
+               (if pixelwise
+                   (line-number-display-width t)
+                 (+ 2 (line-number-display-width)))))
     ;; whitespace-mode with newline-mark
     (when (and buffer-display-table
                (aref buffer-display-table ?\n))
-      (cl-decf ww (1- (length (aref buffer-display-table ?\n)))))
+      (cl-decf ww
+               (if pixelwise
+                   (company--string-pixel-width
+                    (aref buffer-display-table ?\n))
+                 (1- (length (aref buffer-display-table ?\n))))))
     ww))
 
 (defun company--face-attribute (face attr)
@@ -3526,24 +3553,23 @@ but adjust the expected values appropriately."
   (when (and align-top company-tooltip-flip-when-above)
     (setq lines (reverse lines)))
 
-  (let ((width (length (car lines)))
-        (remaining-cols (- (+ (company--window-width) (window-hscroll))
-                           column)))
-    (when (> width remaining-cols)
-      (cl-decf column (- width remaining-cols))))
-
-  (let (new)
+  (let* ((px-width (company--string-pixel-width (car lines)))
+         (px-col (* (- column (window-hscroll)) (default-font-width)))
+         (remaining-px (- (company--window-width t) px-col))
+         new)
+    (when (> px-width remaining-px)
+      (cl-decf px-col (- px-width remaining-px)))
     (when align-top
       ;; untouched lines first
       (dotimes (_ (- (length old) (length lines)))
         (push (pop old) new)))
     ;; length into old lines.
     (while old
-      (push (company-modify-line (pop old) (pop lines) (* column (frame-char-width)))
+      (push (company-modify-line (pop old) (pop lines) px-col)
             new))
     ;; Append whole new lines.
     (while lines
-      (push (concat (company-space-string column) (pop lines))
+      (push (concat (company-safe-pixel-substring "" 0 px-col) (pop lines))
             new))
 
     ;; XXX: Also see branch 'more-precise-extend'.
@@ -3796,7 +3822,8 @@ Returns a negative number if the tooltip should be displayed above point."
   (let* ((col-row (company--col-row pos))
          (col (- (car col-row) column-offset)))
     (when (< col 0) (setq col 0))
-    (company-pseudo-tooltip-show (1+ (cdr col-row)) col company-selection)))
+    (company--with-face-remappings
+     (company-pseudo-tooltip-show (1+ (cdr col-row)) col company-selection))))
 
 (defun company-pseudo-tooltip-edit (selection)
   (let* ((height (overlay-get company-pseudo-tooltip-overlay 'company-height))
@@ -3893,7 +3920,8 @@ Returns a negative number if the tooltip should be displayed above point."
     (hide (company-pseudo-tooltip-hide)
           (setq company-tooltip-offset 0))
     (update (when (overlayp company-pseudo-tooltip-overlay)
-              (company-pseudo-tooltip-edit company-selection)))
+              (company--with-face-remappings
+               (company-pseudo-tooltip-edit company-selection))))
     (select-mouse
      (let ((event-col-row (company--event-col-row company-mouse-event))
            (ovl-row (company--row))
