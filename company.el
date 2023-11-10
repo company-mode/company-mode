@@ -1058,12 +1058,15 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (declare-function line-number-display-width "indent.c")
 
 (defun company--posn-col-row (posn)
-  (let ((col (car (posn-col-row posn t)))
-        ;; `posn-col-row' doesn't work well with lines of different height.
-        ;; `posn-actual-col-row' doesn't handle multiple-width characters.
-        (row (cdr (or (posn-actual-col-row posn)
-                      ;; When position is non-visible for some reason.
-                      (posn-col-row posn t)))))
+  (let* ((col-row (if (>= emacs-major-version 29)
+                      (posn-col-row posn t)
+                    (posn-col-row posn)))
+         (col (car col-row))
+         ;; `posn-col-row' doesn't work well with lines of different height.
+         ;; `posn-actual-col-row' doesn't handle multiple-width characters.
+         (row (cdr (or (posn-actual-col-row posn)
+                       ;; When position is non-visible for some reason.
+                       col-row))))
     ;; posn-col-row return value relative to the left
     (when (eq (current-bidi-paragraph-direction) 'right-to-left)
       ;; `remap' as 3rd argument to window-body-width is E30+ only :-(
