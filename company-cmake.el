@@ -49,7 +49,7 @@ They affect which types of symbols we get completion candidates for.")
   "^\\(%s[a-zA-Z0-9_<>]%s\\)$"
   "Regexp to match the candidates.")
 
-(defvar company-cmake-modes '(cmake-mode)
+(defvar company-cmake-modes '(cmake-mode cmake-ts-mode)
   "Major modes in which cmake may complete.")
 
 (defvar company-cmake--candidates-cache nil
