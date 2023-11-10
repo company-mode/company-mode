@@ -1059,7 +1059,8 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 
 (defun company--posn-col-row (posn)
   (let* ((col-row (if (>= emacs-major-version 29)
-                      (posn-col-row posn t)
+                      (with-no-warnings  ;with 2 arguments, but accepts only 1
+                        (posn-col-row posn t))
                     (posn-col-row posn)))
          (col (car col-row))
          ;; `posn-col-row' doesn't work well with lines of different height.
