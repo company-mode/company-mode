@@ -2968,6 +2968,7 @@ from the candidates list.")
         front back
         (orig-buf (window-buffer))
         (bis buffer-invisibility-spec)
+        (inhibit-read-only t)
         window-configuration-change-hook)
     (with-current-buffer (get-buffer-create " *company-sps*")
       (unwind-protect
