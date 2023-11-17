@@ -2920,8 +2920,9 @@ from the candidates list.")
          (progn
            (dolist (buf bufs)
              (with-current-buffer buf
-               ;; Workaround for debbugs#67248.
-               (setq-local display-line-numbers nil)
+               (when (bound-and-true-p display-line-numbers)
+                 ;; Workaround for debbugs#67248.
+                 (setq-local display-line-numbers nil))
                (when fra-local
                  (setq-local face-remapping-alist fra-local))))
            ,@body)
