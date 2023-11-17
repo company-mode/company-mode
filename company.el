@@ -2918,9 +2918,11 @@ from the candidates list.")
                      (get-buffer-create " *company-sps*"))))
      (unwind-protect
          (progn
-           (when fra-local
-             (dolist (buf bufs)
-               (with-current-buffer buf
+           (dolist (buf bufs)
+             (with-current-buffer buf
+               ;; Workaround for debbugs#67248.
+               (setq-local display-line-numbers nil)
+               (when fra-local
                  (setq-local face-remapping-alist fra-local))))
            ,@body)
        (dolist (buf bufs)
