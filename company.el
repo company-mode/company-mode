@@ -2948,13 +2948,18 @@ from the candidates list.")
               (display-line-numbers-mode -1)))
           (delete-region (point-min) (point-max))
           (insert string)
-          (let ((wb (window-buffer)))
+          (let ((wb (window-buffer))
+                (dedicated (window-dedicated-p)))
             (unwind-protect
                 (progn
+                  (when dedicated
+                    (set-window-dedicated-p nil nil))
                   (set-window-buffer nil (current-buffer))
                   (car
                    (window-text-pixel-size nil nil nil 55555)))
-              (set-window-buffer nil wb))))))))
+              (set-window-buffer nil wb)
+              (when dedicated
+                (set-window-dedicated-p nil dedicated)))))))))
 
 (defun company--string-width (str)
   (if (display-graphic-p)
@@ -2972,6 +2977,7 @@ from the candidates list.")
         (orig-buf (window-buffer))
         (bis buffer-invisibility-spec)
         (inhibit-read-only t)
+        (dedicated (window-dedicated-p))
         window-configuration-change-hook)
     (with-current-buffer (get-buffer-create " *company-sps*")
       (unwind-protect
@@ -2979,6 +2985,7 @@ from the candidates list.")
             (delete-region (point-min) (point-max))
             (insert str)
             (setq-local buffer-invisibility-spec bis)
+            (when dedicated (set-window-dedicated-p nil nil))
             (set-window-buffer nil (current-buffer) t)
 
             (vertical-motion (cons (/ from (frame-char-width)) 0))
@@ -3026,7 +3033,9 @@ from the candidates list.")
                                                        spw-to
                                                      spw-to-prev))))))))
               (concat front (buffer-substring from-chars to-chars) back)))
-        (set-window-buffer nil orig-buf t)))))
+        (set-window-buffer nil orig-buf t)
+        (when dedicated
+          (set-window-dedicated-p nil dedicated))))))
 
 (defun company-safe-substring (str from &optional to)
   (let ((ll (length str)))
