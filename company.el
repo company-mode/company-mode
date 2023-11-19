@@ -2985,8 +2985,8 @@ from the candidates list.")
           (progn
             (delete-region (point-min) (point-max))
             (insert str)
-            (setq-local buffer-invisibility-spec bis
-                        buffer-display-table bdt)
+            (setq-local buffer-invisibility-spec bis)
+            (setq-local buffer-display-table bdt)
             (when dedicated (set-window-dedicated-p nil nil))
             (set-window-buffer nil (current-buffer) t)
 
