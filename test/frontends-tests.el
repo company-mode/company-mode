@@ -61,6 +61,7 @@
 
 (ert-deftest company-pseudo-tooltip-show-at-point-RTL ()
   :tags '(interactive)
+  :expected-result (if (display-graphic-p) :failed :passed)
   (with-temp-buffer
     (save-window-excursion
     (set-window-buffer nil (current-buffer))
@@ -291,14 +292,13 @@
 
 (ert-deftest company-create-lines-handles-multiple-width ()
   :tags '(interactive)
-  ;; XXX: Brittle.  This can fail with '-nw' because these chars have different
-  ;; widths in the terminal.
+  :expected-result (if (display-graphic-p) :failed :passed)
   (let (company-show-quick-access
         (company-candidates '("蛙蛙蛙蛙" "蛙abc"))
         (company-candidates-length 2)
         (company-backend 'ignore))
-    (should (equal '(" 蛙蛙蛙蛙﻿﻿﻿ "
-                     " 蛙abc﻿   ")
+    (should (equal '(" 蛙蛙蛙蛙﻿﻿﻿﻿ "
+                     " 蛙abc﻿    ")
                    (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-handles-multiple-width-in-annotation ()
@@ -315,7 +315,7 @@
 
 (ert-deftest company-create-lines-with-multiple-width-and-keep-prefix ()
   :tags '(interactive)
-  ;; XXX: Likewise brittle with '-nw'.
+  :expected-result (if (display-graphic-p) :failed :passed)
   (let* (company-show-quick-access
          (company-candidates '("MIRAI発売1カ月"
                                "MIRAI発売2カ月"))
@@ -324,8 +324,8 @@
          (company-backend (lambda (c &rest _)
                             (pcase c
                               (`ignore-case 'keep-prefix)))))
-    (should (equal '(" MIRAI発売1カ月﻿﻿﻿ "
-                     " MIRAI発売2カ月﻿﻿﻿ ")
+    (should (equal '(" MIRAI発売1カ月﻿﻿﻿﻿ "
+                     " MIRAI発売2カ月﻿﻿﻿﻿ ")
                    (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-with-format-function ()
