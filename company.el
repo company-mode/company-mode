@@ -3003,7 +3003,7 @@ from the candidates list.")
               (setq from-chars (point)))
 
             (if (= from-chars (point-max))
-                (if to
+                (if (and to (> to from))
                     (propertize " " 'display `(space . (:width (,(- to from)))))
                   "")
               (if (not to)
@@ -3714,7 +3714,7 @@ but adjust the expected values appropriately."
                (str (car item))
                (annotation (cadr item))
                (left (nth 2 item))
-               (right (company--right-margin))
+               (right (company--right-margin limit len))
                (width width)
                (selected (equal selection i)))
           (when company-show-quick-access
@@ -3759,10 +3759,11 @@ but adjust the expected values appropriately."
                     'company-tooltip-scrollbar-thumb
                   'company-tooltip-scrollbar-track))))
 
-(defun company--right-margin ()
+(defun company--right-margin (limit length)
   (if (or (not (eq company-tooltip-offset-display 'scrollbar))
           (not (display-graphic-p))
-          (= company-tooltip-scrollbar-width 1))
+          (= company-tooltip-scrollbar-width 1)
+          (<= length limit))
       (company-space-string company-tooltip-margin)
     (let* ((scroll-width (ceiling (* (default-font-width)
                                      company-tooltip-scrollbar-width)))

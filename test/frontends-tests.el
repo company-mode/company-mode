@@ -315,6 +315,7 @@
 
 (ert-deftest company-create-lines-with-multiple-width-and-keep-prefix ()
   :tags '(interactive)
+  ;; XXX: Likewise brittle with '-nw'.
   (let* (company-show-quick-access
          (company-candidates '("MIRAI発売1カ月"
                                "MIRAI発売2カ月"))
