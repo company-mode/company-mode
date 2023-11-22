@@ -69,6 +69,11 @@
           unread-command-events
           noninteractive
           (start-time (current-time)))
+      (while (input-pending-p)
+        ;; FIXME: I get these events when launching from inside Terminator or
+        ;; gnome-terminal (but not e.g. from xterm): ^[ [ I
+        ;; And only with Emacs 27+ but not older.  Investigate better later.
+        (message "pending event: %c" (read-event nil nil 1)))
       (company-idle-begin (current-buffer) (selected-window)
                           (buffer-chars-modified-tick) (point))
       (should (< (time-to-seconds
