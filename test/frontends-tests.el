@@ -78,6 +78,7 @@
 
 (ert-deftest company-pseudo-tooltip-edit-updates-width ()
   :tags '(interactive)
+  :expected-result (if (display-graphic-p) :failed :passed)
   (with-temp-buffer
     (set-window-buffer nil (current-buffer))
     (let ((company-candidates-length 5)

@@ -3618,6 +3618,7 @@ but adjust the expected values appropriately."
              (if company-tooltip-align-annotations 1 0)))
         left-margins
         left-margin-size
+        right-margin
         lines
         width
         lines-copy
@@ -3652,6 +3653,7 @@ but adjust the expected values appropriately."
 
     (setq width (max (length previous) (length remainder))
           lines (nthcdr company-tooltip-offset company-candidates)
+          right-margin (company--right-margin limit len)
           len (min limit len)
           lines-copy lines)
 
@@ -3714,7 +3716,7 @@ but adjust the expected values appropriately."
                (str (car item))
                (annotation (cadr item))
                (left (nth 2 item))
-               (right (company--right-margin limit len))
+               (right right-margin)
                (width width)
                (selected (equal selection i)))
           (when company-show-quick-access
