@@ -254,6 +254,35 @@
       (should (equal '("aa" "aab")
                      (company-call-backend 'candidates "aa"))))))
 
+(ert-deftest company-multi-backend-chooses-longest-prefix-length ()
+  (let* ((one (lambda (command &optional _)
+                (cl-case command
+                  (prefix "aa")
+                  (candidates (list "aa")))))
+         (two (lambda (command &optional _)
+                (cl-case command
+                  (prefix (cons "aa" t))
+                  (candidates (list "aab" )))))
+         (tri (lambda (command &optional _)
+                (cl-case command
+                  (prefix "")
+                  (candidates (list "aac")))))
+         (fur (lambda (command &optional _)
+                (cl-case command
+                  (prefix (cons "aa" 3))
+                  (candidates (list "aac")))))
+         (company--multi-uncached-backends (list one tri)))
+    (let ((company-backend (list one tri fur)))
+      (should
+       (equal
+        '("aa" . 3)
+        (company-call-backend 'prefix))))
+    (let ((company-backend (list one two tri fur)))
+      (should
+       (equal
+        '("aa" . t)
+        (company-call-backend 'prefix))))))
+
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer
     (insert "a")

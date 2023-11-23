@@ -1281,7 +1281,7 @@ be recomputed when this value changes."
                                         company--multi-uncached-backends))))
                       found))))
        t)
-      ((or `prefix `ignore-case `no-cache `require-match)
+      ((or `ignore-case `no-cache `require-match)
        (let (value)
          (cl-dolist (backend backends)
            (when (setq value (company--force-sync
@@ -1290,12 +1290,34 @@ be recomputed when this value changes."
                         (eq value 'keep-prefix))
                (setq value t))
              (cl-return value)))))
+      (`prefix (company--multi-prefix backends))
       (_
        (let ((arg (car args)))
          (when (> (length arg) 0)
            (let ((backend (or (get-text-property 0 'company-backend arg)
                               (car backends))))
              (apply backend command args))))))))
+
+(defun company--multi-prefix (backends)
+  (let (str len)
+    (dolist (backend backends)
+      (let* ((prefix (company--force-sync backend '(prefix) backend))
+             (prefix-len (cdr-safe prefix)))
+        (when (stringp (company--prefix-str prefix))
+          (cond
+           ((not str)
+            (setq str (company--prefix-str prefix)
+                  len (cdr-safe prefix)))
+           ((and prefix-len
+                 (not (eq len t))
+                 (equal str (company--prefix-str prefix))
+                 (or (null len)
+                     (eq prefix-len t)
+                     (> prefix-len len)))
+            (setq len prefix-len))))))
+    (if (and str len)
+        (cons str len)
+      str)))
 
 (defun company--multi-backend-adapter-candidates (backends prefix min-length separate)
   (let ((pairs (cl-loop for backend in backends
