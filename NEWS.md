@@ -2,6 +2,8 @@
 
 # Next
 
+* Better support for `yas-key-syntaxes`
+  (#[1268](https://github.com/company-mode/company-mode/issues/1268)).
 * New user option `company-tooltip-scrollbar-width` with default 0.4.
 * The tooltip uses a more complex rendering approach, supporting double
   width/CJK characters, as well as buffer text of different sizes

@@ -72,7 +72,7 @@ It has to accept one argument: the snippet's name.")
         (let ((prefix (buffer-substring-no-properties (point) original)))
           (unless (equal prefix (car prefixes))
             (push prefix prefixes))))
-      prefixes)))
+      (nreverse prefixes))))
 
 (defun company-yasnippet--candidates (prefix)
   ;; Process the prefixes in reverse: unlike Yasnippet, we look for prefix
@@ -135,6 +135,22 @@ It has to accept one argument: the snippet's name.")
           (ignore-errors (font-lock-ensure))))
       (current-buffer))))
 
+(defun company-yasnippet--prefix ()
+  ;; We can avoid the prefix length manipulations after GH#426 is fixed.
+  (let* ((prefix (company-grab-symbol))
+         (tables (yas--get-snippet-tables))
+         (key-prefixes (company-yasnippet--key-prefixes))
+         key-prefix)
+    (while (and key-prefixes
+                (setq key-prefix (pop key-prefixes)))
+      (when (company-yasnippet--completions-for-prefix
+             prefix key-prefix tables)
+        ;; Stop iteration.
+        (setq key-prefixes nil)))
+    (if (equal key-prefix prefix)
+        prefix
+      (cons prefix (length key-prefix)))))
+
 ;;;###autoload
 (defun company-yasnippet (command &optional arg &rest _ignore)
   "`company-mode' backend for `yasnippet'.
@@ -163,10 +179,8 @@ shadow backends that come after it.  Recommended usages:
   (cl-case command
     (interactive (company-begin-backend 'company-yasnippet))
     (prefix
-     ;; Should probably use `yas--current-key', but that's bound to be slower.
-     ;; How many trigger keys start with non-symbol characters anyway?
      (and (bound-and-true-p yas-minor-mode)
-          (company-grab-symbol)))
+          (company-yasnippet--prefix)))
     (annotation
      (funcall company-yasnippet-annotation-fn
               (get-text-property 0 'yas-annotation arg)))
