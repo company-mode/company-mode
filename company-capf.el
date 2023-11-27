@@ -46,6 +46,9 @@ that accompanied the completion table that's currently is use.
 a completion session (most importantly, by `company-sort-by-occurrence'),
 so we can't just use the preceding variable instead.")
 
+(defvar-local company-capf--current-completion-metadata nil
+  "Metadata computed with the current prefix and data above.")
+
 (defun company--capf-data ()
   (let ((cache company--capf-cache))
     (if (and (equal (current-buffer) (car cache))
@@ -104,13 +107,15 @@ so we can't just use the preceding variable instead.")
       completion-at-point-functions
     (remq 'python-completion-complete-at-point completion-at-point-functions)))
 
-(defun company-capf--save-current-data (data)
-  (setq company-capf--current-completion-data data)
+(defun company-capf--save-current-data (data metadata)
+  (setq company-capf--current-completion-data data
+        company-capf--current-completion-metadata metadata)
   (add-hook 'company-after-completion-hook
             #'company-capf--clear-current-data nil t))
 
 (defun company-capf--clear-current-data (_ignored)
-  (setq company-capf--current-completion-data nil))
+  (setq company-capf--current-completion-data nil
+        company-capf--current-completion-metadata nil))
 
 (defvar-local company-capf--sorted nil)
 
@@ -176,12 +181,7 @@ so we can't just use the preceding variable instead.")
                            :annotation-function)
                 ;; FIXME: Add a test.
                 (cdr (assq 'annotation-function
-                           (completion-metadata
-                            (buffer-substring (nth 1 company-capf--current-completion-data)
-                                              (nth 2 company-capf--current-completion-data))
-                            (nth 3 company-capf--current-completion-data)
-                            (plist-get (nthcdr 4 company-capf--current-completion-data)
-                                       :predicate))))))
+                           company-capf--current-completion-metadata))))
          (annotation (when f (funcall f arg))))
     (if (and company-format-margin-function
              (equal annotation " <f>") ; elisp-completion-at-point, pre-icons
@@ -191,15 +191,16 @@ so we can't just use the preceding variable instead.")
       annotation)))
 
 (defun company-capf--candidates (input)
-  (let ((res (company--capf-data)))
-    (company-capf--save-current-data res)
+  (let* ((res (company--capf-data))
+         (table (nth 3 res))
+         (pred (plist-get (nthcdr 4 res) :predicate))
+         (meta (and res
+                    (completion-metadata
+                     (buffer-substring (nth 1 res) (nth 2 res))
+                     table pred))))
+    (company-capf--save-current-data res meta)
     (when res
-      (let* ((table (nth 3 res))
-             (pred (plist-get (nthcdr 4 res) :predicate))
-             (meta (completion-metadata
-                    (buffer-substring (nth 1 res) (nth 2 res))
-                    table pred))
-             (candidates (completion-all-completions input table pred
+      (let* ((candidates (completion-all-completions input table pred
                                                      (length input)
                                                      meta))
              (sortfun (cdr (assq 'display-sort-function meta)))
