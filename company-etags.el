@@ -90,9 +90,9 @@ Set it to t or to a list of major modes."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-etags))
-    (prefix (and (apply #'derived-mode-p company-etags-modes)
+    (prefix (and (cl-some #'derived-mode-p company-etags-modes)
                  (or (eq t company-etags-everywhere)
-                     (apply #'derived-mode-p company-etags-everywhere)
+                     (cl-some #'derived-mode-p company-etags-everywhere)
                      (not (company-in-string-or-comment)))
                  (company-etags-buffer-table)
                  (or (company-grab-symbol) 'stop)))

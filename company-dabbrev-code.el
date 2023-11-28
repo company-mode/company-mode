@@ -102,7 +102,7 @@ comments or strings."
   (cl-case command
     (interactive (company-begin-backend 'company-dabbrev-code))
     (prefix (and (or (eq t company-dabbrev-code-modes)
-                     (apply #'derived-mode-p company-dabbrev-code-modes))
+                     (cl-some #'derived-mode-p company-dabbrev-code-modes))
                  (or company-dabbrev-code-everywhere
                      (not (company-in-string-or-comment)))
                  (or (company-grab-symbol) 'stop)))

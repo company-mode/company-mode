@@ -156,7 +156,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                   (funcall company-dabbrev-ignore-buffers buffer))
           (with-current-buffer buffer
             (when (or (eq other-buffer-modes 'all)
-                      (apply #'derived-mode-p other-buffer-modes))
+                      (cl-some #'derived-mode-p other-buffer-modes))
               (setq symbols
                     (company-dabbrev--search-buffer regexp nil symbols start
                                                     limit ignore-comments)))))
