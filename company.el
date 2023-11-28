@@ -2936,6 +2936,8 @@ from the candidates list.")
 (defmacro company--with-face-remappings (&rest body)
   `(let ((fra-local (and (local-variable-p 'face-remapping-alist)
                          face-remapping-alist))
+         (bdt-local (and (local-variable-p 'buffer-display-table)
+                         buffer-display-table))
          (bufs (list (get-buffer-create " *string-pixel-width*")
                      (get-buffer-create " *company-sps*"))))
      (unwind-protect
@@ -2946,12 +2948,15 @@ from the candidates list.")
                  ;; Workaround for debbugs#67248.
                  (setq-local display-line-numbers nil))
                (when fra-local
-                 (setq-local face-remapping-alist fra-local))))
+                 (setq-local face-remapping-alist fra-local))
+               (when bdt-local
+                 (setq-local buffer-display-table bdt-local))))
            ,@body)
        (dolist (buf bufs)
          (and (buffer-live-p buf)
               (with-current-buffer buf
-                (kill-local-variable 'face-remapping-alist)))))))
+                (kill-local-variable 'face-remapping-alist)
+                (kill-local-variable 'buffer-display-table)))))))
 
 (defalias 'company--string-pixel-width
   (if (fboundp 'string-pixel-width)
@@ -3562,8 +3567,7 @@ but adjust the expected values appropriately."
                (aref buffer-display-table ?\n))
       (cl-decf ww
                (if pixelwise
-                   (company--string-pixel-width
-                    (aref buffer-display-table ?\n))
+                   (company--string-pixel-width "\n")
                  (1- (length (aref buffer-display-table ?\n))))))
     ww))
 
