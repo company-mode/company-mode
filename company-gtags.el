@@ -141,7 +141,7 @@ completion."
     (interactive (company-begin-backend 'company-gtags))
     (prefix (and (company-gtags--executable)
                  buffer-file-name
-                 (apply #'derived-mode-p company-gtags-modes)
+                 (cl-some #'derived-mode-p company-gtags-modes)
                  (not (company-in-string-or-comment))
                  (company-gtags--tags-available-p)
                  (or (company-grab-symbol) 'stop)))
