@@ -79,7 +79,6 @@ so we can't just use the preceding variable instead.")
                   (remove 'tags-completion-at-point-function
                           (default-value 'completion-at-point-functions))
                 (default-value 'completion-at-point-functions)))
-             (completion-at-point-functions (company--capf-workaround))
              (data (run-hook-wrapped 'completion-at-point-functions
                                      ;; Ignore misbehaving functions.
                                      #'company--capf-wrapper 'optimist)))
@@ -98,14 +97,6 @@ so we can't just use the preceding variable instead.")
         (buffer-read-only nil)))))
 
 (declare-function python-shell-get-process "python")
-
-(defun company--capf-workaround ()
-  ;; For http://debbugs.gnu.org/cgi/bugreport.cgi?bug=18067
-  (if (or (not (listp completion-at-point-functions))
-          (not (memq 'python-completion-complete-at-point completion-at-point-functions))
-          (python-shell-get-process))
-      completion-at-point-functions
-    (remq 'python-completion-complete-at-point completion-at-point-functions)))
 
 (defun company-capf--save-current-data (data metadata)
   (setq company-capf--current-completion-data data
