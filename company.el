@@ -2976,6 +2976,7 @@ from the candidates list.")
           (delete-region (point-min) (point-max))
           (insert string)
           (let ((wb (window-buffer))
+                (hscroll (window-hscroll))
                 (dedicated (window-dedicated-p)))
             (unwind-protect
                 (progn
@@ -2985,6 +2986,7 @@ from the candidates list.")
                   (car
                    (window-text-pixel-size nil nil nil 55555)))
               (set-window-buffer nil wb)
+              (set-window-hscroll nil hscroll)
               (when dedicated
                 (set-window-dedicated-p nil dedicated)))))))))
 
@@ -3005,6 +3007,7 @@ from the candidates list.")
         (bis buffer-invisibility-spec)
         (inhibit-read-only t)
         (dedicated (window-dedicated-p))
+        (hscroll (window-hscroll))
         window-configuration-change-hook)
     (with-current-buffer (get-buffer-create " *company-sps*")
       (unwind-protect
@@ -3061,6 +3064,7 @@ from the candidates list.")
                                                      spw-to-prev))))))))
               (concat front (buffer-substring from-chars to-chars) back)))
         (set-window-buffer nil orig-buf t)
+        (set-window-hscroll nil hscroll)
         (when dedicated
           (set-window-dedicated-p nil dedicated))))))
 
@@ -3599,11 +3603,21 @@ but adjust the expected values appropriately."
     (setq lines (reverse lines)))
 
   (let* ((px-width (company--string-pixel-width (car lines)))
+         ;; The (display (space :width (..))) spec is only applied to the
+         ;; visible part of the buffer (past hscroll), so subtracting
+         ;; window-scroll here is a good idea.  But then we also need to slice
+         ;; the "old" strings so the hidden contents don't get shown.
+         ;; XXX: `auto-hscroll-mode' set to `current-line' is not supported.
          (px-col (* (- column (window-hscroll)) (default-font-width)))
          (remaining-px (- (company--window-width t) px-col))
+         (hscroll-space (when (> (window-hscroll) 0)
+                          (company-space-string (window-hscroll))))
          new)
     (when (> px-width remaining-px)
       (cl-decf px-col (- px-width remaining-px)))
+    (when hscroll-space
+      (setq old (mapcar (lambda (s) (company-safe-substring s (window-hscroll)))
+                        old)))
     (when align-top
       ;; untouched lines first
       (dotimes (_ (- (length old) (length lines)))
@@ -3627,7 +3641,7 @@ but adjust the expected values appropriately."
                        (when nl " \n")
                        (cl-mapcan
                         ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=42552#23
-                        (lambda (line) (list line (propertize "\n" 'face nl-face)))
+                        (lambda (line) (list hscroll-space line (propertize "\n" 'face nl-face)))
                         (nreverse new)))))
       ;; https://debbugs.gnu.org/38563
       (add-face-text-property 0 (length str) 'default t str)
