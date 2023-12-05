@@ -1,6 +1,6 @@
 ;;; company-capf.el --- company-mode completion-at-point-functions backend -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013-2022  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2023  Free Software Foundation, Inc.
 
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
@@ -32,6 +32,19 @@
 (require 'company)
 (require 'cl-lib)
 
+(defgroup company-capf nil
+  "Completion backend as adapter for `completion-at-point-functions'."
+  :group 'company)
+
+(defcustom company-capf-disabled-functions '(tags-completion-at-point-function
+                                             ispell-completion-at-point)
+  "List of completion functions which should be ignored in this backend.
+
+By default it contains the functions that duplicate the built-in backends
+but don't support the corresponding configuration options and/or alter the
+intended priority of the default backends' configuration."
+  :type 'hook)
+
 ;; Amortizes several calls to a c-a-p-f from the same position.
 (defvar company--capf-cache nil)
 
@@ -60,41 +73,26 @@ so we can't just use the preceding variable instead.")
               (list (current-buffer) (point) (buffer-chars-modified-tick) data))
         data))))
 
-(defun company--contains (elt lst)
-  (when-let ((cur (car lst)))
-    (cond
-     ((symbolp cur)
-      (or (eq elt cur)
-          (company--contains elt (cdr lst))))
-     ((listp cur)
-      (or (company--contains elt cur)
-          (company--contains elt (cdr lst)))))))
-
 (defun company--capf-data-real ()
-  (cl-letf* (((default-value 'completion-at-point-functions)
-              (if (company--contains 'company-etags company-backends)
-                  ;; Ignore tags-completion-at-point-function because it subverts
-                  ;; company-etags in the default value of company-backends, where
-                  ;; the latter comes later.
-                  (remove 'tags-completion-at-point-function
-                          (default-value 'completion-at-point-functions))
-                (default-value 'completion-at-point-functions)))
-             (data (run-hook-wrapped 'completion-at-point-functions
-                                     ;; Ignore misbehaving functions.
-                                     #'company--capf-wrapper 'optimist)))
+  (let ((data (run-hook-wrapped 'completion-at-point-functions
+                                ;; Ignore disabled and misbehaving functions.
+                                #'company--capf-wrapper 'optimist)))
     (when (and (consp (cdr data)) (integer-or-marker-p (nth 1 data))) data)))
 
 (defun company--capf-wrapper (fun which)
-  (let ((buffer-read-only t)
-        (inhibit-read-only nil)
-        (completion-in-region-function
-         (lambda (beg end coll pred)
-           (throw 'company--illegal-completion-in-region
-                  (list fun beg end coll :predicate pred)))))
-    (catch 'company--illegal-completion-in-region
-      (condition-case nil
-          (completion--capf-wrapper fun which)
-        (buffer-read-only nil)))))
+  ;; E.g. tags-completion-at-point-function subverts company-etags in the
+  ;; default value of company-backends, where the latter comes later.
+  (unless (memq fun company-capf-disabled-functions)
+    (let ((buffer-read-only t)
+          (inhibit-read-only nil)
+          (completion-in-region-function
+           (lambda (beg end coll pred)
+             (throw 'company--illegal-completion-in-region
+                    (list fun beg end coll :predicate pred)))))
+      (catch 'company--illegal-completion-in-region
+        (condition-case nil
+            (completion--capf-wrapper fun which)
+          (buffer-read-only nil))))))
 
 (declare-function python-shell-get-process "python")
 

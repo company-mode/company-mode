@@ -2,6 +2,8 @@
 
 # Next
 
+* New user option `company-capf-disabled-functions`
+  (#[1437](https://github.com/company-mode/company-mode/issues/1437)).
 * Better support for `yas-key-syntaxes`
   (#[1268](https://github.com/company-mode/company-mode/issues/1268)).
 * New user option `company-tooltip-scrollbar-width` with default 0.4.
