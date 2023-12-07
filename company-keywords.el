@@ -405,7 +405,7 @@
      )
     (tuareg-mode 
      ;; ocaml, from https://v2.ocaml.org/manual/lex.html#sss:keywords
-     "and" "as" "assert" "asr" "begin" "class"
+     "and" "as" "asr" "assert" "begin" "class"
      "constraint" "do" "done" "downto" "else" "end" 
      "exception" "external" "false" "for" "fun" "function"
      "functor" "if" "in" "include" "inherit" "initializer"
