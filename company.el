@@ -148,7 +148,7 @@
 
 (defface company-tooltip-scrollbar-thumb
   '((((background light))
-     :background "darkred")
+     :background "indian red")
     (((background dark))
      :background "gray33"))
   "Face used for the tooltip scrollbar thumb (bar).")
