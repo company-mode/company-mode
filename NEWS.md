@@ -2,6 +2,10 @@
 
 # Next
 
+* `company-files` shows shorter completions.  Previously, the popup spanned
+  the whole absolute file name being completed, and now it starts after the
+  nearest directory separator
+  (#[1040](https://github.com/company-mode/company-mode/issues/1040)).
 * New user option `company-capf-disabled-functions`
   (#[1437](https://github.com/company-mode/company-mode/issues/1437)).
 * Better support for `yas-key-syntaxes`

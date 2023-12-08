@@ -103,11 +103,15 @@ Set this to nil to disable that behavior."
   (let ((len (length file)))
     (and (> len 0) (eq (aref file (1- len)) ?/))))
 
+(defvar company-files--cached-beg nil)
+
 (defvar company-files--completion-cache nil)
 
 (defun company-files--complete (prefix)
-  (let* ((dir (file-name-directory prefix))
-         (file (file-name-nondirectory prefix))
+  (let* ((full-prefix (company-files--grab-existing-name))
+         (ldiff (- (length full-prefix) (length prefix)))
+         (dir (file-name-directory full-prefix))
+         (file (file-name-nondirectory full-prefix))
          (key (list file
                     (expand-file-name dir)
                     (nth 5 (file-attributes dir))))
@@ -128,8 +132,28 @@ Set this to nil to disable that behavior."
                                        directories))))
         (setq company-files--completion-cache
               (cons key (append candidates children)))))
-    (all-completions prefix
-                     (cdr company-files--completion-cache))))
+    (mapcar
+     (lambda (s) (substring s ldiff))
+     (all-completions full-prefix
+                      (cdr company-files--completion-cache)))))
+
+(defun company-files--cache-beg (prefix)
+  (setq-local company-files--cached-beg (- (point) (length prefix)))
+  (add-hook 'company-after-completion-hook #'company-files--clear-beg-cache nil t))
+
+(defun company-files--clear-beg-cache (_res)
+  (kill-local-variable 'company-files--cached-beg))
+
+(defun company-files--prefix ()
+  (let ((full-name (company-files--grab-existing-name)))
+    (when full-name
+      (if (and company-files--cached-beg
+               (>= company-files--cached-beg
+                   (- (point) (length full-name))))
+          (buffer-substring
+           company-files--cached-beg
+           (point))
+        (file-name-nondirectory full-name)))))
 
 (defun company-file--keys-match-p (new old)
   (and (equal (cdr old) (cdr new))
@@ -148,8 +172,10 @@ File paths with spaces are only supported inside strings."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-files))
-    (prefix (company-files--grab-existing-name))
-    (candidates (company-files--complete arg))
+    (prefix (company-files--prefix))
+    (candidates
+     (company-files--cache-beg arg)
+     (company-files--complete arg))
     (location (cons (dired-noselect
                      (file-name-directory (directory-file-name arg))) 1))
     (post-completion (company-files--post-completion arg))
