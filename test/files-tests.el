@@ -23,35 +23,45 @@
 (require 'company-files)
 
 (ert-deftest company-files-candidates-normal ()
-  (let (company-files--completion-cache)
-    (should (member (expand-file-name "test/" company-dir)
-                    (company-files 'candidates
-                                   company-dir)))))
+  (with-temp-buffer
+    (insert company-dir)
+    (let (company-files--completion-cache)
+      (should (member (expand-file-name "test/" company-dir)
+                      (company-files 'candidates
+                                     company-dir))))))
 
 (ert-deftest company-files-candidates-normal-root ()
-  (let (company-files--completion-cache)
-    (should (member "/bin/"
-                    (company-files 'candidates "/")))))
+  (with-temp-buffer
+    (insert "/")
+    (let (company-files--completion-cache)
+      (should (member "/bin/"
+                      (company-files 'candidates "/"))))))
 
 (ert-deftest company-files-candidates-excluding-dir ()
-  (let ((company-files-exclusions '("test/"))
-        company-files--completion-cache)
-    (should-not (member (expand-file-name "test/" company-dir)
-                        (company-files 'candidates
-                                       company-dir)))))
+  (with-temp-buffer
+    (insert company-dir)
+    (let ((company-files-exclusions '("test/"))
+          company-files--completion-cache)
+      (should-not (member (expand-file-name "test/" company-dir)
+                          (company-files 'candidates
+                                         company-dir))))))
 
 (ert-deftest company-files-candidates-excluding-files ()
-  (let ((company-files-exclusions '(".el"))
-        company-files--completion-cache)
-    (should-not (member (expand-file-name "company.el" company-dir)
-                        (company-files 'candidates
-                                       company-dir)))))
+  (with-temp-buffer
+    (insert company-dir)
+    (let ((company-files-exclusions '(".el"))
+          company-files--completion-cache)
+      (should-not (member (expand-file-name "company.el" company-dir)
+                          (company-files 'candidates
+                                         company-dir))))))
 
 (ert-deftest company-files-candidates-excluding-dir-and-files ()
-  (let* ((company-files-exclusions '("test/" ".el"))
-         company-files--completion-cache
-         (files-candidates (company-files 'candidates company-dir)))
-    (should-not (member (expand-file-name "test/" company-dir)
-                        files-candidates))
-    (should-not (member (expand-file-name "company.el" company-dir)
-                        files-candidates))))
+  (with-temp-buffer
+    (insert company-dir)
+    (let* ((company-files-exclusions '("test/" ".el"))
+           company-files--completion-cache
+           (files-candidates (company-files 'candidates company-dir)))
+      (should-not (member (expand-file-name "test/" company-dir)
+                          files-candidates))
+      (should-not (member (expand-file-name "company.el" company-dir)
+                          files-candidates)))))
