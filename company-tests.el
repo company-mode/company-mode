@@ -43,3 +43,4 @@
     'ert-equal-including-properties))
 
 (provide 'company-tests)
+;;; company-tests.el ends here
