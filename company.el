@@ -3480,7 +3480,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                ;; We shouldn't get any of these, but sometimes we might.
                ;; The official "replacement character" is not supported by some fonts.
                ;;"\ufffd"
-               "?"
+               (if (equal match "\n")
+                   (propertize "\\\\n" 'face 'font-lock-escape-face)
+                 "?")
                )
               ((match-beginning 2)
                ;; Zero-width non-breakable space.
