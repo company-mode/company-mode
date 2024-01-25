@@ -1,6 +1,6 @@
 ;;; core-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2018, 2020-2023  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2018, 2020-2024  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
@@ -271,6 +271,10 @@
                 (cl-case command
                   (prefix (cons "aa" 3))
                   (candidates (list "aac")))))
+         (fiv (lambda (command &optional _)
+                (cl-case command
+                  (prefix (cons "aa" 1))
+                  (candidates (list "aac")))))
          (company--multi-uncached-backends (list one tri)))
     (let ((company-backend (list one tri fur)))
       (should
@@ -281,6 +285,11 @@
       (should
        (equal
         '("aa" . t)
+        (company-call-backend 'prefix))))
+    (let ((company-backend (list one fiv)))
+      (should
+       (equal
+        "aa"
         (company-call-backend 'prefix))))))
 
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()

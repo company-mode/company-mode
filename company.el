@@ -1,6 +1,6 @@
 ;;; company.el --- Modular text completion framework  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2023  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2024  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
@@ -1311,9 +1311,8 @@ be recomputed when this value changes."
            ((and prefix-len
                  (not (eq len t))
                  (equal str (company--prefix-str prefix))
-                 (or (null len)
-                     (eq prefix-len t)
-                     (> prefix-len len)))
+                 (or (eq prefix-len t)
+                     (> prefix-len (or len (length str)))))
             (setq len prefix-len))))))
     (if (and str len)
         (cons str len)
