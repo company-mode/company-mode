@@ -691,7 +691,9 @@ treated as if it was on this list."
 (defcustom company-continue-commands '(not save-buffer save-some-buffers
                                            save-buffers-kill-terminal
                                            save-buffers-kill-emacs
-                                           completion-at-point)
+                                           completion-at-point
+                                           complete-symbol
+                                           completion-help-at-point)
   "A list of commands that are allowed during completion.
 If this is t, or if `company-begin-commands' is t, any command is allowed.
 Otherwise, the value must be a list of symbols.  If it starts with `not',
