@@ -1,6 +1,6 @@
 ;;; company-template.el --- utility library for template expansion  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2010, 2013-2017, 2019, 2023  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2010, 2013-2017, 2019, 2023-2024  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -205,6 +205,7 @@ after deleting a field in `company-template-remove-field'."
   (let* ((end (point-marker))
          (beg (- (point) (length call)))
          (templ (company-template-declare-template beg end))
+         forward-sexp-function
          paren-open paren-close)
     (with-syntax-table (make-syntax-table (syntax-table))
       (modify-syntax-entry ?< "(")
