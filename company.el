@@ -1108,7 +1108,7 @@ Matching is limited to the current line."
 (defun company-grab-symbol ()
   "If point is at the end of a symbol, return it.
 Otherwise, if point is not inside a symbol, return an empty string."
-  (if (looking-at "\\_>")
+  (if (looking-at-p "\\_>")
       (buffer-substring (point) (save-excursion (skip-syntax-backward "w_")
                                                 (point)))
     (unless (and (char-after) (memq (char-syntax (char-after)) '(?w ?_)))
@@ -1117,7 +1117,7 @@ Otherwise, if point is not inside a symbol, return an empty string."
 (defun company-grab-word ()
   "If point is at the end of a word, return it.
 Otherwise, if point is not inside a symbol, return an empty string."
-  (if (looking-at "\\>")
+  (if (looking-at-p "\\>")
       (buffer-substring (point) (save-excursion (skip-syntax-backward "w")
                                                 (point)))
     (unless (and (char-after) (eq (char-syntax (char-after)) ?w))
