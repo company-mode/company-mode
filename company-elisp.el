@@ -94,7 +94,7 @@ first in the candidates list."
      (when (> depth 0)
        (save-excursion
          (up-list (- depth))
-         (when (looking-at company-elisp-defuns-regexp)
+         (when (looking-at-p company-elisp-defuns-regexp)
            (forward-char)
            (forward-sexp 1)
            (unless (= (point) start)
@@ -122,21 +122,21 @@ first in the candidates list."
                                         (<= (point) pos)))
                   (skip-chars-forward " \t\n")
                   (cond
-                   ((looking-at (if functions-p
+                   ((looking-at-p (if functions-p
                                     company-elisp-fun-binding-regexp
                                   company-elisp-var-binding-regexp))
                     (down-list 1)
                     (condition-case nil
                         (dotimes (_ company-elisp-parse-limit)
                           (save-excursion
-                            (when (looking-at "[ \t\n]*(")
+                            (when (looking-at-p "[ \t\n]*(")
                               (down-list 1))
                             (when (looking-at regexp)
                               (cl-pushnew (match-string-no-properties 1) res)))
                           (forward-sexp))
                       (scan-error nil)))
                    ((unless functions-p
-                      (looking-at company-elisp-var-binding-regexp-1))
+                      (looking-at-p company-elisp-var-binding-regexp-1))
                     (down-list 1)
                     (when (looking-at regexp)
                       (cl-pushnew (match-string-no-properties 1) res)))))))))
@@ -181,7 +181,7 @@ first in the candidates list."
   (save-excursion
     (and (prog1 (search-backward "(")
            (forward-char 1))
-         (looking-at company-elisp-var-binding-regexp))))
+         (looking-at-p company-elisp-var-binding-regexp))))
 
 (defun company-elisp--doc (symbol)
   (let* ((symbol (intern symbol))
