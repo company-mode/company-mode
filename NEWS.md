@@ -2,6 +2,8 @@
 
 # Next
 
+* `company-elisp` has been removed.  It's not needed since Emacs 24.4, with all
+  of its features having been incorporated into the built-in Elisp completion.
 * `company-files` shows shorter completions.  Previously, the popup spanned
   the whole absolute file name being completed, and now it starts after the
   nearest directory separator
