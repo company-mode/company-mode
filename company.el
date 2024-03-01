@@ -2187,7 +2187,8 @@ For more details see `company-insertion-on-trigger' and
       (if company-abort-manual-when-too-short
           ;; Must not be less than minimum or initial length.
           (min company-minimum-prefix-length
-               (or (cdr-safe company--manual-prefix)
+               (or (and (numberp (cdr-safe company--manual-prefix))
+                        (cdr-safe company--manual-prefix))
                    (length company--manual-prefix)))
         0)
     company-minimum-prefix-length))
