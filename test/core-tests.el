@@ -95,6 +95,9 @@
     (let ((company-abort-manual-when-too-short t)
           (company--manual-prefix '("abc" . 2)))
       (should (= (company--prefix-min-length) 2)))
+    (let ((company-abort-manual-when-too-short t)
+          (company--manual-prefix '("abc" . t)))
+      (should (= (company--prefix-min-length) 3)))
     (let ((company--manual-prefix "abc"))
       (should (= (company--prefix-min-length) 0)))))
 
