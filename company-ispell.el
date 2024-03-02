@@ -39,7 +39,8 @@
 
 (defcustom company-ispell-dictionary nil
   "Dictionary to use for `company-ispell'.
-If nil, use `ispell-complete-word-dict'."
+
+If nil, use `ispell-complete-word-dict' or `ispell-alternate-dictionary'."
   :type '(choice (const :tag "default (nil)" nil)
                  (file :tag "dictionary" t))
   :set #'company--set-dictionary)
@@ -58,9 +59,12 @@ If nil, use `ispell-complete-word-dict'."
   company-ispell-available)
 
 (defun company--ispell-dict ()
-  (or company-ispell-dictionary
-      ispell-complete-word-dict
-      ispell-alternate-dictionary))
+  "Determine which dictionary to use."
+  (let ((dict (or company-ispell-dictionary
+                  ispell-complete-word-dict
+                  ispell-alternate-dictionary)))
+    (when dict
+      (expand-file-name dict))))
 
 ;;;###autoload
 (defun company-ispell (command &optional arg &rest _ignored)
