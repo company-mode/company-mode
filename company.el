@@ -2145,8 +2145,8 @@ For more details see `company-insertion-on-trigger' and
          (if (consp company-insertion-triggers)
              (memq (char-syntax (string-to-char input))
                    company-insertion-triggers)
-           (string-match (regexp-quote (substring input 0 1))
-                         company-insertion-triggers)))))
+           (string-match-p (regexp-quote (substring input 0 1))
+                           company-insertion-triggers)))))
 
 (defun company--incremental-p ()
   (and (> (point) company-point)
@@ -2508,7 +2508,7 @@ each one wraps a part of the input string."
          (company-candidates-predicate
           (and (not (string= re ""))
                company-search-filtering
-               (lambda (candidate) (string-match re candidate))))
+               (lambda (candidate) (string-match-p re candidate))))
          (cc (company-calculate-candidates company-prefix
                                            (company-call-backend 'ignore-case))))
     (unless cc (user-error "No match"))
