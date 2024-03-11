@@ -2506,7 +2506,7 @@ each one wraps a part of the input string."
 (defun company--search-update-predicate (ss)
   (let* ((re (funcall company-search-regexp-function ss))
          (company-candidates-predicate
-          (and (not (string= re ""))
+          (and (not (string-empty-p re))
                company-search-filtering
                (lambda (candidate) (string-match-p re candidate))))
          (cc (company-calculate-candidates company-prefix
@@ -2524,7 +2524,7 @@ each one wraps a part of the input string."
 
 (defun company--search-assert-input ()
   (company--search-assert-enabled)
-  (when (string= company-search-string "")
+  (when (string-empty-p company-search-string)
     (user-error "Empty search string")))
 
 (defun company-search-repeat-forward ()
@@ -2577,7 +2577,7 @@ each one wraps a part of the input string."
 (defun company-search-delete-char ()
   (interactive)
   (company--search-assert-enabled)
-  (if (string= company-search-string "")
+  (if (string-empty-p company-search-string)
       (ding)
     (let ((ss (substring company-search-string 0 -1)))
       (when company-search-filtering
@@ -3427,7 +3427,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                 nil line))
     (when (let ((re (funcall company-search-regexp-function
                              company-search-string)))
-            (and (not (string= re ""))
+            (and (not (string-empty-p re))
                  (string-match re value)))
       (pcase-dolist (`(,mbeg . ,mend) (company--search-chunks))
         (let ((beg (+ margin mbeg))
