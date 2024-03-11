@@ -78,7 +78,7 @@ also `company-dabbrev-code-time-limit'."
 (defun company-dabbrev-code--make-regexp (prefix)
   (let ((prefix-re
          (cond
-          ((equal prefix "")
+          ((string-empty-p prefix)
            "\\([a-zA-Z]\\|\\s_\\)")
           ((not company-dabbrev-code-completion-styles)
            (regexp-quote prefix))

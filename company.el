@@ -1991,7 +1991,7 @@ Keywords and function definition names are ignored."
             (cl-delete-if
              (lambda (candidate)
                (goto-char w-start)
-               (when (and (not (equal candidate ""))
+               (when (and (not (string-empty-p candidate))
                           (search-forward candidate w-end t)
                           ;; ^^^ optimize for large lists where most elements
                           ;; won't have a match.
@@ -4111,7 +4111,7 @@ Delay is determined by `company-tooltip-idle-delay'."
                                (substring completion 1))))
 
     (and (equal pos (point))
-         (not (equal completion ""))
+         (not (string-empty-p completion))
          (add-text-properties 0 1 '(cursor 1) completion))
 
     (let* ((beg pos)
@@ -4298,7 +4298,7 @@ Delay is determined by `company-tooltip-idle-delay'."
               "}"))))
 
 (defun company-echo-hide ()
-  (unless (equal company-echo-last-msg "")
+  (unless (string-empty-p company-echo-last-msg)
     (setq company-echo-last-msg "")
     (company-echo-show)))
 
