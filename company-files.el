@@ -46,6 +46,10 @@ This way it's easy to continue completion by typing `/' again.
 Set this to nil to disable that behavior."
   :type 'boolean)
 
+(defcustom company-files-from-project-root nil
+  "Non-nil to complete from `project-root'."
+  :type 'boolean)
+
 (defun company-files--directory-files (dir prefix)
   ;; Don't use directory-files. It produces directories without trailing /.
   (condition-case _err
@@ -90,8 +94,14 @@ Set this to nil to disable that behavior."
          (company-files--connected-p file)
          (setq dir (file-name-directory file))
          (not (string-match "//" dir))
-         (file-exists-p dir)
-         file)))
+         (if (and company-files-from-project-root
+                  (not (file-name-absolute-p dir))
+                  (project-current))
+             (let ((project-root (project-root (project-current))))
+               (and (file-exists-p (expand-file-name dir project-root))
+                    (expand-file-name file project-root)))
+           (and (file-exists-p dir)
+                file)))))
 
 (defun company-files--connected-p (file)
   (or (not (file-remote-p file))
