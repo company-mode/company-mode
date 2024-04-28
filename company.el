@@ -3343,7 +3343,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company-plainify (str)
   (let ((prefix (get-text-property 0 'line-prefix str)))
-    (when prefix ; Keep the original value unmodified, for no special reason.
+    (when (stringp prefix) ; Keep the original value unmodified, for no special reason.
       (setq str (concat prefix str))
       (remove-text-properties 0 (length str) '(line-prefix) str)))
   (let* ((pieces (split-string str "\t"))
