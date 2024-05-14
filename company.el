@@ -1617,9 +1617,11 @@ update if FORCE-UPDATE."
         (while (member (car unread-command-events)
                        '(company-foo (t . company-foo)))
           (pop unread-command-events))
-        (prog1
-            (and (consp res) res)
-          (setq res 'exited))))))
+        (let ((res-was res))
+          (setq res 'exited)
+          (if (eq 'none res-was)
+              (throw 'interrupted 'new-input)
+            res-was))))))
 
 (defun company--sneaky-refresh ()
   (when company-candidates (company-call-frontends 'unhide))
@@ -2201,13 +2203,16 @@ For more details see `company-insertion-on-trigger' and
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
          (ignore-case (company-call-backend 'ignore-case))
-         (c (when (and (company--good-prefix-p new-prefix
-                                               (company--prefix-min-length))
-                       (setq new-prefix (company--prefix-str new-prefix))
-                       (= (- (point) (length new-prefix))
-                          (- company-point (length company-prefix))))
-              (company-calculate-candidates new-prefix ignore-case))))
+         (c (catch 'interrupted
+              (when (and (company--good-prefix-p new-prefix
+                                                 (company--prefix-min-length))
+                         (setq new-prefix (company--prefix-str new-prefix))
+                         (= (- (point) (length new-prefix))
+                            (- company-point (length company-prefix))))
+                (company-calculate-candidates new-prefix ignore-case)))))
     (cond
+     ((eq c 'new-input) ; Keep the old completions, but update prefix.
+      (setq company-prefix new-prefix))
      ((and company-abort-on-unique-match
            (company--unique-match-p c new-prefix ignore-case))
       ;; Handle it like completion was aborted, to differentiate from user
@@ -2251,8 +2256,12 @@ For more details see `company-insertion-on-trigger' and
             (company-call-backend 'set-min-prefix min-prefix)
             (setq company-prefix (company--prefix-str prefix)
                   company-backend backend
-                  c (company-calculate-candidates company-prefix ignore-case))
+                  c (catch 'interrupted
+                      (company-calculate-candidates company-prefix ignore-case)))
             (cond
+             ((or (null c) (eq c 'new-input))
+              (when company--manual-action
+                (message "No completion found")))
              ((and company-abort-on-unique-match
                    (company--unique-match-p c company-prefix ignore-case)
                    (if company--manual-action
@@ -2262,9 +2271,6 @@ For more details see `company-insertion-on-trigger' and
                      t))
               ;; ...abort and run the hooks, e.g. to clear the cache.
               (company-cancel 'unique))
-             ((null c)
-              (when company--manual-action
-                (message "No completion found")))
              (t ;; We got completions!
               (when company--manual-action
                 (setq company--manual-prefix prefix))
