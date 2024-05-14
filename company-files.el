@@ -53,7 +53,7 @@ Set this to nil to disable that behavior."
                         (lambda (s1 s2) (string-lessp (downcase s1) (downcase s2))))))
         (when company-files-exclusions
           (setq comp (company-files--exclusions-filtered comp)))
-        (if (equal prefix "")
+        (if (string-empty-p prefix)
             (delete "../" (delete "./" comp))
           comp))
     (file-error nil)))

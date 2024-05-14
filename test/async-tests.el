@@ -48,7 +48,7 @@
   (let ((company-backend 'company-async-backend))
     (should (equal "foo" (company-call-backend-raw 'prefix)))
     (should (equal :async (car (company-call-backend-raw 'candidates "foo"))))
-    (should (equal 'closure (cadr (company-call-backend-raw 'candidates "foo"))))))
+    (should (functionp (cdr (company-call-backend-raw 'candidates "foo"))))))
 
 (ert-deftest company-manual-begin-forces-async-candidates-to-sync ()
   (with-temp-buffer

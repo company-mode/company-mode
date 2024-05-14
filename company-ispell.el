@@ -81,7 +81,7 @@ If nil, use `ispell-complete-word-dict' or `ispell-alternate-dictionary'."
                                   (lambda () (ispell-lookup-words "" dict))
                                   :check-tag dict))
             (completion-ignore-case t))
-       (if (string= arg "")
+       (if (string-empty-p arg)
            ;; Small optimization.
            all-words
          (company-substitute-prefix

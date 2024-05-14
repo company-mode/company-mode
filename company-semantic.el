@@ -140,7 +140,7 @@ and `c-electric-colon', for automatic completion right after \">\" and
                  (memq major-mode company-semantic-modes)
                  (not (company-in-string-or-comment))
                  (or (company-semantic--prefix) 'stop)))
-    (candidates (if (and (equal arg "")
+    (candidates (if (and (string-empty-p arg)
                          (not (looking-back "->\\|\\.\\|::" (- (point) 2))))
                     (company-semantic-completions-raw arg)
                   (company-semantic-completions arg)))
@@ -151,7 +151,7 @@ and `c-electric-colon', for automatic completion right after \">\" and
     (doc-buffer (company-semantic-doc-buffer
                  (assoc arg company-semantic--current-tags)))
     ;; Because "" is an empty context and doesn't return local variables.
-    (no-cache (equal arg ""))
+    (no-cache (string-empty-p arg))
     (duplicates t)
     (location (let ((tag (assoc arg company-semantic--current-tags)))
                 (when (buffer-live-p (semantic-tag-buffer tag))
