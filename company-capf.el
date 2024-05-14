@@ -1,6 +1,6 @@
 ;;; company-capf.el --- company-mode completion-at-point-functions backend -*- lexical-binding: t -*-
 
-;; Copyright (C) 2013-2023  Free Software Foundation, Inc.
+;; Copyright (C) 2013-2024  Free Software Foundation, Inc.
 
 ;; Author: Stefan Monnier <monnier@iro.umontreal.ca>
 
@@ -189,9 +189,11 @@ so we can't just use the preceding variable instead.")
                      table pred))))
     (company-capf--save-current-data res meta)
     (when res
-      (let* ((candidates (completion-all-completions input table pred
+      (let* ((interrupt (plist-get (nthcdr 4 res) :company-use-while-no-input))
+             (candidates (company-capf--candidates-1 input table pred
                                                      (length input)
-                                                     meta))
+                                                     meta
+                                                     interrupt))
              (sortfun (cdr (assq 'display-sort-function meta)))
              (last (last candidates))
              (base-size (and (numberp (cdr last)) (cdr last))))
@@ -206,6 +208,17 @@ so we can't just use the preceding variable instead.")
                         (concat before candidate))
                       candidates))
           candidates)))))
+
+(defun company-capf--candidates-1 (input table pred len meta interrupt-on-input)
+  (if (not interrupt-on-input)
+      (completion-all-completions input table pred len meta)
+    (let (res)
+      (and (while-no-input
+             (setq res
+                   (completion-all-completions input table pred len meta))
+             nil)
+           (throw 'interrupted 'new-input))
+      res)))
 
 (defun company--capf-post-completion (arg)
   (let* ((res company-capf--current-completion-data)
