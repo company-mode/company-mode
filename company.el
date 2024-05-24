@@ -3505,7 +3505,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                  ))
               ))
            str)))
-    (if (= 0 add-length)
+    (if (>= 0 add-length)
         new-str
       (concat new-str
               (propertize
