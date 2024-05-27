@@ -1593,10 +1593,10 @@ update if FORCE-UPDATE."
 (defun company--fetch-candidates (prefix)
   (let* ((non-essential (not (company-explicit-action-p)))
          (inhibit-redisplay t)
-         (c (if (or company-selection-changed
-                    ;; FIXME: This is not ideal, but we have not managed to deal
-                    ;; with these situations in a better way yet.
-                    (company-require-match-p))
+         ;; TODO: We can narrow this down further, but at least we need "fresh"
+         ;; completions if the current command will use them (e.g. insert
+         ;; common, or finish completion).
+         (c (if (not non-essential)
                 (company-call-backend 'candidates prefix)
               (company-call-backend-raw 'candidates prefix))))
     (if (not (eq (car c) :async))
@@ -2211,8 +2211,8 @@ For more details see `company-insertion-on-trigger' and
                             (- company-point (length company-prefix))))
                 (company-calculate-candidates new-prefix ignore-case)))))
     (cond
-     ((eq c 'new-input) ; Keep the old completions, but update prefix.
-      (setq company-prefix new-prefix))
+     ((eq c 'new-input) ; Keep the old completions, company-point, prefix.
+      t)
      ((and company-abort-on-unique-match
            (company--unique-match-p c new-prefix ignore-case))
       ;; Handle it like completion was aborted, to differentiate from user
@@ -2221,7 +2221,8 @@ For more details see `company-insertion-on-trigger' and
       (company-cancel 'unique))
      ((consp c)
       ;; incremental match
-      (setq company-prefix new-prefix)
+      (setq company-prefix new-prefix
+            company-point (point))
       (company-update-candidates c)
       c)
      ((and (characterp last-command-event)
@@ -2255,6 +2256,7 @@ For more details see `company-insertion-on-trigger' and
             ;; Keep this undocumented, esp. while only 1 backend needs it.
             (company-call-backend 'set-min-prefix min-prefix)
             (setq company-prefix (company--prefix-str prefix)
+                  company-point (point)
                   company-backend backend
                   c (catch 'interrupted
                       (company-calculate-candidates company-prefix ignore-case)))
@@ -2288,8 +2290,7 @@ For more details see `company-insertion-on-trigger' and
     (company--begin-new)))
   (if (not company-candidates)
       (setq company-backend nil)
-    (setq company-point (point)
-          company--point-max (point-max))
+    (setq company--point-max (point-max))
     (company-ensure-emulation-alist)
     (company-enable-overriding-keymap company-active-map)
     (company-call-frontends 'update)))
