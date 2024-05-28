@@ -1411,7 +1411,10 @@ be recomputed when this value changes."
 (defvar-local company-selection-changed nil)
 
 (defvar-local company--manual-action nil
-  "Non-nil, if manual completion took place.")
+  "Non-nil if manual completion was performed by the user.")
+
+(defvar-local company--manual-now nil
+  "Non-nil if manual completion is being performed now.")
 
 (defvar-local company--manual-prefix nil)
 
@@ -1591,12 +1594,11 @@ update if FORCE-UPDATE."
                 'snippet))))
 
 (defun company--fetch-candidates (prefix)
-  (let* ((non-essential (not (company-explicit-action-p)))
+  (let* ((non-essential (not company--manual-now))
          (inhibit-redisplay t)
-         ;; TODO: We can narrow this down further, but at least we need "fresh"
-         ;; completions if the current command will use them (e.g. insert
-         ;; common, or finish completion).
-         (c (if (not non-essential)
+         ;; At least we need "fresh" completions if the current command will
+         ;; rely on the result (e.g. insert common, or finish completion).
+         (c (if company--manual-now
                 (company-call-backend 'candidates prefix)
               (company-call-backend-raw 'candidates prefix))))
     (if (not (eq (car c) :async))
@@ -2104,8 +2106,10 @@ doesn't cause any immediate changes to the buffer text."
   (company-assert-enabled)
   (setq company--manual-action t)
   (unwind-protect
-      (let ((company-minimum-prefix-length 0))
-        (or company-candidates
+      (let ((company-minimum-prefix-length 0)
+            (company--manual-now t))
+        (or (and company-candidates
+                 (= company-point (point)))
             (company-auto-begin)))
     (unless company-candidates
       (setq company--manual-action nil))))
