@@ -149,7 +149,8 @@
         (let ((completion-at-point-functions
                (list (lambda ()
                        (list 1 1 obarray :company-use-while-no-input t))))
-              (unread-command-events '(?a)))
+              (unread-command-events '(?a))
+              (non-essential t))
           (company-capf 'candidates "a")
           (error "Not reachable"))))
     'new-input)))

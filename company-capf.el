@@ -193,7 +193,8 @@ so we can't just use the preceding variable instead.")
              (candidates (company-capf--candidates-1 input table pred
                                                      (length input)
                                                      meta
-                                                     interrupt))
+                                                     (and non-essential
+                                                          interrupt)))
              (sortfun (cdr (assq 'display-sort-function meta)))
              (last (last candidates))
              (base-size (and (numberp (cdr last)) (cdr last))))
