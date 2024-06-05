@@ -108,7 +108,7 @@ so we can't just use the preceding variable instead.")
 
 (defvar-local company-capf--sorted nil)
 
-(defun company-capf (command &optional arg &rest _args)
+(defun company-capf (command &optional arg &rest rest)
   "`company-mode' backend using `completion-at-point-functions'."
   (interactive (list 'interactive))
   (pcase command
@@ -117,13 +117,11 @@ so we can't just use the preceding variable instead.")
      (let ((res (company--capf-data)))
        (when res
          (let ((length (plist-get (nthcdr 4 res) :company-prefix-length))
-               (prefix (buffer-substring-no-properties (nth 1 res) (point))))
-           (cond
-            ((> (nth 2 res) (point)) 'stop)
-            (length (cons prefix length))
-            (t prefix))))))
+               (prefix (buffer-substring-no-properties (nth 1 res) (point)))
+               (suffix (buffer-substring-no-properties (point) (nth 2 res))))
+           (list prefix suffix length)))))
     (`candidates
-     (company-capf--candidates arg))
+     (company-capf--candidates arg (car rest)))
     (`sorted
      company-capf--sorted)
     (`match
@@ -179,7 +177,7 @@ so we can't just use the preceding variable instead.")
         nil
       annotation)))
 
-(defun company-capf--candidates (input)
+(defun company-capf--candidates (input suffix)
   (let* ((res (company--capf-data))
          (table (nth 3 res))
          (pred (plist-get (nthcdr 4 res) :predicate))
@@ -189,7 +187,8 @@ so we can't just use the preceding variable instead.")
                      table pred))))
     (company-capf--save-current-data res meta)
     (when res
-      (let* ((candidates (completion-all-completions input table pred
+      (let* ((candidates (completion-all-completions (concat input suffix)
+                                                     table pred
                                                      (length input)
                                                      meta))
              (sortfun (cdr (assq 'display-sort-function meta)))
