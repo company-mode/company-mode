@@ -4,6 +4,8 @@
 
 * Completion works inside symbols
   (#[340](https://github.com/company-mode/company-mode/issues/340)).
+* New user option `company-inhibit-inside-symbols`. Set it to `t` to switch
+  closer to the previous behavior.
 * `company-elisp` has been removed.  It's not needed since Emacs 24.4, with all
   of its features having been incorporated into the built-in Elisp completion.
 * `company-files` shows shorter completions.  Previously, the popup spanned

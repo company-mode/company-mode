@@ -674,6 +674,14 @@ happens.  The value of nil means no idle completion."
                  (const :tag "immediate (0)" 0)
                  (number :tag "seconds")))
 
+(defcustom company-inhibit-inside-symbols nil
+  "Non-nil to inhibit idle completion when typing in the middle of a symbol.
+The symbol is in a generalized sense, indicated by the `prefix' backend
+action returning a non-empty SUFFIX element.  When this variable is
+non-nil, completion inside symbol will onlytriggered by an explicit command
+invocation, such as \\[company-complete-common]."
+  :type 'boolean)
+
 (defcustom company-begin-commands '(self-insert-command
                                     org-self-insert-command
                                     orgtbl-self-insert-command
@@ -2289,7 +2297,10 @@ For more details see `company-insertion-on-trigger' and
                     (company-call-backend 'prefix)))
               (company--multi-backend-adapter backend 'prefix)))
       (when entity
-        (when (company--good-prefix-p entity min-prefix)
+        (when (and (company--good-prefix-p entity min-prefix)
+                   (or (not company-inhibit-inside-symbols)
+                       company--manual-action
+                       (zerop (length (company--suffix-str entity)))))
           (let ((ignore-case (company-call-backend 'ignore-case)))
             ;; Keep this undocumented, esp. while only 1 backend needs it.
             (company-call-backend 'set-min-prefix min-prefix)
