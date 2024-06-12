@@ -1,6 +1,6 @@
 ;;; capf-tests.el --- company tests for the company-capf backend  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018-2019, 2021-2023  Free Software Foundation, Inc.
+;; Copyright (C) 2018-2019, 2021-2024  Free Software Foundation, Inc.
 
 ;; Author: João Távora <joaotavora@gmail.com>
 ;; Keywords:
@@ -140,6 +140,31 @@
         #("with-current-buffer"
           0 14 (face (company-tooltip-common company-tooltip)); "with-current-b"
           14 19 (face company-tooltip)))))))                ; "uffer"
+
+(ert-deftest company-capf-interrupted-on-input ()
+  (should
+   (eq
+    (catch 'interrupted
+      (with-temp-buffer
+        (let ((completion-at-point-functions
+               (list (lambda ()
+                       (list 1 1 obarray :company-use-while-no-input t))))
+              (unread-command-events '(?a))
+              (non-essential t))
+          (company-capf 'candidates "a")
+          (error "Not reachable"))))
+    'new-input)))
+
+(ert-deftest company-capf-uninterrupted ()
+  (should
+   (equal
+    (with-temp-buffer
+      (let ((completion-at-point-functions
+             (list (lambda ()
+                     (list 1 1 '("abcd" "ae" "be") t))))
+            (unread-command-events '(?a)))
+        (company-capf 'candidates "b")))
+    '("be"))))
 
 (provide 'capf-tests)
 ;;; capf-tests.el ends here
