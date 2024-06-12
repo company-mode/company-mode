@@ -189,12 +189,10 @@ so we can't just use the preceding variable instead.")
                      table pred))))
     (company-capf--save-current-data res meta)
     (when res
-      (let* ((interrupt (plist-get (nthcdr 4 res) :company-use-while-no-input))
-             (candidates (company-capf--candidates-1 input table pred
+      (let* ((candidates (company-capf--candidates-1 input table pred
                                                      (length input)
                                                      meta
-                                                     (and non-essential
-                                                          interrupt)))
+                                                     non-essential))
              (sortfun (cdr (assq 'display-sort-function meta)))
              (last (last candidates))
              (base-size (and (numberp (cdr last)) (cdr last))))
