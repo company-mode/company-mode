@@ -1458,7 +1458,10 @@ be recomputed when this value changes."
 (defvar-local company-selection-changed nil)
 
 (defvar-local company--manual-action nil
-  "Non-nil, if manual completion took place.")
+  "Non-nil if manual completion was performed by the user.")
+
+(defvar-local company--manual-now nil
+  "Non-nil if manual completion is being performed now.")
 
 (defvar-local company--manual-prefix nil)
 
@@ -1641,12 +1644,11 @@ update if FORCE-UPDATE."
                 'snippet))))
 
 (defun company--fetch-candidates (prefix suffix)
-  (let* ((non-essential (not (company-explicit-action-p)))
+  (let* ((non-essential (not company--manual-now))
          (inhibit-redisplay t)
-         (c (if (or company-selection-changed
-                    ;; FIXME: This is not ideal, but we have not managed to deal
-                    ;; with these situations in a better way yet.
-                    (company-require-match-p))
+         ;; At least we need "fresh" completions if the current command will
+         ;; rely on the result (e.g. insert common, or finish completion).
+         (c (if company--manual-now
                 (company-call-backend 'candidates prefix suffix)
               (company-call-backend-raw 'candidates prefix suffix))))
     (if (not (eq (car c) :async))
@@ -1667,9 +1669,11 @@ update if FORCE-UPDATE."
         (while (member (car unread-command-events)
                        '(company-foo (t . company-foo)))
           (pop unread-command-events))
-        (prog1
-            (and (consp res) res)
-          (setq res 'exited))))))
+        (let ((res-was res))
+          (setq res 'exited)
+          (if (eq 'none res-was)
+              (throw 'interrupted 'new-input)
+            res-was))))))
 
 (defun company--sneaky-refresh ()
   (when company-candidates (company-call-frontends 'unhide))
@@ -2152,8 +2156,10 @@ doesn't cause any immediate changes to the buffer text."
   (company-assert-enabled)
   (setq company--manual-action t)
   (unwind-protect
-      (let ((company-minimum-prefix-length 0))
-        (or company-candidates
+      (let ((company-minimum-prefix-length 0)
+            (company--manual-now t))
+        (or (and company-candidates
+                 (= company-point (point)))
             (company-auto-begin)))
     (unless company-candidates
       (setq company--manual-action nil))))
@@ -2252,13 +2258,16 @@ For more details see `company-insertion-on-trigger' and
   (let* ((new-prefix (company-call-backend 'prefix))
          (new-suffix (company--suffix-str new-prefix))
          (ignore-case (company-call-backend 'ignore-case))
-         (c (when (and (company--good-prefix-p new-prefix
-                                               (company--prefix-min-length))
-                       (setq new-prefix (company--prefix-str new-prefix))
-                       (= (- (point) (length new-prefix))
-                          (- company-point (length company-prefix))))
-              (company-calculate-candidates new-prefix ignore-case new-suffix))))
+         (c (catch 'interrupted
+              (when (and (company--good-prefix-p new-prefix
+                                                 (company--prefix-min-length))
+                         (setq new-prefix (company--prefix-str new-prefix))
+                         (= (- (point) (length new-prefix))
+                            (- company-point (length company-prefix))))
+                (company-calculate-candidates new-prefix ignore-case new-suffix)))))
     (cond
+     ((eq c 'new-input) ; Keep the old completions, company-point, prefix.
+      t)
      ((and company-abort-on-unique-match
            (company--unique-match-p c new-prefix ignore-case))
       ;; Handle it like completion was aborted, to differentiate from user
@@ -2268,7 +2277,8 @@ For more details see `company-insertion-on-trigger' and
      ((consp c)
       ;; incremental match
       (setq company-prefix new-prefix
-            company-suffix new-suffix)
+            company-suffix new-suffix
+            company-point (point))
       (company-update-candidates c)
       c)
      ((and (characterp last-command-event)
@@ -2306,10 +2316,15 @@ For more details see `company-insertion-on-trigger' and
             (company-call-backend 'set-min-prefix min-prefix)
             (setq company-prefix (company--prefix-str entity)
                   company-suffix (company--suffix-str entity)
+                  company-point (point)
                   company-backend backend
-                  c (company-calculate-candidates company-prefix ignore-case
-                                                  company-suffix))
+                  c (catch 'interrupted
+                      (company-calculate-candidates company-prefix ignore-case
+                                                    company-suffix)))
             (cond
+             ((or (null c) (eq c 'new-input))
+              (when company--manual-action
+                (message "No completion found")))
              ((and company-abort-on-unique-match
                    (company--unique-match-p c company-prefix ignore-case)
                    (if company--manual-action
@@ -2319,9 +2334,6 @@ For more details see `company-insertion-on-trigger' and
                      t))
               ;; ...abort and run the hooks, e.g. to clear the cache.
               (company-cancel 'unique))
-             ((null c)
-              (when company--manual-action
-                (message "No completion found")))
              (t ;; We got completions!
               (when company--manual-action
                 (setq company--manual-prefix entity))
@@ -2339,8 +2351,7 @@ For more details see `company-insertion-on-trigger' and
     (company--begin-new)))
   (if (not company-candidates)
       (setq company-backend nil)
-    (setq company-point (point)
-          company--point-max (point-max))
+    (setq company--point-max (point-max))
     (company-ensure-emulation-alist)
     (company-enable-overriding-keymap company-active-map)
     (company-call-frontends 'update)))
