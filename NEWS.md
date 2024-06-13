@@ -9,7 +9,8 @@
 * As such `company-capf` now interrupts computation on new user
   input. Completion tables that are incompatible with this behavior should get
   updated: bind `inhibit-quit` to non-nil around their sensitive sections, or
-  simply around the whole implementation (as a fallback).
+  simply around the whole implementation (e.g. using
+  `cape-capf-noninterruptible` from [cape](https://github.com/minad/cape/)).
 * `company-elisp` has been removed.  It's not needed since Emacs 24.4, with all
   of its features having been incorporated into the built-in Elisp completion.
 * `company-files` shows shorter completions.  Previously, the popup spanned
