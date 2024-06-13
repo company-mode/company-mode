@@ -1635,11 +1635,11 @@ update if FORCE-UPDATE."
     ;; Only now apply the predicate and transformers.
     (company--postprocess-candidates candidates)))
 
-(defun company--unique-match-p (candidates prefix ignore-case)
+(defun company--unique-match-p (candidates prefix suffix ignore-case)
   (and candidates
        (not (cdr candidates))
        (eq t (compare-strings (car candidates) nil nil
-                              prefix nil nil ignore-case))
+                              (concat prefix suffix) nil nil ignore-case))
        (not (eq (company-call-backend 'kind (car candidates))
                 'snippet))))
 
@@ -2269,7 +2269,7 @@ For more details see `company-insertion-on-trigger' and
      ((eq c 'new-input) ; Keep the old completions, company-point, prefix.
       t)
      ((and company-abort-on-unique-match
-           (company--unique-match-p c new-prefix ignore-case))
+           (company--unique-match-p c new-prefix new-suffix ignore-case))
       ;; Handle it like completion was aborted, to differentiate from user
       ;; calling one of Company's commands to insert the candidate,
       ;; not to trigger template expansion, etc.
@@ -2326,7 +2326,7 @@ For more details see `company-insertion-on-trigger' and
               (when company--manual-action
                 (message "No completion found")))
              ((and company-abort-on-unique-match
-                   (company--unique-match-p c company-prefix ignore-case)
+                   (company--unique-match-p c company-prefix company-suffix ignore-case)
                    (if company--manual-action
                        ;; If `company-manual-begin' was called, the user
                        ;; really wants something to happen.  Otherwise...
