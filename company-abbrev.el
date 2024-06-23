@@ -41,9 +41,11 @@
     (interactive (company-begin-backend 'company-abbrev
                                         'company-abbrev-insert))
     (prefix (company-grab-symbol))
-    (candidates (nconc
-                 (delete "" (all-completions arg global-abbrev-table))
-                 (delete "" (all-completions arg local-abbrev-table))))
+    (candidates (apply
+                 #'nconc
+                 (mapcar (lambda (table)
+                           (delete "" (all-completions arg table)))
+                         (abbrev--active-tables))))
     (kind 'snippet)
     (meta (abbrev-expansion arg))
     (post-completion (expand-abbrev))))
