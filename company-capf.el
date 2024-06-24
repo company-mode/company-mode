@@ -194,7 +194,7 @@ so we can't just use the preceding variable instead.")
                                                      (length input)
                                                      meta
                                                      (and non-essential
-                                                          interrupt)))
+                                                          (eq interrupt t))))
              (sortfun (cdr (assq 'display-sort-function meta)))
              (last (last candidates))
              (base-size (and (numberp (cdr last)) (cdr last))))

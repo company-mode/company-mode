@@ -8,7 +8,7 @@
   `company-capf`.
 * For that, `company-capf` supports interrupting computation on new user
   input. Completion functions that want to take advantage of this behavior
-  should include `:company-use-while-no-input` in the returned properties list.
+  should include `:company-use-while-no-input t` in the returned properties.
 * `company-elisp` has been removed.  It's not needed since Emacs 24.4, with all
   of its features having been incorporated into the built-in Elisp completion.
 * `company-files` shows shorter completions.  Previously, the popup spanned
