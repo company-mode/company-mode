@@ -8,12 +8,11 @@
   closer to the previous behavior.
 * Improved behavior when user types new character while completion is being
   computed: better performance, less blinking (in the rare cases when it still
-  happened). The improvement extends to native async backends and to
+  happened). This affects native async backends and is opt-in with
   `company-capf`.
-* As such `company-capf` now interrupts computation on new user
-  input. Completion tables that are incompatible with this behavior should get
-  updated: bind `inhibit-quit` to non-nil around their sensitive sections, or
-  simply around the whole implementation (as a fallback).
+* For that, `company-capf` supports interrupting computation on new user
+  input. Completion functions that want to take advantage of this behavior
+  should include `:company-use-while-no-input t` in the returned properties.
 * `company-elisp` has been removed.  It's not needed since Emacs 24.4, with all
   of its features having been incorporated into the built-in Elisp completion.
 * `company-files` shows shorter completions.  Previously, the popup spanned
