@@ -1576,10 +1576,11 @@ update if FORCE-UPDATE."
         ;; No cache match, call the backend.
         (let ((refresh-timer (run-with-timer company-async-redisplay-delay
                                              nil #'company--sneaky-refresh)))
-          (setq candidates (company--preprocess-candidates
-                            (company--fetch-candidates prefix)))
-          ;; If the backend is synchronous, no chance for the timer to run.
-          (cancel-timer refresh-timer)
+          (unwind-protect
+              (setq candidates (company--preprocess-candidates
+                                (company--fetch-candidates prefix)))
+            ;; If the backend is synchronous, no chance for the timer to run.
+            (cancel-timer refresh-timer))
           ;; Save in cache.
           (push (cons prefix candidates) company-candidates-cache)))
     ;; Only now apply the predicate and transformers.
