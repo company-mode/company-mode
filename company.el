@@ -1483,10 +1483,7 @@ be recomputed when this value changes."
         (insert (company-strip-prefix candidate))
       (unless (equal company-prefix candidate)
         (delete-region (- (point) (length company-prefix)) (point))
-        (insert candidate)))
-    ;; FIXME: Ideally delegate to backend (to know how much to replace).
-    (when (string-suffix-p company-suffix (company-strip-prefix candidate))
-      (delete-char (length company-suffix)))))
+        (insert candidate)))))
 
 (defmacro company-with-candidate-inserted (candidate &rest body)
   "Evaluate BODY with CANDIDATE temporarily inserted.
@@ -2386,7 +2383,7 @@ For more details see `company-insertion-on-trigger' and
       (if (stringp result)
           (let ((company-backend backend))
             (run-hook-with-args 'company-completion-finished-hook result)
-            (company-call-backend 'post-completion result))
+            (company-call-backend 'post-completion result prefix))
         (run-hook-with-args 'company-completion-cancelled-hook result))
       (run-hook-with-args 'company-after-completion-hook result)))
   ;; Make return value explicit.
