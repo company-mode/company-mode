@@ -160,7 +160,7 @@ so we can't just use the preceding variable instead.")
      (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
     (`post-completion
-     (company--capf-post-completion arg (car rest)))
+     (company--capf-post-completion arg (nth 0 rest) (nth 1 rest)))
     ))
 
 (defun company-capf--annotation (arg)
@@ -220,15 +220,8 @@ so we can't just use the preceding variable instead.")
            (throw 'interrupted 'new-input))
       res)))
 
-(defun company--capf-post-completion (arg prefix)
-  (let* ((res company-capf--current-completion-data)
-         (exit-function (plist-get (nthcdr 4 res) :exit-function))
-         (pred (plist-get (nthcdr 4 res) :predicate))
-         (suffix (buffer-substring (+ (nth 1 res) (length arg))
-                                   (+ (nth 2 res)
-                                      (- (length arg) (length prefix)))))
-         (table (nth 3 res))
-         (replace-suffix t))
+(defun company--capf-chop-suffix (arg prefix suffix table &optional pred)
+  (let ((replace-suffix t))
     ;; If emacs22 is reached and matches, that style is used.
     (cl-letf (((symbol-function 'completion-emacs22-all-completions)
                (lambda (&rest _)
@@ -240,7 +233,14 @@ so we can't just use the preceding variable instead.")
                                   (length prefix)))
     (when replace-suffix
       ;; Replace unless the style is emacs22.
-      (delete-region (point) (+ (point) (length suffix))))
+      (delete-region (point) (+ (point) (length suffix))))))
+
+(defun company--capf-post-completion (arg prefix suffix)
+  (let* ((res company-capf--current-completion-data)
+         (exit-function (plist-get (nthcdr 4 res) :exit-function))
+         (pred (plist-get (nthcdr 4 res) :predicate))
+         (table (nth 3 res)))
+    (company--capf-chop-suffix arg prefix suffix table pred)
     (if exit-function
         ;; We can more or less know when the user is done with completion,
         ;; so we do something different than `completion--done'.

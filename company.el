@@ -2356,6 +2356,7 @@ For more details see `company-insertion-on-trigger' and
 
 (defun company-cancel (&optional result)
   (let ((prefix company-prefix)
+        (suffix company-suffix)
         (backend company-backend))
     (setq company-backend nil
           company-prefix nil
@@ -2383,7 +2384,7 @@ For more details see `company-insertion-on-trigger' and
       (if (stringp result)
           (let ((company-backend backend))
             (run-hook-with-args 'company-completion-finished-hook result)
-            (company-call-backend 'post-completion result prefix))
+            (company-call-backend 'post-completion result prefix suffix))
         (run-hook-with-args 'company-completion-cancelled-hook result))
       (run-hook-with-args 'company-after-completion-hook result)))
   ;; Make return value explicit.
