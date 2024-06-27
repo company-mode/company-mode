@@ -126,8 +126,8 @@ and `c-electric-colon', for automatic completion right after \">\" and
 
 (defun company-semantic--prefix ()
   (if company-semantic-begin-after-member-access
-      (company-grab-symbol-cons "\\.\\|->\\|::" 2)
-    (company-grab-symbol)))
+      (company-grab-symbol-parts "\\.\\|->\\|::" 2)
+    (company-grab-symbol-parts)))
 
 ;;;###autoload
 (defun company-semantic (command &optional arg &rest _ignored)

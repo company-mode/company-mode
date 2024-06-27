@@ -379,14 +379,18 @@ Each backend is a function that takes a variable number of arguments.
 The first argument is the command requested from the backend.  It is one
 of the following:
 
-`prefix': The backend should return the text to be completed.  It must be
-text immediately before point.  Returning nil from this command passes
-control to the next backend.  The function should return `stop' if it
-should complete but cannot (e.g. when in the middle of a symbol).
-Instead of a string, the backend may return a cons (PREFIX . LENGTH)
-where LENGTH is a number used in place of PREFIX's length when
-comparing against `company-minimum-prefix-length'.  LENGTH can also
-be just t, and in the latter case the test automatically succeeds.
+`prefix': The backend should return the text to be completed.  Returning
+nil from this command passes control to the next backend.
+
+The expected return value looks like (PREFIX SUFFIX &optional PREFIX-LEN).
+Where PREFIX is the text to be completed before point, SUFFIX - the
+remainder after point (when e.g. inside a symbol), and PREFIX-LEN, when
+non-nil, is the number to use in place of PREFIX's length when comparing
+against `company-minimum-prefix-length'.  PREFIX-LEN can also be just t,
+and in the latter case the test automatically succeeds.
+
+The return value can also be just PREFIX, in which case SUFFIX is taken to
+be an empty string.
 
 `candidates': The second argument is the prefix to be completed.  The
 return value should be a list of candidates that match the prefix.
@@ -669,6 +673,14 @@ happens.  The value of nil means no idle completion."
   :type '(choice (const :tag "never (nil)" nil)
                  (const :tag "immediate (0)" 0)
                  (number :tag "seconds")))
+
+(defcustom company-inhibit-inside-symbols nil
+  "Non-nil to inhibit idle completion when typing in the middle of a symbol.
+The symbol is in a generalized sense, indicated by the `prefix' backend
+action returning a non-empty SUFFIX element.  When this variable is
+non-nil, completion inside symbol will onlytriggered by an explicit command
+invocation, such as \\[company-complete-common]."
+  :type 'boolean)
 
 (defcustom company-begin-commands '(self-insert-command
                                     org-self-insert-command
@@ -1106,36 +1118,49 @@ Matching is limited to the current line."
     (company-grab regexp expression (line-beginning-position))))
 
 (defun company-grab-symbol ()
-  "If point is at the end of a symbol, return it.
-Otherwise, if point is not inside a symbol, return an empty string."
-  (if (looking-at-p "\\_>")
-      (buffer-substring (point) (save-excursion (skip-syntax-backward "w_")
-                                                (point)))
-    (unless (and (char-after) (memq (char-syntax (char-after)) '(?w ?_)))
-      "")))
+  "Return buffer substring from the beginning of the symbol until point."
+  (buffer-substring (point) (save-excursion (skip-syntax-backward "w_")
+                                            (point))))
+
+(defun company-grab-symbol-suffix ()
+  "Return buffer substring from point until the end of the symbol."
+  (buffer-substring (point) (save-excursion (skip-syntax-forward "w_")
+                                            (point))))
 
 (defun company-grab-word ()
-  "If point is at the end of a word, return it.
-Otherwise, if point is not inside a symbol, return an empty string."
-  (if (looking-at-p "\\>")
-      (buffer-substring (point) (save-excursion (skip-syntax-backward "w")
-                                                (point)))
-    (unless (and (char-after) (eq (char-syntax (char-after)) ?w))
-      "")))
+  "Return buffer substring from the beginning of the word until point."
+  (buffer-substring (point) (save-excursion (skip-syntax-backward "w")
+                                            (point))))
 
-(defun company-grab-symbol-cons (idle-begin-after-re &optional max-len)
-  "Return a string SYMBOL or a cons (SYMBOL . t).
-SYMBOL is as returned by `company-grab-symbol'.  If the text before point
-matches IDLE-BEGIN-AFTER-RE, return it wrapped in a cons."
-  (let ((symbol (company-grab-symbol)))
-    (when symbol
+(defun company-grab-word-suffix ()
+  "Return buffer substring from the beginning of the word until point."
+  (buffer-substring (point) (save-excursion (skip-syntax-forward "w")
+                                            (point))))
+
+(defun company-grab-symbol-parts (&optional idle-begin-after-re max-len)
+  "Return a list (PREFIX SUFFIX &optional OVERRIDE).
+
+IDLE-BEGIN-AFTER-RE, if non-nil, must be a regexp.
+
+Where OVERRIDE might be t is IDLE-BEGIN-AFTER-RE is non-nil and the text
+before prefix matches it.  PREFIX and SUFFIX are as returned by
+`company-grab-symbol' and `company-grab-symbol-suffix'.
+MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
+  (let ((prefix (company-grab-symbol))
+        suffix override)
+    (setq suffix (company-grab-symbol-suffix))
+    (when idle-begin-after-re
       (save-excursion
-        (forward-char (- (length symbol)))
-        (if (looking-back idle-begin-after-re (if max-len
-                                                  (- (point) max-len)
-                                                (line-beginning-position)))
-            (cons symbol t)
-          symbol)))))
+        (forward-char (- (length prefix)))
+        (when (looking-back idle-begin-after-re (if max-len
+                                                    (- (point) max-len)
+                                                  (line-beginning-position)))
+          (setq override t))))
+    (list prefix suffix override)))
+
+(define-obsolete-function-alias
+  'company-grab-symbol-cons
+  'company-grab-symbol-parts "1.0")
 
 (defun company-in-string-or-comment ()
   "Return non-nil if point is within a string or comment."
@@ -1261,6 +1286,7 @@ be recomputed when this value changes."
       (`candidates
        (company--multi-backend-adapter-candidates backends
                                                   (car args)
+                                                  (cadr args)
                                                   (or company--multi-min-prefix 0)
                                                   separate))
       (`set-min-prefix (setq company--multi-min-prefix (car args)))
@@ -1320,7 +1346,7 @@ be recomputed when this value changes."
         (cons str len)
       str)))
 
-(defun company--multi-backend-adapter-candidates (backends prefix min-length separate)
+(defun company--multi-backend-adapter-candidates (backends prefix suffix min-length separate)
   (let ((pairs (cl-loop for backend in backends
                         when (let ((bp (let ((company-backend backend))
                                          (company-call-backend 'prefix))))
@@ -1332,7 +1358,7 @@ be recomputed when this value changes."
                                     t
                                   (push backend company--multi-uncached-backends)
                                   nil)))
-                        collect (cons (funcall backend 'candidates prefix)
+                        collect (cons (funcall backend 'candidates prefix suffix)
                                       (company--multi-candidates-mapper
                                        backend
                                        separate
@@ -1381,18 +1407,39 @@ be recomputed when this value changes."
                     (this-finisher (lambda (res)
                                      (setq pending (delq val pending))
                                      (setcar cell (funcall mapper res))
-                                     (funcall finisher))))
+                                     (funcall-interactively finisher))))
                (if (not (eq :async (car-safe val)))
                    (funcall this-finisher val)
                  (let ((fetcher (cdr val)))
                    (funcall fetcher this-finisher)))))))))))
 
-(defun company--prefix-str (prefix)
-  (or (car-safe prefix) prefix))
+(defun company--prefix-str (entity)
+  (or (car-safe entity) entity))
+
+(defun company--prefix-len (entity)
+  (let ((cdr (cdr-safe entity))
+        override)
+    (cond
+     ((consp cdr)
+      (setq override (cadr cdr)))
+     ((or (numberp cdr) (eq t cdr))
+      (setq override cdr)))
+    (or override
+        (length
+         (if (stringp entity)
+             entity
+           (car entity))))))
+
+(defun company--suffix-str (entity)
+  (if (stringp (car-safe (cdr-safe entity)))
+      (car-safe (cdr-safe entity))
+    ""))
 
 ;;; completion mechanism ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar-local company-prefix nil)
+
+(defvar-local company-suffix nil)
 
 (defvar-local company-candidates nil)
 
@@ -1561,7 +1608,7 @@ update if FORCE-UPDATE."
                   common))
             (car company-candidates)))))
 
-(defun company-calculate-candidates (prefix ignore-case)
+(defun company-calculate-candidates (prefix ignore-case suffix)
   (let ((candidates (cdr (assoc prefix company-candidates-cache))))
     (or candidates
         (when company-candidates-cache
@@ -1578,7 +1625,7 @@ update if FORCE-UPDATE."
                                              nil #'company--sneaky-refresh)))
           (unwind-protect
               (setq candidates (company--preprocess-candidates
-                                (company--fetch-candidates prefix)))
+                                (company--fetch-candidates prefix suffix)))
             ;; If the backend is synchronous, no chance for the timer to run.
             (cancel-timer refresh-timer))
           ;; Save in cache.
@@ -1586,22 +1633,22 @@ update if FORCE-UPDATE."
     ;; Only now apply the predicate and transformers.
     (company--postprocess-candidates candidates)))
 
-(defun company--unique-match-p (candidates prefix ignore-case)
+(defun company--unique-match-p (candidates prefix suffix ignore-case)
   (and candidates
        (not (cdr candidates))
        (eq t (compare-strings (car candidates) nil nil
-                              prefix nil nil ignore-case))
+                              (concat prefix suffix) nil nil ignore-case))
        (not (eq (company-call-backend 'kind (car candidates))
                 'snippet))))
 
-(defun company--fetch-candidates (prefix)
+(defun company--fetch-candidates (prefix suffix)
   (let* ((non-essential (not company--manual-now))
          (inhibit-redisplay t)
          ;; At least we need "fresh" completions if the current command will
          ;; rely on the result (e.g. insert common, or finish completion).
          (c (if company--manual-now
-                (company-call-backend 'candidates prefix)
-              (company-call-backend-raw 'candidates prefix))))
+                (company-call-backend 'candidates prefix suffix)
+              (company-call-backend-raw 'candidates prefix suffix))))
     (if (not (eq (car c) :async))
         c
       (let ((res 'none))
@@ -2185,8 +2232,8 @@ For more details see `company-insertion-on-trigger' and
 
 (defun company--good-prefix-p (prefix min-length)
   (and (stringp (company--prefix-str prefix)) ;excludes 'stop
-       (or (eq (cdr-safe prefix) t)
-           (>= (or (cdr-safe prefix) (length prefix))
+       (or (eq (company--prefix-len prefix) t)
+           (>= (company--prefix-len prefix)
                min-length))))
 
 (defun company--prefix-min-length ()
@@ -2207,6 +2254,7 @@ For more details see `company-insertion-on-trigger' and
     ;; Don't complete existing candidates, fetch new ones.
     (setq company-candidates-cache nil))
   (let* ((new-prefix (company-call-backend 'prefix))
+         (new-suffix (company--suffix-str new-prefix))
          (ignore-case (company-call-backend 'ignore-case))
          (c (catch 'interrupted
               (when (and (company--good-prefix-p new-prefix
@@ -2214,12 +2262,12 @@ For more details see `company-insertion-on-trigger' and
                          (setq new-prefix (company--prefix-str new-prefix))
                          (= (- (point) (length new-prefix))
                             (- company-point (length company-prefix))))
-                (company-calculate-candidates new-prefix ignore-case)))))
+                (company-calculate-candidates new-prefix ignore-case new-suffix)))))
     (cond
      ((eq c 'new-input) ; Keep the old completions, company-point, prefix.
       t)
      ((and company-abort-on-unique-match
-           (company--unique-match-p c new-prefix ignore-case))
+           (company--unique-match-p c new-prefix new-suffix ignore-case))
       ;; Handle it like completion was aborted, to differentiate from user
       ;; calling one of Company's commands to insert the candidate,
       ;; not to trigger template expansion, etc.
@@ -2227,6 +2275,7 @@ For more details see `company-insertion-on-trigger' and
      ((consp c)
       ;; incremental match
       (setq company-prefix new-prefix
+            company-suffix new-suffix
             company-point (point))
       (company-update-candidates c)
       c)
@@ -2243,34 +2292,39 @@ For more details see `company-insertion-on-trigger' and
 
 (defun company--begin-new ()
   (let ((min-prefix (company--prefix-min-length))
-        prefix c)
+        entity c)
     (cl-dolist (backend (if company-backend
                             ;; prefer manual override
                             (list company-backend)
                           company-backends))
-      (setq prefix
+      (setq entity
             (if (or (symbolp backend)
                     (functionp backend))
                 (when (company--maybe-init-backend backend)
                   (let ((company-backend backend))
                     (company-call-backend 'prefix)))
               (company--multi-backend-adapter backend 'prefix)))
-      (when prefix
-        (when (company--good-prefix-p prefix min-prefix)
+      (when entity
+        (when (and (company--good-prefix-p entity min-prefix)
+                   (or (not company-inhibit-inside-symbols)
+                       company--manual-action
+                       (zerop (length (company--suffix-str entity)))))
           (let ((ignore-case (company-call-backend 'ignore-case)))
             ;; Keep this undocumented, esp. while only 1 backend needs it.
             (company-call-backend 'set-min-prefix min-prefix)
-            (setq company-prefix (company--prefix-str prefix)
+            (setq company-prefix (company--prefix-str entity)
+                  company-suffix (company--suffix-str entity)
                   company-point (point)
                   company-backend backend
                   c (catch 'interrupted
-                      (company-calculate-candidates company-prefix ignore-case)))
+                      (company-calculate-candidates company-prefix ignore-case
+                                                    company-suffix)))
             (cond
              ((or (null c) (eq c 'new-input))
               (when company--manual-action
                 (message "No completion found")))
              ((and company-abort-on-unique-match
-                   (company--unique-match-p c company-prefix ignore-case)
+                   (company--unique-match-p c company-prefix company-suffix ignore-case)
                    (if company--manual-action
                        ;; If `company-manual-begin' was called, the user
                        ;; really wants something to happen.  Otherwise...
@@ -2280,7 +2334,7 @@ For more details see `company-insertion-on-trigger' and
               (company-cancel 'unique))
              (t ;; We got completions!
               (when company--manual-action
-                (setq company--manual-prefix prefix))
+                (setq company--manual-prefix entity))
               (company-update-candidates c)
               (run-hook-with-args 'company-completion-started-hook
                                   (company-explicit-action-p))
@@ -2302,6 +2356,7 @@ For more details see `company-insertion-on-trigger' and
 
 (defun company-cancel (&optional result)
   (let ((prefix company-prefix)
+        (suffix company-suffix)
         (backend company-backend))
     (setq company-backend nil
           company-prefix nil
@@ -2329,7 +2384,7 @@ For more details see `company-insertion-on-trigger' and
       (if (stringp result)
           (let ((company-backend backend))
             (run-hook-with-args 'company-completion-finished-hook result)
-            (company-call-backend 'post-completion result))
+            (company-call-backend 'post-completion result prefix suffix))
         (run-hook-with-args 'company-completion-cancelled-hook result))
       (run-hook-with-args 'company-after-completion-hook result)))
   ;; Make return value explicit.
@@ -2522,7 +2577,8 @@ each one wraps a part of the input string."
                company-search-filtering
                (lambda (candidate) (string-match-p re candidate))))
          (cc (company-calculate-candidates company-prefix
-                                           (company-call-backend 'ignore-case))))
+                                           (company-call-backend 'ignore-case)
+                                           company-suffix)))
     (unless cc (user-error "No match"))
     (company-update-candidates cc)))
 
@@ -2810,7 +2866,20 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (if (and (not (cdr company-candidates))
              (equal company-common (car company-candidates)))
         (company-complete-selection)
-      (company--insert-candidate company-common))))
+      ;; FIXME: Poor man's completion-try-completion.
+      (let* ((max-len (when (and company-common
+                                 (cl-every (lambda (s) (string-suffix-p company-suffix s))
+                                           company-candidates))
+                        (apply #'min
+                               (mapcar
+                                (lambda (s) (- (length s) (length company-suffix)))
+                                company-candidates))))
+             (company-common (if max-len
+                                 (substring company-common 0
+                                            (min max-len (length company-common)))
+                               company-common))
+             (company-suffix ""))
+        (company--insert-candidate company-common)))))
 
 (defun company-complete-common-or-cycle (&optional arg)
   "Insert the common part of all candidates, or select the next one.
@@ -4179,6 +4248,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company--show-inline-p ()
   (and (not (cdr company-candidates))
+       (string-empty-p company-suffix)
        company-common
        (not (eq t (compare-strings company-prefix nil nil
                                    (car company-candidates) nil nil

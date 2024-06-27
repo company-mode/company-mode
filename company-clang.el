@@ -335,8 +335,8 @@ or automatically through a custom `company-clang-prefix-guesser'."
 
 (defun company-clang--prefix ()
   (if company-clang-begin-after-member-access
-      (company-grab-symbol-cons "\\.\\|->\\|::" 2)
-    (company-grab-symbol)))
+      (company-grab-symbol-parts "\\.\\|->\\|::" 2)
+    (company-grab-symbol-parts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

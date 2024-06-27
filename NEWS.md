@@ -2,6 +2,10 @@
 
 # Next
 
+* Completion works inside symbols
+  (#[340](https://github.com/company-mode/company-mode/issues/340)).
+* New user option `company-inhibit-inside-symbols`. Set it to `t` to switch
+  closer to the previous behavior.
 * Improved behavior when user types new character while completion is being
   computed: better performance, less blinking (in the rare cases when it still
   happened). This affects native async backends and is opt-in with

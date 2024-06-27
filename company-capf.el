@@ -108,7 +108,7 @@ so we can't just use the preceding variable instead.")
 
 (defvar-local company-capf--sorted nil)
 
-(defun company-capf (command &optional arg &rest _args)
+(defun company-capf (command &optional arg &rest rest)
   "`company-mode' backend using `completion-at-point-functions'."
   (interactive (list 'interactive))
   (pcase command
@@ -117,13 +117,11 @@ so we can't just use the preceding variable instead.")
      (let ((res (company--capf-data)))
        (when res
          (let ((length (plist-get (nthcdr 4 res) :company-prefix-length))
-               (prefix (buffer-substring-no-properties (nth 1 res) (point))))
-           (cond
-            ((> (nth 2 res) (point)) 'stop)
-            (length (cons prefix length))
-            (t prefix))))))
+               (prefix (buffer-substring-no-properties (nth 1 res) (point)))
+               (suffix (buffer-substring-no-properties (point) (nth 2 res))))
+           (list prefix suffix length)))))
     (`candidates
-     (company-capf--candidates arg))
+     (company-capf--candidates arg (car rest)))
     (`sorted
      company-capf--sorted)
     (`match
@@ -162,7 +160,7 @@ so we can't just use the preceding variable instead.")
      (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
     (`post-completion
-     (company--capf-post-completion arg))
+     (company--capf-post-completion arg (nth 0 rest) (nth 1 rest)))
     ))
 
 (defun company-capf--annotation (arg)
@@ -179,7 +177,7 @@ so we can't just use the preceding variable instead.")
         nil
       annotation)))
 
-(defun company-capf--candidates (input)
+(defun company-capf--candidates (input suffix)
   (let* ((res (company--capf-data))
          (table (nth 3 res))
          (pred (plist-get (nthcdr 4 res) :predicate))
@@ -190,7 +188,8 @@ so we can't just use the preceding variable instead.")
     (company-capf--save-current-data res meta)
     (when res
       (let* ((interrupt (plist-get (nthcdr 4 res) :company-use-while-no-input))
-             (candidates (company-capf--candidates-1 input table pred
+             (candidates (company-capf--candidates-1 (concat input suffix)
+                                                     table pred
                                                      (length input)
                                                      meta
                                                      (and non-essential
@@ -221,10 +220,27 @@ so we can't just use the preceding variable instead.")
            (throw 'interrupted 'new-input))
       res)))
 
-(defun company--capf-post-completion (arg)
+(defun company--capf-chop-suffix (arg prefix suffix table &optional pred)
+  (let ((replace-suffix t))
+    ;; If emacs22 is reached and matches, that style is used.
+    (cl-letf (((symbol-function 'completion-emacs22-all-completions)
+               (lambda (&rest _)
+                 (and (member arg
+                              (all-completions prefix table pred))
+                      (setq replace-suffix nil)))))
+      (completion-all-completions (concat prefix suffix)
+                                  table pred
+                                  (length prefix)))
+    (when replace-suffix
+      ;; Replace unless the style is emacs22.
+      (delete-region (point) (+ (point) (length suffix))))))
+
+(defun company--capf-post-completion (arg prefix suffix)
   (let* ((res company-capf--current-completion-data)
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
+         (pred (plist-get (nthcdr 4 res) :predicate))
          (table (nth 3 res)))
+    (company--capf-chop-suffix arg prefix suffix table pred)
     (if exit-function
         ;; We can more or less know when the user is done with completion,
         ;; so we do something different than `completion--done'.

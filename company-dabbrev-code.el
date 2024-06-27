@@ -94,7 +94,7 @@ also `company-dabbrev-code-time-limit'."
     (concat "\\_<" prefix-re "\\(\\sw\\|\\s_\\)*\\_>")))
 
 ;;;###autoload
-(defun company-dabbrev-code (command &optional arg &rest _ignored)
+(defun company-dabbrev-code (command &optional arg &rest rest)
   "dabbrev-like `company-mode' backend for code.
 The backend looks for all symbols in the current buffer that aren't in
 comments or strings."
@@ -105,25 +105,16 @@ comments or strings."
                      (cl-some #'derived-mode-p company-dabbrev-code-modes))
                  (or company-dabbrev-code-everywhere
                      (not (company-in-string-or-comment)))
-                 (or (company-grab-symbol) 'stop)))
-    (candidates
-     (let* ((case-fold-search company-dabbrev-code-ignore-case)
-            (regexp (company-dabbrev-code--make-regexp arg)))
-       (company-dabbrev-code--filter
-        arg
-        (company-cache-fetch
-         'dabbrev-code-candidates
-         (lambda ()
-           (company-dabbrev--search
-            regexp
-            company-dabbrev-code-time-limit
-            (pcase company-dabbrev-code-other-buffers
-              (`t (list major-mode))
-              (`code company-dabbrev-code-modes)
-              (`all `all))
-            (not company-dabbrev-code-everywhere)))
-         :expire t
-         :check-tag regexp))))
+                 (company-grab-symbol-parts)))
+    (candidates (company-dabbrev--candidates arg (car rest)))
+    (post-completion
+     (when company-dabbrev-code-completion-styles
+       (let ((completion-styles (if (listp company-dabbrev-code-completion-styles)
+                                    company-dabbrev-code-completion-styles
+                                  completion-styles)))
+         (require 'company-capf)
+         (company--capf-chop-suffix arg (nth 0 rest) (nth 1 rest)
+                                    (company-dabbrev--candidates arg (car rest))))))
     (kind 'text)
     (no-cache t)
     (ignore-case company-dabbrev-code-ignore-case)
@@ -131,7 +122,26 @@ comments or strings."
              (company--match-from-capf-face arg)))
     (duplicates t)))
 
-(defun company-dabbrev-code--filter (prefix table)
+(defun company-dabbrev--candidates (prefix suffix)
+  (let* ((case-fold-search company-dabbrev-code-ignore-case)
+         (regexp (company-dabbrev-code--make-regexp prefix)))
+    (company-dabbrev-code--filter
+     prefix suffix
+     (company-cache-fetch
+      'dabbrev-code-candidates
+      (lambda ()
+        (company-dabbrev--search
+         regexp
+         company-dabbrev-code-time-limit
+         (pcase company-dabbrev-code-other-buffers
+           (`t (list major-mode))
+           (`code company-dabbrev-code-modes)
+           (`all `all))
+         (not company-dabbrev-code-everywhere)))
+      :expire t
+      :check-tag regexp))))
+
+(defun company-dabbrev-code--filter (prefix suffix table)
   (let ((completion-ignore-case company-dabbrev-code-ignore-case)
         (completion-styles (if (listp company-dabbrev-code-completion-styles)
                                company-dabbrev-code-completion-styles
@@ -140,7 +150,7 @@ comments or strings."
     (if (not company-dabbrev-code-completion-styles)
         (all-completions prefix table)
       (setq res (completion-all-completions
-                 prefix
+                 (concat prefix suffix)
                  table
                  nil (length prefix)))
       (if (numberp (cdr (last res)))
