@@ -1,6 +1,6 @@
 ;;; company-dabbrev-code.el --- dabbrev-like company-mode backend for code  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2016, 2021-2023  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016, 2021-2024  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -75,6 +75,8 @@ also `company-dabbrev-code-time-limit'."
                  (const :tag "Matching according to `completion-styles'" t)
                  (list :tag "Custom list of styles" symbol)))
 
+(defvar-local company-dabbrev--boundaries nil)
+
 (defun company-dabbrev-code--make-regexp (prefix)
   (let ((prefix-re
          (cond
@@ -107,14 +109,8 @@ comments or strings."
                      (not (company-in-string-or-comment)))
                  (company-grab-symbol-parts)))
     (candidates (company-dabbrev--candidates arg (car rest)))
-    (post-completion
-     (when company-dabbrev-code-completion-styles
-       (let ((completion-styles (if (listp company-dabbrev-code-completion-styles)
-                                    company-dabbrev-code-completion-styles
-                                  completion-styles)))
-         (require 'company-capf)
-         (company--capf-chop-suffix arg (nth 0 rest) (nth 1 rest)
-                                    (company-dabbrev--candidates arg (car rest))))))
+    (adjust-boundaries (and company-dabbrev-code-completion-styles
+                            company-dabbrev--boundaries))
     (kind 'text)
     (no-cache t)
     (ignore-case company-dabbrev-code-ignore-case)
@@ -139,7 +135,8 @@ comments or strings."
            (`all `all))
          (not company-dabbrev-code-everywhere)))
       :expire t
-      :check-tag regexp))))
+      :check-tag
+      (cons regexp company-dabbrev-code-completion-styles)))))
 
 (defun company-dabbrev-code--filter (prefix suffix table)
   (let ((completion-ignore-case company-dabbrev-code-ignore-case)
@@ -149,13 +146,11 @@ comments or strings."
         res)
     (if (not company-dabbrev-code-completion-styles)
         (all-completions prefix table)
-      (setq res (completion-all-completions
-                 (concat prefix suffix)
-                 table
-                 nil (length prefix)))
-      (if (numberp (cdr (last res)))
-          (setcdr (last res) nil))
-      res)))
+      (setq res (company--capf-completions
+                 prefix suffix
+                 table))
+      (setq company-dabbrev--boundaries (assoc-default :boundaries res))
+      (assoc-default :completions res))))
 
 (provide 'company-dabbrev-code)
 ;;; company-dabbrev-code.el ends here

@@ -819,4 +819,17 @@
     (company-select-next -10)
     (should (eq company-selection 0))))
 
+(ert-deftest company-capf-completions ()
+  (let ((table '("ab-de-b" "ccc" "abc-de-b")))
+    (let ((completion-styles '(partial-completion)))
+      (should
+       (equal (company--capf-completions "ab-d" "b" table)
+              '((:completions . ("ab-de-b" "abc-de-b"))
+                (:boundaries . ("ab-d" . "b"))))))
+    (let ((completion-styles '(emacs22)))
+      (should
+       (equal (company--capf-completions "ab-d" "b" table)
+              '((:completions . ("ab-de-b"))
+                (:boundaries . ("ab-d" . ""))))))))
+
 ;;; core-tests.el ends here.
