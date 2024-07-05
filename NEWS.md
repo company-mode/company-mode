@@ -39,6 +39,8 @@
       company-dabbrev-code-completion-styles '(basic flex))
 ```
 
+* New user option `company-etags-completion-styles`, to be used the same way.
+
 * The backend command `keep-prefix` is being phased out.  The built-in backends
   implement it internally now, which resolved a number of sharp edges (mostly)
   around "grouped" backends.  To make that easier, several helpers were added,
