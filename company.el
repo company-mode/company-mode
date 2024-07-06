@@ -1212,6 +1212,7 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
                 (let ((res (apply #'completion-emacs22-all-completions args)))
                   (when res (setq keep-prefix nil))
                   res)))
+             (completion-styles-alist (copy-tree completion-styles-alist))
              ((nth 2 (assoc 'emacs22 completion-styles-alist))
               wrapper)
              (all (completion-all-completions (concat prefix suffix)
