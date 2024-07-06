@@ -122,6 +122,8 @@ Set it to t or to a list of major modes."
                   (save-excursion
                     (let ((buffer (find-tag-noselect arg)))
                       (cons buffer (with-current-buffer buffer (point))))))))
+    (match (when company-etags-completion-styles
+             (company--match-from-capf-face arg)))
     (ignore-case company-etags-ignore-case)))
 
 (provide 'company-etags)
