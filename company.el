@@ -1318,7 +1318,6 @@ be recomputed when this value changes."
       (`candidates
        (company--multi-backend-adapter-candidates backends
                                                   (car args)
-                                                  (cadr args)
                                                   (or company--multi-min-prefix 0)
                                                   separate))
       (`set-min-prefix (setq company--multi-min-prefix (car args)))
@@ -1356,48 +1355,56 @@ be recomputed when this value changes."
          (when (> (length arg) 0)
            (let ((backend (or (get-text-property 0 'company-backend arg)
                               (car backends))))
+             (when (eq command 'adjust-boundaries)
+               (let ((entity (company--force-sync backend '(prefix) backend)))
+                 (setq args (list arg
+                                  (company--prefix-str entity)
+                                  (company--suffix-str entity)))))
              (apply backend command args))))))))
 
 (defun company--multi-prefix (backends)
-  (let (str len)
+  (let (res len)
     (dolist (backend backends)
       (let* ((prefix (company--force-sync backend '(prefix) backend))
-             (prefix-len (cdr-safe prefix)))
+             (prefix-len (company--prefix-len prefix)))
         (when (stringp (company--prefix-str prefix))
           (cond
-           ((not str)
-            (setq str (company--prefix-str prefix)
-                  len (cdr-safe prefix)))
+           ((not res)
+            (setq res prefix
+                  len (company--prefix-len prefix)))
            ((and prefix-len
                  (not (eq len t))
-                 (equal str (company--prefix-str prefix))
+                 (equal (company--prefix-str res)
+                        (company--prefix-str prefix))
                  (or (eq prefix-len t)
-                     (> prefix-len (or len (length str)))))
-            (setq len prefix-len))))))
-    (if (and str len)
-        (cons str len)
-      str)))
+                     (> prefix-len (or len (length (company--prefix-str prefix))))))
+            (setq len prefix-len
+                  res prefix))))))
+    res))
 
-(defun company--multi-backend-adapter-candidates (backends prefix suffix min-length separate)
-  (let ((pairs (cl-loop for backend in backends
-                        when (let ((bp (let ((company-backend backend))
-                                         (company-call-backend 'prefix))))
-                               (and
-                                ;; It's important that the lengths match.
-                                (equal (company--prefix-str bp) prefix)
-                                ;; One might override min-length, another not.
-                                (if (company--good-prefix-p bp min-length)
-                                    t
-                                  (push backend company--multi-uncached-backends)
-                                  nil)))
-                        collect (cons (funcall backend 'candidates prefix suffix)
-                                      (company--multi-candidates-mapper
-                                       backend
-                                       separate
-                                       ;; Small perf optimization: don't tag the
-                                       ;; candidates received from the first
-                                       ;; backend in the group.
-                                       (not (eq backend (car backends))))))))
+(defun company--multi-backend-adapter-candidates (backends prefix min-length separate)
+  (let* (backend-prefix suffix
+         (pairs (cl-loop for backend in backends
+                         when (let ((bp (let ((company-backend backend))
+                                              (company-call-backend 'prefix))))
+                                (and
+                                 ;; It's important that the lengths match.
+                                 (equal (company--prefix-str bp) prefix)
+                                 ;; One might override min-length, another not.
+                                 (if (company--good-prefix-p bp min-length)
+                                     (setq backend-prefix (company--prefix-str bp)
+                                           suffix (company--suffix-str bp))
+                                     t
+                                   (push backend company--multi-uncached-backends)
+                                   nil)))
+                         collect (cons (funcall backend 'candidates backend-prefix suffix)
+                                       (company--multi-candidates-mapper
+                                        backend
+                                        separate
+                                        ;; Small perf optimization: don't tag the
+                                        ;; candidates received from the first
+                                        ;; backend in the group.
+                                        (not (eq backend (car backends))))))))
     (company--merge-async pairs (lambda (values) (apply #'append values)))))
 
 (defun company--multi-candidates-mapper (backend separate tag)

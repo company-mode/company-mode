@@ -298,6 +298,59 @@
         "aa"
         (company-call-backend 'prefix))))))
 
+(ert-deftest company-multi-backend-supports-different-suffixes ()
+  (let* ((one (lambda (command &rest args)
+                (cl-case command
+                  (prefix '("a" "b"))
+                  (candidates
+                   (should (equal args '("a" "b")))
+                   '("a1b")))))
+         (two (lambda (command &rest args)
+                (cl-case command
+                  (prefix "a")
+                  (candidates
+                   (should (equal args '("a" "")))
+                   '("a2")))))
+         (tri (lambda (command &rest args)
+                (cl-case command
+                  (prefix '("a" ""))
+                  (candidates
+                   (should (equal args '("a" "")))
+                   '("a3")))))
+         (company-backend (list one two tri)))
+    (should
+     (equal '("a" "b")
+            (company-call-backend 'prefix)))
+    (should
+     (equal '("a1b" "a2" "a3")
+            (company-call-backend 'candidates "a" "b")))))
+
+(ert-deftest company-multi-backend-dispatches-adjust-boundaries ()
+  (let* ((one (lambda (command &rest args)
+                (cl-case command
+                  (prefix '("a" ""))
+                  (candidates
+                   '("a1b")))))
+         (tri (lambda (command &rest args)
+                (cl-case command
+                  (prefix '("a" "bcd"))
+                  (adjust-boundaries
+                   (should (equal args
+                                  '("a3" "a" "bcd")))
+                   (cons "a" "bc"))
+                  (candidates
+                   '("a3")))))
+         (company-backend (list one tri))
+         (candidates (company-call-backend 'candidates "a" "")))
+    (should
+     (equal '("a" "")
+            (company-call-backend 'prefix)))
+    (should
+     (equal (cons "a" "bc")
+            (company-call-backend 'adjust-boundaries
+                                  (car (member "a3" candidates))
+                                  "a" "")))))
+
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer
     (insert "a")
