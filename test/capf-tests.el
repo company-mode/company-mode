@@ -163,7 +163,7 @@
              (list (lambda ()
                      (list 1 1 '("abcd" "ae" "be") t))))
             (unread-command-events '(?a)))
-        (company-capf 'candidates "b")))
+        (company-capf 'candidates "b" "")))
     '("be"))))
 
 (provide 'capf-tests)
