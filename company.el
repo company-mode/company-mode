@@ -2396,7 +2396,6 @@ For more details see `company-insertion-on-trigger' and
 
 (defun company-cancel (&optional result)
   (let ((prefix company-prefix)
-        (suffix company-suffix)
         (backend company-backend))
     (setq company-backend nil
           company-prefix nil
@@ -4420,7 +4419,7 @@ Delay is determined by `company-tooltip-idle-delay'."
           comp msg)
 
       (while candidates
-        (setq comp (company-strip-prefix (pop candidates))
+        (setq comp (company-strip-prefix (pop candidates) company-prefix)
               len (+ len 2 (length comp)))
         (when (< numbered qa-keys-len)
           (let ((qa-hint (format " (%s)"

@@ -326,7 +326,7 @@
             (company-call-backend 'candidates "a" "b")))))
 
 (ert-deftest company-multi-backend-dispatches-adjust-boundaries ()
-  (let* ((one (lambda (command &rest args)
+  (let* ((one (lambda (command &rest _args)
                 (cl-case command
                   (prefix '("a" ""))
                   (candidates
