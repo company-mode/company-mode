@@ -2452,10 +2452,11 @@ For more details see `company-insertion-on-trigger' and
                     (company-call-backend 'ignore-case))))
 
 (defun company--boundaries (&optional candidate)
+  (unless candidate
+    (setq candidate (nth (or company-selection 0) company-candidates)))
   (or
    (company-call-backend 'adjust-boundaries
-                         (or candidate
-                             (nth (or company-selection 0) company-candidates))
+                         candidate
                          company-prefix company-suffix)
    (and
     ;; Default to replacing the suffix only if the completion ends with it.
