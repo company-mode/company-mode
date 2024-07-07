@@ -3,7 +3,7 @@
 # Next
 
 * Completion works inside symbols
-  (#[340](https://github.com/company-mode/company-mode/issues/340)).
+  (#[1474](https://github.com/company-mode/company-mode/pulls/1474)).
 * New user option `company-inhibit-inside-symbols`. Set it to `t` to switch
   closer to the previous behavior.
 * Improved behavior when user types new character while completion is being
