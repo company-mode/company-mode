@@ -4262,11 +4262,6 @@ Delay is determined by `company-tooltip-idle-delay'."
                          (company-strip-prefix completion prefix)
                        completion))
 
-    (setq completion (if (string-suffix-p suffix completion)
-                         (substring completion 0 (- (length completion)
-                                                    (length suffix)))
-                       completion))
-
     (when (string-prefix-p "\n" completion)
       (setq completion (concat (propertize " " 'face 'company-preview) "\n"
                                (substring completion 1))))
@@ -4280,17 +4275,21 @@ Delay is determined by `company-tooltip-idle-delay'."
            (ptf-workaround (and
                             pto
                             (char-before pos)
-                            (eq pos (overlay-start pto)))))
+                            (eq pos (overlay-start pto))))
+           (end pos))
       ;; Try to accommodate for the pseudo-tooltip overlay,
       ;; which may start at the same position if it's at eol.
       (when ptf-workaround
         (cl-decf beg)
         (setq completion (concat (buffer-substring beg pos) completion)))
 
-      (setq company-preview-overlay (make-overlay beg pos))
+      (when (string-suffix-p suffix completion)
+        (cl-incf end (length suffix)))
+
+      (setq company-preview-overlay (make-overlay beg end))
 
       (let ((ov company-preview-overlay))
-        (overlay-put ov (if ptf-workaround 'display 'after-string)
+        (overlay-put ov (if (> end beg) 'display 'after-string)
                      completion)
         (overlay-put ov 'window (selected-window))))))
 
