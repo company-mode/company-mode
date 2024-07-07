@@ -2443,13 +2443,25 @@ For more details see `company-insertion-on-trigger' and
 (defsubst company-keep (command)
   (and (symbolp command) (get command 'company-keep)))
 
+(defun company--proper-suffix-p (candidate)
+  (and
+   (>= (length candidate)
+       (+ (length company-prefix)
+          (length company-suffix)))
+   (string-suffix-p company-suffix candidate
+                    (company-call-backend 'ignore-case))))
+
 (defun company--boundaries (&optional candidate)
   (or
    (company-call-backend 'adjust-boundaries
                          (or candidate
                              (nth (or company-selection 0) company-candidates))
                          company-prefix company-suffix)
-   (cons company-prefix company-suffix)))
+   (and
+    ;; Default to replacing the suffix only if the completion ends with it.
+    (company--proper-suffix-p candidate)
+    (cons company-prefix company-suffix))
+   (cons company-prefix "")))
 
 (defun company--active-p ()
   company-candidates)
@@ -3487,7 +3499,7 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
       (pop copy))
     (apply 'concat pieces)))
 
-(defun company--common-or-matches (value)
+(defun company--common-or-matches (value &optional suffix)
   (let ((matches (company-call-backend 'match value)))
     (when (and matches
                company-common
@@ -3499,7 +3511,13 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (when (integerp matches)
       (setq matches `((0 . ,matches))))
     (or matches
-        (and company-common `((0 . ,(length company-common))))
+        (and company-common `((0 . ,(length company-common))
+                              ,@(list
+                                 (cons
+                                  (- (length value)
+                                     (length (or suffix
+                                                 (cdr (company--boundaries value)))))
+                                  (length value)))))
         nil)))
 
 (defun company-fill-propertize (value annotation width selected left right)
@@ -4221,7 +4239,7 @@ Delay is determined by `company-tooltip-idle-delay'."
          (company-common (and company-common
                               (string-prefix-p prefix company-common)
                               company-common))
-         (common (company--common-or-matches completion)))
+         (common (company--common-or-matches completion suffix)))
     (setq completion (copy-sequence (company--pre-render completion)))
     (add-face-text-property 0 (length completion) 'company-preview
                             nil completion)
