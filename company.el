@@ -4217,6 +4217,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 
   (let* ((boundaries (company--boundaries completion))
          (prefix (car boundaries))
+         (suffix (cdr boundaries))
          (company-common (and company-common
                               (string-prefix-p prefix company-common)
                               company-common))
@@ -4241,6 +4242,11 @@ Delay is determined by `company-tooltip-idle-delay'."
                                           (eq (company-call-backend 'ignore-case)
                                               'keep-prefix))
                          (company-strip-prefix completion prefix)
+                       completion))
+
+    (setq completion (if (string-suffix-p suffix completion)
+                         (substring completion 0 (- (length completion)
+                                                    (length suffix)))
                        completion))
 
     (when (string-prefix-p "\n" completion)
@@ -4303,14 +4309,18 @@ Delay is determined by `company-tooltip-idle-delay'."
     (company-preview-frontend command)))
 
 (defun company--show-inline-p ()
-  (let ((prefix (car (company--boundaries (car company-candidates)))))
+  (let* ((boundaries (company--boundaries (car company-candidates)))
+         (prefix (car boundaries))
+         (suffix (cdr boundaries))
+         (ignore-case (company-call-backend 'ignore-case))
+         (candidate (car company-candidates)))
     (and (not (cdr company-candidates))
-         (string-empty-p company-suffix)
          company-common
          (not (eq t (compare-strings prefix nil nil
-                                     (car company-candidates) nil nil
+                                     candidate nil nil
                                      t)))
-         (or (eq (company-call-backend 'ignore-case) 'keep-prefix)
+         (string-suffix-p suffix candidate ignore-case)
+         (or (eq ignore-case 'keep-prefix)
              (string-prefix-p prefix company-common)))))
 
 (defun company-tooltip-visible-p ()
