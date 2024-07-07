@@ -2496,7 +2496,8 @@ For more details see `company-insertion-on-trigger' and
   (unless (company-keep this-command)
     (condition-case-unless-debug err
         (progn
-          (unless (equal (point) company-point)
+          (unless (and (equal (point) company-point)
+                       (equal (point-max) company--point-max))
             (let (company-idle-delay) ; Against misbehavior while debugging.
               (company--perform)))
           (if company-candidates
