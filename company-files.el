@@ -1,6 +1,6 @@
 ;;; company-files.el --- company-mode completion backend for file names  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2021, 2023  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2024  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -103,57 +103,33 @@ Set this to nil to disable that behavior."
   (let ((len (length file)))
     (and (> len 0) (eq (aref file (1- len)) ?/))))
 
-(defvar company-files--cached-beg nil)
-
 (defvar company-files--completion-cache nil)
 
-(defun company-files--complete (prefix)
+(defun company-files--complete (_prefix)
   (let* ((full-prefix (company-files--grab-existing-name))
-         (ldiff (- (length full-prefix) (length prefix)))
          (dir (file-name-directory full-prefix))
          (file (file-name-nondirectory full-prefix))
          (key (list file
                     (expand-file-name dir)
                     (nth 5 (file-attributes dir))))
          (completion-ignore-case read-file-name-completion-ignore-case))
-    (unless (company-file--keys-match-p key (car company-files--completion-cache))
-      (let* ((candidates (mapcar (lambda (f) (concat dir f))
-                                 (company-files--directory-files dir file)))
+    (unless (or (company-file--keys-match-p key (car company-files--completion-cache))
+                (not (company-files--connected-p dir)))
+      (let* ((candidates (company-files--directory-files dir file))
              (directories (unless (file-remote-p dir)
                             (cl-remove-if-not (lambda (f)
-                                                (and (company-files--trailing-slash-p f)
-                                                     (not (file-remote-p f))
-                                                     (company-files--connected-p f)))
+                                                (company-files--trailing-slash-p f))
                                               candidates)))
              (children (and directories
                             (cl-mapcan (lambda (d)
-                                         (mapcar (lambda (c) (concat d c))
-                                                 (company-files--directory-files d "")))
+                                         (company-files--directory-files d ""))
                                        directories))))
         (setq company-files--completion-cache
               (cons key (append candidates children)))))
-    (mapcar
-     (lambda (s) (substring s ldiff))
-     (all-completions full-prefix
-                      (cdr company-files--completion-cache)))))
-
-(defun company-files--cache-beg (prefix)
-  (setq-local company-files--cached-beg (- (point) (length prefix)))
-  (add-hook 'company-after-completion-hook #'company-files--clear-beg-cache nil t))
-
-(defun company-files--clear-beg-cache (_res)
-  (kill-local-variable 'company-files--cached-beg))
+    (all-completions file (cdr company-files--completion-cache))))
 
 (defun company-files--prefix ()
-  (let ((full-name (company-files--grab-existing-name)))
-    (when full-name
-      (if (and company-files--cached-beg
-               (>= company-files--cached-beg
-                   (- (point) (length full-name))))
-          (buffer-substring
-           company-files--cached-beg
-           (point))
-        (file-name-nondirectory full-name)))))
+  (company-files--grab-existing-name))
 
 (defun company-file--keys-match-p (new old)
   (and (equal (cdr old) (cdr new))
@@ -164,8 +140,13 @@ Set this to nil to disable that behavior."
              (company-files--trailing-slash-p arg))
     (delete-char -1)))
 
+(defun company-files--adjust-boundaries (_file prefix suffix)
+  (cons
+   (file-name-nondirectory prefix)
+   suffix))
+
 ;;;###autoload
-(defun company-files (command &optional arg &rest _ignored)
+(defun company-files (command &optional arg &rest rest)
   "`company-mode' completion backend existing file names.
 Completions works for proper absolute and relative files paths.
 File paths with spaces are only supported inside strings."
@@ -174,8 +155,9 @@ File paths with spaces are only supported inside strings."
     (interactive (company-begin-backend 'company-files))
     (prefix (company-files--prefix))
     (candidates
-     (company-files--cache-beg arg)
      (company-files--complete arg))
+    (adjust-boundaries
+     (company-files--adjust-boundaries arg (nth 0 rest) (nth 1 rest)))
     (location (cons (dired-noselect
                      (file-name-directory (directory-file-name arg))) 1))
     (post-completion (company-files--post-completion arg))
