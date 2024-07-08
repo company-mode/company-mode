@@ -1114,6 +1114,10 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
   (when (looking-back regexp limit)
     (or (match-string-no-properties (or expression 0)) "")))
 
+(defun company-grab-suffix (regexp &optional expression)
+  (when (looking-at regexp)
+    (or (match-string-no-properties (or expression 0)) "")))
+
 (defun company-grab-line (regexp &optional expression)
   "Return a match string for REGEXP if it matches text before point.
 If EXPRESSION is non-nil, return the match string for the respective

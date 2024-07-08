@@ -129,7 +129,9 @@ Set this to nil to disable that behavior."
     (all-completions file (cdr company-files--completion-cache))))
 
 (defun company-files--prefix ()
-  (company-files--grab-existing-name))
+  (let ((existing (company-files--grab-existing-name)))
+    (when existing
+      (list existing (company-grab-suffix "[^ '\"\t\n\r/]*/?")))))
 
 (defun company-file--keys-match-p (new old)
   (and (equal (cdr old) (cdr new))
