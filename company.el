@@ -4124,8 +4124,9 @@ Returns a negative number if the tooltip should be displayed above point."
       (overlay-put ov 'display "")
       (overlay-put ov 'window (selected-window)))))
 
-(defun company-pseudo-tooltip-guard ()
+(defun company-pseudo-tooltip-guard (prefix)
   (list
+   (- (point) (length prefix))
    (save-excursion (beginning-of-visual-line))
    (window-width)
    (let ((ov company-pseudo-tooltip-overlay)
@@ -4153,21 +4154,23 @@ Returns a negative number if the tooltip should be displayed above point."
              (move-overlay ov (point) (overlay-end ov))))))
      (company-pseudo-tooltip-unhide))
     (post-command
-     (unless (when (overlayp company-pseudo-tooltip-overlay)
-               (let* ((ov company-pseudo-tooltip-overlay)
-                      (old-height (overlay-get ov 'company-height))
-                      (new-height (company--pseudo-tooltip-height)))
-                 (and
-                  (>= (* old-height new-height) 0)
-                  (>= (abs old-height) (abs new-height))
-                  (equal (company-pseudo-tooltip-guard)
-                         (overlay-get ov 'company-guard)))))
-       ;; Redraw needed.
-       (company-pseudo-tooltip-show-at-point (point)
-                                             (length
-                                              (car (company--boundaries))))
-       (overlay-put company-pseudo-tooltip-overlay
-                    'company-guard (company-pseudo-tooltip-guard)))
+     (let ((prefix (car (company--boundaries)))
+           guard)
+       (unless (when (overlayp company-pseudo-tooltip-overlay)
+                 (let* ((ov company-pseudo-tooltip-overlay)
+                        (old-height (overlay-get ov 'company-height))
+                        (new-height (company--pseudo-tooltip-height)))
+                   (and
+                    (>= (* old-height new-height) 0)
+                    (>= (abs old-height) (abs new-height))
+                    (equal (setq guard (company-pseudo-tooltip-guard prefix))
+                           (overlay-get ov 'company-guard)))))
+         ;; Redraw needed.
+         (company-pseudo-tooltip-show-at-point (point)
+                                               (length prefix))
+         (overlay-put company-pseudo-tooltip-overlay
+                      'company-guard (or guard
+                                         (company-pseudo-tooltip-guard prefix)))))
      (company-pseudo-tooltip-unhide))
     (show (setq company--tooltip-current-width 0))
     (hide (company-pseudo-tooltip-hide)
