@@ -73,7 +73,9 @@ If nil, use `ispell-complete-word-dict' or `ispell-alternate-dictionary'."
   (cl-case command
     (interactive (company-begin-backend 'company-ispell))
     (prefix (when (company-ispell-available)
-              (company-grab-word)))
+              (list
+               (company-grab-word)
+               (company-grab-word-suffix))))
     (candidates
      (let* ((dict (company--ispell-dict))
             (all-words

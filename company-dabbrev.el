@@ -166,12 +166,13 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     symbols))
 
 (defun company-dabbrev--prefix ()
-  ;; Not in the middle of a word.
-  (unless (looking-at-p company-dabbrev-char-regexp)
-    ;; Emacs can't do greedy backward-search.
-    (company-grab-line (format "\\(?:^\\| \\)[^ ]*?\\(\\(?:%s\\)*\\)"
-                               company-dabbrev-char-regexp)
-                       1)))
+  ;; Emacs can't do greedy backward-search.
+  (list
+   (company-grab-line (format "\\(?:^\\| \\)[^ ]*?\\(\\(?:%s\\)*\\)"
+                              company-dabbrev-char-regexp)
+                      1)
+   (and (looking-at (format "\\(?:%s\\)*" company-dabbrev-char-regexp))
+        (match-string 0))))
 
 (defun company-dabbrev--filter (prefix candidates)
   (let* ((completion-ignore-case company-dabbrev-ignore-case)

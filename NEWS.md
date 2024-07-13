@@ -2,6 +2,10 @@
 
 # Next
 
+* Completion works in the middle of a symbol
+  (#[1474](https://github.com/company-mode/company-mode/pull/1474)).
+* New user option `company-inhibit-inside-symbols`. Set it to `t` to switch
+  closer to the previous behavior.
 * Improved behavior when user types new character while completion is being
   computed: better performance, less blinking (in the rare cases when it still
   happened). This affects native async backends and is opt-in with
@@ -34,6 +38,8 @@
 (setq company-dabbrev-code-ignore-case t
       company-dabbrev-code-completion-styles '(basic flex))
 ```
+
+* New user option `company-etags-completion-styles`, to be used the same way.
 
 * The backend command `keep-prefix` is being phased out.  The built-in backends
   implement it internally now, which resolved a number of sharp edges (mostly)

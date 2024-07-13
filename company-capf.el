@@ -51,7 +51,7 @@ intended priority of the default backends' configuration."
 ;; FIXME: Provide a way to save this info once in Company itself
 ;; (https://github.com/company-mode/company-mode/pull/845).
 (defvar-local company-capf--current-completion-data nil
-  "Value last returned by `company-capf' when called with `candidates'.
+  "Value last returned by `company-capf' in response to `candidates'.
 For most properties/actions, this is just what we need: the exact values
 that accompanied the completion table that's currently is use.
 
@@ -107,8 +107,9 @@ so we can't just use the preceding variable instead.")
         company-capf--current-completion-metadata nil))
 
 (defvar-local company-capf--sorted nil)
+(defvar-local company-capf--current-boundaries nil)
 
-(defun company-capf (command &optional arg &rest _args)
+(defun company-capf (command &optional arg &rest rest)
   "`company-mode' backend using `completion-at-point-functions'."
   (interactive (list 'interactive))
   (pcase command
@@ -117,13 +118,11 @@ so we can't just use the preceding variable instead.")
      (let ((res (company--capf-data)))
        (when res
          (let ((length (plist-get (nthcdr 4 res) :company-prefix-length))
-               (prefix (buffer-substring-no-properties (nth 1 res) (point))))
-           (cond
-            ((> (nth 2 res) (point)) 'stop)
-            (length (cons prefix length))
-            (t prefix))))))
+               (prefix (buffer-substring-no-properties (nth 1 res) (point)))
+               (suffix (buffer-substring-no-properties (point) (nth 2 res))))
+           (list prefix suffix length)))))
     (`candidates
-     (company-capf--candidates arg))
+     (company-capf--candidates arg (car rest)))
     (`sorted
      company-capf--sorted)
     (`match
@@ -163,6 +162,8 @@ so we can't just use the preceding variable instead.")
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
     (`post-completion
      (company--capf-post-completion arg))
+    (`adjust-boundaries
+     company-capf--current-boundaries)
     ))
 
 (defun company-capf--annotation (arg)
@@ -179,7 +180,7 @@ so we can't just use the preceding variable instead.")
         nil
       annotation)))
 
-(defun company-capf--candidates (input)
+(defun company-capf--candidates (input suffix)
   (let* ((res (company--capf-data))
          (table (nth 3 res))
          (pred (plist-get (nthcdr 4 res) :predicate))
@@ -190,33 +191,27 @@ so we can't just use the preceding variable instead.")
     (company-capf--save-current-data res meta)
     (when res
       (let* ((interrupt (plist-get (nthcdr 4 res) :company-use-while-no-input))
-             (candidates (company-capf--candidates-1 input table pred
-                                                     (length input)
+             (all-result (company-capf--candidates-1 input suffix
+                                                     table pred
                                                      meta
                                                      (and non-essential
                                                           (eq interrupt t))))
              (sortfun (cdr (assq 'display-sort-function meta)))
-             (last (last candidates))
-             (base-size (and (numberp (cdr last)) (cdr last))))
-        (when base-size
-          (setcdr last nil))
+             (candidates (assoc-default :completions all-result))
+             (boundaries (assoc-default :boundaries all-result)))
         (setq company-capf--sorted (functionp sortfun))
+        (setq company-capf--current-boundaries boundaries)
         (when sortfun
           (setq candidates (funcall sortfun candidates)))
-        (if (not (zerop (or base-size 0)))
-            (let ((before (substring input 0 base-size)))
-              (mapcar (lambda (candidate)
-                        (concat before candidate))
-                      candidates))
-          candidates)))))
+        candidates))))
 
-(defun company-capf--candidates-1 (input table pred len meta interrupt-on-input)
+(defun company-capf--candidates-1 (prefix suffix table pred meta interrupt-on-input)
   (if (not interrupt-on-input)
-      (completion-all-completions input table pred len meta)
+      (company--capf-completions prefix suffix table pred meta)
     (let (res)
       (and (while-no-input
              (setq res
-                   (completion-all-completions input table pred len meta))
+                   (company--capf-completions prefix suffix table pred meta))
              nil)
            (throw 'interrupted 'new-input))
       res)))

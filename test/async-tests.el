@@ -21,7 +21,7 @@
 
 (require 'company-tests)
 
-(defun company-async-backend (command &optional _)
+(defun company-async-backend (command &rest _)
   (pcase command
     (`prefix "foo")
     (`candidates
@@ -98,7 +98,7 @@
     (company-mode)
     (let (company-frontends
           (company-backends
-           (list (lambda (command &optional arg)
+           (list (lambda (command &optional arg &rest _)
                    (pcase command
                      (`prefix (buffer-substring (point-min) (point)))
                      (`candidates
@@ -141,14 +141,14 @@
 
 (ert-deftest company-multi-backend-merges-deferred-candidates ()
   (with-temp-buffer
-    (let* ((immediate (lambda (command &optional _)
+    (let* ((immediate (lambda (command &rest _)
                         (pcase command
                           (`prefix "foo")
                           (`candidates
                            (cons :async
                                  (lambda (cb) (funcall cb '("f"))))))))
            (company-backend (list 'ignore
-                                  (lambda (command &optional arg)
+                                  (lambda (command &optional arg &rest _)
                                     (pcase command
                                       (`prefix "foo")
                                       (`candidates
@@ -158,7 +158,7 @@
                                                (run-with-timer
                                                 0.01 nil
                                                 (lambda () (funcall cb '("a" "b")))))))))
-                                  (lambda (command &optional _)
+                                  (lambda (command &rest _)
                                     (pcase command
                                       (`prefix "foo")
                                       (`candidates '("c" "d" "e"))))
@@ -171,19 +171,19 @@
 
 (ert-deftest company-multi-backend-merges-deferred-candidates-2 ()
   (with-temp-buffer
-    (let ((company-backend (list (lambda (command &optional _)
+    (let ((company-backend (list (lambda (command &rest _)
                                    (pcase command
                                      (`prefix "foo")
                                      (`candidates
                                       (cons :async
                                             (lambda (cb) (funcall cb '("a" "b")))))))
-                                 (lambda (command &optional _)
+                                 (lambda (command &rest _)
                                    (pcase command
                                      (`prefix "foo")
                                      (`candidates
                                       (cons :async
                                             (lambda (cb) (funcall cb '("c" "d")))))))
-                                 (lambda (command &optional _)
+                                 (lambda (command &rest _)
                                    (pcase command
                                      (`prefix "foo")
                                      (`candidates
@@ -195,13 +195,13 @@
 
 (ert-deftest company-multi-backend-merges-deferred-candidates-3 ()
   (with-temp-buffer
-    (let ((company-backend (list (lambda (command &optional _)
+    (let ((company-backend (list (lambda (command &rest _)
                                    (pcase command
                                      (`prefix "foo")
                                      (`candidates
                                       (cons :async
                                             (lambda (cb) (funcall cb '("a" "b")))))))
-                                 (lambda (command &optional _)
+                                 (lambda (command &rest _)
                                    (pcase command
                                      (`prefix "foo")
                                      (`candidates
@@ -211,7 +211,7 @@
                                                0.01 nil
                                                (lambda ()
                                                  (funcall cb '("c" "d")))))))))
-                                 (lambda (command &optional _)
+                                 (lambda (command &rest _)
                                    (pcase command
                                      (`prefix "foo")
                                      (`candidates
