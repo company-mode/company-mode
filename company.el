@@ -4239,10 +4239,10 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defvar-local company-preview-overlay nil)
 
-(defun company-preview-show-at-point (pos completion)
+(defun company-preview-show-at-point (pos completion &optional boundaries)
   (company-preview-hide)
 
-  (let* ((boundaries (company--boundaries completion))
+  (let* ((boundaries (or boundaries (company--boundaries completion)))
          (prefix (car boundaries))
          (suffix (cdr boundaries))
          (company-common (and company-common
@@ -4307,6 +4307,14 @@ Delay is determined by `company-tooltip-idle-delay'."
     (delete-overlay company-preview-overlay)
     (setq company-preview-overlay nil)))
 
+(defun company-preview--refresh-prefix (boundaries)
+  (let ((prefix (car boundaries)))
+    (when prefix
+      (if (> (point) company-point)
+          (concat prefix (buffer-substring company-point (point)))
+        (substring prefix 0 (- (length prefix)
+                               (- company-point (point))))))))
+
 (defun company-preview-frontend (command)
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
@@ -4314,14 +4322,11 @@ Delay is determined by `company-tooltip-idle-delay'."
     (`unhide
      (when company-selection
        (let* ((current (nth company-selection company-candidates))
-              (company-prefix (if (equal current company-prefix)
-                                  ;; Would be more accurate to compare lengths,
-                                  ;; but this is shorter.
-                                  current
-                                (buffer-substring
-                                 (- company-point (length company-prefix))
-                                 (point)))))
-         (company-preview-show-at-point (point) current))))
+              (boundaries (company--boundaries)))
+         (company-preview-show-at-point (point) current
+                                        (cons
+                                         (company-preview--refresh-prefix boundaries)
+                                         (cdr boundaries))))))
     (`post-command
      (when company-selection
        (company-preview-show-at-point (point)
