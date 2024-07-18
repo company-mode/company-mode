@@ -1866,6 +1866,7 @@ end of the match."
                          :width icon-size
                          :height icon-size
                          :ascent 'center
+                         ;; Transparency requires Emacs 28+.
                          :background (unless (eq bkg 'unspecified)
                                        bkg)))
              (spacer-px-width (- (* company-icon-margin dfw) icon-size)))
