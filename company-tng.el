@@ -1,6 +1,6 @@
 ;;; company-tng.el --- company-mode configuration for single-button interaction  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2017-2021, 2023  Free Software Foundation, Inc.
+;; Copyright (C) 2017-2024  Free Software Foundation, Inc.
 
 ;; Author: Nikita Leshenko
 
@@ -111,7 +111,7 @@ confirm the selection and finish the completion."
      (let* ((ov company-tng--overlay)
             (selected (and company-selection
                            (nth company-selection company-candidates)))
-            (prefix (length company-prefix)))
+            (prefix (length (car (company--boundaries)))))
        (move-overlay ov (- (point) prefix) (point))
        (overlay-put ov
                     (if (= prefix 0) 'after-string 'display)
