@@ -2959,7 +2959,8 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
                                                 (min max-len (length company-common)))
                                    company-common)))
             (setq expansion (cons (if (string-prefix-p company-prefix
-                                                       company-common)
+                                                       company-common
+                                                       t)
                                       company-common
                                     company-prefix)
                                   company-suffix))))
