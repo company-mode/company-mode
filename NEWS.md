@@ -2,6 +2,9 @@
 
 # Next
 
+* `company-complete-common` now performs generalized "expand common part"
+  completion now when the current backend support that.  In particular, for
+  `completion-at-point-functions` it queries `completion-try-completion`.
 * `company-dabbrev-other-buffers` and `company-dabbrev-code-other-buffers` can
   now take a function as its value (#[1485](https://github.com/company-mode/company-mode/issues/1485))
 * Completion works in the middle of a symbol

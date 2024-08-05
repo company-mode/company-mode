@@ -473,6 +473,13 @@ is suffix (previously returned by the `prefix' command).  Return a
 cons (NEW-PREFIX . NEW-SUFFIX) where both parts correspond to the
 completion candidate.
 
+`expand-common': The first argument is prefix and the second argument is
+suffix.  Return a cons (NEW-PREFIX . NEW-SUFFIX) that denote an edit in the
+current buffer which would be performed by `company-complete-common'.  This
+edit should make the combined length of the prefix and suffix longer, while
+making sure that the completions for the new inputs will be the same.  If
+it can't find such edit, it should return the same prefix and suffix.
+
 The backend should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
 `company-begin-backend' to start itself in that case.
@@ -2935,22 +2942,36 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (if (and (not (cdr company-candidates))
              (equal company-common (car company-candidates)))
         (company-complete-selection)
-      ;; FIXME: Poor man's completion-try-completion.
-      (let* ((max-len (when (and company-common
-                                 (cl-every (lambda (s) (string-suffix-p company-suffix s))
-                                           company-candidates))
-                        (apply #'min
-                               (mapcar
-                                (lambda (s) (- (length s) (length company-suffix)))
-                                company-candidates))))
-             (company-common (if max-len
-                                 (substring company-common 0
-                                            (min max-len (length company-common)))
-                               company-common))
-             (company-suffix ""))
-        (company--insert-candidate company-common
-                                   (or (car (company--boundaries))
-                                       company-prefix))))))
+      (let ((expansion (company-call-backend 'expand-common
+                                             company-prefix
+                                             company-suffix)))
+        (unless expansion
+          ;; Backend doesn't implement this, try emulating.
+          (let* ((max-len (when (and company-common
+                                     (cl-every (lambda (s) (string-suffix-p company-suffix s))
+                                               company-candidates))
+                            (-
+                             (apply #'min
+                                    (mapcar #'length company-candidates))
+                             (length company-suffix))))
+                 (company-common (if max-len
+                                     (substring company-common 0
+                                                (min max-len (length company-common)))
+                                   company-common)))
+            (setq expansion (cons (if (string-prefix-p company-prefix
+                                                       company-common)
+                                      company-common
+                                    company-prefix)
+                                  company-suffix))))
+        (unless (equal (car expansion) company-prefix)
+          (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
+              (insert (substring (car expansion) (length company-prefix)))
+            (delete-region (- (point) (length company-prefix)) (point))
+            (insert (car expansion))))
+        (unless (equal (cdr expansion) company-suffix)
+          (save-excursion
+            (delete-region (point) (+ (point) (length company-suffix)))
+            (insert (cdr expansion))))))))
 
 (defun company-complete-common-or-cycle (&optional arg)
   "Insert the common part of all candidates, or select the next one.
