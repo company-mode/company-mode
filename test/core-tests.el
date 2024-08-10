@@ -128,22 +128,22 @@
     (company-call-backend 'set-min-prefix 1)
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
 
-(ert-deftest company-multi-backend-filters-backends-by-prefix ()
+(ert-deftest company-multi-backend-dispatches-separate-prefix-to-backends ()
   (let ((company-backend
-         (list (lambda (command &optional _ &rest _r)
+         (list (lambda (command &optional arg &rest _r)
                  (cl-case command
                    (prefix (cons "z" t))
-                   (candidates '("a" "b"))))
-               (lambda (command &optional _ &rest _r)
+                   (candidates
+                    (should (equal arg "z"))
+                    '("a" "b"))))
+               (lambda (command &optional arg &rest _r)
                  (cl-case command
                    (prefix "t")
-                   (candidates '("c" "d"))))
-               (lambda (command &optional _ &rest _r)
-                 (cl-case command
-                   (prefix "z")
-                   (candidates '("e" "f")))))))
+                   (candidates
+                    (should (equal arg "t"))
+                    '("c" "d")))))))
     (company-call-backend 'set-min-prefix 1)
-    (should (equal (company-call-backend 'candidates "z") '("a" "b" "e" "f")))))
+    (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
 
 (ert-deftest company-multi-backend-remembers-candidate-backend ()
   (let ((company-backend
@@ -190,7 +190,7 @@
     (let ((company-backend (list 'ignore 'ignore :with secundo)))
       (should (null (company-call-backend 'prefix))))
     (let ((company-backend (list 'ignore primo :with secundo)))
-      (should (equal "a" (company-call-backend 'prefix)))
+      (should (equal '("a" nil 1) (company-call-backend 'prefix)))
       (company-call-backend 'set-min-prefix 1)
       (should (equal '("abb" "abc" "abd" "acc" "acd")
                      (company-call-backend 'candidates "a"))))))
@@ -233,7 +233,7 @@
     (let ((company-backend (list one two tri)))
       (should (equal '("bb" "ab")
                      (company-call-backend 'candidates "a"))))
-    (company-call-backend 'set-min-prefix 0)
+    (company-call-backend 'set-min-prefix 1)
     (let ((company-backend (list one two tri)))
       (should (equal '("aa" "ca" "ba" "bb" "ab")
                      (company-call-backend 'candidates "a"))))))
@@ -285,17 +285,17 @@
     (let ((company-backend (list one tri fur)))
       (should
        (equal
-        '("aa" . 3)
+        '("aa" nil 3)
         (company-call-backend 'prefix))))
     (let ((company-backend (list one two tri fur)))
       (should
        (equal
-        '("aa" . t)
+        '("aa" nil t)
         (company-call-backend 'prefix))))
     (let ((company-backend (list one fiv)))
       (should
        (equal
-        "aa"
+        '("aa" nil 2)
         (company-call-backend 'prefix))))))
 
 (ert-deftest company-multi-backend-supports-different-suffixes ()
@@ -319,7 +319,7 @@
                    '("a3")))))
          (company-backend (list one two tri)))
     (should
-     (equal '("a" "b")
+     (equal '("a" "b" 1)
             (company-call-backend 'prefix)))
     (should
      (equal '("a1b" "a2" "a3")
@@ -333,23 +333,29 @@
                    '("a1b")))))
          (tri (lambda (command &rest args)
                 (cl-case command
-                  (prefix '("a" "bcd"))
+                  (prefix '("aa" "bcd"))
                   (adjust-boundaries
                    (should (equal args
-                                  '("a3" "a" "bcd")))
+                                  '("a3" "aa" "bcd")))
                    (cons "a" "bc"))
                   (candidates
                    '("a3")))))
          (company-backend (list one tri))
+         (company-point (point))
          (candidates (company-call-backend 'candidates "a" "")))
     (should
-     (equal '("a" "")
+     (equal '("aa" "bcd" 2)
             (company-call-backend 'prefix)))
     (should
      (equal (cons "a" "bc")
             (company-call-backend 'adjust-boundaries
                                   (car (member "a3" candidates))
-                                  "a" "")))))
+                                  "aa" "bcd")))
+    (should
+     (equal (cons "a" "")
+            (company-call-backend 'adjust-boundaries
+                                  (car (member "a1b" candidates))
+                                  "aa" "bcd")))))
 
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer

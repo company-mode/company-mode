@@ -1321,15 +1321,12 @@ be recomputed when this value changes."
                            collect b))
         (separate (memq :separate backends)))
 
-    (when (eq command 'prefix)
-      (setq backends (butlast backends (length (member :with backends)))))
-
-    (setq backends (cl-delete-if #'keywordp backends))
+    (unless (eq command 'prefix)
+      (setq backends (cl-delete-if #'keywordp backends)))
 
     (pcase command
       (`candidates
        (company--multi-backend-adapter-candidates backends
-                                                  (car args)
                                                   (or company--multi-min-prefix 0)
                                                   separate))
       (`set-min-prefix (setq company--multi-min-prefix (car args)))
@@ -1362,53 +1359,72 @@ be recomputed when this value changes."
                (setq value t))
              (cl-return value)))))
       (`prefix (company--multi-prefix backends))
+      (`adjust-boundaries
+       (defvar company-point)
+       (let ((arg (car args)))
+         (when (> (length arg) 0)
+           (let* ((backend (or (get-text-property 0 'company-backend arg)
+                               (car backends)))
+                  (entity (company--force-sync backend '(prefix) backend))
+                  (prefix (company--prefix-str entity))
+                  (suffix (company--suffix-str entity)))
+             ;; XXX: Working around the stuff in
+             ;; company-preview--refresh-prefix.
+             (when (> (point) company-point)
+               (setq prefix (substring prefix
+                                       0
+                                       (- (length prefix)
+                                          (- (point) company-point)))))
+             (setq args (list arg prefix suffix))
+             (or
+              (apply backend command args)
+              (cons prefix suffix))))))
       (_
        (let ((arg (car args)))
          (when (> (length arg) 0)
            (let ((backend (or (get-text-property 0 'company-backend arg)
                               (car backends))))
-             (when (eq command 'adjust-boundaries)
-               (let ((entity (company--force-sync backend '(prefix) backend)))
-                 (setq args (list arg
-                                  (company--prefix-str entity)
-                                  (company--suffix-str entity)))))
              (apply backend command args))))))))
 
 (defun company--multi-prefix (backends)
-  (let (res len)
-    (dolist (backend backends)
-      (let* ((prefix (company--force-sync backend '(prefix) backend))
-             (prefix-len (company--prefix-len prefix)))
-        (when (stringp (company--prefix-str prefix))
-          (cond
-           ((not res)
-            (setq res prefix
-                  len (company--prefix-len prefix)))
-           ((and prefix-len
-                 (not (eq len t))
-                 (equal (company--prefix-str res)
-                        (company--prefix-str prefix))
-                 (or (eq prefix-len t)
-                     (> prefix-len (or len (length (company--prefix-str prefix))))))
-            (setq len prefix-len
-                  res prefix))))))
-    res))
+  (let* ((backends-after-with (cdr (member :with backends)))
+         prefix suffix len)
 
-(defun company--multi-backend-adapter-candidates (backends prefix min-length separate)
+    (dolist (backend backends)
+      (let* ((entity (and
+                      (not (keywordp backend))
+                      (company--force-sync backend '(prefix) backend)))
+             (new-len (company--prefix-len entity)))
+        (when (stringp (company--prefix-str entity))
+          (or (not backends-after-with)
+              (unless (memq backend backends-after-with)
+                (setq backends-after-with nil)))
+          (when (> (length (company--prefix-str entity))
+                   (length prefix))
+            (setq prefix (company--prefix-str entity)))
+          (when (> (length (company--suffix-str entity))
+                   (length suffix))
+            (setq suffix (company--suffix-str entity)))
+          (when (or (eq t new-len)
+                    (and new-len
+                         (not (eq t len))
+                         (or (not len) (> new-len len))))
+            (setq len new-len)))))
+    (unless backends-after-with
+      (list prefix suffix len))))
+
+(defun company--multi-backend-adapter-candidates (backends min-length separate)
   (let* (backend-prefix suffix
          (pairs (cl-loop for backend in backends
                          when (let ((bp (let ((company-backend backend))
-                                              (company-call-backend 'prefix))))
-                                (and
-                                 ;; It's important that the lengths match.
-                                 (equal (company--prefix-str bp) prefix)
-                                 ;; One might override min-length, another not.
-                                 (if (company--good-prefix-p bp min-length)
-                                     (setq backend-prefix (company--prefix-str bp)
-                                           suffix (company--suffix-str bp))
-                                     t
-                                   (push backend company--multi-uncached-backends)
-                                   nil)))
+                                          (company-call-backend 'prefix))))
+                                ;; One might override min-length, another not.
+                                (if (company--good-prefix-p bp min-length)
+                                    (setq backend-prefix (company--prefix-str bp)
+                                          suffix (company--suffix-str bp))
+                                  t
+                                  (push backend company--multi-uncached-backends)
+                                  nil))
                          collect (cons (funcall backend 'candidates backend-prefix suffix)
                                        (company--multi-candidates-mapper
                                         backend
