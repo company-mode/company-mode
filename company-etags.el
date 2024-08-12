@@ -90,7 +90,10 @@ Set it to t or to a list of major modes."
     (and table
          (if company-etags-completion-styles
              (let ((res (company--capf-completions prefix suffix table)))
-               (setq company-etags--boundaries (assoc-default :boundaries res))
+               (setq company-etags--boundaries
+                     (company--capf-boundaries-markers
+                      (assoc-default :boundaries res)
+                      company-etags--boundaries))
                (assoc-default :completions res))
            (all-completions prefix table)))))
 
@@ -125,7 +128,8 @@ Set it to t or to a list of major modes."
                  (company-grab-symbol-parts)))
     (candidates (company-etags--candidates arg (car rest)))
     (adjust-boundaries (and company-etags-completion-styles
-                            company-etags--boundaries))
+                            (company--capf-boundaries
+                             company-etags--boundaries)))
     (expand-common (company-etags--expand-common arg (car rest)))
     (no-cache company-etags-completion-styles)
     (location (let ((tags-table-list (company-etags-buffer-table)))

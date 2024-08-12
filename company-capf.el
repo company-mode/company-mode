@@ -162,7 +162,8 @@ so we can't just use the preceding variable instead.")
     (`post-completion
      (company--capf-post-completion arg))
     (`adjust-boundaries
-     company-capf--current-boundaries)
+     (company--capf-boundaries
+      company-capf--current-boundaries))
     (`expand-common
      (company-capf--expand-common arg (car rest)))
     ))
@@ -205,11 +206,13 @@ so we can't just use the preceding variable instead.")
                                                      (and non-essential
                                                           (eq interrupt t))))
              (sortfun (cdr (assq 'display-sort-function meta)))
-             (candidates (assoc-default :completions all-result))
-             (boundaries (assoc-default :boundaries all-result)))
+             (candidates (assoc-default :completions all-result)))
         (setq company-capf--sorted (functionp sortfun))
         (when candidates
-          (setq company-capf--current-boundaries boundaries))
+          (setq company-capf--current-boundaries
+                (company--capf-boundaries-markers
+                 (assoc-default :boundaries all-result)
+                 company-capf--current-boundaries)))
         (when sortfun
           (setq candidates (funcall sortfun candidates)))
         candidates))))

@@ -113,7 +113,8 @@ comments or strings."
                  (company-grab-symbol-parts)))
     (candidates (company-dabbrev--candidates arg (car rest)))
     (adjust-boundaries (and company-dabbrev-code-completion-styles
-                            company-dabbrev--boundaries))
+                            (company--capf-boundaries
+                             company-dabbrev--boundaries)))
     (expand-common (company-dabbrev-code--expand-common arg (car rest)))
     (kind 'text)
     (no-cache t)
@@ -165,7 +166,10 @@ comments or strings."
       (setq res (company--capf-completions
                  prefix suffix
                  table))
-      (setq company-dabbrev--boundaries (assoc-default :boundaries res))
+      (setq company-dabbrev--boundaries
+            (company--capf-boundaries-markers
+             (assoc-default :boundaries res)
+             company-dabbrev--boundaries))
       (assoc-default :completions res))))
 
 (provide 'company-dabbrev-code)

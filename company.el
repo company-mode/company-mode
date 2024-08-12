@@ -1257,6 +1257,28 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
        (substring (car res) 0 (cdr res))
        (substring (car res) (cdr res)))))))
 
+;; We store boundaries as markers because when the `unhide' frontend action is
+;; called, the completions are still being fetched. So the capf boundaries info
+;; can't be relied to be fresh by other means.
+(defun company--capf-boundaries-markers (string-pair &optional markers)
+  "STRING-PAIR is (PREFIX . SUFFIX) and MARKERS is a pair to reuse."
+  (when (or (not markers)
+            (stringp (car markers)))
+    (setq markers (cons (make-marker)
+                        (make-marker))))
+  (move-marker (car markers) (- (point) (length (car string-pair))))
+  (move-marker (cdr markers) (+ (point) (length (cdr string-pair))))
+  markers)
+
+(defun company--capf-boundaries (markers)
+  (let* ((beg (car markers))
+         (end (cdr markers))
+         res)
+    (when (> (point) end) (setq end (point)))
+    (setq res (cons (buffer-substring beg (point))
+                    (buffer-substring (point) end)))
+    res))
+
 (defvar company--cache (make-hash-table :test #'equal :size 10))
 
 (cl-defun company-cache-fetch (key
@@ -1375,7 +1397,6 @@ be recomputed when this value changes."
              (cl-return value)))))
       (`prefix (company--multi-prefix backends))
       (`adjust-boundaries
-       (defvar company-point)
        (let ((arg (car args)))
          (when (> (length arg) 0)
            (let* ((backend (or (get-text-property 0 'company-backend arg)
@@ -1383,13 +1404,6 @@ be recomputed when this value changes."
                   (entity (company--force-sync backend '(prefix) backend))
                   (prefix (company--prefix-str entity))
                   (suffix (company--suffix-str entity)))
-             ;; XXX: Working around the stuff in
-             ;; company-preview--refresh-prefix.
-             (when (> (point) company-point)
-               (setq prefix (substring prefix
-                                       0
-                                       (- (length prefix)
-                                          (- (point) company-point)))))
              (setq args (list arg prefix suffix))
              (or
               (apply backend command args)
@@ -1841,7 +1855,12 @@ update if FORCE-UPDATE."
             res-was))))))
 
 (defun company--sneaky-refresh ()
-  (when company-candidates (company-call-frontends 'unhide))
+  (when company-candidates
+    (let* ((entity (company-call-backend 'prefix))
+           (company-prefix (company--prefix-str entity))
+           (company-suffix (company--suffix-str entity)))
+      (and company-prefix
+           (company-call-frontends 'unhide))))
   (let (inhibit-redisplay)
     (redisplay))
   (when company-candidates (company-call-frontends 'pre-command)))
@@ -4463,26 +4482,14 @@ Delay is determined by `company-tooltip-idle-delay'."
     (delete-overlay company-preview-overlay)
     (setq company-preview-overlay nil)))
 
-(defun company-preview--refresh-prefix (boundaries)
-  (let ((prefix (car boundaries)))
-    (when prefix
-      (if (> (point) company-point)
-          (concat prefix (buffer-substring company-point (point)))
-        (substring prefix 0 (- (length prefix)
-                               (- company-point (point))))))))
-
 (defun company-preview-frontend (command)
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
     (`pre-command (company-preview-hide))
     (`unhide
      (when company-selection
-       (let* ((current (nth company-selection company-candidates))
-              (boundaries (company--boundaries)))
-         (company-preview-show-at-point (point) current
-                                        (cons
-                                         (company-preview--refresh-prefix boundaries)
-                                         (cdr boundaries))))))
+       (let* ((current (nth company-selection company-candidates)))
+         (company-preview-show-at-point (point) current))))
     (`post-command
      (when company-selection
        (company-preview-show-at-point (point)
