@@ -1379,6 +1379,11 @@ be recomputed when this value changes."
              (or
               (apply backend command args)
               (cons prefix suffix))))))
+      (`expand-common
+       (apply #'company--multi-expand-common
+              backends
+              (or company--multi-min-prefix 0)
+              args))
       (_
        (let ((arg (car args)))
          (when (> (length arg) 0)
@@ -1412,6 +1417,92 @@ be recomputed when this value changes."
             (setq len new-len)))))
     (unless backends-after-with
       (list prefix suffix len))))
+
+(defun company--multi-expand-common (backends min-length prefix suffix)
+  (let ((tuples
+         (cl-loop for backend in backends
+                  for bp = (let ((company-backend backend))
+                             (company-call-backend 'prefix))
+                  when (company--good-prefix-p bp min-length)
+                  collect
+                  (list backend
+                        bp
+                        (let ((company-backend backend))
+                          (company--expand-common (company--prefix-str bp)
+                                                  (company--suffix-str bp))))))
+        replacements)
+    (dolist (tuple tuples)
+      (cl-assert (string-suffix-p (company--prefix-str (nth 1 tuple))
+                                  prefix))
+      (cl-assert (string-prefix-p (company--suffix-str (nth 1 tuple))
+                                  suffix)))
+    ;; We try to find the smallest possible edit for each backend's expansion
+    ;; (minimum prefix and suffix, beyond which the area is unchanged).
+    (setq replacements
+          (mapcar
+           (lambda (tuple)
+             (let* ((backend-prefix (company--prefix-str (nth 1 tuple)))
+                    (backend-suffix (company--suffix-str (nth 1 tuple)))
+                    (bplen (length backend-prefix))
+                    (bslen (length backend-suffix))
+                    (beg 0)
+                    (end 0)
+                    (rep-suffix-len (length (cdr (nth 2 tuple))))
+                    (max-beg (min bplen (length (car (nth 2 tuple)))))
+                    (max-end (min bslen rep-suffix-len)))
+               (while (and (< beg max-beg)
+                           (= (aref backend-prefix beg)
+                              (aref (car (nth 2 tuple)) beg)))
+                 (cl-incf beg))
+               (while (and (< end max-end)
+                           (= (aref prefix (- bslen end 1))
+                              (aref (cdr (nth 2 tuple))
+                                    (- rep-suffix-len end 1))))
+                 (cl-incf end))
+               (list (- bplen beg)
+                     (substring (car (nth 2 tuple)) beg)
+                     (- bslen end)
+                     (substring (cdr (nth 2 tuple)) 0 (- rep-suffix-len end))
+                     (nth 0 tuple))))
+           tuples))
+    (setq replacements (sort replacements
+                             (lambda (t1 t2) (< (- (length (nth 1 t1)) (nth 0 t1))
+                                           (- (length (nth 1 t2)) (nth 0 t2))))))
+    (or
+     (let ((choice (car replacements)))
+       ;; All other backends' expansions from this replacement are compatible.
+       (and
+        ;; The replacement keeps within the boundaries of each prefix.
+        (cl-every
+         (lambda (tuple)
+           (and (<= (nth 0 choice) (length (company--prefix-str (nth 1 tuple))))
+                (<= (nth 2 choice) (length (company--suffix-str (nth 1 tuple))))))
+         tuples)
+        ;; Ensure that each backend's expansion based on its own prefix+suffix
+        ;; altered using the replacement choice is the same as the previous one.
+        (cl-every
+         (lambda (tuple)
+           (let* ((company-backend (nth 0 tuple))
+                  (backend-prefix (company--prefix-str (nth 1 tuple)))
+                  (backend-suffix (company--suffix-str (nth 1 tuple)))
+                  (beg-len (- (length backend-prefix) (nth 0 choice)))
+                  (expansion (company--expand-common
+                              (concat
+                               (substring backend-prefix 0 beg-len)
+                               (nth 1 choice))
+                              (concat
+                               (nth 3 choice)
+                               (substring backend-suffix (nth 2 choice)))
+                              backend-prefix)))
+             (equal expansion (nth 2 tuple))))
+         tuples)
+        ;; Proposed edit applied to the group's prefix and suffix.
+        (cons (concat (substring prefix 0 (- (length prefix) (nth 0 choice)))
+                      (nth 1 choice))
+              (concat (nth 3 choice)
+                      (substring suffix (nth 2 choice))))))
+     ;; Didn't find anything suitable - return entity parts unchanged.
+     (cons prefix suffix))))
 
 (defun company--multi-backend-adapter-candidates (backends min-length separate)
   (let* (backend-prefix suffix
@@ -2949,6 +3040,39 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (let ((result (nth company-selection company-candidates)))
       (company-finish result))))
 
+(defun company--expand-common (prefix suffix &optional current-prefix)
+  (let ((expansion (company-call-backend 'expand-common prefix suffix)))
+    (unless expansion
+      ;; Backend doesn't implement this, try emulating.
+      (let* ((max-len (when (and company-common
+                                 (cl-every (lambda (s) (string-suffix-p suffix s))
+                                           company-candidates))
+                        (-
+                         (apply #'min
+                                (mapcar #'length company-candidates))
+                         (length suffix))))
+             (common (if max-len
+                         (substring company-common 0
+                                    (min max-len (length company-common)))
+                       company-common))
+             ;; We're making an assumption that boundaries don't vary
+             ;; between completions here. If they do, the backend should
+             ;; have a custom implementation for `expand-common'.
+             (boundaries-prefix (car (company--boundaries))))
+        (setq expansion (cons (if (string-prefix-p boundaries-prefix
+                                                   common
+                                                   t)
+                                  (concat
+                                   (substring prefix
+                                              0
+                                              (- (length (or current-prefix
+                                                             prefix))
+                                                 (length boundaries-prefix)))
+                                   common)
+                                prefix)
+                              suffix))))
+    expansion))
+
 (defun company-complete-common ()
   "Insert the common part of all candidates."
   (interactive)
@@ -2956,37 +3080,8 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (if (and (not (cdr company-candidates))
              (equal company-common (car company-candidates)))
         (company-complete-selection)
-      (let ((expansion (company-call-backend 'expand-common
-                                             company-prefix
-                                             company-suffix)))
-        (unless expansion
-          ;; Backend doesn't implement this, try emulating.
-          (let* ((max-len (when (and company-common
-                                     (cl-every (lambda (s) (string-suffix-p company-suffix s))
-                                               company-candidates))
-                            (-
-                             (apply #'min
-                                    (mapcar #'length company-candidates))
-                             (length company-suffix))))
-                 (common (if max-len
-                             (substring company-common 0
-                                        (min max-len (length company-common)))
-                                   company-common))
-                 ;; We're making an assumption that boundaries don't vary
-                 ;; between completions here. If they do, the backend should
-                 ;; have a custom implementation for `expand-common'.
-                 (boundaries-prefix (car (company--boundaries))))
-            (setq expansion (cons (if (string-prefix-p boundaries-prefix
-                                                       common
-                                                       t)
-                                      (concat
-                                       (substring company-prefix
-                                                  0
-                                                  (- (length company-prefix)
-                                                     (length boundaries-prefix)))
-                                       common)
-                                    company-prefix)
-                                  company-suffix))))
+      (let ((expansion (company--expand-common company-prefix
+                                               company-suffix)))
         (unless (equal (car expansion) company-prefix)
           (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
               (insert (substring (car expansion) (length company-prefix)))
