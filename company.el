@@ -2968,14 +2968,23 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
                              (apply #'min
                                     (mapcar #'length company-candidates))
                              (length company-suffix))))
-                 (company-common (if max-len
-                                     (substring company-common 0
-                                                (min max-len (length company-common)))
-                                   company-common)))
-            (setq expansion (cons (if (string-prefix-p company-prefix
-                                                       company-common
+                 (common (if max-len
+                             (substring company-common 0
+                                        (min max-len (length company-common)))
+                                   company-common))
+                 ;; We're making an assumption that boundaries don't vary
+                 ;; between completions here. If they do, the backend should
+                 ;; have a custom implementation for `expand-common'.
+                 (boundaries-prefix (car (company--boundaries))))
+            (setq expansion (cons (if (string-prefix-p boundaries-prefix
+                                                       common
                                                        t)
-                                      company-common
+                                      (concat
+                                       (substring company-prefix
+                                                  0
+                                                  (- (length company-prefix)
+                                                     (length boundaries-prefix)))
+                                       common)
                                     company-prefix)
                                   company-suffix))))
         (unless (equal (car expansion) company-prefix)
