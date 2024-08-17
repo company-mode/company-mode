@@ -1423,13 +1423,23 @@ be recomputed when this value changes."
          (cl-loop for backend in backends
                   for bp = (let ((company-backend backend))
                              (company-call-backend 'prefix))
-                  when (company--good-prefix-p bp min-length)
+                  for candidates =
+                  (when (company--good-prefix-p bp min-length)
+                    (let ((inhibit-redisplay t)
+                          (company-backend backend))
+                      ;; XXX: We could also filter/group `company-candidates'.
+                      (company-call-backend 'candidates
+                                            (company--prefix-str bp)
+                                            (company--suffix-str bp))))
+                  when candidates
                   collect
                   (list backend
                         bp
                         (let ((company-backend backend))
                           (company--expand-common (company--prefix-str bp)
-                                                  (company--suffix-str bp))))))
+                                                  (company--suffix-str bp)
+                                                  candidates))
+                        candidates)))
         replacements)
     (dolist (tuple tuples)
       (cl-assert (string-suffix-p (company--prefix-str (nth 1 tuple))
@@ -1493,6 +1503,7 @@ be recomputed when this value changes."
                               (concat
                                (nth 3 choice)
                                (substring backend-suffix (nth 2 choice)))
+                              (nth 3 tuple)
                               backend-prefix)))
              (equal expansion (nth 2 tuple))))
          tuples)
@@ -3040,16 +3051,16 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (let ((result (nth company-selection company-candidates)))
       (company-finish result))))
 
-(defun company--expand-common (prefix suffix &optional current-prefix)
+(defun company--expand-common (prefix suffix candidates &optional current-prefix)
   (let ((expansion (company-call-backend 'expand-common prefix suffix)))
     (unless expansion
       ;; Backend doesn't implement this, try emulating.
       (let* ((max-len (when (and company-common
                                  (cl-every (lambda (s) (string-suffix-p suffix s))
-                                           company-candidates))
+                                           candidates))
                         (-
                          (apply #'min
-                                (mapcar #'length company-candidates))
+                                (mapcar #'length candidates))
                          (length suffix))))
              (common (if max-len
                          (substring company-common 0
@@ -3081,7 +3092,8 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
              (equal company-common (car company-candidates)))
         (company-complete-selection)
       (let ((expansion (company--expand-common company-prefix
-                                               company-suffix)))
+                                               company-suffix
+                                               company-candidates)))
         (unless (equal (car expansion) company-prefix)
           (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
               (insert (substring (car expansion) (length company-prefix)))
