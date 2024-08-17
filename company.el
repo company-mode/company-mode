@@ -1669,9 +1669,8 @@ update if FORCE-UPDATE."
     (setq company-common
           (if (cdr company-candidates)
               (let ((common (try-completion "" company-candidates)))
-                (when (string-prefix-p company-prefix common
-                                       completion-ignore-case)
-                  common))
+                (and (stringp common)
+                     common))
             (car company-candidates)))))
 
 (defun company-calculate-candidates (prefix ignore-case suffix)
