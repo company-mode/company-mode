@@ -1422,7 +1422,6 @@ be recomputed when this value changes."
                                 (if (company--good-prefix-p bp min-length)
                                     (setq backend-prefix (company--prefix-str bp)
                                           suffix (company--suffix-str bp))
-                                  t
                                   (push backend company--multi-uncached-backends)
                                   nil))
                          collect (cons (funcall backend 'candidates backend-prefix suffix)
