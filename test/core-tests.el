@@ -357,6 +357,58 @@
                                   (car (member "a1b" candidates))
                                   "aa" "bcd")))))
 
+(ert-deftest company-multi-backend-combines-expand-common ()
+  (let* ((one (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("a" ""))
+                  (expand-common (cons "ab" "")))))
+         (two (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("aa" "bcd"))
+                  (expand-common (cons "aab" "bcd")))))
+         (tri (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("aa" "bcd"))
+                  (expand-common 'no-match))))
+         (company-backend (list one two tri))
+         (company-point (point)))
+    (company-call-backend 'set-min-prefix 1)
+    (should
+     (equal '("aab" . "bcd")
+            (company-call-backend 'expand-common "aa" "bcd")))))
+
+(ert-deftest company-multi-backend-expand-common-returns-no-match ()
+  (let* ((one (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("a" ""))
+                  (expand-common 'no-match))))
+         (two (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("aa" "bcd"))
+                  (expand-common 'no-match))))
+         (company-backend (list one two))
+         (company-point (point)))
+    (company-call-backend 'set-min-prefix 1)
+    (should
+     (equal 'no-match
+            (company-call-backend 'expand-common "aa" "bcd")))))
+
+(ert-deftest company-multi-backend-expand-common-keeps-current ()
+  (let* ((one (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("a" ""))
+                  (expand-common (cons "ab" "")))))
+         (two (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("a" ""))
+                  (expand-common (cons "ac" "")))))
+         (company-backend (list one two))
+         (company-point (point)))
+    (company-call-backend 'set-min-prefix 1)
+    (should
+     (equal '("a" . "")
+            (company-call-backend 'expand-common "a" "")))))
+
 (ert-deftest company-begin-backend-failure-doesnt-break-company-backends ()
   (with-temp-buffer
     (insert "a")

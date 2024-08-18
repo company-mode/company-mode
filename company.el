@@ -1472,7 +1472,7 @@ be recomputed when this value changes."
                               (aref (car (nth 2 tuple)) beg)))
                  (cl-incf beg))
                (while (and (< end max-end)
-                           (= (aref prefix (- bslen end 1))
+                           (= (aref suffix (- bslen end 1))
                               (aref (cdr (nth 2 tuple))
                                     (- rep-suffix-len end 1))))
                  (cl-incf end))
@@ -1495,6 +1495,7 @@ be recomputed when this value changes."
        ;; change the buffer contents first, then fetch `candidates' for each,
        ;; and revert at the end.  Might be error-prone.
        (and
+        choice
         (cl-every
          (lambda (replacement)
            (and
