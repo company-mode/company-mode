@@ -3048,7 +3048,7 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (let ((result (nth company-selection company-candidates)))
       (company-finish result))))
 
-(defun company--expand-common (prefix suffix &optional current-prefix)
+(defun company--expand-common (prefix suffix)
   (let ((expansion (company-call-backend 'expand-common prefix suffix)))
     (unless expansion
       ;; Backend doesn't implement this, try emulating.
@@ -3078,8 +3078,7 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
                 (cons (concat
                        (substring prefix
                                   0
-                                  (- (length (or current-prefix
-                                                 prefix))
+                                  (- (length prefix)
                                      (length boundaries-prefix)))
                        common)
                       suffix))
@@ -3094,8 +3093,7 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
              (equal company-common (car company-candidates)))
         (company-complete-selection)
       (let ((expansion (company--expand-common company-prefix
-                                               company-suffix
-                                               company-candidates)))
+                                               company-suffix)))
         (when (eq expansion 'no-match)
           (user-error "No matches for the current input"))
         (unless (equal (car expansion) company-prefix)
