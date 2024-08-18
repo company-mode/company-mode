@@ -114,6 +114,7 @@ comments or strings."
     (candidates (company-dabbrev--candidates arg (car rest)))
     (adjust-boundaries (and company-dabbrev-code-completion-styles
                             company-dabbrev--boundaries))
+    (expand-common (company-dabbrev-code--expand-common arg (car rest)))
     (kind 'text)
     (no-cache t)
     (ignore-case company-dabbrev-code-ignore-case)
@@ -121,26 +122,37 @@ comments or strings."
              (company--match-from-capf-face arg)))
     (duplicates t)))
 
+(defun company-dabbrev-code--expand-common (prefix suffix)
+  (when company-dabbrev-code-completion-styles
+    (let ((completion-styles (if (listp company-dabbrev-code-completion-styles)
+                                 company-dabbrev-code-completion-styles
+                               completion-styles)))
+      (company--capf-expand-common prefix suffix
+                                   (company-dabbrev-code--table prefix)))))
+
 (defun company-dabbrev--candidates (prefix suffix)
-  (let* ((case-fold-search company-dabbrev-code-ignore-case)
-         (regexp (company-dabbrev-code--make-regexp prefix)))
+  (let* ((case-fold-search company-dabbrev-code-ignore-case))
     (company-dabbrev-code--filter
      prefix suffix
-     (company-cache-fetch
-      'dabbrev-code-candidates
-      (lambda ()
-        (company-dabbrev--search
-         regexp
-         company-dabbrev-code-time-limit
-         (pcase company-dabbrev-code-other-buffers
-           (`t (list major-mode))
-           (`code company-dabbrev-code-modes)
-           ((pred functionp) (funcall company-dabbrev-code-other-buffers (current-buffer)))
-           (`all `all))
-         (not company-dabbrev-code-everywhere)))
-      :expire t
-      :check-tag
-      (cons regexp company-dabbrev-code-completion-styles)))))
+     (company-dabbrev-code--table prefix))))
+
+(defun company-dabbrev-code--table (prefix)
+  (let ((regexp (company-dabbrev-code--make-regexp prefix)))
+    (company-cache-fetch
+     'dabbrev-code-candidates
+     (lambda ()
+       (company-dabbrev--search
+        regexp
+        company-dabbrev-code-time-limit
+        (pcase company-dabbrev-code-other-buffers
+          (`t (list major-mode))
+          (`code company-dabbrev-code-modes)
+          ((pred functionp) (funcall company-dabbrev-code-other-buffers (current-buffer)))
+          (`all `all))
+        (not company-dabbrev-code-everywhere)))
+     :expire t
+     :check-tag
+     (cons regexp company-dabbrev-code-completion-styles))))
 
 (defun company-dabbrev-code--filter (prefix suffix table)
   (let ((completion-ignore-case company-dabbrev-code-ignore-case)

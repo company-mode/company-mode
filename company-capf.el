@@ -170,18 +170,9 @@ so we can't just use the preceding variable instead.")
 (defun company-capf--expand-common (prefix suffix)
   (let* ((data company-capf--current-completion-data)
          (table (nth 3 data))
-         (pred (plist-get (nthcdr 4 data) :predicate))
-         (res
-          (completion-try-completion (concat prefix suffix)
-                                     table pred (length prefix)
-                                     company-capf--current-completion-metadata)))
-    (cond
-     ((memq res '(t nil))
-      (cons prefix suffix))
-     (t
-      (cons
-       (substring (car res) 0 (cdr res))
-       (substring (car res) (cdr res)))))))
+         (pred (plist-get (nthcdr 4 data) :predicate)))
+    (company--capf-expand-common prefix suffix table pred
+                                 company-capf--current-completion-metadata)))
 
 (defun company-capf--annotation (arg)
   (let* ((f (or (plist-get (nthcdr 4 company-capf--current-completion-data)

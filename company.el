@@ -1242,6 +1242,18 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
       (:boundaries . ,(cons (substring prefix base-size)
                             (substring suffix 0 (cdr bounds)))))))
 
+(defun company--capf-expand-common (prefix suffix table &optional pred metadata)
+  (let* ((res
+          (completion-try-completion (concat prefix suffix)
+                                     table pred (length prefix) metadata)))
+    (cond
+     ((memq res '(t nil))
+      (cons prefix suffix))
+     (t
+      (cons
+       (substring (car res) 0 (cdr res))
+       (substring (car res) (cdr res)))))))
+
 (defvar company--cache (make-hash-table :test #'equal :size 10))
 
 (cl-defun company-cache-fetch (key

@@ -82,24 +82,34 @@ Set it to t or to a list of major modes."
         company-etags-buffer-table)))
 
 (defun company-etags--candidates (prefix suffix)
-  (let ((tags-table-list (company-etags-buffer-table))
-        (tags-file-name tags-file-name)
-        (completion-ignore-case company-etags-ignore-case)
+  (let ((completion-ignore-case company-etags-ignore-case)
         (completion-styles (if (listp company-etags-completion-styles)
                                company-etags-completion-styles
                              completion-styles))
-        table)
-    (and (or tags-file-name tags-table-list)
-         (fboundp 'tags-completion-table)
-         (setq table
-               (save-excursion
-                 (visit-tags-table-buffer)
-                 (tags-completion-table)))
+        (table (company-etags--table)))
+    (and table
          (if company-etags-completion-styles
              (let ((res (company--capf-completions prefix suffix table)))
                (setq company-etags--boundaries (assoc-default :boundaries res))
                (assoc-default :completions res))
            (all-completions prefix table)))))
+
+(defun company-etags--table ()
+  (let ((tags-table-list (company-etags-buffer-table))
+        (tags-file-name tags-file-name))
+    (and (or tags-file-name tags-table-list)
+         (fboundp 'tags-completion-table)
+         (save-excursion
+           (visit-tags-table-buffer)
+           (tags-completion-table)))))
+
+(defun company-etags--expand-common (prefix suffix)
+  (when company-etags-completion-styles
+    (let ((completion-styles (if (listp company-etags-completion-styles)
+                                 company-etags-completion-styles
+                               completion-styles)))
+      (company--capf-expand-common prefix suffix
+                                   (company-etags--table)))))
 
 ;;;###autoload
 (defun company-etags (command &optional arg &rest rest)
@@ -116,6 +126,7 @@ Set it to t or to a list of major modes."
     (candidates (company-etags--candidates arg (car rest)))
     (adjust-boundaries (and company-etags-completion-styles
                             company-etags--boundaries))
+    (expand-common (company-etags--expand-common arg (car rest)))
     (no-cache company-etags-completion-styles)
     (location (let ((tags-table-list (company-etags-buffer-table)))
                 (when (fboundp 'find-tag-noselect)
