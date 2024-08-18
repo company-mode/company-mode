@@ -3067,7 +3067,12 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
   (let ((expansion (company-call-backend 'expand-common prefix suffix)))
     (unless expansion
       ;; Backend doesn't implement this, try emulating.
-      (let* ((max-len (when (and company-common
+      (let* (;; Assuming that boundaries don't vary between completions here.
+             ;; If they do, the backend should have a custom `expand-common'.
+             (boundaries-prefix (car (company--boundaries)))
+             (trycmp (try-completion boundaries-prefix candidates))
+             (common (if (eq trycmp t) (car candidates) trycmp))
+             (max-len (when (and common
                                  (cl-every (lambda (s) (string-suffix-p suffix s))
                                            candidates))
                         (-
@@ -3075,13 +3080,9 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
                                 (mapcar #'length candidates))
                          (length suffix))))
              (common (if max-len
-                         (substring company-common 0
-                                    (min max-len (length company-common)))
-                       company-common))
-             ;; We're making an assumption that boundaries don't vary
-             ;; between completions here. If they do, the backend should
-             ;; have a custom implementation for `expand-common'.
-             (boundaries-prefix (car (company--boundaries))))
+                         (substring common 0
+                                    (min max-len (length common)))
+                       common)))
         (setq expansion (cons (if (string-prefix-p boundaries-prefix
                                                    common
                                                    t)
