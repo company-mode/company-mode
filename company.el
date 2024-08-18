@@ -475,10 +475,11 @@ completion candidate.
 
 `expand-common': The first argument is prefix and the second argument is
 suffix.  Return a cons (NEW-PREFIX . NEW-SUFFIX) that denote an edit in the
-current buffer which would be performed by `company-complete-common'.  This
-edit should make the combined length of the prefix and suffix longer, while
-making sure that the completions for the new inputs will be the same.  If
-it can't find such edit, it should return the same prefix and suffix.
+current buffer which would be performed by `company-complete-common'.  It
+should try to make the combined length of the prefix and suffix longer,
+while ensuring that the completions for the new inputs are the same.
+Othewise return the original inputs.  If there are no matching completions,
+return the symbol `no-match'.
 
 The backend should return nil for all commands it does not support or
 does not know about.  It should also be callable interactively and use
@@ -1247,6 +1248,8 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
           (completion-try-completion (concat prefix suffix)
                                      table pred (length prefix) metadata)))
     (cond
+     ((null res)
+      'no-match)
      ((memq res '(t nil))
       (cons prefix suffix))
      (t
@@ -1435,22 +1438,15 @@ be recomputed when this value changes."
          (cl-loop for backend in backends
                   for bp = (let ((company-backend backend))
                              (company-call-backend 'prefix))
-                  for candidates =
+                  for expansion =
                   (when (company--good-prefix-p bp min-length)
                     (let ((inhibit-redisplay t)
                           (company-backend backend))
-                      ;; XXX: We could also filter/group `company-candidates'.
-                      (company-call-backend 'candidates
-                                            (company--prefix-str bp)
-                                            (company--suffix-str bp))))
-                  when candidates
+                      (company--expand-common (company--prefix-str bp)
+                                              (company--suffix-str bp))))
+                  when (consp expansion)
                   collect
-                  (list backend
-                        bp
-                        (let ((company-backend backend))
-                          (company--expand-common (company--prefix-str bp)
-                                                  (company--suffix-str bp)
-                                                  candidates)))))
+                  (list backend bp expansion)))
         replacements)
     (dolist (tuple tuples)
       (cl-assert (string-suffix-p (company--prefix-str (nth 1 tuple))
@@ -1512,6 +1508,7 @@ be recomputed when this value changes."
                       (nth 1 choice))
               (concat (nth 3 choice)
                       (substring suffix (nth 2 choice))))))
+     (and (null replacements) 'no-match)
      ;; Didn't find anything suitable - return entity parts unchanged.
      (cons prefix suffix))))
 
@@ -3051,11 +3048,13 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (let ((result (nth company-selection company-candidates)))
       (company-finish result))))
 
-(defun company--expand-common (prefix suffix candidates &optional current-prefix)
+(defun company--expand-common (prefix suffix &optional current-prefix)
   (let ((expansion (company-call-backend 'expand-common prefix suffix)))
     (unless expansion
       ;; Backend doesn't implement this, try emulating.
-      (let* (;; Assuming that boundaries don't vary between completions here.
+      (let* (;; XXX: We could also filter/group `company-candidates'.
+             (candidates (company-call-backend 'candidates prefix suffix))
+             ;; Assuming that boundaries don't vary between completions here.
              ;; If they do, the backend should have a custom `expand-common'.
              (boundaries-prefix (car (company--boundaries)))
              (trycmp (try-completion boundaries-prefix candidates))
@@ -3071,18 +3070,20 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
                          (substring common 0
                                     (min max-len (length common)))
                        common)))
-        (setq expansion (cons (if (string-prefix-p boundaries-prefix
-                                                   common
-                                                   t)
-                                  (concat
-                                   (substring prefix
-                                              0
-                                              (- (length (or current-prefix
-                                                             prefix))
-                                                 (length boundaries-prefix)))
-                                   common)
-                                prefix)
-                              suffix))))
+        (setq expansion
+              (cond
+               ((null candidates)
+                'no-match)
+               ((string-prefix-p boundaries-prefix common t)
+                (cons (concat
+                       (substring prefix
+                                  0
+                                  (- (length (or current-prefix
+                                                 prefix))
+                                     (length boundaries-prefix)))
+                       common)
+                      suffix))
+               (t (cons prefix suffix))))))
     expansion))
 
 (defun company-complete-common ()
@@ -3095,6 +3096,8 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
       (let ((expansion (company--expand-common company-prefix
                                                company-suffix
                                                company-candidates)))
+        (when (eq expansion 'no-match)
+          (user-error "No matches for the current input"))
         (unless (equal (car expansion) company-prefix)
           (if (eq (company-call-backend 'ignore-case) 'keep-prefix)
               (insert (substring (car expansion) (length company-prefix)))
