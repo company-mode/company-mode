@@ -1450,8 +1450,7 @@ be recomputed when this value changes."
                         (let ((company-backend backend))
                           (company--expand-common (company--prefix-str bp)
                                                   (company--suffix-str bp)
-                                                  candidates))
-                        candidates)))
+                                                  candidates)))))
         replacements)
     (dolist (tuple tuples)
       (cl-assert (string-suffix-p (company--prefix-str (nth 1 tuple))
@@ -1492,33 +1491,22 @@ be recomputed when this value changes."
                                            (- (length (nth 1 t2)) (nth 0 t2))))))
     (or
      (let ((choice (car replacements)))
-       ;; All other backends' expansions from this replacement are compatible.
+       ;; See if every replacement is similar enough to the one we selected:
+       ;; same suffix and beg/end and a prefix that starts with the proposed.
+       ;;
+       ;; More advanced checks seem possible, but with some backends reacting to
+       ;; buffer contents (not just string arguments) it seems we'd need to
+       ;; change the buffer contents first, then fetch `candidates' for each,
+       ;; and revert at the end.  Might be error-prone.
        (and
-        ;; The replacement keeps within the boundaries of each prefix.
         (cl-every
-         (lambda (tuple)
-           (and (<= (nth 0 choice) (length (company--prefix-str (nth 1 tuple))))
-                (<= (nth 2 choice) (length (company--suffix-str (nth 1 tuple))))))
-         tuples)
-        ;; Ensure that each backend's expansion based on its own prefix+suffix
-        ;; altered using the replacement choice is the same as the previous one.
-        (cl-every
-         (lambda (tuple)
-           (let* ((company-backend (nth 0 tuple))
-                  (backend-prefix (company--prefix-str (nth 1 tuple)))
-                  (backend-suffix (company--suffix-str (nth 1 tuple)))
-                  (beg-len (- (length backend-prefix) (nth 0 choice)))
-                  (expansion (company--expand-common
-                              (concat
-                               (substring backend-prefix 0 beg-len)
-                               (nth 1 choice))
-                              (concat
-                               (nth 3 choice)
-                               (substring backend-suffix (nth 2 choice)))
-                              (nth 3 tuple)
-                              backend-prefix)))
-             (equal expansion (nth 2 tuple))))
-         tuples)
+         (lambda (replacement)
+           (and
+            (= (car replacement) (car choice))
+            (= (nth 2 replacement) (nth 2 choice))
+            (equal (nth 3 replacement) (nth 3 choice))
+            (string-prefix-p (nth 1 choice) (nth 1 replacement))))
+         (cdr replacements))
         ;; Proposed edit applied to the group's prefix and suffix.
         (cons (concat (substring prefix 0 (- (length prefix) (nth 0 choice)))
                       (nth 1 choice))
