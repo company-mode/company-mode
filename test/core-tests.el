@@ -109,9 +109,9 @@
         company-candidates-cache
         company-common)
     (company-update-candidates '("abc" "def-abc"))
-    (should (null company-common))
+    (should (equal company-common ""))
     (company-update-candidates '("abc" "abe-c"))
-    (should (null company-common))
+    (should (equal company-common "ab"))
     (company-update-candidates '("abcd" "abcde" "abcdf"))
     (should (equal "abcd" company-common))))
 

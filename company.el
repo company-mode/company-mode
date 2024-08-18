@@ -3057,10 +3057,13 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
              ;; Assuming that boundaries don't vary between completions here.
              ;; If they do, the backend should have a custom `expand-common'.
              (boundaries-prefix (car (company--boundaries)))
+             (completion-ignore-case (company-call-backend 'ignore-case))
              (trycmp (try-completion boundaries-prefix candidates))
              (common (if (eq trycmp t) (car candidates) trycmp))
              (max-len (when (and common
-                                 (cl-every (lambda (s) (string-suffix-p suffix s))
+                                 (cl-every (lambda (s) (string-suffix-p
+                                                   suffix s
+                                                   completion-ignore-case))
                                            candidates))
                         (-
                          (apply #'min
