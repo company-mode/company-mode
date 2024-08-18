@@ -397,8 +397,8 @@ return value should be a list of candidates that match the prefix.
 
 Non-prefix matches are also supported (candidates that don't start with the
 prefix, but match it in some backend-defined way).  Backends that use this
-feature must disable cache (return t to `no-cache') and might also want to
-respond to `match'.
+feature must disable cache (return t in response to `no-cache') and might
+also want to handle `match'.
 
 Optional commands
 =================
