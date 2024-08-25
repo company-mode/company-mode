@@ -128,6 +128,18 @@
     (company-call-backend 'set-min-prefix 1)
     (should (equal (company-call-backend 'candidates "z") '("a" "b" "c" "d")))))
 
+(ert-deftest company-multi-backend-with-empty-prefixes ()
+  (let ((company-backend
+         (list (lambda (command &optional _ &rest _r)
+                 (cl-case command
+                   (prefix "")
+                   (candidates '("a" "b"))))
+               (lambda (command &optional _ &rest _r)
+                 (cl-case command
+                   (prefix "")
+                   (candidates '("c" "d")))))))
+    (should (equal (company-call-backend 'prefix) '("" nil 0)))))
+
 (ert-deftest company-multi-backend-dispatches-separate-prefix-to-backends ()
   (let ((company-backend
          (list (lambda (command &optional arg &rest _r)

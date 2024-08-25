@@ -1419,8 +1419,10 @@ be recomputed when this value changes."
           (or (not backends-after-with)
               (unless (memq backend backends-after-with)
                 (setq backends-after-with nil)))
-          (when (> (length (company--prefix-str entity))
-                   (length prefix))
+          (when (or
+                 (null prefix)
+                 (> (length (company--prefix-str entity))
+                    (length prefix)))
             (setq prefix (company--prefix-str entity)))
           (when (> (length (company--suffix-str entity))
                    (length suffix))
