@@ -2,9 +2,11 @@
 
 # Next
 
-* `company-complete-common` now performs generalized "expand common part"
-  completion when the current backend supports that.  In particular, for
-  `completion-at-point-functions` it queries `completion-try-completion`.
+* `company-complete-common` now performs generalized ([expand common
+  part](https://github.com/company-mode/company-mode/pull/1488)) completion when
+  the backend supports that. In particular, for `completion-at-point-functions`
+  it queries `completion-try-completion`. `company-dabbrev-code` and
+  `company-etags` also do that when `completion-styles` support is enabled.
 * `company-dabbrev-other-buffers` and `company-dabbrev-code-other-buffers` can
   now take a function as its value (#[1485](https://github.com/company-mode/company-mode/issues/1485))
 * Completion works in the middle of a symbol
