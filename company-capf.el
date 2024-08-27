@@ -208,7 +208,8 @@ so we can't just use the preceding variable instead.")
              (candidates (assoc-default :completions all-result))
              (boundaries (assoc-default :boundaries all-result)))
         (setq company-capf--sorted (functionp sortfun))
-        (setq company-capf--current-boundaries boundaries)
+        (when candidates
+          (setq company-capf--current-boundaries boundaries))
         (when sortfun
           (setq candidates (funcall sortfun candidates)))
         candidates))))
