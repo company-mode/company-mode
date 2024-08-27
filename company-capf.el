@@ -19,7 +19,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.
 
-
 ;;; Commentary:
 ;;
 ;; The CAPF back-end provides a bridge to the standard
@@ -164,7 +163,16 @@ so we can't just use the preceding variable instead.")
      (company--capf-post-completion arg))
     (`adjust-boundaries
      company-capf--current-boundaries)
+    (`expand-common
+     (company-capf--expand-common arg (car rest)))
     ))
+
+(defun company-capf--expand-common (prefix suffix)
+  (let* ((data company-capf--current-completion-data)
+         (table (nth 3 data))
+         (pred (plist-get (nthcdr 4 data) :predicate)))
+    (company--capf-expand-common prefix suffix table pred
+                                 company-capf--current-completion-metadata)))
 
 (defun company-capf--annotation (arg)
   (let* ((f (or (plist-get (nthcdr 4 company-capf--current-completion-data)

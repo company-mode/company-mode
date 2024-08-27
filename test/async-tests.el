@@ -128,7 +128,7 @@
                                  (lambda (command)
                                    (should (eq command 'prefix))
                                    "foo"))))
-      (should (equal "foo" (company-call-backend-raw 'prefix))))
+      (should (equal '("foo" nil 3) (company-call-backend-raw 'prefix))))
     (let ((company-backend (list (lambda (_command)
                                    (cons :async
                                          (lambda (cb)
@@ -137,7 +137,7 @@
                                             (lambda () (funcall cb "bar"))))))
                                  (lambda (_command)
                                    "foo"))))
-      (should (equal "bar" (company-call-backend-raw 'prefix))))))
+      (should (equal '("bar" nil 3) (company-call-backend-raw 'prefix))))))
 
 (ert-deftest company-multi-backend-merges-deferred-candidates ()
   (with-temp-buffer
