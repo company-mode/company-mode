@@ -2,8 +2,8 @@
 
 # Next
 
-* `company-complete-common` now performs generalized ([expand common
-  part](https://github.com/company-mode/company-mode/pull/1488)) completion when
+* `company-complete-common` now performs generalized [expand common
+  part](https://github.com/company-mode/company-mode/pull/1488) completion when
   the backend supports that. In particular, for `completion-at-point-functions`
   it queries `completion-try-completion`. `company-dabbrev-code` and
   `company-etags` also do that when `completion-styles` support is enabled.
