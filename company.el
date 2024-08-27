@@ -3670,13 +3670,6 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
 
 (defun company--common-or-matches (value &optional suffix)
   (let ((matches (company-call-backend 'match value)))
-    (when (and matches
-               company-common
-               (listp matches)
-               (= 1 (length matches))
-               (= 0 (caar matches))
-               (> (length company-common) (cdar matches)))
-      (setq matches nil))
     (when (integerp matches)
       (setq matches `((0 . ,matches))))
     (or matches

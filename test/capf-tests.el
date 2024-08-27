@@ -84,8 +84,8 @@
        (company--equal-including-properties
         render
         #("with-timeout-suspend"
-          0 12 (face (company-tooltip-common company-tooltip))   ; "with"
-          12 20 (face company-tooltip)))))))
+          0 7 (face (company-tooltip-common company-tooltip)) ; "with"
+          7 20 (face company-tooltip)))))))
 
 
 ;; Re. "perfect" highlighting of the non-prefix in company-capf matches, it is
