@@ -3275,6 +3275,8 @@ from the candidates list.")
                 (kill-local-variable 'face-remapping-alist)
                 (kill-local-variable 'buffer-display-table)))))))
 
+(declare-function buffer-text-pixel-size "xdisp.c")
+
 (defun company--string-pixel-width (string)
   (if (zerop (length string))
       0
@@ -3289,7 +3291,7 @@ from the candidates list.")
       (delete-region (point-min) (point-max))
       (insert string)
       (if (fboundp #'buffer-text-pixel-size)
-          ;; Emacs 29
+          ;; Emacs 29.1+
           (car (buffer-text-pixel-size nil nil t))
         (let ((wb (window-buffer))
               (hscroll (window-hscroll))
