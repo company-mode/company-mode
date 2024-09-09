@@ -3327,7 +3327,7 @@ from the candidates list.")
         (inhibit-modification-hooks t)
         (dedicated (window-dedicated-p))
         (hscroll (window-hscroll))
-        window-configuration-change-hook)
+        window-configuration-change-hook buffer-list-update-hook)
     (with-current-buffer (get-buffer-create " *company-sps*")
       (unwind-protect
           (progn
