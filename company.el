@@ -3300,37 +3300,39 @@ from the candidates list.")
                 (kill-local-variable 'face-remapping-alist)
                 (kill-local-variable 'buffer-display-table)))))))
 
-(defalias 'company--string-pixel-width
-  (if (fboundp 'string-pixel-width)
-      ;; Emacs 29.1+
-      'string-pixel-width
-    (lambda (string)
-      (if (zerop (length string))
-          0
-        ;; Keeping a work buffer around is more efficient than creating a
-        ;; new temporary buffer.
-        (with-current-buffer (get-buffer-create " *string-pixel-width*")
-          ;; `display-line-numbers-mode' is enabled in internal buffers
-          ;; that breaks width calculation, so need to disable (bug#59311)
-          (when (bound-and-true-p display-line-numbers-mode)
-            (with-no-warnings ;; Emacs 25
-              (display-line-numbers-mode -1)))
-          (delete-region (point-min) (point-max))
-          (insert string)
-          (let ((wb (window-buffer))
-                (hscroll (window-hscroll))
-                (dedicated (window-dedicated-p)))
-            (unwind-protect
-                (progn
-                  (when dedicated
-                    (set-window-dedicated-p nil nil))
-                  (set-window-buffer nil (current-buffer))
-                  (car
-                   (window-text-pixel-size nil nil nil 55555)))
-              (set-window-buffer nil wb)
-              (set-window-hscroll nil hscroll)
-              (when dedicated
-                (set-window-dedicated-p nil dedicated)))))))))
+(declare-function buffer-text-pixel-size "xdisp.c")
+
+(defun company--string-pixel-width (string)
+  (if (zerop (length string))
+      0
+    ;; Keeping a work buffer around is more efficient than creating a
+    ;; new temporary buffer.
+    (with-current-buffer (get-buffer-create " *string-pixel-width*")
+      ;; `display-line-numbers-mode' is enabled in internal buffers
+      ;; that breaks width calculation, so need to disable (bug#59311)
+      (when (bound-and-true-p display-line-numbers-mode)
+        (with-no-warnings ;; Emacs 25
+          (display-line-numbers-mode -1)))
+      (delete-region (point-min) (point-max))
+      (insert string)
+      (if (fboundp #'buffer-text-pixel-size)
+          ;; Emacs 29.1+
+          (car (buffer-text-pixel-size nil nil t))
+        (let ((wb (window-buffer))
+              (hscroll (window-hscroll))
+              (dedicated (window-dedicated-p))
+              buffer-list-update-hook)
+          (unwind-protect
+              (progn
+                (when dedicated
+                  (set-window-dedicated-p nil nil))
+                (set-window-buffer nil (current-buffer))
+                (car
+                 (window-text-pixel-size nil nil nil 55555)))
+            (set-window-buffer nil wb)
+            (set-window-hscroll nil hscroll)
+            (when dedicated
+              (set-window-dedicated-p nil dedicated))))))))
 
 (defun company--string-width (str)
   (if (display-graphic-p)
@@ -3351,7 +3353,8 @@ from the candidates list.")
         (inhibit-modification-hooks t)
         (dedicated (window-dedicated-p))
         (hscroll (window-hscroll))
-        window-configuration-change-hook)
+        window-configuration-change-hook
+        buffer-list-update-hook)
     (with-current-buffer (get-buffer-create " *company-sps*")
       (unwind-protect
           (progn
