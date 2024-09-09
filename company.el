@@ -3295,7 +3295,8 @@ from the candidates list.")
           (car (buffer-text-pixel-size nil nil t))
         (let ((wb (window-buffer))
               (hscroll (window-hscroll))
-              (dedicated (window-dedicated-p)))
+              (dedicated (window-dedicated-p))
+              buffer-list-update-hook)
           (unwind-protect
               (progn
                 (when dedicated
@@ -3327,7 +3328,8 @@ from the candidates list.")
         (inhibit-modification-hooks t)
         (dedicated (window-dedicated-p))
         (hscroll (window-hscroll))
-        window-configuration-change-hook buffer-list-update-hook)
+        window-configuration-change-hook
+        buffer-list-update-hook)
     (with-current-buffer (get-buffer-create " *company-sps*")
       (unwind-protect
           (progn
