@@ -1019,8 +1019,7 @@ keymap during active completions (`company-active-map'):
     (remove-hook 'pre-command-hook 'company-pre-command t)
     (remove-hook 'post-command-hook 'company-post-command t)
     (remove-hook 'yas-keymap-disable-hook 'company--active-p t)
-    (company-cancel)
-    (kill-local-variable 'company-point)))
+    (company-cancel)))
 
 (defcustom company-global-modes t
   "Modes for which `company-mode' mode is turned on by `global-company-mode'.
@@ -1651,6 +1650,8 @@ be recomputed when this value changes."
 
 (defvar-local company-point nil)
 
+(defvar-local company-valid-point nil)
+
 (defvar company-timer nil)
 (defvar company-tooltip-timer nil)
 
@@ -1756,7 +1757,8 @@ update if FORCE-UPDATE."
         (format "%s-<%s>" base name)))))
 
 (defun company-update-candidates (candidates)
-  (setq company-candidates-length (length candidates))
+  (setq company-candidates-length (length candidates)
+        company-valid-point company-point)
   (if company-selection-changed
       ;; Try to restore the selection
       (let ((selected (and company-selection
@@ -1803,7 +1805,9 @@ update if FORCE-UPDATE."
                 (cl-return t)))))
         ;; No cache match, call the backend.
         (let ((refresh-timer (run-with-timer company-async-redisplay-delay
-                                             nil #'company--sneaky-refresh)))
+                                             nil
+                                             #'company--sneaky-refresh
+                                             prefix suffix)))
           (unwind-protect
               (setq candidates (company--preprocess-candidates
                                 (company--fetch-candidates prefix suffix)))
@@ -1854,12 +1858,11 @@ update if FORCE-UPDATE."
               (throw 'interrupted 'new-input)
             res-was))))))
 
-(defun company--sneaky-refresh ()
+(defun company--sneaky-refresh (prefix suffix)
   (when company-candidates
-    (let* ((entity (company-call-backend 'prefix))
-           (company-prefix (company--prefix-str entity))
-           (company-suffix (company--suffix-str entity)))
-      (and company-prefix
+    (let* ((company-prefix prefix)
+           (company-suffix suffix))
+      (and prefix
            (company-call-frontends 'unhide))))
   (let (inhibit-redisplay)
     (redisplay))
@@ -2344,7 +2347,7 @@ doesn't cause any immediate changes to the buffer text."
       (let ((company-minimum-prefix-length 0)
             (company--manual-now t))
         (or (and company-candidates
-                 (= company-point (point)))
+                 (= company-valid-point (point)))
             (company-auto-begin)))
     (unless company-candidates
       (setq company--manual-action nil))))
@@ -2411,7 +2414,7 @@ For more details see `company-insertion-on-trigger' and
     (company-cancel 'non-unique))
    ((company-require-match-p)
     ;; Wrong incremental input, but required match.
-    (delete-char (- company-point (point)))
+    (delete-char (- company-valid-point (point)))
     (ding)
     (message "Matching input is required")
     company-candidates)
@@ -2451,7 +2454,10 @@ For more details see `company-insertion-on-trigger' and
                             (- company-point (length company-prefix))))
                 (company-calculate-candidates new-prefix ignore-case new-suffix)))))
     (cond
-     ((eq c 'new-input) ; Keep the old completions, company-point, prefix.
+     ((eq c 'new-input) ; Keep the old completions, but update the rest.
+      (setq company-prefix new-prefix
+            company-suffix new-suffix
+            company-point (point))
       t)
      ((and company-abort-on-unique-match
            (company--unique-match-p c new-prefix new-suffix ignore-case))
