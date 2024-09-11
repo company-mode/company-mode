@@ -178,12 +178,13 @@
           (cc2 '("abcz" "abczdef" "abcz123"))
           (comp2
            (lambda ()
-             (list (pos-bol) (point)
-                   (mapcar
-                    (lambda (s)
-                      (concat (buffer-substring (pos-bol) (+ (pos-bol) (current-indentation)))
-                              s))
-                    cc2)))))
+             (let ((bol (line-beginning-position)))
+               (list bol (point)
+                     (mapcar
+                      (lambda (s)
+                        (concat (buffer-substring bol (+ bol (current-indentation)))
+                                s))
+                      cc2))))))
 
      (setq-local completion-at-point-functions
                  (list comp1 comp2))
