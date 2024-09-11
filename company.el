@@ -1215,13 +1215,13 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
     (nreverse chunks)))
 
 (defun company--capf-completions (prefix suffix table &optional pred meta)
-  (cl-letf* ((keep-prefix t)
+  (cl-letf* ((keep-suffix t)
              (wrapper
               (lambda (&rest args)
-                ;; If emacs22 style is used, prefix is ignored.
+                ;; If emacs22 style is used, suffix is ignored.
                 ;; That's the only popular completion style that does this.
                 (let ((res (apply #'completion-emacs22-all-completions args)))
-                  (when res (setq keep-prefix nil))
+                  (when res (setq keep-suffix nil))
                   res)))
              (completion-styles-alist (copy-tree completion-styles-alist))
              ((nth 2 (assoc 'emacs22 completion-styles-alist))
@@ -1236,7 +1236,7 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
              (bounds (completion-boundaries prefix table pred suffix)))
     (when last
       (setcdr last nil))
-    (unless keep-prefix
+    (unless keep-suffix
       (setcdr bounds 0))
     `((:completions . ,all)
       (:boundaries . ,(cons (substring prefix base-size)
