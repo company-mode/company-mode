@@ -160,7 +160,7 @@ so we can't just use the preceding variable instead.")
      (plist-get (nthcdr 4 (company--capf-data)) :company-require-match))
     (`init nil)      ;Don't bother: plenty of other ways to initialize the code.
     (`post-completion
-     (company--capf-post-completion arg))
+     (company-capf--post-completion arg))
     (`adjust-boundaries
      (company--capf-boundaries
       company-capf--current-boundaries))
@@ -228,7 +228,7 @@ so we can't just use the preceding variable instead.")
            (throw 'interrupted 'new-input))
       res)))
 
-(defun company--capf-post-completion (arg)
+(defun company-capf--post-completion (arg)
   (let* ((res company-capf--current-completion-data)
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
          (table (nth 3 res)))
