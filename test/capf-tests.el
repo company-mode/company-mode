@@ -166,5 +166,34 @@
         (company-capf 'candidates "b" "")))
     '("be"))))
 
+(ert-deftest company-capf-changed-source ()
+  (company-capf-with-buffer
+   "abc|"
+   (let* ((cc1 '("abczzzzzz" "abcdef" "abc123"))
+          (comp1
+           (lambda ()
+             (let ((len (length (thing-at-point 'word))))
+               (when (< len 4)
+                 (list (- (point) len) (point) cc1)))))
+          (cc2 '("abcz" "abczdef" "abcz123"))
+          (comp2
+           (lambda ()
+             (list (pos-bol) (point)
+                   (mapcar
+                    (lambda (s)
+                      (concat (buffer-substring (pos-bol) (+ (pos-bol) (current-indentation)))
+                              s))
+                    cc2)))))
+
+     (setq-local completion-at-point-functions
+                 (list comp1 comp2))
+
+     (should (equal (company-capf 'prefix) '("abc" "" nil)))
+     (should (equal (company-capf 'candidates "abc" "") cc1))
+     (insert "z")
+     (should (null (company-capf 'candidates "abcz" "")))
+     (delete-char -2)
+     (should (equal (company-capf 'candidates "ab" "") cc1)))))
+
 (provide 'capf-tests)
 ;;; capf-tests.el ends here
