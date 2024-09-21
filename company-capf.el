@@ -42,7 +42,8 @@
 By default it contains the functions that duplicate the built-in backends
 but don't support the corresponding configuration options and/or alter the
 intended priority of the default backends' configuration."
-  :type 'hook)
+  :type 'hook
+  :package-version '(company . "1.0.0"))
 
 ;; Amortizes several calls to a c-a-p-f from the same position.
 (defvar company--capf-cache nil)

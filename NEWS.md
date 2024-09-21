@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-# Next
+# 2024-09-21 (1.0.0)
 
 * `company-complete-common` now performs generalized [expand common
   part](https://github.com/company-mode/company-mode/pull/1488) completion when

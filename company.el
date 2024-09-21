@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.10.2
+;; Version: 1.0.0
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -301,7 +301,8 @@ This doesn't include the margins and the scroll bar."
 
 (defcustom company-tooltip-scrollbar-width 0.4
   "Width of the scrollbar thumb, in columns."
-  :type 'number)
+  :type 'number
+  :package-version '(company . "1.0.0"))
 
 (defcustom company-tooltip-align-annotations nil
   "When non-nil, align annotations to the right tooltip border."
@@ -693,7 +694,8 @@ The symbol is in a generalized sense, indicated by the `prefix' backend
 action returning a non-empty SUFFIX element.  When this variable is
 non-nil, completion inside symbol will onlytriggered by an explicit command
 invocation, such as \\[company-complete-common]."
-  :type 'boolean)
+  :type 'boolean
+  :package-version '(company . "1.0.0"))
 
 (defcustom company-begin-commands '(self-insert-command
                                     org-self-insert-command

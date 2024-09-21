@@ -76,7 +76,8 @@ parameter and returns a list of major modes to search.  See also
   "Non-nil to use the completion styles for fuzzy matching."
   :type '(choice (const :tag "Prefix matching only" nil)
                  (const :tag "Matching according to `completion-styles'" t)
-                 (list :tag "Custom list of styles" symbol)))
+                 (list :tag "Custom list of styles" symbol))
+  :package-version '(company . "1.0.0"))
 
 (defvar-local company-dabbrev--boundaries nil)
 
