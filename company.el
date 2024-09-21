@@ -376,6 +376,8 @@ one (see below).
 `company-begin-backend' can be used to start a specific backend,
 `company-other-backend' will skip to the next matching backend in the list.
 
+To debug which backend is currently in use, try `M-x company-diag'.
+
 Each backend is a function that takes a variable number of arguments.
 The first argument is the command requested from the backend.  It is one
 of the following:
