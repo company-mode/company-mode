@@ -1447,7 +1447,8 @@ be recomputed when this value changes."
                          (not (eq t len))
                          (or (not len) (> new-len len))))
             (setq len new-len)))))
-    (unless backends-after-with
+    (when (and prefix
+               (not backends-after-with))
       (list prefix suffix len))))
 
 (defun company--multi-expand-common (backends min-length prefix suffix)
