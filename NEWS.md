@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+# 2024-09-21 (1.0.1)
+
+* Fix for failover from a grouped backend to the next.
+
 # 2024-09-21 (1.0.0)
 
 * `company-complete-common` now performs generalized [expand common
