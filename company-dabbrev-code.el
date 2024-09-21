@@ -50,9 +50,9 @@ complete only symbols, not text in comments or strings.  In other modes
 If `all', search all other buffers, except the ignored ones.  If t, search
 buffers with the same major mode.  If `code', search all
 buffers with major modes in `company-dabbrev-code-modes', or derived from one of
-them.  This can also be a function that take a parameter of the current
-buffer and returns a list of major modes to search.
-See also `company-dabbrev-code-time-limit'."
+them.  This can also be a function that takes the current buffer as
+parameter and returns a list of major modes to search.  See also
+`company-dabbrev-code-time-limit'."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "Same major mode" t)
                  (const :tag "Code major modes" code)

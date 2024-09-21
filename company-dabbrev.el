@@ -35,9 +35,9 @@
 (defcustom company-dabbrev-other-buffers 'all
   "Determines whether `company-dabbrev' should search other buffers.
 If `all', search all other buffers, except the ignored ones.  If t, search
-buffers with the same major mode.  This can also be a function that take a
-parameter of the current buffer and returns a list of major modes to search.
-See also `company-dabbrev-time-limit'."
+buffers with the same major mode.  This can also be a function that takes
+the current buffer as parameter and returns a list of major modes to
+search.  See also `company-dabbrev-time-limit'."
   :type '(choice (const :tag "Off" nil)
                  (const :tag "Same major mode" t)
                  (const :tag "All" all)
