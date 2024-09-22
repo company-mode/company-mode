@@ -2,7 +2,7 @@
 
 # 2024-09-21 (1.0.1)
 
-* Fix for failover from a grouped backend to the next.
+* Fix for failover from a backend group to the next backend.
 
 # 2024-09-21 (1.0.0)
 
