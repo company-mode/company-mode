@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
-;; Version: 0.10.2
+;; Version: 1.0.2
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "25.1"))
 
@@ -301,7 +301,8 @@ This doesn't include the margins and the scroll bar."
 
 (defcustom company-tooltip-scrollbar-width 0.4
   "Width of the scrollbar thumb, in columns."
-  :type 'number)
+  :type 'number
+  :package-version '(company . "1.0.0"))
 
 (defcustom company-tooltip-align-annotations nil
   "When non-nil, align annotations to the right tooltip border."
@@ -374,6 +375,8 @@ one (see below).
 
 `company-begin-backend' can be used to start a specific backend,
 `company-other-backend' will skip to the next matching backend in the list.
+
+To debug which backend is currently in use, try `M-x company-diag'.
 
 Each backend is a function that takes a variable number of arguments.
 The first argument is the command requested from the backend.  It is one
@@ -693,7 +696,8 @@ The symbol is in a generalized sense, indicated by the `prefix' backend
 action returning a non-empty SUFFIX element.  When this variable is
 non-nil, completion inside symbol will onlytriggered by an explicit command
 invocation, such as \\[company-complete-common]."
-  :type 'boolean)
+  :type 'boolean
+  :package-version '(company . "1.0.0"))
 
 (defcustom company-begin-commands '(self-insert-command
                                     org-self-insert-command
@@ -1445,7 +1449,8 @@ be recomputed when this value changes."
                          (not (eq t len))
                          (or (not len) (> new-len len))))
             (setq len new-len)))))
-    (unless backends-after-with
+    (when (and prefix
+               (not backends-after-with))
       (list prefix suffix len))))
 
 (defun company--multi-expand-common (backends min-length prefix suffix)
@@ -2486,6 +2491,7 @@ For more details see `company-insertion-on-trigger' and
 (defun company--begin-new ()
   (let ((min-prefix (company--prefix-min-length))
         entity c)
+    (company-cache-expire)
     (cl-dolist (backend (if company-backend
                             ;; prefer manual override
                             (list company-backend)
@@ -2565,7 +2571,6 @@ For more details see `company-insertion-on-trigger' and
           company--multi-uncached-backends nil
           company--multi-min-prefix nil
           company-point nil)
-    (company-cache-expire)
     (when company-timer
       (cancel-timer company-timer))
     (company-echo-cancel t)

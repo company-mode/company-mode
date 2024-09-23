@@ -1,6 +1,14 @@
 # History of user-visible changes
 
-# Next
+# 2024-09-23 (1.0.2)
+
+* More reliable cache expiration (at the beginning of completion).
+
+# 2024-09-21 (1.0.1)
+
+* Fix for failover from a backend group to the next backend.
+
+# 2024-09-21 (1.0.0)
 
 * `company-complete-common` now performs generalized [expand common
   part](https://github.com/company-mode/company-mode/pull/1488) completion when

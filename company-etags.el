@@ -58,7 +58,8 @@ Set it to t or to a list of major modes."
   "Non-nil to use the completion styles for fuzzy matching."
   :type '(choice (const :tag "Prefix matching only" nil)
                  (const :tag "Matching according to `completion-styles'" t)
-                 (list :tag "Custom list of styles" symbol)))
+                 (list :tag "Custom list of styles" symbol))
+  :package-version '(company . "1.0.0"))
 
 (defvar company-etags-modes '(prog-mode c-mode objc-mode c++-mode java-mode
                               jde-mode pascal-mode perl-mode python-mode))

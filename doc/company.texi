@@ -2,8 +2,8 @@
 @c %**start of header
 @setfilename company.info
 @settitle Company User Manual
-@set VERSION 0.10.0
-@set UPDATED 16 April 2023
+@set VERSION 1.0.0
+@set UPDATED 21 September 2024
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -13,7 +13,7 @@
 This user manual is for Company version @value{VERSION}
 @w{(@value{UPDATED})}.
 
-Copyright @copyright{} 2021-2023  Free Software Foundation, Inc.
+Copyright @copyright{} 2021-2024  Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -119,7 +119,7 @@ writers, and scientists during code and text writing.
 
 @cindex completion
 @cindex complete
-@dfn{Completion} is an act of intelligibly guessing possible variants
+@dfn{Completion} is an act of intelligently guessing possible variants
 of words based on already typed characters.  To @dfn{complete} a word
 means to insert a correctly guessed variant into the buffer.
 
@@ -130,13 +130,15 @@ Consequently, the @dfn{candidates} are the aforementioned guessed
 variants of words.  Each of the candidates has the potential to be
 chosen for successful completion.  And each of the candidates contains
 the initially typed characters: either only at the beginning
-(so-called @dfn{prefix matches}), or also inside (@dfn{non-prefix
-matches}) of a candidate @footnote{A good starting point to learn
-about types of matches is to play with the Emacs's user option
-@code{completion-styles}.  For illustrations on how Company visualizes
-the matches, @pxref{Frontends}.}.
+(so-called @dfn{prefix matches}), or also inside of a candidate
+(@dfn{non-prefix matches}).  Which matching method is used, depends on
+the current @emph{backend} (@pxref{Structure}).  @code{company-capf} is
+an example of a backend that supports a number of particular
+non-prefix matching algorithms which are configurable through the user
+option @code{completion-styles}, which see.  For illustrations on how
+Company visualizes the matches, @pxref{Frontends}.
 
-The package's name @dfn{Company} is based on the combination of the
+The package's name @samp{Company} is based on the combination of the
 two words: @samp{Complete} and @samp{Anything}.  These words reflect
 the package's commitment to handling completion candidates and its
 extensible nature allowing it to cover a wide range of usage
@@ -159,12 +161,11 @@ frontends (@pxref{Frontends}).
 @cindex module
 @cindex third-party
 The @dfn{backends} are responsible for retrieving completion
-candidates; which are then outputted by the @dfn{frontends}.  For an
+candidates; which are then displayed by the @dfn{frontends}.  For an
 easy and quick initial setup, Company is supplied with the
 preconfigured sets of the backends and frontends.  The default
-behavior of the modules can be adjusted per particular needs, goals,
-and preferences.  It is also typical to utilize backends from a
-variety of
+behavior of the modules can be adjusted for particular needs, and
+preferences.  It is also typical to utilize backends from a variety of
 @uref{https://github.com/company-mode/company-mode/wiki/Third-Party-Packages,
 third-party libraries}, developed to be pluggable with Company.
 
@@ -172,7 +173,7 @@ But Company consists not only of the backends and frontends.
 
 A core of the package plays the role of a controller, connecting the
 modules, making them work together; and exposing configurations and
-commands for a user to operate with.  For more details,
+commands for the user to operate with.  For more details,
 @ref{Customization} and @ref{Commands}.
 
 @cindex TAB
@@ -236,8 +237,8 @@ presence with an indicator @samp{company}.
 @cindex auto-start
 After @emph{company-mode} had been enabled, the package auto-starts
 suggesting completion candidates.  The candidates are retrieved and
-shown according to the typed characters and the default (until a user
-specifies otherwise) configurations.
+shown according to the typed characters and the default (until the
+user specifies otherwise) configurations.
 
 @findex global-company-mode
 To have Company always enabled for the following sessions, add the
@@ -250,8 +251,8 @@ line @w{@code{(global-company-mode)}} to the Emacs configuration file
 @cindex usage
 @cindex basics
 By default --- having @emph{company-mode} enabled (@pxref{Initial
-Setup}) --- a tooltip with completion candidates is shown when a user
-types in a few characters.
+Setup}) --- a tooltip with completion candidates is shown when the
+user types a few characters.
 
 @cindex manual
 @findex company-complete
@@ -282,8 +283,11 @@ Hit @key{RET} to choose a selected candidate for completion.
 @cindex complete
 @cindex completion
 @kindex TAB
-Hit @key{TAB} to complete with the @dfn{common part}: characters
-present at the beginning of all the candidates.
+Hit @key{TAB} to expand the @dfn{common part} of all completions.
+Exactly what that means, can vary by backend.  In the simplest case
+it's the longest string that all completion start with, but when a
+backend returns @emph{non-prefix matches}, it can implement the same
+kind of expansion logic for the input string.
 
 @item
 @cindex abort
@@ -334,7 +338,7 @@ Insert the selected candidate (@code{company-complete-selection}).
 @kindex TAB
 @cindex common part
 @findex company-complete-common
-Insert the common part of all the candidates
+Insert the @emph{common part} of all completion candidates
 (@code{company-complete-common}).
 
 @item C-g
@@ -446,8 +450,7 @@ Variable,,,emacs}.
 @cindex configure
 @cindex custom
 Company is a customization-rich package.  This section lists some of
-the core settings that influence the overall behavior of the
-@emph{company-mode}.
+the core settings that influence its overall behavior.
 
 @defopt company-minimum-prefix-length
 This is one of the values (together with @code{company-idle-delay}),
@@ -472,6 +475,11 @@ predicate function, as shown in the following example:
 (setq company-idle-delay
       (lambda () (if (company-in-string-or-comment) nil 0.3)))
 @end lisp
+@end defopt
+
+@defopt company-inhibit-inside-symbols
+You can set this option to @code{t} to disable the auto-start behavior
+when in the middle of a symbol.
 @end defopt
 
 @defopt company-global-modes
@@ -503,8 +511,8 @@ by this option similarly.
 To allow typing in characters that don't match the candidates, set the
 value of this option to @code{nil}.  For an opposite behavior (that
 is, to disallow non-matching input), set it to @code{t}.  By default,
-Company is configured to require a matching input only if a user
-manually enables completion or selects a candidate; by having the
+Company is configured to require a matching input only if the user
+invokes completion manually or selects a candidate; by having the
 option configured to call the function
 @code{company-explicit-action-p}.
 @end defopt
@@ -734,11 +742,11 @@ value, the tooltip is displayed above point.
 @end defopt
 
 @defopt company-tooltip-flip-when-above
-This is one of the fancy features Company has to suggest.  When this
-setting is enabled, no matter if a tooltip is shown above or below
-point, the candidates are always listed starting near point.  (Putting
-it differently, the candidates are mirrored horizontally if a tooltip
-changes its position, instead of being commonly listed top-to-bottom.)
+When this setting is enabled, no matter if a tooltip is shown above or
+below point, the candidates are always listed starting near point.
+(Putting it differently, the candidates are mirrored vertically if a
+tooltip changes its position, instead of being commonly listed
+top-to-bottom.)
 
 @lisp
 (setq company-tooltip-flip-when-above t)
@@ -749,7 +757,7 @@ changes its position, instead of being commonly listed top-to-bottom.)
 
 @defopt company-tooltip-minimum-width
 Sets the minimum width of a tooltip, excluding the margins and the
-scroll bar.  Changing this value especially makes sense if a user
+scroll bar.  Changing this value especially makes sense if the user
 navigates between tooltip pages.  Keeping this value at the default
 @code{0} allows Company to always adapt the width of the tooltip to
 the longest shown candidate.  Enlarging
@@ -802,7 +810,7 @@ see the user option @code{company-text-icons-mapping} or the variable
 @cindex margin
 Allows setting a function to format the left margin of a tooltip inner
 area; namely, to output candidate's @emph{icons}.  The predefined
-formatting functions are listed below.  A user may also set this
+formatting functions are listed below.  The user may also set this
 option to a custom function. To disable left margin formatting, set
 the value of the option to @code{nil} (this way control over the size
 of the left margin returns to the user option
@@ -891,13 +899,13 @@ Out-of-the-box Company defines and configures distinguished faces
 (@pxref{Faces,,,emacs}) for light and dark themes.  Moreover, some of
 the built-in and third-party themes fine-tune Company to fit their
 palettes.  That is why there's often no real need to make such
-adjustments on a user side.  However, this chapter presents some hints
+adjustments on the user's side.  However, this chapter presents some hints
 on where to start customizing Company interface.
 
 Namely, the look of a tooltip is controlled by the
 @code{company-tooltip*} named faces.
 
-The following example hints how a user may approach tooltip faces
+The following example suggests how users may approach tooltip faces
 customization:
 
 @lisp
@@ -924,7 +932,7 @@ customization:
 @cindex common part
 @cindex complete
 Frontends in this group output a completion candidate or a common part
-of the candidates temporarily inline, as if a word had already been
+of the candidates temporarily inline, as if the word had already been
 completed @footnote{The candidates retrieved according to
 @code{non-prefix} matches (@pxref{Terminology}) may be shown in full
 after point.}.
@@ -1153,22 +1161,20 @@ how to change quick-access hints faces.
 
 @cindex backends
 We can metaphorically say that each backend is like an engine.  (The
-reality is even better since backends are just functions.)  Fueling
+reality is even better since backends are just functions.)  Firing
 such an engine with a command causes the production of material for
-Company to move further on.  Typically, moving on means outputting
-that material to a user via one or several configured frontends,
-@ref{Frontends}.
+Company to work on.  Typically, that means showing that output to the
+user via one or several configured frontends, @ref{Frontends}.
 
 @vindex company-backends
 Just like Company provides a preconfigured list of the enabled
 frontends, it also defines a list of the backends to rely on by
 default.  This list is stored in the user option
-@w{@code{company-backends}}.  The docstring of this variable has been
-a source of valuable information for years.  That's why we're going to
-stick to a tradition and suggest reading the output of @kbd{C-h v
-company-backends} for insightful details about backends.
-Nevertheless, the fundamental concepts are described in this user
-manual too.
+@w{@code{company-backends}}.  The docstring of this variable has the
+full description of what a backend is and how to implement one.  So we
+suggest reading the output of @kbd{C-h v company-backends} for more
+details.  Nevertheless, the fundamental concepts are described in this
+user manual too.
 
 @menu
 * Backends Usage Basics::
@@ -1186,7 +1192,10 @@ One of the significant concepts to understand about Company is that
 the package relies on one backend at a time @footnote{The grouped
 backends act as one complex backend.  @xref{Grouped Backends}.}.  The
 backends are invoked one by one, in the sequential order of the items
-on the @code{company-backends} list.
+on the @code{company-backends} list.  The first one that reports
+itself applicable in the current context (usually based on the value
+of @code{major-mode} and the text around point), is used for
+completion.
 
 @cindex active backend
 @cindex backend
@@ -1197,11 +1206,12 @@ in the output of the command @kbd{M-x company-diag}.
 @cindex next backend
 @cindex backend
 @findex company-other-backend
-In most cases (mainly to exclude false-positive results), the next
-backend is not invoked automatically.  For the purpose of invoking the
-next backend, use the command @w{@kbd{company-other-backend}}: either
-by calling it with @kbd{M-x} or by binding the command to the keys of
-your choice, such as:
+In most cases (mainly to exclude false-positive results), if the
+current applicable backend returned no completions, the ones after it
+in the list are not invoked.  If you do want to query the next one,
+use the command @w{@kbd{company-other-backend}}: either by calling it
+with @kbd{M-x} or by binding the command to the keys of your choice,
+like:
 
 @lisp
 (global-set-key (kbd "C-c C-/") #'company-other-backend)
@@ -1229,9 +1239,7 @@ backends simultaneously.  This can be achieved by configuring
 @code{company-backends} list, that is handled specifically by Company.
 
 The most important part of this handling is the merge of the
-completion candidates from the grouped backends.  (But only from the
-backends that return the same @emph{prefix} value, see @code{C-h v
-company-backends} for more details.)
+completion candidates from the grouped backends.
 
 To keep the candidates organized in accordance with the grouped
 backends order, add the keyword @code{:separate} to the list of the
@@ -1302,15 +1310,15 @@ Optionally, search for the matches with @w{@kbd{M-x isearch @key{RET}
 @subsection Code Completion
 
 @defun company-capf
-In the Emacs's world, the current tendency is to have the completion
-logic provided by @w{@code{completion-at-point-functions}}
-(@acronym{CAPF}) implementations.  [Among the other things, this is
-what the popular packages that support language server protocol
-(@acronym{LSP}) also rely on.]
+The current trend in the Emacs's world is to delegate completion logic
+to the hook @w{@code{completion-at-point-functions}} (@acronym{CAPF})
+assigned to by the major or minor modes.  It supports a common subset
+of features which is well-supported across different completion UIs.
+[Among other things, this is what the most popular Emacs clients for
+the language server protocol (@acronym{LSP}) also rely on.]
 
-Since @emph{company-capf} works as a bridge to the standard
-@acronym{CAPF} facility, it is probably the most often used and
-recommended backend nowadays, including for Emacs Lisp coding.
+For that reason, it is probably the most used and recommended backend
+nowadays, including for Emacs Lisp coding.
 
 Just to illustrate, the following minimal backends setup
 
@@ -1324,12 +1332,52 @@ modes that have @acronym{CAPF} support implemented.
 For more details on @acronym{CAPF}, @ref{Completion in Buffers,,,elisp}.
 @end defun
 
+@defopt company-capf-disabled-functions
+List of completion functions which should be ignored by this backend.
+By default it contains the functions that duplicate the built-in
+backends but don't support the corresponding configuration options
+and/or alter the intended priority of the default backends'
+configuration.
+@end defopt
+
 @defun company-dabbrev-code
 This backend works similarly to the built-in Emacs package
 @emph{dabbrev}, searching for completion candidates inside the
-contents of the open buffer(s).  Internally, its based on the backend
-@emph{company-dabbrev} (@pxref{Text Completion}).
+contents of the open buffer(s).  Internally, it reuses code from the
+other backend, @code{company-dabbrev} (@pxref{Text Completion}).
 @end defun
+
+@defopt company-dabbrev-code-modes
+This variable lists the modes that use @code{company-dabbrev-code}.
+The backend will only perform completion in these major modes and
+their derivatives.  Otherwise it passes control to other backends.
+Value t means complete in all modes.
+@end defopt
+
+@defopt company-dabbrev-code-other-buffers
+This variable determined whether @code{company-dabbrev-code} will
+search other buffers for completions.  If @code{all}, it will search
+all other buffers except the ignored ones (names starting with a
+space).  If @code{t}, it will search buffers with the same major mode.
+If @code{code}, it will search buffers with major modes in
+@code{company-dabbrev-code-modes} or derived from one of them.  This
+can also be a function that takes the current buffer as parameter and
+returns a list of major modes to search.
+@end defopt
+
+@defopt company-dabbrev-code-everywhere
+This is a boolean option which determines whether this backend will
+perform completion in strings and comments as well.  The default value
+@code{nil} means it will pass on control to other backends in such
+contexts.
+@end defopt
+
+@defopt company-dabbrev-code-completion-styles
+Non-nil to use @code{completion-styles} for matching completions in
+this backend.  It can be set to @code{t} to use the global value of
+@code{completion-styles}, or to a list of symbols to use specific
+completion styles with this backend.  The default value is nil.
+@end defopt
 
 @defun company-keywords
 This backend provides completions for many of the widely spread
@@ -1340,25 +1388,52 @@ in a language.
 @defun company-clang
 As the name suggests, use this backend to get completions from
 @emph{Clang} compiler; that is, for the languages in the @emph{C}
-language family: @emph{C}, @emph{C++}, @emph{Objective-C}.
+language family: @emph{C}, @emph{C++}, @emph{Objective-C}.  It uses
+the command-line interface of the program @command{clang}, but without
+any advanced caching across calls, or automatic detection of the
+project structure.  Which makes it more suitable for small to medium
+projects, especially if you're willing to customize
+@code{company-clang-arguments}.  Otherwise we recommend using one of
+the LSP clients available for Emacs, together with the backend
+@code{company-capf}.
 @end defun
+
+@defopt company-clang-arguments
+This option can be set to a list of strings which will be passed to
+@emph{clang} during completion.  These can include elements like
+@code{"-I" "path/to/includes/dir"} to indicate the header directories
+and other compiler options.
+@end defopt
 
 @defun company-semantic
 This backend relies on a built-in Emacs package that provides
 language-aware editing commands based on source code parsers,
 @ref{Semantic,,,emacs}.  Having enabled @emph{semantic-mode} makes it
 to be used by the @acronym{CAPF} mechanism (@pxref{Symbol
-Completion,,,emacs}), hence a user may consider enabling
+Completion,,,emacs}), hence the user may consider enabling
 @emph{company-capf} backend instead.
 @end defun
 
 @defun company-etags
-This backend works on top of a built-in Emacs package @emph{etags},
-@ref{Tags Tables,,,emacs}.  Similarly to aforementioned
-@emph{Semantic} usage, tags-based completions now are a part of the
-Emacs' @acronym{CAPF} facility, therefore a user may consider
-switching to @emph{company-capf} backend.
+This backend uses tags tables as produced by the built-in Emacs
+program @emph{etags}, @ref{Tags Tables,,,emacs}.
 @end defun
+
+@defopt company-etags-ignore-case
+Non-nil to ignore case in this backend's completions.
+@end defopt
+
+@defopt company-etags-everywhere
+Non-nil to offer completions in comments and strings.  It can also be
+set to @code{t} or a list of major modes in which this would happen.
+@end defopt
+
+@defopt company-etags-completion-styles
+Non-nil to use @code{completion-styles} for matching completions in
+this backend.  It can be set to @code{t} to use the global value of
+@code{completion-styles}, or to a list of symbols to use specific
+completion styles with this backend.  The default value is nil.
+@end defopt
 
 @node Text Completion
 @subsection Text Completion

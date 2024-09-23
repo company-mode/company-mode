@@ -140,6 +140,10 @@
                    (candidates '("c" "d")))))))
     (should (equal (company-call-backend 'prefix) '("" nil 0)))))
 
+(ert-deftest company-multi-backend-none-applicable ()
+  (let ((company-backend (list #'ignore #'ignore)))
+    (should (null (company-call-backend 'prefix)))))
+
 (ert-deftest company-multi-backend-dispatches-separate-prefix-to-backends ()
   (let ((company-backend
          (list (lambda (command &optional arg &rest _r)
