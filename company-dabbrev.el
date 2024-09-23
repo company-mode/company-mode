@@ -212,6 +212,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
     (candidates
      (company-dabbrev--filter
       arg
+      ;; FIXME: Only cache the result of non-interrupted scans?
       (company-cache-fetch 'dabbrev-candidates #'company-dabbrev--fetch
                            :expire t)))
     (kind 'text)

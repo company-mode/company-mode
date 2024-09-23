@@ -2491,6 +2491,7 @@ For more details see `company-insertion-on-trigger' and
 (defun company--begin-new ()
   (let ((min-prefix (company--prefix-min-length))
         entity c)
+    (company-cache-expire)
     (cl-dolist (backend (if company-backend
                             ;; prefer manual override
                             (list company-backend)
@@ -2570,7 +2571,6 @@ For more details see `company-insertion-on-trigger' and
           company--multi-uncached-backends nil
           company--multi-min-prefix nil
           company-point nil)
-    (company-cache-expire)
     (when company-timer
       (cancel-timer company-timer))
     (company-echo-cancel t)

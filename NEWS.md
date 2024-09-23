@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+# 2024-09-21 (1.0.2)
+
+* More reliable cache expiration (at the beginning of completion).
+
 # 2024-09-21 (1.0.1)
 
 * Fix for failover from a backend group to the next backend.
