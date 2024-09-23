@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-# 2024-09-21 (1.0.2)
+# 2024-09-23 (1.0.2)
 
 * More reliable cache expiration (at the beginning of completion).
 
