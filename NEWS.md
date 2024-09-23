@@ -1,5 +1,10 @@
 # History of user-visible changes
 
+# Next
+
+* Handle the case when the current c-a-p-f function changes mid-session
+  (#[1494](https://github.com/company-mode/company-mode/pull/1494)).
+
 # 2024-09-23 (1.0.2)
 
 * More reliable cache expiration (at the beginning of completion).
