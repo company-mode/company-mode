@@ -194,15 +194,17 @@ so we can't just use the preceding variable instead.")
       annotation)))
 
 (defun company-capf--candidates (input suffix)
-  (let* ((res (company--capf-data))
+  (let* ((current-capf (car company-capf--current-completion-data))
+         (res (company--capf-data))
          (table (nth 3 res))
          (pred (plist-get (nthcdr 4 res) :predicate))
          (meta (and res
                     (completion-metadata
                      (buffer-substring (nth 1 res) (nth 2 res))
                      table pred))))
-    (company-capf--save-current-data res meta)
-    (when res
+    (when (and res
+               (or (not current-capf)
+                   (equal current-capf (car res))))
       (let* ((interrupt (plist-get (nthcdr 4 res) :company-use-while-no-input))
              (all-result (company-capf--candidates-1 input suffix
                                                      table pred
@@ -213,6 +215,7 @@ so we can't just use the preceding variable instead.")
              (candidates (assoc-default :completions all-result)))
         (setq company-capf--sorted (functionp sortfun))
         (when candidates
+          (company-capf--save-current-data res meta)
           (setq company-capf--current-boundaries
                 (company--capf-boundaries-markers
                  (assoc-default :boundaries all-result)
