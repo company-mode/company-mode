@@ -2598,6 +2598,7 @@ For more details see `company-insertion-on-trigger' and
          (delete-region (point) (+ (point) (length suffix))))
     (let ((tick (buffer-chars-modified-tick))
           (backend company-backend))
+      ;; Call backend's `post-completion' and run other hooks, then exit.
       (company-cancel result)
       ;; Try restarting completion, to see if we moved into a new field.
       ;; Most commonly, this would be after entering a dir in file completion.
@@ -3087,7 +3088,11 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (company-complete-selection)))
 
 (defun company-complete-selection ()
-  "Insert the selected candidate."
+  "Insert the selected candidate.
+
+Restart completion if a new field is entered. A field is indicated by
+`adjust-boundaries' as implemented in the backend. If both adjusted prefix
+and adjusted suffix are empty strings, that means a new field."
   (interactive)
   (when (and (company-manual-begin) company-selection)
     (let ((result (nth company-selection company-candidates)))
