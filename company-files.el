@@ -38,14 +38,6 @@ The values should use the same format as `completion-ignored-extensions'."
   :type '(repeat (string :tag "File extension or directory name"))
   :package-version '(company . "0.9.1"))
 
-(defcustom company-files-chop-trailing-slash t
-  "Non-nil to remove the trailing slash after inserting directory name.
-
-This way it's easy to continue completion by typing `/' again.
-
-Set this to nil to disable that behavior."
-  :type 'boolean)
-
 (defun company-files--directory-files (dir prefix)
   ;; Don't use directory-files. It produces directories without trailing /.
   (condition-case _err
@@ -137,11 +129,6 @@ Set this to nil to disable that behavior."
   (and (equal (cdr old) (cdr new))
        (string-prefix-p (car old) (car new))))
 
-(defun company-files--post-completion (arg)
-  (when (and company-files-chop-trailing-slash
-             (company-files--trailing-slash-p arg))
-    (delete-char -1)))
-
 (defun company-files--adjust-boundaries (_file prefix suffix)
   (cons
    (file-name-nondirectory prefix)
@@ -162,7 +149,6 @@ File paths with spaces are only supported inside strings."
      (company-files--adjust-boundaries arg (nth 0 rest) (nth 1 rest)))
     (location (cons (dired-noselect
                      (file-name-directory (directory-file-name arg))) 1))
-    (post-completion (company-files--post-completion arg))
     (kind (if (string-suffix-p "/" arg) 'folder 'file))
     (sorted t)
     (no-cache t)))
