@@ -338,9 +338,10 @@ Restart completion if a new field is entered.
 @itemx <tab>
 @kindex TAB
 @cindex common part
-@findex company-complete-common
-Insert the @emph{common part} of all completion candidates
-(@code{company-complete-common}).
+@findex company-complete-common-or-cycle
+Insert the @emph{common part} of all completion candidates or if it
+cannot be completed further, select the next candidate (with
+wraparound enabled) (@code{company-complete-common-or-cycle}).
 
 @item C-g
 @itemx <ESC ESC ESC>
@@ -391,18 +392,6 @@ illustrate how to assign key bindings to such commands.
 @lisp
 (with-eval-after-load 'company
   (define-key company-active-map (kbd "M-/") #'company-complete))
-@end lisp
-
-@lisp
-(with-eval-after-load 'company
-  (define-key company-active-map
-              (kbd "TAB")
-              #'company-complete-common-or-cycle)
-  (define-key company-active-map
-              (kbd "<backtab>")
-              (lambda ()
-                (interactive)
-                (company-complete-common-or-cycle -1))))
 @end lisp
 
 In the same manner, an additional key can be assigned to a command or

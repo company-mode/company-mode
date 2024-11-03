@@ -903,8 +903,9 @@ asynchronous call into synchronous.")
     (define-key keymap [up-mouse-3] 'ignore)
     (define-key keymap [return] 'company-complete-selection)
     (define-key keymap (kbd "RET") 'company-complete-selection)
-    (define-key keymap [tab] 'company-complete-common)
-    (define-key keymap (kbd "TAB") 'company-complete-common)
+    (define-key keymap [tab] 'company-complete-common-or-cycle)
+    (define-key keymap (kbd "TAB") 'company-complete-common-or-cycle)
+    (define-key keymap [backtab] 'company-cycle-backward)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     (define-key keymap (kbd "C-h") 'company-show-doc-buffer)
     (define-key keymap "\C-w" 'company-show-location)
@@ -3171,6 +3172,11 @@ With ARG, move by that many elements."
         (let ((company-selection-wrap-around t)
               (current-prefix-arg arg))
           (call-interactively 'company-select-next))))))
+
+(defun company-cycle-backward (&optional arg)
+  (interactive "p")
+  (let ((company-selection-wrap-around t))
+    (company-select-previous arg)))
 
 (defun company-complete-common-or-show-delayed-tooltip ()
   "Insert the common part of all candidates, or show a tooltip."
