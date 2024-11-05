@@ -332,6 +332,7 @@ Select the previous candidate
 @cindex complete
 @findex company-complete-selection
 Insert the selected candidate (@code{company-complete-selection}).
+Restart completion if a new field is entered.
 
 @item TAB
 @itemx <tab>

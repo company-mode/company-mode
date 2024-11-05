@@ -706,6 +706,67 @@
       (company-complete-selection)
       (should (string= "tea-cup" (buffer-string))))))
 
+(ert-deftest company-complete-restarts-in-new-field ()
+  (with-temp-buffer
+    (insert "foo")
+    (company-mode)
+    (let (company-frontends
+          (company-backends
+           (list (lambda (command &optional _arg &rest rest)
+                   (cl-case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (adjust-boundaries
+                      (if (string-suffix-p "/" (car rest))
+                          (cons "" (nth 1 rest))
+                        (cons (car rest) (nth 1 rest))))
+                     (candidates '("cc/" "aa1" "bb2"))
+                     (sorted t))))))
+      (let (this-command)
+        (company-complete))
+      (should (string= "foo" (buffer-string)))
+      (company-complete-selection)
+      (should (string= "cc/" (buffer-string)))
+      (should (equal company-candidates '("cc/" "aa1" "bb2"))))))
+
+(ert-deftest company-complete-no-restart-in-old-field ()
+  (with-temp-buffer
+    (insert "foo")
+    (company-mode)
+    (let (company-frontends
+          (company-backends
+           (list (lambda (command &rest _rest)
+                   (cl-case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("cc/" "aa1" "bb2"))
+                     (sorted t))))))
+      (let (this-command)
+        (company-complete))
+      (company-complete-selection)
+      (should (string= "cc/" (buffer-string)))
+      (should (null company-candidates)))))
+
+(ert-deftest company-complete-no-restart-after-post-completion-change ()
+  (with-temp-buffer
+    (insert "foo")
+    (company-mode)
+    (let (company-frontends
+          (company-backends
+           (list (lambda (command &optional _arg &rest rest)
+                   (cl-case command
+                     (prefix (buffer-substring (point-min) (point)))
+                     (candidates '("cc/" "aa1" "bb2"))
+                     (adjust-boundaries
+                      (if (string-suffix-p "/" (car rest))
+                          (cons "" (nth 1 rest))
+                        (cons (car rest) (nth 1 rest))))
+                     (post-completion (insert "bar/"))
+                     (sorted t))))))
+      (let (this-command)
+        (company-complete))
+      (company-complete-selection)
+      (should (string= "cc/bar/" (buffer-string)))
+      (should (null company-candidates)))))
+
 (defvar ct-sorted nil)
 
 ;; FIXME: When Emacs 29+ only: just replace with equal-including-properties.

@@ -2491,7 +2491,6 @@ For more details see `company-insertion-on-trigger' and
 (defun company--begin-new ()
   (let ((min-prefix (company--prefix-min-length))
         entity c)
-    (company-cache-expire)
     (cl-dolist (backend (if company-backend
                             ;; prefer manual override
                             (list company-backend)
@@ -2545,6 +2544,7 @@ For more details see `company-insertion-on-trigger' and
    (company-candidates
     (company--continue))
    ((company--should-complete)
+    (company-cache-expire)
     (company--begin-new)))
   (if (not company-candidates)
       (setq company-backend nil)
@@ -2595,8 +2595,21 @@ For more details see `company-insertion-on-trigger' and
   (pcase-let ((`(,prefix . ,suffix) (company--boundaries result)))
     (company--insert-candidate result (or prefix company-prefix))
     (and (> (length suffix) 0)
-         (delete-region (point) (+ (point) (length suffix)))))
-  (company-cancel result))
+         (delete-region (point) (+ (point) (length suffix))))
+    (let ((tick (buffer-chars-modified-tick))
+          (backend company-backend))
+      ;; Call backend's `post-completion' and run other hooks, then exit.
+      (company-cancel result)
+      ;; Try restarting completion, to see if we moved into a new field.
+      ;; Most commonly, this would be after entering a dir in file completion.
+      (when (= (buffer-chars-modified-tick) tick)
+        (let (company-require-match)
+          (setq company-backend backend
+                company--manual-prefix 0)
+          (company--begin-new))
+        (unless (and company-candidates
+                     (equal (company--boundaries) '("" . "")))
+          (company-cancel))))))
 
 (defsubst company-keep (command)
   (and (symbolp command) (get command 'company-keep)))
@@ -3075,7 +3088,11 @@ For use in the `select-mouse' frontend action.  `let'-bound.")
     (company-complete-selection)))
 
 (defun company-complete-selection ()
-  "Insert the selected candidate."
+  "Insert the selected candidate.
+
+Restart completion if a new field is entered. A field is indicated by
+`adjust-boundaries' as implemented in the backend. If both adjusted prefix
+and adjusted suffix are empty strings, that means a new field."
   (interactive)
   (when (and (company-manual-begin) company-selection)
     (let ((result (nth company-selection company-candidates)))
