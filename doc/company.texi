@@ -2,8 +2,8 @@
 @c %**start of header
 @setfilename company.info
 @settitle Company User Manual
-@set VERSION 1.0.0
-@set UPDATED 21 September 2024
+@set VERSION 1.0.2
+@set UPDATED 5 November 2024
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -339,9 +339,11 @@ Restart completion if a new field is entered.
 @kindex TAB
 @cindex common part
 @findex company-complete-common-or-cycle
-Insert the @emph{common part} of all completion candidates or if it
-cannot be completed further, select the next candidate (with
-wraparound enabled) (@code{company-complete-common-or-cycle}).
+Insert the @emph{common part} of all completion candidates or --- if
+no @emph{common part} is present --- select the next candidate
+(@code{company-complete-common-or-cycle}).  In the latter case,
+wraparound is implicitly enabled
+(@pxref{company-selection-wrap-around}).
 
 @item C-g
 @itemx <ESC ESC ESC>
@@ -381,6 +383,9 @@ a more user-friendly output of the pre-defined key bindings, utilize
 @w{@kbd{M-x describe-keymap @key{RET} company-active-map}} or @w{@kbd{C-h
 f @key{RET} company-mode}}.}.
 
+@findex company-complete-common
+@findex company-indent-or-complete-common
+@findex company-complete
 Moreover, Company is bundled with a number of convenience commands
 that do not have default key bindings defined.  The following examples
 illustrate how to assign key bindings to such commands.
@@ -391,7 +396,8 @@ illustrate how to assign key bindings to such commands.
 
 @lisp
 (with-eval-after-load 'company
-  (define-key company-active-map (kbd "M-/") #'company-complete))
+  (define-key company-active-map (kbd "M-/") #'company-complete)
+  (define-key company-active-map (kbd "C-M-/") #'company-complete-common))
 @end lisp
 
 In the same manner, an additional key can be assigned to a command or
@@ -488,6 +494,7 @@ following example:
 @end lisp
 @end defopt
 
+@anchor{company-selection-wrap-around}
 @defopt company-selection-wrap-around
 Enable this option to loop (cycle) the candidates' selection: after
 selecting the last candidate on the list, a command to select the next
