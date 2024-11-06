@@ -2,6 +2,7 @@
 
 # Next
 
+* The minimum required version of Emacs is now 26.1.
 * `TAB` binding changed to `company-complete-common-or-cycle`, and `backtab`
   binding to `company-cycle-backward`
   (#[1499](https://github.com/company-mode/company-mode/pull/1499)).
