@@ -3,7 +3,7 @@
 # Next
 
 * `TAB` binding changed to `company-complete-common-or-cycle`, and `backtab`
-  binding changed to `company-cycle-backward
+  binding to `company-cycle-backward`
   (#[1499](https://github.com/company-mode/company-mode/pull/1499)).
 * Completion is restarted if it enters a new "field" at the end, as indicated by
   the `adjust-boundaries` backend action
