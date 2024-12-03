@@ -1238,6 +1238,7 @@ backends simultaneously.  This can be achieved by configuring
 The most important part of this handling is the merge of the
 completion candidates from the grouped backends.
 
+@cindex :separate
 To keep the candidates organized in accordance with the grouped
 backends order, add the keyword @code{:separate} to the list of the
 grouped backends.  The following example illustrates this.
@@ -1251,6 +1252,7 @@ grouped backends.  The following example illustrates this.
 (add-hook 'text-mode-hook #'my-text-mode-hook)
 @end lisp
 
+@cindex :with
 Another keyword @code{:with} helps to make sure the results from
 major/minor mode agnostic backends (such as @emph{company-yasnippet},
 @emph{company-dabbrev-code}) are returned without preventing results
