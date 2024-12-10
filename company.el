@@ -537,9 +537,10 @@ even if the backend uses the asynchronous calling convention."
 (defcustom company-transformers nil
   "Functions to change the list of candidates received from backends.
 
-Each function gets called with the return value of the previous one.
+Each function is called with the return value of the previous one.
 The first one gets passed the list of candidates, already sorted and
-without duplicates."
+without duplicates (candidates with different annotations are considered to
+be distinct)."
   :type '(choice
           (const :tag "None" nil)
           (const :tag "Sort by occurrence" (company-sort-by-occurrence))
