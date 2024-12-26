@@ -79,6 +79,16 @@ parameter and returns a list of major modes to search.  See also
                  (list :tag "Custom list of styles" symbol))
   :package-version '(company . "1.0.0"))
 
+(defcustom company-dabbrev-code-ignore-cand-prefix nil
+  "Regex of prefix that should be ignored when collecting candidates.
+For example, you may want to set this variable to \"_\".  Then if you type
+\"temp\" you will receive both candidates: \"_tempvar\" and \"tempvar\".
+Note that if you input is matched against this regex this variable will be
+ignored when collecting candidates.  So for the input \"_temp\" you will
+receive only \"_tempvar\" candidate."
+  :type '(regexp :tag "Regexp")
+  :package-version '(company . "1.0.2"))
+
 (defvar-local company-dabbrev--boundaries nil)
 (defvar-local company-dabbrev-code--sorted nil)
 
@@ -97,8 +107,11 @@ parameter and returns a list of major modes to search.  See also
                            prefix)))
              (mapconcat #'regexp-quote
                         (mapcar #'string prefix)
-                        "\\(\\sw\\|\\s_\\)*"))))))
-    (concat "\\_<" prefix-re "\\(\\sw\\|\\s_\\)*\\_>")))
+                        "\\(\\sw\\|\\s_\\)*")))))
+        (ignore-cand-prefix-re (and company-dabbrev-code-ignore-cand-prefix
+                                    (not (string-match-p (concat "^" company-dabbrev-code-ignore-cand-prefix) prefix))
+                                    (format "\\(?:%s\\)?" company-dabbrev-code-ignore-cand-prefix))))
+    (concat "\\_<" ignore-cand-prefix-re  prefix-re "\\(\\sw\\|\\s_\\)*\\_>")))
 
 ;;;###autoload
 (defun company-dabbrev-code (command &optional arg &rest rest)
