@@ -22,6 +22,7 @@
 (require 'company-tests)
 
 (ert-deftest company-dabbrev-code-with-flex-style-test ()
+  (skip-unless (version<= "27.0" emacs-version))
   (with-temp-buffer
     (insert "scheduled_job
 sa_enum
