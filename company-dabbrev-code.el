@@ -171,7 +171,7 @@ comments or strings."
                  prefix suffix
                  table nil
                  metadata))
-      (when-let ((sort-fn (completion-metadata-get metadata 'display-sort-function)))
+      (when-let* ((sort-fn (completion-metadata-get metadata 'display-sort-function)))
         (setq company-dabbrev-code--sorted t)
         (setf (alist-get :completions res)
               (funcall sort-fn (alist-get :completions res))))
