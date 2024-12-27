@@ -80,6 +80,7 @@ parameter and returns a list of major modes to search.  See also
   :package-version '(company . "1.0.0"))
 
 (defvar-local company-dabbrev--boundaries nil)
+(defvar-local company-dabbrev-code--sorted nil)
 
 (defun company-dabbrev-code--make-regexp (prefix)
   (let ((prefix-re
@@ -118,6 +119,7 @@ comments or strings."
                              company-dabbrev--boundaries)))
     (expand-common (company-dabbrev-code--expand-common arg (car rest)))
     (kind 'text)
+    (sorted company-dabbrev-code--sorted)
     (no-cache t)
     (ignore-case company-dabbrev-code-ignore-case)
     (match (when company-dabbrev-code-completion-styles
@@ -161,12 +163,18 @@ comments or strings."
         (completion-styles (if (listp company-dabbrev-code-completion-styles)
                                company-dabbrev-code-completion-styles
                              completion-styles))
+        (metadata (completion-metadata prefix table nil))
         res)
     (if (not company-dabbrev-code-completion-styles)
         (all-completions prefix table)
       (setq res (company--capf-completions
                  prefix suffix
-                 table))
+                 table nil
+                 metadata))
+      (when-let ((sort-fn (completion-metadata-get metadata 'display-sort-function)))
+        (setq company-dabbrev-code--sorted t)
+        (setf (alist-get :completions res)
+              (funcall sort-fn (alist-get :completions res))))
       (setq company-dabbrev--boundaries
             (company--capf-boundaries-markers
              (assoc-default :boundaries res)
