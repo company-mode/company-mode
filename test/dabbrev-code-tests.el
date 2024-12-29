@@ -21,44 +21,108 @@
 
 (require 'company-tests)
 
+(defmacro company-dabbrev-code-with-buffer (contents &rest body)
+  (declare (indent 0) (debug (sexp &rest form)))
+  `(with-temp-buffer
+     (insert ,contents)
+     (re-search-backward "|")
+     (replace-match "")
+     (company-mode)
+     (let (company-frontends
+           company-transformers
+           (company-dabbrev-code-other-buffers nil)
+           (company-dabbrev-code-modes t)
+           (company-backends '(company-dabbrev-code)))
+       (ignore company-dabbrev-code-other-buffers
+               company-dabbrev-code-modes)
+       ,@body)))
+
 (ert-deftest company-dabbrev-code-with-flex-style-test ()
   (skip-unless (version<= "27.0" emacs-version))
-  (with-temp-buffer
-    (insert "scheduled_job
+  (company-dabbrev-code-with-buffer
+    "scheduled_job
 sa_enum
 self
 
-se")
-    (company-mode)
-    (let (company-frontends
-          company-transformers
-          (company-dabbrev-code-other-buffers nil)
-          (company-dabbrev-code-modes t)
-          (company-backends '(company-dabbrev-code))
-          (company-dabbrev-code-completion-styles '(flex)))
-      (ignore company-dabbrev-code-other-buffers
-              company-dabbrev-code-modes
-              company-dabbrev-code-completion-styles)
+se|"
 
+    (let ((company-dabbrev-code-completion-styles '(flex)))
+      (ignore company-dabbrev-code-completion-styles)
       (company-manual-begin)
       (should (equal '("self" "sa_enum" "scheduled_job") company-candidates)))))
 
 (ert-deftest company-dabbrev-code-with-basic-style-test ()
-  (with-temp-buffer
-    (insert "scheduled_job
+  (company-dabbrev-code-with-buffer
+    "scheduled_job
 sa_enum
 self
 
-se")
-    (company-mode)
-    (let (company-frontends
-          company-transformers
-          (company-dabbrev-code-other-buffers nil)
-          (company-dabbrev-code-modes t)
-          (company-backends '(company-dabbrev-code))
-          (company-dabbrev-code-completion-styles '(basic)))
-      (ignore company-dabbrev-code-other-buffers
-              company-dabbrev-code-modes
-              company-dabbrev-code-completion-styles)
+se|"
+    (let ((company-dabbrev-code-completion-styles '(basic)))
+      (ignore company-dabbrev-code-completion-styles)
       (company-manual-begin)
       (should (equal '("self") company-candidates)))))
+
+
+(ert-deftest company-dabbrev-code-ignore-cand-prefix-test-1 ()
+  (skip-unless (version<= "27.0" emacs-version))
+  (let ((company-dabbrev-code-ignore-cand-prefix "_")
+        (company-dabbrev-code-completion-styles '(flex)))
+    (ignore company-dabbrev-code-ignore-cand-prefix company-dabbrev-code-completion-styles)
+    (company-dabbrev-code-with-buffer
+      "set_metric
+_set_metric
+__set_metric
+
+se|"
+      (company-manual-begin)
+      (should (eq (length company-candidates) 2))
+      (should (equal '("set_metric" "_set_metric") company-candidates))
+      (company-cancel)
+
+      ;; prefix starts with ignore-cand-prefix
+      (insert "\n_se")
+      (company-manual-begin)
+      (should (equal '("_set_metric" "__set_metric") company-candidates)))))
+
+(ert-deftest company-dabbrev-code-ignore-cand-prefix-test-2 ()
+  (skip-unless (version<= "27.0" emacs-version))
+  (let ((company-dabbrev-code-ignore-cand-prefix "__?")
+        (company-dabbrev-code-completion-styles '(flex)))
+    (ignore company-dabbrev-code-ignore-cand-prefix company-dabbrev-code-completion-styles)
+    (company-dabbrev-code-with-buffer
+      "set_metric
+_set_metric
+__set_metric
+
+se|"
+      (company-manual-begin)
+      (should (eq (length company-candidates) 3))
+      (should (equal '("set_metric" "_set_metric" "__set_metric") company-candidates))
+      (company-cancel)
+
+      ;; prefix starts with ignore-cand-prefix
+      (insert "\n__se")
+      (company-manual-begin)
+      (should (equal '("__set_metric") company-candidates)))))
+
+(ert-deftest company-dabbrev-code-ignore-cand-prefix-test-3 ()
+  (skip-unless (version<= "27.0" emacs-version))
+  (let ((company-dabbrev-code-ignore-cand-prefix "__?\\|--?")
+        (company-dabbrev-code-completion-styles '(flex)))
+    (ignore company-dabbrev-code-ignore-cand-prefix company-dabbrev-code-completion-styles)
+    (company-dabbrev-code-with-buffer
+      "set_metric
+_set_metric
+--set_metric
+
+se|"
+      (company-manual-begin)
+      (should (eq (length company-candidates) 3))
+      (should (equal '("set_metric" "_set_metric" "--set_metric") company-candidates))
+      (company-cancel)
+
+      ;; prefix starts with ignore-cand-prefix
+      (insert "\n-se")
+      (company-manual-begin)
+      (should (equal '("--set_metric") company-candidates)))))
