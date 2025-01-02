@@ -879,6 +879,30 @@ asynchronous call into synchronous.")
 (defvar company-async-timeout 2
   "Maximum wait time for a value to be set during asynchronous call.")
 
+(defvar company-log-buffer-name "*company-log*")
+
+(defvar company-log-max 500000)
+
+(defcustom company-verbose-logging nil
+  "Non-nil to log some events to a background buffer."
+  :type 'boolean)
+
+(defun company--log-maybe (format-string &rest args)
+  (let ((buf (get-buffer company-log-buffer-name))
+        (inhibit-read-only t))
+    (unless buf
+      (setq buf (get-buffer-create company-log-buffer-name))
+      (with-current-buffer buf
+        (setq buffer-undo-list t)
+        (special-mode)))
+    (when company-verbose-logging
+      (with-current-buffer buf
+        (save-excursion
+          (goto-char (point-max))
+          (when (> (point) company-log-max)
+            (delete-region (point-min) (- (point) company-log-max)))
+          (insert (apply #'format-message format-string args) "\n"))))))
+
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar company-mode-map (make-sparse-keymap)
@@ -1319,6 +1343,7 @@ be recomputed when this value changes."
            company--cache))
 
 (defun company-call-backend (&rest args)
+  (company--log-maybe "Calling backend %s with %s" company-backend args)
   (company--force-sync #'company-call-backend-raw args company-backend))
 
 (defun company--force-sync (fun args backend)
@@ -1729,7 +1754,9 @@ prefix argument.")
 (defun company-call-frontends (command)
   (cl-loop for frontend in company-frontends collect
            (condition-case-unless-debug err
-               (funcall frontend command)
+               (progn
+                 (company--log-maybe "Calling frontend %s with %s" frontend command)
+                 (funcall frontend command))
              (error (error "Company: frontend %s error \"%s\" on command %s"
                            frontend (error-message-string err) command)))))
 
@@ -2640,7 +2667,22 @@ For more details see `company-insertion-on-trigger' and
 (defun company--active-p ()
   company-candidates)
 
+(defun company--check-overlays ()
+  (unless company-candidates
+    (when company-pseudo-tooltip-overlay
+      (company--log-maybe "!! c-p-t-o non-nil"))
+    (when company-preview-overlay
+      (company--log-maybe "!! c-p-o non-nil"))))
+
 (defun company-pre-command ()
+  (company--check-overlays)
+  (unless buffer-read-only
+    (company--log-maybe "%sthis-command: %S %S"
+                        (if (bound-and-true-p evil-state)
+                            (let ((tag (evil-state-property evil-state :tag t)))
+                              (if (functionp tag) (funcall tag) tag))
+                          "")
+                        this-command (this-command-keys)))
   (company--electric-restore-window-configuration)
   (unless (company-keep this-command)
     (condition-case-unless-debug err
@@ -2694,6 +2736,7 @@ For more details see `company-insertion-on-trigger' and
       (error (message "Company: An error occurred in post-command")
              (message "%s" (error-message-string err))
              (company-cancel))))
+  (company--check-overlays)
   (company-install-map))
 
 (defun company--idle-delay ()
