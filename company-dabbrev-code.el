@@ -95,9 +95,11 @@ parameter and returns a list of major modes to search.  See also
            (let ((prefix (if (>= (length prefix) 2)
                              (substring prefix 0 2)
                            prefix)))
-             (mapconcat #'regexp-quote
-                        (mapcar #'string prefix)
-                        "\\(\\sw\\|\\s_\\)*"))))))
+             (concat
+              "\\(\\sw\\|\\s_\\)*"
+              (mapconcat #'regexp-quote
+                         (mapcar #'string prefix)
+                         "\\(\\sw\\|\\s_\\)*")))))))
     (concat "\\_<" prefix-re "\\(\\sw\\|\\s_\\)*\\_>")))
 
 ;;;###autoload

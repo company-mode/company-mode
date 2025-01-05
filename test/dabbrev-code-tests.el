@@ -1,6 +1,6 @@
 ;;; dabbrev-code-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2024  Free Software Foundation, Inc.
+;; Copyright (C) 2024-2025  Free Software Foundation, Inc.
 
 ;; Author: Denis Zubarev
 
@@ -62,3 +62,26 @@ se")
               company-dabbrev-code-completion-styles)
       (company-manual-begin)
       (should (equal '("self") company-candidates)))))
+
+(ert-deftest company-dabbrev-code-with-substring-style ()
+  (skip-unless (version<= "27.0" emacs-version))
+  (with-temp-buffer
+    (insert "scheduled_job
+ssa_enum
+_sa_e
+self
+
+sa")
+    (company-mode)
+    (let (company-frontends
+          company-transformers
+          (company-dabbrev-code-other-buffers nil)
+          (company-dabbrev-code-modes t)
+          (company-backends '(company-dabbrev-code))
+          (company-dabbrev-code-completion-styles '(substring)))
+      (ignore company-dabbrev-code-other-buffers
+              company-dabbrev-code-modes
+              company-dabbrev-code-completion-styles)
+
+      (company-manual-begin)
+      (should (equal '("_sa_e" "ssa_enum") company-candidates)))))
