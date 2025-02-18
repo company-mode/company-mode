@@ -1,6 +1,6 @@
 ;;; company.el --- Modular text completion framework  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2024  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2025  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
@@ -2438,11 +2438,7 @@ For more details see `company-insertion-on-trigger' and
       (if company-abort-manual-when-too-short
           ;; Must not be less than minimum or initial length.
           (min company-minimum-prefix-length
-               (if-let* ((mp-len-override (cdr-safe company--manual-prefix)))
-                   (if (numberp mp-len-override)
-                       mp-len-override
-                     (length (car-safe company--manual-prefix)))
-                 (length company--manual-prefix)))
+               (company--prefix-len company--manual-prefix))
         0)
     company-minimum-prefix-length))
 
@@ -2607,7 +2603,7 @@ For more details see `company-insertion-on-trigger' and
       (when (= (buffer-chars-modified-tick) tick)
         (let (company-require-match)
           (setq company-backend backend
-                company--manual-prefix 0)
+                company--manual-prefix "")
           (company--begin-new))
         (unless (and company-candidates
                      (equal (company--boundaries) '("" . "")))
