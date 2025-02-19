@@ -2438,7 +2438,11 @@ For more details see `company-insertion-on-trigger' and
       (if company-abort-manual-when-too-short
           ;; Must not be less than minimum or initial length.
           (min company-minimum-prefix-length
-               (company--prefix-len company--manual-prefix))
+               (if-let* ((mp-len-override (cdr-safe company--manual-prefix)))
+                   (if (numberp mp-len-override)
+                       mp-len-override
+                     (length (car-safe company--manual-prefix)))
+                 (length company--manual-prefix)))
         0)
     company-minimum-prefix-length))
 
