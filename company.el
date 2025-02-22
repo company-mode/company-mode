@@ -3632,7 +3632,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                                     (setq backend b)
                                     (company-call-backend 'prefix))))
          (c-a-p-f completion-at-point-functions)
-         cc annotations)
+         cc annotations
+         current-capf)
     (when (or (stringp prefix) (consp prefix))
       (let ((company-backend backend))
         (condition-case nil
@@ -3642,7 +3643,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                   annotations
                   (mapcar
                    (lambda (c) (cons c (company-call-backend 'annotation c)))
-                   cc))
+                   cc)
+                  current-capf (car company-capf--current-completion-data))
           (error (setq annotations 'error)))))
     (pop-to-buffer (get-buffer-create "*company-diag*"))
     (setq buffer-read-only nil)
@@ -3660,7 +3662,9 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
               (memq 'company-capf backend)
             (eq backend 'company-capf))
       (insert "Value of c-a-p-f: "
-              (pp-to-string c-a-p-f)))
+              (pp-to-string c-a-p-f))
+      (when current-capf
+        (insert "Current c-a-p-f: " (pp-to-string current-capf))))
     (insert "Major mode: " mode)
     (insert "\n")
     (insert "Prefix: " (pp-to-string prefix))
