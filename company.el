@@ -3617,9 +3617,12 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
     (require 'find-func)
     (insert-file-contents (find-library-name "company"))
     (require 'lisp-mnt)
-    (if show-version
-        (message "Company version: %s" (lm-version))
-      (lm-version))))
+    ;; `lm-package-version' was added in 2025.
+    (let ((version (or (or (lm-header "package-version")
+                           (lm-version)))))
+      (if show-version
+          (message "Company version: %s" version)
+        version))))
 
 (defun company-diag ()
   "Pop a buffer with information about completions at point."
