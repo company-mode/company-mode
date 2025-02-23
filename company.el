@@ -3647,7 +3647,8 @@ If SHOW-VERSION is non-nil, show the version in the echo area."
                   (mapcar
                    (lambda (c) (cons c (company-call-backend 'annotation c)))
                    cc)
-                  current-capf (car company-capf--current-completion-data))
+                  current-capf (car (bound-and-true-p
+                                     company-capf--current-completion-data)))
           (error (setq annotations 'error)))))
     (pop-to-buffer (get-buffer-create "*company-diag*"))
     (setq buffer-read-only nil)
