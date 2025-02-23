@@ -3607,6 +3607,7 @@ Example: \(company-begin-with \\='\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
 
 (declare-function find-library-name "find-func")
 (declare-function lm-version "lisp-mnt")
+(declare-function lm-header "lisp-mnt")
 
 (defun company-version (&optional show-version)
   "Get the Company version as string.
