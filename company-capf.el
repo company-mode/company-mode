@@ -238,7 +238,8 @@ so we can't just use the preceding variable instead.")
 (defun company-capf--post-completion (arg)
   (let* ((res company-capf--current-completion-data)
          (exit-function (plist-get (nthcdr 4 res) :exit-function))
-         (table (nth 3 res)))
+         (table (nth 3 res))
+         (prefix (nth 0 (company-capf--prefix))))
     (if exit-function
         ;; Follow the example of `completion--done'.
         (funcall exit-function arg
@@ -247,8 +248,8 @@ so we can't just use the preceding variable instead.")
                  ;; particular candidate explicitly (it only checks whether
                  ;; further completions exist). Whereas company user can press
                  ;; RET (or use implicit completion with company-tng).
-                 (if (= (car (completion-boundaries arg table nil ""))
-                        (length arg))
+                 (if (= (car (completion-boundaries prefix table nil ""))
+                        (length prefix))
                      'exact
                    'finished)))))
 
