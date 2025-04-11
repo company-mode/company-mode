@@ -3,7 +3,6 @@
 ;; Copyright (C) 2013-2015, 2017-2018, 2020, 2023  Free Software Foundation, Inc.
 
 ;; Author: Chen Bin <chenbin DOT sh AT gmail>
-;; Version: 0.2
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
