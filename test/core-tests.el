@@ -379,7 +379,7 @@
                   (prefix '("a" "1"))
                   (candidates
                    '("ab1")))))
-         (tri (lambda (command &rest args)
+         (tri (lambda (command &rest _args)
                 (cl-case command
                   (prefix '("aa" "bcd"))
                   (candidates
