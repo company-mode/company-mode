@@ -1,6 +1,6 @@
 ;;; core-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2015-2018, 2020-2024  Free Software Foundation, Inc.
+;; Copyright (C) 2015-2025  Free Software Foundation, Inc.
 
 ;; Author: Dmitry Gutov
 
@@ -372,6 +372,38 @@
             (company-call-backend 'adjust-boundaries
                                   (car (member "a1b" candidates))
                                   "aa" "bcd")))))
+
+(ert-deftest company-multi-backend-adjust-boundaries-default ()
+  (let* ((one (lambda (command &rest _args)
+                (cl-case command
+                  (prefix '("a" "1"))
+                  (candidates
+                   '("ab1")))))
+         (tri (lambda (command &rest args)
+                (cl-case command
+                  (prefix '("aa" "bcd"))
+                  (candidates
+                   '("aa3bb"
+                     "aa3bcd")))))
+         (company-backend (list one tri))
+         (company-point (point))
+         (candidates (company-call-backend 'candidates "a" "")))
+    (should
+     (equal (cons "a" "1")
+            (company-call-backend 'adjust-boundaries
+                                  (car (member "ab1" candidates))
+                                  "aa" "bcd")))
+    (should
+     (equal (cons "aa" "")
+            (company-call-backend 'adjust-boundaries
+                                  (car (member "aa3bb" candidates))
+                                  "aa" "bcd")))
+    (should
+     (equal (cons "aa" "bcd")
+            (company-call-backend 'adjust-boundaries
+                                  (car (member "aa3bcd" candidates))
+                                  "aa" "bcd")))
+    ))
 
 (ert-deftest company-multi-backend-combines-expand-common ()
   (let* ((one (lambda (command &rest _args)

@@ -1408,11 +1408,13 @@ be recomputed when this value changes."
                                (car backends)))
                   (entity (company--force-sync backend '(prefix) backend))
                   (prefix (company--prefix-str entity))
-                  (suffix (company--suffix-str entity)))
-             (setq args (list arg prefix suffix))
+                  (suffix (company--suffix-str entity))
+                  (company-backend backend))
              (or
-              (apply backend command args)
-              (cons prefix suffix))))))
+              (company-call-backend 'adjust-boundaries arg prefix suffix)
+              (if (company--proper-suffix-p arg prefix suffix)
+                  (cons prefix suffix)
+                (cons prefix "")))))))
       (`expand-common
        (apply #'company--multi-expand-common
               backends
@@ -2616,12 +2618,12 @@ For more details see `company-insertion-on-trigger' and
 (defsubst company-keep (command)
   (and (symbolp command) (get command 'company-keep)))
 
-(defun company--proper-suffix-p (candidate)
+(defun company--proper-suffix-p (candidate prefix suffix)
   (and
    (>= (length candidate)
-       (+ (length company-prefix)
-          (length company-suffix)))
-   (string-suffix-p company-suffix candidate
+       (+ (length prefix)
+          (length suffix)))
+   (string-suffix-p suffix candidate
                     (company-call-backend 'ignore-case))))
 
 (defun company--boundaries (&optional candidate)
@@ -2633,7 +2635,7 @@ For more details see `company-insertion-on-trigger' and
                          company-prefix company-suffix)
    (and
     ;; Default to replacing the suffix only if the completion ends with it.
-    (company--proper-suffix-p candidate)
+    (company--proper-suffix-p candidate company-prefix company-suffix)
     (cons company-prefix company-suffix))
    (cons company-prefix "")))
 
