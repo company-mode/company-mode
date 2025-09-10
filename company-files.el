@@ -123,7 +123,7 @@ The values should use the same format as `completion-ignored-extensions'."
 (defun company-files--prefix ()
   (let ((existing (company-files--grab-existing-name)))
     (when existing
-      (list existing (company-grab-suffix "[^ '\"\t\n\r/]*/?")))))
+      (list existing (company-grab-suffix "[^] '\"\t\n\r/]*/?")))))
 
 (defun company-file--keys-match-p (new old)
   (and (equal (cdr old) (cdr new))
