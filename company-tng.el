@@ -124,7 +124,12 @@ confirm the selection and finish the completion."
      (when (and company-selection
                 (not (company--company-command-p (this-command-keys))))
        (company--unread-this-command-keys)
-       (setq this-command 'company-complete-selection)))))
+       (setq this-command 'company-complete-selection)))
+    (post-command
+     (when (and (eq this-command 'company-complete-selection)
+             (zerop (length (car (company--boundaries))))
+             (eql (preceding-char) (car unread-command-events)))
+       (delete-char -1)))))
 
 (defvar company-clang-insert-arguments)
 (defvar company-semantic-insert-arguments)
