@@ -1435,8 +1435,9 @@ be recomputed when this value changes."
       (let* ((entity (and
                       (not (keywordp backend))
                       (company--force-sync backend '(prefix) backend)))
-             (new-len (company--prefix-len entity)))
+             new-len)
         (when (stringp (company--prefix-str entity))
+          (setq new-len (company--prefix-len entity))
           (or (not backends-after-with)
               (unless (memq backend backends-after-with)
                 (setq backends-after-with nil)))

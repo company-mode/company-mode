@@ -136,6 +136,9 @@
                    (candidates '("a" "b"))))
                (lambda (command &optional _ &rest _r)
                  (cl-case command
+                   (prefix 'stop)))
+               (lambda (command &optional _ &rest _r)
+                 (cl-case command
                    (prefix "")
                    (candidates '("c" "d")))))))
     (should (equal (company-call-backend 'prefix) '("" nil 0)))))
