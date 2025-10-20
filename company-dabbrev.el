@@ -198,9 +198,11 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
   (company-dabbrev--search (company-dabbrev--make-regexp)
                            company-dabbrev-time-limit
                            (pcase company-dabbrev-other-buffers
-                             (`t (list major-mode))
+                             ('t (list major-mode))
+                             ; in emacs 31, 'all' is defined as a new function, make sure to let it before '(pred functionp)'.
+                             ('all 'all)
                              ((pred functionp) (funcall company-dabbrev-other-buffers (current-buffer)))
-                             (`all `all))))
+                             )))
 
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest _ignored)
