@@ -1,6 +1,6 @@
 ;;; company-dabbrev-code.el --- dabbrev-like company-mode backend for code  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2011, 2013-2016, 2021-2024  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2011, 2013-2016, 2021-2025  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 
@@ -153,8 +153,8 @@ comments or strings."
         (pcase company-dabbrev-code-other-buffers
           (`t (list major-mode))
           (`code company-dabbrev-code-modes)
-          ((pred functionp) (funcall company-dabbrev-code-other-buffers (current-buffer)))
-          (`all `all))
+          (`all `all)
+          ((pred functionp) (funcall company-dabbrev-code-other-buffers (current-buffer))))
         (not company-dabbrev-code-everywhere)))
      :expire t
      :check-tag
