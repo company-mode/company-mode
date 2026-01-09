@@ -48,6 +48,15 @@ Using current frame's font if it is nil."
 
 (defvar company-childframe-last-status nil)
 
+(defvar company-childframe-buffer-map
+  (let ((keymap (make-sparse-keymap)))
+    (set-keymap-parent keymap company-active-map)
+    ;; FIXME: Implement mouse scrolling commands.
+    (define-key keymap [wheel-down] 'ignore)
+    (define-key keymap [wheel-up] 'ignore)
+    keymap)
+  "Keymap for the child frame's popup/buffer.")
+
 (defvar company-childframe-poshandler
   #'company-childframe-show-at-prefix
   "Poshandler for the completion dialog.")
@@ -77,9 +86,8 @@ Using current frame's font if it is nil."
                      company-tooltip-minimum-width))
          (contents (mapconcat #'identity lines "\n"))
          (buffer (get-buffer-create company-childframe-buffer)))
-    ;; FIXME: Do not support mouse at the moment, so remove mouse-face
-    (setq contents (copy-sequence contents))
-    (remove-text-properties 0 (length contents) '(mouse-face nil) contents)
+    (with-current-buffer buffer
+      (use-local-map company-childframe-buffer-map))
     (apply #'posframe-show buffer
            :string contents
            :min-height height
@@ -103,17 +111,38 @@ Using current frame's font if it is nil."
 (defun company-childframe-frontend (command)
   "`company-mode' frontend using childframe.
 For COMMAND refer to `company-frontends'."
-  (when (not (posframe-workable-p))
-    (user-error "Child frames no supported"))
   (setq company-childframe-last-status
         (list (selected-window)
               (current-buffer)))
   (cl-case command
-    (pre-command)
+    (pre-command
+     (when (not (posframe-workable-p))
+       (user-error "Child frames not supported")))
     (hide
      (company-childframe-hide))
     (post-command
-     (company-childframe-show))))
+     (company-childframe-show))
+    (select-mouse
+     (company-childframe--select-mouse))))
+
+(defun company-childframe--select-mouse ()
+  (let ((event-col-row (company--event-col-row company-mouse-event))
+        (event-window (posn-window (event-start company-mouse-event)))
+        (parent-frame (frame-parameter nil 'parent-frame))
+        (parent-buffer (frame-parameter nil 'posframe-parent-buffer)))
+    (cond ((and event-window
+                parent-frame
+                parent-buffer
+                (equal (buffer-name (window-buffer event-window))
+                       company-childframe-buffer))
+           (select-frame parent-frame)
+           (select-window (get-buffer-window (cdr parent-buffer)))
+           (company-set-selection (+ (cdr event-col-row)
+                                     company-tooltip-offset
+                                     (if (and (eq company-tooltip-offset-display 'lines)
+                                              (not (zerop company-tooltip-offset)))
+                                         -1 0)))
+           t))))
 
 (defun company-childframe-unless-just-one-frontend (command)
   "`company-childframe-frontend', but not shown for single candidates."
