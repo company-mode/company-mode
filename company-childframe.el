@@ -20,8 +20,8 @@
 ;;
 ;; Tooltip completion menu frontend for Company that uses a child frame.
 ;;
-;; A lot of the code here originates from the package `company-posframe',
-;; credits to Clément Pit-Claudel, Feng Shu and others.
+;; A lot of the code here was imported from the package `company-posframe',
+;; credit to Clément Pit-Claudel, Feng Shu and others.
 
 ;;; Code:
 
