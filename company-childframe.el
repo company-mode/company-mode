@@ -153,8 +153,7 @@ For COMMAND refer to `company-frontends'."
 (defun company-childframe-window-change ()
   "Hide posframe on window change."
   (when (posframe-workable-p)
-    (unless (or (member (buffer-name)
-                        (list company-childframe-buffer))
+    (unless (or (equal (buffer-name) company-childframe-buffer)
                 (equal company-childframe-last-status
                        (list (selected-window)
                              (current-buffer))))
