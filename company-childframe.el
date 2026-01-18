@@ -77,7 +77,13 @@ Using current frame's font if it is nil."
 
 (defun company-childframe-show ()
   "Show company-childframe candidate menu."
-  (let* ((height (min company-tooltip-limit company-candidates-length))
+  (let* ((x-wait-for-event-timeout nil)
+         ;; Above: real effect (less flicker), below: just seem sensible.
+         (inhibit-redisplay t)
+         (before-make-frame-hook)
+         (after-make-frame-functions)
+         (x-fast-protocol-requests t)
+         (height (min company-tooltip-limit company-candidates-length))
          (company-lines (company--create-lines company-selection height))
          (margin (car company-lines))
          (lines (cdr company-lines))
