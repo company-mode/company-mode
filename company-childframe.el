@@ -59,22 +59,21 @@ Using current frame's font if it is nil."
 (defun company-childframe-wheel-up (event)
   "Scroll up the displayed candidates."
   (interactive "e")
-  (let ((company-mouse-event event)
-        (parent-frame (frame-parameter nil 'parent-frame))
-        (parent-buffer (frame-parameter nil 'posframe-parent-buffer)))
-    (select-frame parent-frame)
-    (select-window (get-buffer-window (cdr parent-buffer)))
-    (company-select-next 3)))
+  (company-childframe--wheel-scroll 3))
 
 (defun company-childframe-wheel-down (event)
   "Scroll up the displayed candidates."
   (interactive "e")
-  (let ((company-mouse-event event)
-        (parent-frame (frame-parameter nil 'parent-frame))
+  (company-childframe--wheel-scroll -3))
+
+(defun company-childframe--wheel-scroll (amount)
+  (let ((parent-frame (frame-parameter nil 'parent-frame))
         (parent-buffer (frame-parameter nil 'posframe-parent-buffer)))
-    (select-frame parent-frame)
-    (select-window (get-buffer-window (cdr parent-buffer)))
-    (company-select-previous 3)))
+    (when (and parent-frame
+               parent-buffer)
+      (select-frame parent-frame)
+      (select-window (get-buffer-window (cdr parent-buffer)))
+      (company-select-next amount))))
 
 (defvar company-childframe-poshandler
   #'company-childframe-show-at-prefix
