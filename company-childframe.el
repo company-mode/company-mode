@@ -51,11 +51,30 @@ Using current frame's font if it is nil."
 (defvar company-childframe-buffer-map
   (let ((keymap (make-sparse-keymap)))
     (set-keymap-parent keymap company-active-map)
-    ;; FIXME: Implement mouse scrolling commands.
-    (define-key keymap [wheel-down] 'ignore)
-    (define-key keymap [wheel-up] 'ignore)
+    (define-key keymap [wheel-down] 'company-childframe-wheel-up)
+    (define-key keymap [wheel-up] 'company-childframe-wheel-down)
     keymap)
   "Keymap for the child frame's popup/buffer.")
+
+(defun company-childframe-wheel-up (event)
+  "Scroll up the displayed candidates."
+  (interactive "e")
+  (let ((company-mouse-event event)
+        (parent-frame (frame-parameter nil 'parent-frame))
+        (parent-buffer (frame-parameter nil 'posframe-parent-buffer)))
+    (select-frame parent-frame)
+    (select-window (get-buffer-window (cdr parent-buffer)))
+    (company-select-next 3)))
+
+(defun company-childframe-wheel-down (event)
+  "Scroll up the displayed candidates."
+  (interactive "e")
+  (let ((company-mouse-event event)
+        (parent-frame (frame-parameter nil 'parent-frame))
+        (parent-buffer (frame-parameter nil 'posframe-parent-buffer)))
+    (select-frame parent-frame)
+    (select-window (get-buffer-window (cdr parent-buffer)))
+    (company-select-previous 3)))
 
 (defvar company-childframe-poshandler
   #'company-childframe-show-at-prefix
