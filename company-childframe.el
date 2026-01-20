@@ -122,6 +122,7 @@ Using current frame's font if it is nil."
            :font company-childframe-font
            :background-color (face-attribute 'company-tooltip :background)
            :lines-truncate t
+           :override-parameters '((inhibit-double-buffering . t))
            :poshandler company-childframe-poshandler
            :poshandler-extra-info
            (list :company-margin margin
