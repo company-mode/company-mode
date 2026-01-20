@@ -114,11 +114,11 @@ Using current frame's font if it is nil."
       (use-local-map company-childframe-buffer-map))
     (apply #'posframe-show buffer
            :string contents
-           :min-height height
-           :min-width (+ company-tooltip-minimum-width
-                         (* 2 company-tooltip-margin))
-           :max-width (+ company-tooltip-maximum-width
-                         (* 2 company-tooltip-margin))
+           :height height
+           :width (if (<= company-candidates-length
+                          height)
+                      width
+                    (1- width))
            :font company-childframe-font
            :background-color (face-attribute 'company-tooltip :background)
            :lines-truncate t
