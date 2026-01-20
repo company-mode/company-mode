@@ -171,9 +171,11 @@ For COMMAND refer to `company-frontends'."
 
 (defun company-childframe-unless-just-one-frontend (command)
   "`company-childframe-frontend', but not shown for single candidates."
-  (unless (and (memq command '(post-command unhide))
-               (company--show-inline-p))
-    (company-childframe-frontend command)))
+  (if (company--show-inline-p)
+      (and (member command '(post-command hide))
+           (company-childframe-hide))
+    (and (memq command '(post-command unhide hide))
+         (company-childframe-frontend command))))
 
 (defun company-childframe-window-change ()
   "Hide posframe on window change."
