@@ -115,8 +115,9 @@ Using current frame's font if it is nil."
     (apply #'posframe-show buffer
            :string contents
            :height height
-           :width (if (<= company-candidates-length
-                          height)
+           :width (if (or (<= company-candidates-length
+                              height)
+                          (not (display-graphic-p)))
                       width
                     (1- width))
            :font company-childframe-font
