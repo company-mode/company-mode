@@ -97,7 +97,6 @@ Using current frame's font if it is nil."
   "Show company-childframe candidate menu."
   (let* ((x-wait-for-event-timeout nil)
          ;; Above: real effect (less flicker), below: just seem sensible.
-         (inhibit-redisplay t)
          (before-make-frame-hook)
          (after-make-frame-functions)
          (x-fast-protocol-requests t)
