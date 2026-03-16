@@ -2,6 +2,9 @@
 
 # Next
 
+* New built-in frontend using "real graphical" widget for the popup
+  ([#1525](https://github.com/company-mode/company-mode/pull/1525)).
+  This also adds a hard dependency on the package `posframe`.
 * The minimum required version of Emacs is now 26.1.
 * `TAB` binding changed to `company-complete-common-or-cycle`, and `backtab`
   binding to `company-cycle-backward`
