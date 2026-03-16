@@ -95,6 +95,7 @@ Using current frame's font if it is nil."
 
 (defun company-childframe-show ()
   "Show company-childframe candidate menu."
+  (defvar x-wait-for-event-timeout)
   (defvar x-fast-protocol-requests)
   (let* ((x-wait-for-event-timeout nil)
          ;; Above: real effect (less flicker), below: just seem sensible.
