@@ -56,14 +56,14 @@ Using current frame's font if it is nil."
     keymap)
   "Keymap for the child frame's popup/buffer.")
 
-(defun company-childframe-wheel-up (event)
+(defun company-childframe-wheel-up ()
   "Scroll up the displayed candidates."
-  (interactive "e")
+  (interactive)
   (company-childframe--wheel-scroll 3))
 
-(defun company-childframe-wheel-down (event)
+(defun company-childframe-wheel-down ()
   "Scroll up the displayed candidates."
-  (interactive "e")
+  (interactive)
   (company-childframe--wheel-scroll -3))
 
 (defun company-childframe--wheel-scroll (amount)
