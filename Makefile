@@ -1,4 +1,6 @@
 EMACS = emacs
+CURL=curl --silent
+POSFRAME_URL=https://raw.githubusercontent.com/tumashu/posframe/refs/heads/master/posframe.el
 
 ALL_TARGETS = help package clean test test-gui test-batch compile compile-warn
 
@@ -33,6 +35,9 @@ test-gui:
 test-batch:
 	${EMACS} -Q --batch -L . -l test/all.el \
 	--eval "(ert-run-tests-batch-and-exit '(not (or (tag interactive) (tag gui))))"
+
+download:
+	${CURL} ${POSFRAME_URL} > posframe.el
 
 compile:
 	${EMACS} -Q --batch -L . -f batch-byte-compile company.el company-*.el
