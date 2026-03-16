@@ -37,6 +37,12 @@
 Using current frame's font if it is nil."
   :type 'face)
 
+(defcustom company-childframe-border-width 1
+  "The width of the popup's border, in graphical frames.
+
+Users of HiDPI screens might like to set it to 2."
+  :type 'integer)
+
 (defvar company-childframe-buffer " *company-childframe-buffer*"
   "company-childframe's buffer which used by posframe.")
 
@@ -90,7 +96,9 @@ Using current frame's font if it is nil."
          ;; should be used to find the default width...
          (expected-margin-width (* (plist-get info :company-margin) (default-font-width)))
          (xy (posn-x-y posn)))
-    (setcar xy (- (car xy) expected-margin-width (if (display-graphic-p) 1 0)))
+    (setcar xy (- (car xy) expected-margin-width (if (display-graphic-p)
+                                                     company-childframe-border-width
+                                                   0)))
     (posframe-poshandler-point-bottom-left-corner (plist-put info :position posn))))
 
 (defun company-childframe-show ()
@@ -125,7 +133,7 @@ Using current frame's font if it is nil."
            :background-color (face-attribute 'company-tooltip :background)
            :lines-truncate t
            :override-parameters '((inhibit-double-buffering . t))
-           :border-width (and (display-graphic-p) 1)
+           :border-width (and (display-graphic-p) company-childframe-border-width)
            ;; :border-color "light salmon"
            ;; :border-color "light steel blue"
            ;; We'll probably want a separate face for it.
