@@ -129,7 +129,7 @@ Using current frame's font if it is nil."
            ;; :border-color "light salmon"
            ;; :border-color "light steel blue"
            ;; We'll probably want a separate face for it.
-           :border-color (face-attribute 'company-tooltip-scrollbar-thumb :background)
+           :border-color (face-attribute 'company-tooltip-scrollbar-track :background)
            :poshandler company-childframe-poshandler
            :poshandler-extra-info
            (list :company-margin margin
