@@ -79,7 +79,9 @@
 
 (defface company-tooltip
   '((((class color) (min-colors 88) (background light))
-     (:foreground "black" :background "cornsilk"))
+     ;; An even more neutral tone is "ghost white".
+     ;; But it will require changing other faces more too.
+     (:foreground "black" :background "floral white"))
     (((class color) (min-colors 88) (background dark))
      (:background "gray26"))
     (t (:foreground "black" :background "yellow")))
@@ -87,7 +89,8 @@
 
 (defface company-tooltip-selection
   '((((class color) (min-colors 88) (background light))
-     (:background "light blue"))
+     ;; "lavender" would be another interesting value.
+     (:background "LightCyan2"))
     (((class color) (min-colors 88) (background dark))
      (:background "gray31"))
     (t (:background "green")))
@@ -148,7 +151,7 @@
 
 (defface company-tooltip-scrollbar-thumb
   '((((background light))
-     :background "indian red")
+     :background "dark salmon")
     (((background dark))
      :background "gray33"))
   "Face used for the tooltip scrollbar thumb (bar).")
