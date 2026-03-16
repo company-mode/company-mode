@@ -1,13 +1,13 @@
 ;;; company.el --- Modular text completion framework  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2025  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2026  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
 ;; Version: 1.0.2
 ;; Keywords: abbrev, convenience, matching
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((emacs "26.1") (posframe "1.5.1")
 
 ;; This file is part of GNU Emacs.
 
