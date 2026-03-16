@@ -4165,7 +4165,7 @@ but adjust the expected values appropriately."
                                           left
                                           right)
                  (when scrollbar-bounds
-                   (company--scrollbar i scrollbar-bounds)))
+                   (company--scrollbar i scrollbar-bounds selected)))
                 new)))
 
       (when remainder
@@ -4182,7 +4182,7 @@ but adjust the expected values appropriately."
            (upper (+ lower size -1)))
       (cons lower upper))))
 
-(defun company--scrollbar (i bounds)
+(defun company--scrollbar (i bounds selected)
   (let* ((scroll-width (ceiling (* (default-font-width)
                                    company-tooltip-scrollbar-width))))
     (propertize " "
@@ -4190,7 +4190,9 @@ but adjust the expected values appropriately."
                 'face
                 (if (and (>= i (car bounds)) (<= i (cdr bounds)))
                     'company-tooltip-scrollbar-thumb
-                  'company-tooltip-scrollbar-track))))
+                  (if selected
+                      'company-tooltip-selection
+                    'company-tooltip)))))
 
 (defun company--right-margin (limit length)
   (if (or (not (eq company-tooltip-offset-display 'scrollbar))
