@@ -90,7 +90,7 @@ Using current frame's font if it is nil."
          ;; should be used to find the default width...
          (expected-margin-width (* (plist-get info :company-margin) (default-font-width)))
          (xy (posn-x-y posn)))
-    (setcar xy (- (car xy) expected-margin-width))
+    (setcar xy (- (car xy) expected-margin-width (if (display-graphic-p) 1 0)))
     (posframe-poshandler-point-bottom-left-corner (plist-put info :position posn))))
 
 (defun company-childframe-show ()
@@ -123,6 +123,11 @@ Using current frame's font if it is nil."
            :background-color (face-attribute 'company-tooltip :background)
            :lines-truncate t
            :override-parameters '((inhibit-double-buffering . t))
+           :border-width (and (display-graphic-p) 1)
+           ;; :border-color "light salmon"
+           ;; :border-color "light steel blue"
+           ;; We'll probably want a separate face for it.
+           :border-color (face-attribute 'company-tooltip-scrollbar-thumb :background)
            :poshandler company-childframe-poshandler
            :poshandler-extra-info
            (list :company-margin margin
