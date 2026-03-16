@@ -138,6 +138,7 @@ Using current frame's font if it is nil."
   "Hide company-childframe candidate menu."
   (posframe-hide company-childframe-buffer))
 
+;;;###autoload
 (defun company-childframe-frontend (command)
   "`company-mode' frontend using childframe.
 For COMMAND refer to `company-frontends'."
@@ -174,6 +175,7 @@ For COMMAND refer to `company-frontends'."
                                          -1 0)))
            t))))
 
+;;;###autoload
 (defun company-childframe-unless-just-one-frontend (command)
   "`company-childframe-frontend', but not shown for single candidates."
   (if (company--show-inline-p)
