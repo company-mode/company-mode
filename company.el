@@ -160,7 +160,7 @@
 
 (defface company-tooltip-scrollbar-track
   '((((background light))
-     :background "lavenderblush2")
+     :background "thistle")
     (((background dark))
      :background "gray28"))
   "Face used for the tooltip scrollbar track (trough).")
