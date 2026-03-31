@@ -79,7 +79,7 @@
 
 (defface company-tooltip
   '((((class color) (min-colors 88) (background light))
-     (:foreground "black" :background "ghost white"))
+     (:foreground "black" :background "ghostwhite"))
     (((class color) (min-colors 88) (background dark))
      (:background "gray26"))
     (t (:foreground "black" :background "yellow")))
