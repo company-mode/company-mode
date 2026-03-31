@@ -450,7 +450,7 @@ the core settings that influence its overall behavior.
 
 @defopt company-minimum-prefix-length
 This is one of the values (together with @code{company-idle-delay}),
-based on which Company auto-stars looking up completion candidates.
+based on which Company auto-starts looking up completion candidates.
 This option configures how many characters have to be typed in by a
 user before candidates start to be collected and displayed.  An often
 choice nowadays is to configure this option to a lower number than the
