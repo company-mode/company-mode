@@ -2,6 +2,9 @@
 
 # Next
 
+* The default light theme colors were changed to a more neutral set, and the
+  scroll bar background was removed
+  ([#1529](https://github.com/company-mode/company-mode/pull/1529)).
 * The minimum required version of Emacs is now 26.1.
 * `TAB` binding changed to `company-complete-common-or-cycle`, and `backtab`
   binding to `company-cycle-backward`

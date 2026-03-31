@@ -79,7 +79,7 @@
 
 (defface company-tooltip
   '((((class color) (min-colors 88) (background light))
-     (:foreground "black" :background "cornsilk"))
+     (:foreground "black" :background "ghostwhite"))
     (((class color) (min-colors 88) (background dark))
      (:background "gray26"))
     (t (:foreground "black" :background "yellow")))
@@ -87,7 +87,7 @@
 
 (defface company-tooltip-selection
   '((((class color) (min-colors 88) (background light))
-     (:background "light blue"))
+     (:background "lavender"))
     (((class color) (min-colors 88) (background dark))
      (:background "gray31"))
     (t (:background "green")))
@@ -148,7 +148,7 @@
 
 (defface company-tooltip-scrollbar-thumb
   '((((background light))
-     :background "indian red")
+     :background "lightpink3")
     (((background dark))
      :background "gray33"))
   "Face used for the tooltip scrollbar thumb (bar).")
@@ -160,7 +160,7 @@
 
 (defface company-tooltip-scrollbar-track
   '((((background light))
-     :background "wheat")
+     :background "thistle")
     (((background dark))
      :background "gray28"))
   "Face used for the tooltip scrollbar track (trough).")
@@ -4162,7 +4162,7 @@ but adjust the expected values appropriately."
                                           left
                                           right)
                  (when scrollbar-bounds
-                   (company--scrollbar i scrollbar-bounds)))
+                   (company--scrollbar i scrollbar-bounds selected)))
                 new)))
 
       (when remainder
@@ -4179,7 +4179,7 @@ but adjust the expected values appropriately."
            (upper (+ lower size -1)))
       (cons lower upper))))
 
-(defun company--scrollbar (i bounds)
+(defun company--scrollbar (i bounds selected)
   (let* ((scroll-width (ceiling (* (default-font-width)
                                    company-tooltip-scrollbar-width))))
     (propertize " "
@@ -4187,7 +4187,9 @@ but adjust the expected values appropriately."
                 'face
                 (if (and (>= i (car bounds)) (<= i (cdr bounds)))
                     'company-tooltip-scrollbar-thumb
-                  'company-tooltip-scrollbar-track))))
+                  (if selected
+                      'company-tooltip-selection
+                    'company-tooltip)))))
 
 (defun company--right-margin (limit length)
   (if (or (not (eq company-tooltip-offset-display 'scrollbar))
