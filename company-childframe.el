@@ -191,7 +191,7 @@ For COMMAND refer to `company-frontends'."
   (if (company--show-inline-p)
       (and (member command '(post-command hide))
            (company-childframe-hide))
-    (and (memq command '(post-command unhide hide))
+    (and (memq command '(post-command unhide hide select-mouse))
          (company-childframe-frontend command))))
 
 (defun company-childframe-window-change ()
