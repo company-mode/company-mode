@@ -199,8 +199,8 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                            company-dabbrev-time-limit
                            (pcase company-dabbrev-other-buffers
                              (`t (list major-mode))
-                             ((pred functionp) (funcall company-dabbrev-other-buffers (current-buffer)))
-                             (`all `all))))
+                             (`all `all)
+                             ((pred functionp) (funcall company-dabbrev-other-buffers (current-buffer))))))
 
 ;;;###autoload
 (defun company-dabbrev (command &optional arg &rest _ignored)
