@@ -103,11 +103,8 @@ Users of HiDPI screens might like to set it to 2."
 
 (defun company-childframe-show ()
   "Show company-childframe candidate menu."
-  (defvar x-wait-for-event-timeout)
   (defvar x-fast-protocol-requests)
-  (let* ((x-wait-for-event-timeout nil)
-         ;; Above: real effect (less flicker), below: just seem sensible.
-         (before-make-frame-hook)
+  (let* ((before-make-frame-hook)
          (after-make-frame-functions)
          (x-fast-protocol-requests t)
          (height (min company-tooltip-limit company-candidates-length))
