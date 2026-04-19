@@ -146,7 +146,12 @@ Users of HiDPI screens might like to set it to 2."
            company-childframe-show-params)
     (with-current-buffer buffer
       (use-local-map company-childframe-buffer-map)
-      (setq company-childframe--frame posframe--frame))))
+      (setq company-childframe--frame posframe--frame)
+      ;; FIXME: Does not honor remappings by minor modes in the parent buffer,
+      ;; e.g. the special behavior of C-d with parent-mode, etc.
+      (add-hook #'pre-command-hook
+                #'company-childframe--pre-command
+                nil t))))
 
 (defun company-childframe-hide ()
   "Hide company-childframe candidate menu."
@@ -178,22 +183,27 @@ For COMMAND refer to `company-frontends'."
 
 (defun company-childframe--select-mouse ()
   (let ((event-col-row (company--event-col-row company-mouse-event))
-        (event-window (posn-window (event-start company-mouse-event)))
-        (parent-frame (frame-parameter nil 'parent-frame))
-        (parent-buffer (frame-parameter nil 'posframe-parent-buffer)))
+        (event-window (posn-window (event-start company-mouse-event))))
     (cond ((and event-window
-                parent-frame
-                parent-buffer
                 (equal (buffer-name (window-buffer event-window))
                        company-childframe-buffer))
-           (select-frame parent-frame)
-           (select-window (get-buffer-window (cdr parent-buffer)))
            (company-set-selection (+ (cdr event-col-row)
                                      company-tooltip-offset
                                      (if (and (eq company-tooltip-offset-display 'lines)
                                               (not (zerop company-tooltip-offset)))
                                          -1 0)))
            t))))
+
+(defun company-childframe--pre-command ()
+  (let ((parent-frame (frame-parameter nil 'parent-frame))
+        (parent-buffer (cdr (frame-parameter nil 'posframe-parent-buffer))))
+    (when (and
+           (not (memq this-command
+                      '(company-childframe-wheel-up
+                        company-childframe-wheel-down)))
+           parent-frame parent-buffer)
+      (select-frame parent-frame)
+      (select-window (get-buffer-window parent-buffer)))))
 
 ;;;###autoload
 (defun company-childframe-unless-just-one-frontend (command)
