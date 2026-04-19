@@ -116,6 +116,12 @@ Users of HiDPI screens might like to set it to 2."
                      company-tooltip-minimum-width))
          (contents (mapconcat #'identity lines "\n"))
          (buffer (get-buffer-create company-childframe-buffer)))
+    (when (and (eq (frame-live-p company-childframe--frame) 'x)
+               (not (eq (car (frame-list)) company-childframe--frame)))
+      ;; Make sure it's the first in the list, to avoid premature sync when some
+      ;; other frame is redisplayed first.  Again, non-atomic updated on X11.
+      ;; https://debbugs.gnu.org/80662#185
+      (delete-frame company-childframe--frame))
     (apply #'posframe-show buffer
            :string contents
            :height height
