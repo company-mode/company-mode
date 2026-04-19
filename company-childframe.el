@@ -116,8 +116,6 @@ Users of HiDPI screens might like to set it to 2."
                      company-tooltip-minimum-width))
          (contents (mapconcat #'identity lines "\n"))
          (buffer (get-buffer-create company-childframe-buffer)))
-    (with-current-buffer buffer
-      (use-local-map company-childframe-buffer-map))
     (apply #'posframe-show buffer
            :string contents
            :height height
@@ -139,11 +137,20 @@ Users of HiDPI screens might like to set it to 2."
            :poshandler-extra-info
            (list :company-margin margin
                  :company-prefix-length (length company-prefix))
-           company-childframe-show-params)))
+           company-childframe-show-params)
+    (with-current-buffer buffer
+      (use-local-map company-childframe-buffer-map)
+      (setq company-childframe--frame posframe--frame))))
 
 (defun company-childframe-hide ()
   "Hide company-childframe candidate menu."
-  (posframe-hide company-childframe-buffer))
+  ;; PGTK/NS/W32 protocols know how to update the display atomically.
+  (when (and (eq window-system 'x)
+             (frame-live-p company-childframe--frame))
+    ;; Seems to help avoid the final flicker - probably by keeping the parent's
+    ;; display matrix up to date (so it can repaint on Expose immediately).
+    (redisplay))
+  (make-frame-invisible company-childframe--frame))
 
 ;;;###autoload
 (defun company-childframe-frontend (command)
