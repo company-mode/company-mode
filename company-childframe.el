@@ -152,7 +152,7 @@ Users of HiDPI screens might like to set it to 2."
       (setq company-childframe--frame posframe--frame)
       ;; FIXME: Does not honor remappings by minor modes in the parent buffer,
       ;; e.g. the special behavior of C-d with parent-mode, etc.
-      (add-hook #'pre-command-hook
+      (add-hook 'pre-command-hook
                 #'company-childframe--pre-command
                 nil t))))
 
