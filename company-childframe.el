@@ -177,6 +177,7 @@ For COMMAND refer to `company-frontends'."
     (pre-command
      (when (not (posframe-workable-p))
        (user-error "Child frames not supported")))
+    (show (setq company--tooltip-current-width 0))
     (hide
      (company-childframe-hide))
     (post-command
@@ -214,7 +215,7 @@ For COMMAND refer to `company-frontends'."
   (if (company--show-inline-p)
       (and (member command '(post-command hide))
            (company-childframe-hide))
-    (and (memq command '(post-command unhide hide select-mouse))
+    (and (memq command '(post-command show unhide hide select-mouse))
          (company-childframe-frontend command))))
 
 (defun company-childframe-window-change ()
