@@ -158,13 +158,13 @@ Users of HiDPI screens might like to set it to 2."
 
 (defun company-childframe-hide ()
   "Hide company-childframe candidate menu."
-  ;; PGTK/NS/W32 protocols know how to update the display atomically.
-  (when (and (eq window-system 'x)
-             (frame-live-p company-childframe--frame))
-    ;; Seems to help avoid the final flicker - probably by keeping the parent's
-    ;; display matrix up to date (so it can repaint on Expose immediately).
-    (redisplay))
-  (make-frame-invisible company-childframe--frame))
+  (when (frame-live-p company-childframe--frame)
+    ;; PGTK/NS/W32 protocols know how to update the display atomically.
+    (when (eq window-system 'x)
+      ;; Seems to help avoid the final flicker - probably by keeping the parent's
+      ;; display matrix up to date (so it can repaint on Expose immediately).
+      (redisplay))
+    (make-frame-invisible company-childframe--frame)))
 
 ;;;###autoload
 (defun company-childframe-frontend (command)
