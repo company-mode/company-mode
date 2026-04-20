@@ -158,7 +158,8 @@ Users of HiDPI screens might like to set it to 2."
 
 (defun company-childframe-hide ()
   "Hide company-childframe candidate menu."
-  (when (frame-live-p company-childframe--frame)
+  (when (and (frame-live-p company-childframe--frame)
+             (frame-visible-p company-childframe--frame))
     ;; PGTK/NS/W32 protocols know how to update the display atomically.
     (when (eq window-system 'x)
       ;; Seems to help avoid the final flicker - probably by keeping the parent's
