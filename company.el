@@ -1,13 +1,13 @@
 ;;; company.el --- Modular text completion framework  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2009-2025  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2026  Free Software Foundation, Inc.
 
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
 ;; Version: 1.0.2
 ;; Keywords: abbrev, convenience, matching
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((emacs "26.1") (posframe "1.5.1")
 
 ;; This file is part of GNU Emacs.
 
@@ -191,21 +191,22 @@
 
 (defun company-frontends-set (variable value)
   ;; Uniquify.
-  (let ((value (delete-dups (copy-sequence value))))
-    (and (or (and (memq 'company-pseudo-tooltip-unless-just-one-frontend value)
-                  (memq 'company-pseudo-tooltip-frontend value))
-             (and (memq 'company-pseudo-tooltip-unless-just-one-frontend-with-delay value)
-                  (memq 'company-pseudo-tooltip-frontend value))
-             (and (memq 'company-pseudo-tooltip-unless-just-one-frontend-with-delay value)
-                  (memq 'company-pseudo-tooltip-unless-just-one-frontend value)))
-         (user-error "Pseudo tooltip frontend cannot be used more than once"))
-    (and (or (and (memq 'company-preview-if-just-one-frontend value)
-                  (memq 'company-preview-frontend value))
-             (and (memq 'company-preview-if-just-one-frontend value)
-                  (memq 'company-preview-common-frontend value))
-             (and (memq 'company-preview-frontend value)
-                  (memq 'company-preview-common-frontend value))
-             )
+  (let ((value (delete-dups (copy-sequence value)))
+        (tooltip-frontends
+         '(company-pseudo-tooltip-frontend
+           company-pseudo-tooltip-unless-just-one-frontend
+           company-pseudo-tooltip-unless-just-one-frontend-with-delay
+           company-childframe-frontend
+           company-childframe-unless-just-one-frontend))
+        (preview-frontends
+         '(company-preview-if-just-one-frontend
+           company-preview-common-frontend
+           company-preview-frontend)))
+    (and (> (cl-count-if (lambda (el) (member el tooltip-frontends)) value)
+            1)
+         (user-error "Any tooltip frontend can be used only once"))
+    (and (> (cl-count-if (lambda (el) (member el preview-frontends)) value)
+            1)
          (user-error "Preview frontend cannot be used twice"))
     (and (memq 'company-echo value)
          (memq 'company-echo-metadata-frontend value)
@@ -246,16 +247,20 @@ The visualized data is stored in `company-prefix', `company-candidates',
   :type '(repeat (choice (const :tag "echo" company-echo-frontend)
                          (const :tag "echo, strip common"
                                 company-echo-strip-common-frontend)
-                         (const :tag "show echo meta-data in echo"
+                         (const :tag "show completion's meta-data in echo"
                                 company-echo-metadata-frontend)
-                         (const :tag "pseudo tooltip"
+                         (const :tag "graphical tooltip"
+                                company-childframe-frontend)
+                         (const :tag "graphical tooltip, multiple completions only"
+                                company-childframe-unless-just-one-frontend)
+                         (const :tag "overlays based tooltip"
                                 company-pseudo-tooltip-frontend)
-                         (const :tag "pseudo tooltip, multiple only"
+                         (const :tag "overlays based tooltip, multiple completions only"
                                 company-pseudo-tooltip-unless-just-one-frontend)
-                         (const :tag "pseudo tooltip, multiple only, delayed"
+                         (const :tag "overlays based tooltip, multiple completions only, delayed"
                                 company-pseudo-tooltip-unless-just-one-frontend-with-delay)
                          (const :tag "preview" company-preview-frontend)
-                         (const :tag "preview, unique only"
+                         (const :tag "preview, unique completion only"
                                 company-preview-if-just-one-frontend)
                          (const :tag "preview, common"
                                 company-preview-common-frontend)
