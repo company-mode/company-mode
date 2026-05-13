@@ -105,8 +105,9 @@ Users of HiDPI screens might like to set it to 2."
   "Show company-childframe candidate menu."
   (defvar x-wait-for-event-timeout)
   (defvar x-fast-protocol-requests)
-  (let* (;; Should be unnecessary in Emacs 31+, debbugs#80662.
-         (x-wait-for-event-timeout nil)
+  (let* ((x-wait-for-event-timeout (and (>= emacs-major-version 31)
+                                        ;; debbugs#80662
+                                        x-wait-for-event-timeout))
          (before-make-frame-hook)
          (after-make-frame-functions)
          (x-fast-protocol-requests t)
