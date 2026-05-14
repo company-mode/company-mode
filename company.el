@@ -886,7 +886,11 @@ asynchronous call into synchronous.")
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-mode-map (make-sparse-keymap)
+(defvar company-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap [remap indent-for-tab-command] 'company-indent-for-tab-command)
+    (define-key keymap [remap c-indent-line-or-region] 'company-indent-for-tab-command)
+    keymap)
   "Keymap used by `company-mode'.")
 
 (defvar company-active-map
@@ -3530,6 +3534,25 @@ from the candidates list.")
         (setq other-window-scroll-buffer (get-buffer doc-buffer))
         (let ((win (display-buffer doc-buffer t)))
           (set-window-start win (if start start (point-min)))))))
+
+(defun company--fake-capf-complete-common (&rest _)
+  (company-complete-common)
+  (list (point) (point) nil))
+
+(defun company-indent-for-tab-command (&optional arg)
+  "Like `indent-for-tab-command' which see but calls `company-complete-common'
+instead of `completion-at-point' as the fallback.  That only happens when
+`tab-always-indent' is `complete', and only when reindentation was a no-op."
+  (interactive)
+  (unwind-protect
+      (progn
+        (add-hook 'completion-at-point-functions
+                  #'company--fake-capf-complete-common
+                  nil t)
+        (funcall-interactively #'indent-for-tab-command arg))
+    (remove-hook 'completion-at-point-functions
+                 #'company--fake-capf-complete-common
+                 t)))
 
 (defun company-show-doc-buffer (&optional toggle-auto-update)
   "Show the documentation buffer for the selection.
