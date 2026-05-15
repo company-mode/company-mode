@@ -4624,10 +4624,6 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-echo-show-soon (&optional getter delay)
   (company-echo-cancel)
-  (when (and (> (or delay company-echo-delay) 0)
-             (> (length company-echo-last-msg) 0))
-    ;; Show the previous value until the timer fires.
-    (company-echo-show))
   (setq company-echo-timer (run-with-timer (or delay company-echo-delay)
                                            nil
                                            'company-echo-show getter)))
@@ -4721,6 +4717,9 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-echo-metadata-frontend (command)
   "`company-mode' frontend showing the documentation in the echo area."
   (pcase command
+    (`pre-command
+     (when (> company-echo-delay 0)
+       (company-echo-show)))
     (`post-command (company-echo-show-soon 'company-fetch-metadata))
     (`unhide (company-echo-show))
     (`hide (company-echo-hide))))
