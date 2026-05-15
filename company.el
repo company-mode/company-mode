@@ -2755,7 +2755,7 @@ For more details see `company-insertion-on-trigger' and
 
 ;;; search ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcustom company-search-regexp-function #'regexp-quote
+(defcustom company-search-regexp-function #'company-search-words-in-any-order-regexp
   "Function to construct the search regexp from input.
 It's called with one argument, the current search input.  It must return
 either a regexp without groups, or one where groups don't intersect and

@@ -2,6 +2,9 @@
 
 # Next
 
+* `company-search-regexp-function` defaults to
+  `company-search-words-in-any-order-regexp`. That makes it similar to the
+  popular Orderless completion style.
 * The `search` faces in the popup inherit from `isearch`.
 * New option `company-global-minibuffer` for completion during `eval-expression`
   (`M-:`). The "pseudo-tooltip" frontend is not supported by this feature,
