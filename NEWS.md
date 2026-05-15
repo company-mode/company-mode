@@ -2,6 +2,7 @@
 
 # Next
 
+* The `search` faces in the popup inherit from `isearch`.
 * New option `company-global-minibuffer` for completion during `eval-expression`
   (`M-:`). The "pseudo-tooltip" frontend is not supported by this feature,
   `company-childframe` is recommended instead.

@@ -98,11 +98,11 @@
   "Face used for the deprecated items.")
 
 (defface company-tooltip-search
-  '((default :inherit highlight))
+  '((default :inherit isearch))
   "Face used for the search string in the tooltip.")
 
 (defface company-tooltip-search-selection
-  '((default :inherit highlight))
+  '((default :inherit isearch))
   "Face used for the search string inside the selection in the tooltip.")
 
 (defface company-tooltip-mouse
@@ -174,7 +174,7 @@
   "Face used for the common part of the completion preview.")
 
 (defface company-preview-search
-  '((default :inherit company-tooltip-common-selection))
+  '((default :inherit isearch))
   "Face used for the search string in the completion preview.")
 
 (defface company-echo nil
