@@ -1057,7 +1057,10 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
 (defcustom company-global-minibuffer t
   "Non-nil to enable `company-mode' in the minibuffer.
 The value can be t (meaning only enable if the minibuffer has a local
-`completion-at-point-functions' value) or a custom predicate function."
+`completion-at-point-functions' value) or a custom predicate function.
+
+The overlay based popup is not supported, completion won't start in
+minibuffer if it's in configured frontends: use `company-childframe'."
   :type 'boolean)
 
 ;;;###autoload
@@ -1076,8 +1079,7 @@ The value can be t (meaning only enable if the minibuffer has a local
     (company-mode 1)))
 
 (defun company--minibuffer-on ()
-  (when (and (or resize-mini-windows
-                 (not (try-completion "company-pseudo-tooltip" company-frontends)))
+  (when (and (not (try-completion "company-pseudo-tooltip" company-frontends))
              (if (eq company-global-minibuffer t)
                  (local-variable-p 'completion-at-point-functions)
                (funcall company-global-minibuffer)))
@@ -4343,19 +4345,11 @@ Returns a negative number if the tooltip should be displayed above point."
         (overlay-put ov 'company-height height))))
 
 (defun company-pseudo-tooltip-show-at-point (pos column-offset)
-  (when (and (= (window-size) 1)
-             (minibufferp))
-    (add-hook 'window-size-change-functions #'company-pseudo-tooltip-refresh nil t))
   (let* ((col-row (company--col-row pos))
          (col (- (car col-row) column-offset)))
     (when (< col 0) (setq col 0))
     (company--with-face-remappings
      (company-pseudo-tooltip-show (1+ (cdr col-row)) col company-selection))))
-
-(defun company-pseudo-tooltip-refresh (_window)
-  (when company-pseudo-tooltip-overlay
-    (overlay-put company-pseudo-tooltip-overlay 'company-guard nil))
-  (company-pseudo-tooltip-frontend 'post-command))
 
 (defun company-pseudo-tooltip-edit (selection)
   (let* ((height (overlay-get company-pseudo-tooltip-overlay 'company-height))

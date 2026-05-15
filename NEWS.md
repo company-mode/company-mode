@@ -3,7 +3,8 @@
 # Next
 
 * New option `company-global-minibuffer` for completion during `eval-expression`
-  (`M-:`).
+  (`M-:`). The "pseudo-tooltip" frontend is not supported by this feature,
+  `company-childframe` is recommended instead.
 * `C-M-i` is bound to `company-complete-common` when completion is active.
 * New built-in frontend using "real graphical" widget for the popup
   ([#1525](https://github.com/company-mode/company-mode/pull/1525)).
