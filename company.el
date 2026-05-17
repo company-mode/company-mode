@@ -2799,10 +2799,11 @@ each one wraps a part of the input string."
 (defun company-search-flex-regexp (input)
   (if (zerop (length input))
       ""
-    (concat (regexp-quote (string (aref input 0)))
+    (concat (format "\\(%s\\)" (regexp-quote (string (aref input 0))))
             (mapconcat (lambda (c)
                          (concat "[^" (string c) "]*"
-                                 (regexp-quote (string c))))
+                                 (format "\\(%s\\)"
+                                         (regexp-quote (string c)))))
                        (substring input 1) ""))))
 
 (defun company--permutations (lst)
