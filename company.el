@@ -2766,7 +2766,9 @@ each one wraps a part of the input string."
           (const :tag "Words separated with spaces, in any order"
                  company-search-words-in-any-order-regexp)
           (const :tag "All characters in given order, with anything in between"
-                 company-search-flex-regexp)))
+                 company-search-flex-regexp)
+          (const :tag "Space separated words in any order, all chars inside a word with anything in between"
+                 company-search-flex-words-in-any-order-regexp)))
 
 (defvar-local company-search-string "")
 
@@ -2805,6 +2807,16 @@ each one wraps a part of the input string."
                                  (format "\\(%s\\)"
                                          (regexp-quote (string c)))))
                        (substring input 1) ""))))
+
+(defun company-search-flex-words-in-any-order-regexp (input)
+  (let* ((words (mapcar (lambda (word) (format "\\(?:%s\\)"
+                                          (company-search-flex-regexp word)))
+                        (split-string input " +" t)))
+         (permutations (company--permutations words)))
+    (mapconcat (lambda (words)
+                 (mapconcat #'identity words ".*"))
+               permutations
+               "\\|")))
 
 (defun company--permutations (lst)
   (if (not lst)
