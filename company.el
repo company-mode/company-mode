@@ -2868,9 +2868,16 @@ each one wraps a part of the input string."
   (let* ((selection (or company-selection 0))
          (pos (company--search new (nthcdr selection company-candidates))))
     (if (null pos)
+        (let ((pos (company--search new (nthcdr (- company-candidates-length
+                                                   selection)
+                                                (reverse company-candidates)))))
+          (if (null pos)
+              (ding)
+            (setq company-search-string new)
+            (company-set-selection (- selection pos 1) t)))
         (ding)
-      (setq company-search-string new)
-      (company-set-selection (+ selection pos) t))))
+        (setq company-search-string new)
+        (company-set-selection (+ selection pos) t))))
 
 (defun company--search-assert-input ()
   (company--search-assert-enabled)
@@ -2883,7 +2890,7 @@ each one wraps a part of the input string."
   (company--search-assert-input)
   (let* ((selection (or company-selection 0))
          (pos (company--search company-search-string
-                              (cdr (nthcdr selection company-candidates)))))
+                               (cdr (nthcdr selection company-candidates)))))
     (if (null pos)
         (ding)
       (company-set-selection (+ selection pos 1) t))))
