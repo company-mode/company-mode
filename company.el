@@ -4774,8 +4774,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-echo-hide ()
   (unless (string-empty-p company-echo-last-msg)
-    (setq company-echo-last-msg "")
-    (company-echo-show)))
+    (company-echo-show #'ignore)))
 
 (defun company-echo-frontend (command)
   "`company-mode' frontend showing the candidates in the echo area."
