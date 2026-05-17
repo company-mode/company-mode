@@ -1064,12 +1064,12 @@ minibuffer if it's in configured frontends: use `company-childframe'."
   :type 'boolean)
 
 ;;;###autoload
-(define-globalized-minor-mode global-company-mode company-mode company-mode-on)
+(define-globalized-minor-mode global-company-mode company-mode company-mode-on
+  (if global-company-mode
+      (add-hook 'minibuffer-setup-hook #'company--minibuffer-on 100)
+    (remove-hook 'minibuffer-setup-hook #'company--minibuffer-on)))
 
 (defun company-mode-on ()
-  (when (and company-global-minibuffer
-             (minibufferp))
-    (add-hook 'minibuffer-setup-hook #'company--minibuffer-on 100))
   (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
              (cond ((eq company-global-modes t)
                     t)
@@ -1079,7 +1079,8 @@ minibuffer if it's in configured frontends: use `company-childframe'."
     (company-mode 1)))
 
 (defun company--minibuffer-on ()
-  (when (and (not (try-completion "company-pseudo-tooltip" company-frontends))
+  (when (and company-global-minibuffer
+             (not (try-completion "company-pseudo-tooltip" company-frontends))
              (if (eq company-global-minibuffer t)
                  (local-variable-p 'completion-at-point-functions)
                (funcall company-global-minibuffer)))
