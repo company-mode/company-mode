@@ -2264,7 +2264,7 @@ Searches for each in the currently visible part of the current buffer and
 prioritizes the matches according to `company-occurrence-weight-function'.
 The rest of the list is appended unchanged.
 Keywords and function definition names are ignored."
-  (let* ((w-start (window-start))
+  (let* ((w-start (max (window-start) (field-beginning)))
          (w-end (window-end))
          (start-point (point))
          occurs
