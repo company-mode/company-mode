@@ -4596,6 +4596,8 @@ Delay is determined by `company-tooltip-idle-delay'."
       (let ((ov company-preview-overlay))
         (overlay-put ov (if (> end beg) 'display 'after-string)
                      completion)
+        ;; Show before minibuffer-message-overlay if there.
+        (overlay-put ov 'priority 1101)
         (overlay-put ov 'window (selected-window))))))
 
 (defun company-preview-hide ()
