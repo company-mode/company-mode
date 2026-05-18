@@ -4798,5 +4798,14 @@ Delay is determined by `company-tooltip-idle-delay'."
     (`unhide (company-echo-show))
     (`hide (company-echo-hide))))
 
+(eldoc-add-command-completions "company-")
+
+(defun company--eldoc-no-inteference-p ()
+  (member company-echo-last-msg '(nil "")))
+
+(advice-add #'eldoc-display-message-no-interference-p
+            :after-while
+            #'company--eldoc-no-inteference-p)
+
 (provide 'company)
 ;;; company.el ends here
