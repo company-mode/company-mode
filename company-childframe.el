@@ -95,7 +95,7 @@ Users of HiDPI screens might like to set it to 2."
             (thread-last
               (and (= point (point-max))
                    (overlays-in point point))
-              (mapcar (lambda (o) (string-pixel-width
+              (mapcar (lambda (o) (company--string-pixel-width
                               (overlay-get o 'after-string))))
               (cl-reduce #'+))))
          (posn (posn-at-point point parent-window))
