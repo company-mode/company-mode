@@ -3608,13 +3608,15 @@ CALLBACK is a function called with the selected result if the user
 successfully completes the input.
 
 Example: \(company-begin-with \\='\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
-  (let ((begin-marker (copy-marker (point) t)))
+  (let ((begin-marker (copy-marker (- (point)
+                                      (or prefix-length 0))
+                                   nil)))
     (company-begin-backend
      (lambda (command &optional arg &rest _ignored)
        (pcase command
          (`prefix
-          (when (equal (point) (marker-position begin-marker))
-            (buffer-substring (- (point) (or prefix-length 0)) (point))))
+          (when (>= (point) begin-marker)
+            (buffer-substring begin-marker (point))))
          (`candidates
           (all-completions arg candidates))
          (`require-match
