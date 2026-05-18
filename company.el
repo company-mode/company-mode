@@ -978,12 +978,16 @@ asynchronous call into synchronous.")
 (defvar company-lighter '(" "
                           (company-candidates
                            (:eval
-                            (if (consp company-backend)
-                                (when company-selection
-                                  (company--group-lighter (nth company-selection
-                                                               company-candidates)
-                                                          company-lighter-base))
-                              (symbol-name company-backend)))
+                            (cond
+                             ((consp company-backend)
+                              (when company-selection
+                                (company--group-lighter (nth company-selection
+                                                             company-candidates)
+                                                        company-lighter-base)))
+                             ((symbolp company-backend)
+                              (symbol-name company-backend))
+                             ((functionp company-backend)
+                              "company-<lambda>")))
                            company-lighter-base))
   "Mode line lighter for Company.
 
