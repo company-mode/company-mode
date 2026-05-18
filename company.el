@@ -4801,7 +4801,8 @@ Delay is determined by `company-tooltip-idle-delay'."
 (eldoc-add-command-completions "company-")
 
 (defun company--eldoc-no-inteference-p ()
-  (member company-echo-last-msg '(nil "")))
+  (or (not company-candidates)
+      (member company-echo-last-msg '(nil ""))))
 
 (advice-add #'eldoc-display-message-no-interference-p
             :after-while
