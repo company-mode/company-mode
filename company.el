@@ -886,7 +886,11 @@ asynchronous call into synchronous.")
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-mode-map (make-sparse-keymap)
+(defvar company-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap [remap completion-at-point] 'company-complete-common)
+    (define-key keymap [remap complete-symbol] 'company-complete-common)
+    keymap)
   "Keymap used by `company-mode'.")
 
 (defvar company-active-map
