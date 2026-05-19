@@ -889,7 +889,7 @@ asynchronous call into synchronous.")
 (defvar company-mode-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap [remap completion-at-point] 'company-complete-common)
-    (define-key keymap [remap complete-symbol] 'company-complete-symbol)
+    (define-key keymap [remap complete-symbol] 'company-complete-common)
     keymap)
   "Keymap used by `company-mode'.")
 
@@ -3302,44 +3302,6 @@ from the candidates list.")
          (user-error "No candidate on the row number %d" row))
     (company-finish (nth (+ row company-tooltip-offset)
                          company-candidates))))
-
-(declare-function info-lookup-select-mode "info-look")
-(declare-function info-lookup->mode-value "info-look")
-(declare-function info-lookup-change-mode "info-look")
-(declare-function info-lookup--expand-info "info-look")
-(declare-function info-lookup-completions-at-point "info-look")
-
-(defun company-complete-symbol (arg)
-  "Perform completion on the text around point.
-
-Inserts the common part of all candidates.
-
-With a prefix argument, this command does completion within
-the collection of symbols listed in the index of the manual for the
-language you are using."
-  (interactive "P")
-  (defvar info-lookup-mode)
-  (if arg
-      (let* ((_ (require 'info-look))
-             (topic 'symbol)
-             (mode (if (info-lookup->mode-value
-                        'symbol (info-lookup-select-mode))
-                       info-lookup-mode
-                     (info-lookup-change-mode 'symbol)))
-             (_ (when-let* ((_ (fboundp 'info-lookup--expand-info))
-                            ;; ^ Emacs 28+
-                            (info (info-lookup->mode-value topic mode)))
-                     (info-lookup--expand-info info)))
-             (data (info-lookup-completions-at-point topic mode)))
-        (if (null data)
-            (user-error "No %s completion available for `%s' at point" topic mode)
-          (company-begin-with (nth 2 data)
-                              (length
-                               (company-grab-symbol))
-                              nil
-                              nil
-                              t)))
-    (company-complete-common)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
