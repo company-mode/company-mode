@@ -983,12 +983,16 @@ asynchronous call into synchronous.")
 (defvar company-lighter '(" "
                           (company-candidates
                            (:eval
-                            (if (consp company-backend)
-                                (when company-selection
-                                  (company--group-lighter (nth company-selection
-                                                               company-candidates)
-                                                          company-lighter-base))
-                              (symbol-name company-backend)))
+                            (cond
+                             ((consp company-backend)
+                              (when company-selection
+                                (company--group-lighter (nth company-selection
+                                                             company-candidates)
+                                                        company-lighter-base)))
+                             ((symbolp company-backend)
+                              (symbol-name company-backend))
+                             ((functionp company-backend)
+                              "company-<lambda>")))
                            company-lighter-base))
   "Mode line lighter for Company.
 
@@ -1984,6 +1988,7 @@ end of the match."
     (event . "symbol-event.svg")
     (field . "symbol-field.svg")
     (file . "symbol-file.svg")
+    (filter . "filter.svg")
     (folder . "folder.svg")
     (interface . "symbol-interface.svg")
     (keyword . "symbol-keyword.svg")
@@ -1994,6 +1999,7 @@ end of the match."
     (operator . "symbol-operator.svg")
     (property . "symbol-property.svg")
     (reference . "references.svg")
+    (search . "search.svg")
     (snippet . "symbol-snippet.svg")
     (string . "symbol-string.svg")
     (struct . "symbol-structure.svg")
@@ -2097,6 +2103,7 @@ end of the match."
     (enum "e" font-lock-builtin-face)
     (field "f" font-lock-variable-name-face)
     (file "f" font-lock-string-face)
+    (filter "!" minibuffer-prompt)
     (folder "d" font-lock-doc-face)
     (interface "i" font-lock-type-face)
     (keyword "k" font-lock-keyword-face)
@@ -2107,6 +2114,7 @@ end of the match."
     (operator "o" font-lock-comment-delimiter-face)
     (property "p" font-lock-variable-name-face)
     (reference "r" font-lock-doc-face)
+    (search "q" minibuffer-prompt)
     (snippet "S" font-lock-string-face)
     (string "s" font-lock-string-face)
     (struct "%" font-lock-variable-name-face)
@@ -2773,6 +2781,7 @@ each one wraps a part of the input string."
 
 (defvar-local company-search-string "")
 
+;; FIXME: Delete later.
 (defvar company-search-lighter '(" "
                                  (company-search-filtering "Filter" "Search")
                                  ": \""
@@ -2990,7 +2999,7 @@ each one wraps a part of the input string."
   "Search mode for completion candidates.
 Don't start this directly, use `company-search-candidates' or
 `company-filter-candidates'."
-  :lighter company-search-lighter
+  :lighter nil
   (if company-search-mode
       (if (company-manual-begin)
           (progn
@@ -3038,8 +3047,8 @@ uses the search string to filter the completion candidates."
 This works the same way as `company-search-candidates' immediately
 followed by `company-search-toggle-filtering'."
   (interactive)
-  (company-search-mode 1)
-  (setq company-search-filtering t))
+  (setq company-search-filtering t)
+  (company-search-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -4123,6 +4132,8 @@ but adjust the expected values appropriately."
         previous
         remainder
         scrollbar-bounds)
+    (when company-search-mode
+      (cl-decf limit))
 
     ;; Maybe clear old offset.
     (when (< len (+ company-tooltip-offset limit))
@@ -4237,6 +4248,10 @@ but adjust the expected values appropriately."
       (when remainder
         (push (company--scrollpos-line remainder width left-margin-size) new))
 
+      (when company-search-mode
+        (push (company--search-line width right-margin)
+              new))
+
       (cons
        left-margin-size
        (nreverse new)))))
@@ -4289,6 +4304,25 @@ Value of SELECTED determines the added face."
                   'company-tooltip-quick-access-selection
                 'company-tooltip-quick-access)))
 
+(defun company--search-line (width right-margin)
+  (let* ((company-backend (lambda (command &rest _)
+                            (and (eq command 'kind)
+                                 (if company-search-filtering
+                                     'filter
+                                   'search))))
+         (left (funcall company-format-margin-function "" nil))
+         (line (concat
+                company-search-string))
+         (width (+ (company--string-width left) width (length right-margin))))
+    (unless (display-graphic-p) (cl-incf width))
+    (setq line (company-safe-substring (concat left
+                                               (propertize
+                                                company-search-string
+                                                'face 'underline))
+                                       0 width))
+    (add-face-text-property 0 width 'company-tooltip nil line)
+    line))
+
 ;; show
 
 (defvar-local company-pseudo-tooltip-overlay nil)
@@ -4312,7 +4346,10 @@ Value of SELECTED determines the added face."
 Returns a negative number if the tooltip should be displayed above point."
   (let* ((lines (company--row))
          (below (- (company--window-height) 1 lines)))
-    (if (and (< below (min company-tooltip-minimum company-candidates-length))
+    (if (and (< below (min company-tooltip-minimum
+                           (if company-search-mode
+                               (1+ company-candidates-length)
+                             company-candidates-length)))
              (> lines below))
         (- (max 3 (min company-tooltip-limit lines)))
       (max 3 (min company-tooltip-limit below)))))

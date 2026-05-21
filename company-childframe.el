@@ -122,7 +122,10 @@ Users of HiDPI screens might like to set it to 2."
          (before-make-frame-hook)
          (after-make-frame-functions)
          (x-fast-protocol-requests t)
-         (height (min company-tooltip-limit company-candidates-length))
+         (height (min company-tooltip-limit
+                      (if company-search-mode
+                          (1+ company-candidates-length)
+                        company-candidates-length)))
          (company-lines (company--create-lines company-selection height))
          (margin (car company-lines))
          (lines (cdr company-lines))
