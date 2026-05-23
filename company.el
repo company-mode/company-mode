@@ -4829,7 +4829,18 @@ Delay is determined by `company-tooltip-idle-delay'."
   "`company-mode' frontend showing the documentation in the echo area."
   (pcase command
     (`pre-command
-     (when (> company-echo-delay 0)
+     (when (and (> company-echo-delay 0)
+                (or (not (minibufferp))
+                    (memq this-command
+                          '(company-select-next
+                            company-select-previous
+                            company-select-next-or-abort
+                            company-select-previous-or-abort
+                            company-next-page
+                            company-previous-page
+                            company-search-repeat-forward
+                            company-search-repeat-backward
+                            company-complete-common-or-cycle))))
        (company-echo-show)))
     (`post-command (company-echo-show-soon 'company-fetch-metadata))
     (`unhide (company-echo-show))
