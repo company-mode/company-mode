@@ -2,6 +2,9 @@
 
 # Next
 
+* Default key bindings have been changed, moving `company-show-doc-buffer` and
+  `company-show-location` to `M-h` and `M-g` (from `C-h` and `C-w`)
+  ([#1537](https://github.com/company-mode/company-mode/issues/1537)).
 * Search mode input is displayed at the bottom of the popup
   ([#1535](https://github.com/company-mode/company-mode/pull/1535)).
 * New built-in frontend using "real graphical" widget for the popup
