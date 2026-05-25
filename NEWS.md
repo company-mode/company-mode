@@ -5,7 +5,7 @@
 * Default key bindings have been changed, moving `company-show-doc-buffer` and
   `company-show-location` to `M-h` and `M-g` (from `C-h`/`<f1>` and `C-w`)
   ([#1537](https://github.com/company-mode/company-mode/issues/1537)). The
-  previous bindings still work, but show a warning and will be disabled after
+  previous bindings still work, but show a warning and will be removed after
   the next release. To undo that change locally, do:
 
 ```el
