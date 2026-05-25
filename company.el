@@ -4721,9 +4721,11 @@ Delay is determined by `company-tooltip-idle-delay'."
     (when (and company-echo-truncate-lines
                (active-minibuffer-window))
       (setq max-len
-            (- (window-width (minibuffer-window))
-               (buffer-size (window-buffer (minibuffer-window)))
-               4))
+            (max 0
+                 (- (window-width (minibuffer-window))
+                    (- (point) (save-excursion (vertical-motion 0)
+                                               (point)))
+                    4)))
       (when (> (length company-echo-last-msg) max-len)
         (setq company-echo-last-msg (substring company-echo-last-msg 0 max-len))))
     ;; Avoid modifying the echo area if we don't have anything to say, and we
