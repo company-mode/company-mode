@@ -4573,6 +4573,9 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defvar-local company-preview-overlay nil)
 
 (defun company-preview-show-at-point (pos completion &optional boundaries)
+  (when (minibufferp)
+    (company-echo-hide))
+
   (company-preview-hide)
 
   (let* ((boundaries (or boundaries (company--boundaries completion)))
@@ -4714,6 +4717,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-echo-show (&optional getter)
   (let ((last-msg company-echo-last-msg)
         (message-log-max nil)
+        (preview-o company-preview-overlay)
         (message-truncate-lines company-echo-truncate-lines))
     (when getter
       (setq company-echo-last-msg (funcall getter)))
@@ -4722,13 +4726,21 @@ Delay is determined by `company-tooltip-idle-delay'."
                 (posn (posn-at-point
                        (with-current-buffer
                            (window-buffer (minibuffer-window))
-                         (point-max))
+                         (max (point-min)
+                              (1- (point-max))))
                        (minibuffer-window)))
                 (max-len (max 0
                               (- (window-width (minibuffer-window))
                                  (car
                                   (posn-col-row posn))
-                                 4))))
+                                 (if preview-o
+                                     (company--string-width
+                                      (or
+                                       (overlay-get preview-o 'display)
+                                       (overlay-get preview-o 'after-string)
+                                       ""))
+                                   0)
+                                 5))))
       (when (> (length company-echo-last-msg) max-len)
         (setq company-echo-last-msg (substring company-echo-last-msg 0 max-len))))
     ;; Avoid modifying the echo area if we don't have anything to say, and we
@@ -4837,7 +4849,9 @@ Delay is determined by `company-tooltip-idle-delay'."
      (when (and (> company-echo-delay 0)
                 (or (not (minibufferp))
                     (memq this-command
-                          '(company-select-next
+                          '(self-insert-command
+                            delete-backward-char
+                            company-select-next
                             company-select-previous
                             company-select-next-or-abort
                             company-select-previous-or-abort
