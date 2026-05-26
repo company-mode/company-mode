@@ -4723,9 +4723,9 @@ Delay is determined by `company-tooltip-idle-delay'."
       (setq max-len
             (max 0
                  (- (window-width (minibuffer-window))
-                    (with-selected-window (minibuffer-window)
-                      (- (point) (save-excursion (vertical-motion 0)
-                                                 (point))))
+                    (car
+                     (posn-col-row (posn-at-point (point-max)
+                                                  (minibuffer-window))))
                     4)))
       (when (> (length company-echo-last-msg) max-len)
         (setq company-echo-last-msg (substring company-echo-last-msg 0 max-len))))
