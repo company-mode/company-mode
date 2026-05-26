@@ -4714,19 +4714,21 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-echo-show (&optional getter)
   (let ((last-msg company-echo-last-msg)
         (message-log-max nil)
-        (message-truncate-lines company-echo-truncate-lines)
-        max-len)
+        (message-truncate-lines company-echo-truncate-lines))
     (when getter
       (setq company-echo-last-msg (funcall getter)))
-    (when (and company-echo-truncate-lines
-               (active-minibuffer-window))
-      (setq max-len
-            (max 0
-                 (- (window-width (minibuffer-window))
-                    (car
-                     (posn-col-row (posn-at-point (point-max)
-                                                  (minibuffer-window))))
-                    4)))
+    (when-let* ((_ (and company-echo-truncate-lines
+                        (active-minibuffer-window)))
+                (posn (posn-at-point
+                       (with-current-buffer
+                           (window-buffer (minibuffer-window))
+                         (point-max))
+                       (minibuffer-window)))
+                (max-len (max 0
+                              (- (window-width (minibuffer-window))
+                                 (car
+                                  (posn-col-row posn))
+                                 4))))
       (when (> (length company-echo-last-msg) max-len)
         (setq company-echo-last-msg (substring company-echo-last-msg 0 max-len))))
     ;; Avoid modifying the echo area if we don't have anything to say, and we
