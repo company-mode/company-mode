@@ -4721,16 +4721,15 @@ Delay is determined by `company-tooltip-idle-delay'."
         (message-truncate-lines company-echo-truncate-lines))
     (when getter
       (setq company-echo-last-msg (funcall getter)))
-    (when-let* ((_ (and company-echo-truncate-lines
-                        (active-minibuffer-window)))
+    (when-let* ((mini-window (and company-echo-truncate-lines
+                                  (active-minibuffer-window)))
                 (posn (posn-at-point
-                       (with-current-buffer
-                           (window-buffer (minibuffer-window))
+                       (with-current-buffer (window-buffer mini-window)
                          (max (point-min)
                               (1- (point-max))))
-                       (minibuffer-window)))
+                       mini-window))
                 (max-len (max 0
-                              (- (window-width (minibuffer-window))
+                              (- (window-width mini-window)
                                  (car
                                   (posn-col-row posn))
                                  (if preview-o
