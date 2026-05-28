@@ -4246,7 +4246,11 @@ Value of SELECTED determines the added face."
                                  (if company-search-filtering
                                      'filter
                                    'search))))
-         (left (funcall company-format-margin-function "" nil))
+         (left (if company-format-margin-function
+                   (funcall company-format-margin-function "" nil)
+                 (concat
+                  (company-space-string company-tooltip-margin)
+                  (format "%s: " (company-call-backend 'kind)))))
          (line (concat
                 company-search-string))
          (width (+ (company--string-width left) width (length right-margin))))
