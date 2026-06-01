@@ -2,6 +2,8 @@
 
 # Next
 
+* `C-M-i` is remapped to `company-complete-common` in all supported buffers
+  ([#1536](https://github.com/company-mode/company-mode/pull/1536)).
 * Search mode input is displayed at the bottom of the popup
   ([#1535](https://github.com/company-mode/company-mode/pull/1535)).
 * New built-in frontend using "real graphical" widget for the popup

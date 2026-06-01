@@ -886,7 +886,11 @@ asynchronous call into synchronous.")
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-mode-map (make-sparse-keymap)
+(defvar company-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap [remap completion-at-point] 'company-complete-common)
+    (define-key keymap [remap complete-symbol] 'company-complete-common)
+    keymap)
   "Keymap used by `company-mode'.")
 
 (defvar company-active-map
@@ -3599,7 +3603,8 @@ automatically show the documentation buffer for each selection."
       (user-error "Cannot complete at point")))
 
 (defun company-begin-with (candidates
-                           &optional prefix-length require-match callback)
+                           &optional prefix-length require-match callback
+                           with-completion-styles)
   "Start a completion at point.
 CANDIDATES is the list of candidates to use and PREFIX-LENGTH is the length
 of the prefix that already is in the buffer before point.
@@ -3608,16 +3613,28 @@ It defaults to 0.
 CALLBACK is a function called with the selected result if the user
 successfully completes the input.
 
+WITH-COMPLETION-STYLES, when non-nil, means to match CANDIDATES using the
+configured completion styles.
+
 Example: \(company-begin-with \\='\(\"foo\" \"foobar\" \"foobarbaz\"\)\)"
-  (let ((begin-marker (copy-marker (point) t)))
+  (let ((begin-marker (copy-marker (- (point)
+                                      (or prefix-length 0))
+                                   nil)))
     (company-begin-backend
      (lambda (command &optional arg &rest _ignored)
        (pcase command
          (`prefix
-          (when (equal (point) (marker-position begin-marker))
-            (buffer-substring (- (point) (or prefix-length 0)) (point))))
+          (when (>= (point) begin-marker)
+            (buffer-substring begin-marker (point))))
          (`candidates
-          (all-completions arg candidates))
+          (if with-completion-styles
+              (assoc-default
+               :completions
+               (company--capf-completions arg "" candidates nil))
+            (all-completions arg candidates)))
+         (`no-cache t)
+         (`match (if with-completion-styles
+                     (company--match-from-capf-face arg)))
          (`require-match
           require-match)))
      callback)))
