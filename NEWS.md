@@ -17,6 +17,15 @@
   (define-key company-active-map (kbd "M-g") nil))
 ```
 
+* `company-search-regexp-function` defaults to
+  `company-search-words-in-any-order-regexp`. Another alternative value for it
+  was also added: `company-search-flex-words-in-any-order-regexp`, working
+  somewhat similar to the popular completion style Orderless.
+* The `search` faces in the popup inherit from `isearch`.
+* New option `company-global-minibuffer` for completion during `eval-expression`
+  (`M-:`). The "pseudo-tooltip" frontend is not supported by this feature,
+  `company-childframe` is recommended instead.
+* `C-M-i` is bound to `company-complete-common` when completion is active.
 * Search mode input is displayed at the bottom of the popup
   ([#1535](https://github.com/company-mode/company-mode/pull/1535)).
 * New built-in frontend using "real graphical" widget for the popup

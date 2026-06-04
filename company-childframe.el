@@ -88,17 +88,28 @@ Users of HiDPI screens might like to set it to 2."
 (defun company-childframe-show-at-prefix (info)
   "Poshandler showing `company-childframe' at `company-prefix'."
   (let* ((parent-window (plist-get info :parent-window))
-         (point (with-current-buffer (window-buffer parent-window)
-                  (- (plist-get info :position)
-                     (plist-get info :company-prefix-length))))
+         (point (- (plist-get info :position)
+                   (plist-get info :company-prefix-length)))
+         (after-string-width
+          (with-current-buffer (window-buffer parent-window)
+            (thread-last
+              (and (= point (point-max))
+                   (overlays-in point point))
+              (mapcar (lambda (o) (company--string-pixel-width
+                              (overlay-get o 'after-string))))
+              (cl-reduce #'+))))
          (posn (posn-at-point point parent-window))
          ;; TODO: Strictly speaking, if company-childframe-font is not nil, that
          ;; should be used to find the default width...
          (expected-margin-width (* (plist-get info :company-margin) (default-font-width)))
          (xy (posn-x-y posn)))
-    (setcar xy (- (car xy) expected-margin-width (if (display-graphic-p)
-                                                     company-childframe-border-width
-                                                   0)))
+    (setcar xy (- (car xy) expected-margin-width
+                  (if (display-graphic-p)
+                      company-childframe-border-width
+                    0)
+                  ;; Might bite us if the posn-at-point behavior changes
+                  ;; someday, but the odds seem low.
+                  after-string-width))
     (posframe-poshandler-point-bottom-left-corner (plist-put info :position posn))))
 
 (defun company-childframe-show ()
