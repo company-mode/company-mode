@@ -158,7 +158,7 @@ Users of HiDPI screens might like to set it to 2."
            :poshandler company-childframe-poshandler
            :poshandler-extra-info
            (list :company-margin margin
-                 :company-prefix-length (length company-prefix))
+                 :company-prefix-length (length (car (company--boundaries))))
            company-childframe-show-params)
     (with-current-buffer buffer
       (use-local-map company-childframe-buffer-map)
