@@ -195,7 +195,9 @@ For COMMAND refer to `company-frontends'."
     (hide
      (company-childframe-hide))
     (post-command
-     (company-childframe-show))
+     (when (equal (window-buffer (selected-window))
+                  (current-buffer))
+       (company-childframe-show)))
     (select-mouse
      (company-childframe--select-mouse))))
 

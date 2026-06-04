@@ -897,8 +897,6 @@ asynchronous call into synchronous.")
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap "\e\e\e" 'company-abort)
     (define-key keymap "\C-g" 'company-abort)
-    (define-key keymap (kbd "M-n") 'company--select-next-and-warn)
-    (define-key keymap (kbd "M-p") 'company--select-previous-and-warn)
     (define-key keymap (kbd "C-n") 'company-select-next-or-abort)
     (define-key keymap (kbd "C-p") 'company-select-previous-or-abort)
     (define-key keymap (kbd "<down>") 'company-select-next-or-abort)
@@ -917,9 +915,11 @@ asynchronous call into synchronous.")
     (define-key keymap (kbd "TAB") 'company-complete-common-or-cycle)
     (define-key keymap [backtab] 'company-cycle-backward)
     (define-key keymap (kbd "C-M-i") 'company-complete-common)
-    (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
-    (define-key keymap (kbd "C-h") 'company-show-doc-buffer)
-    (define-key keymap "\C-w" 'company-show-location)
+    (define-key keymap (kbd "<f1>") 'company--show-doc-buffer-and-warn)
+    (define-key keymap (kbd "C-h") 'company--show-doc-buffer-and-warn)
+    (define-key keymap (kbd "M-h") 'company-show-doc-buffer)
+    (define-key keymap (kbd "C-w") 'company--show-location-and-warn)
+    (define-key keymap (kbd "M-g") 'company-show-location)
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (company-keymap--bind-quick-access keymap)
@@ -928,22 +928,12 @@ asynchronous call into synchronous.")
 
 (defvar company--disabled-backends nil)
 
-(defun company--select-next-and-warn (&optional arg)
-  (interactive "p")
-  (company--warn-changed-binding)
-  (company-select-next arg))
-
-(defun company--select-previous-and-warn (&optional arg)
-  (interactive "p")
-  (company--warn-changed-binding)
-  (company-select-previous arg))
-
 (defun company--warn-changed-binding ()
   (interactive)
   (run-with-idle-timer
    0.01 nil
    (lambda ()
-     (message "Warning: default bindings are being changed to C-n and C-p"))))
+     (message "Warning: default bindings are being changed to M-h and M-g"))))
 
 (defun company-init-backend (backend)
   (and (symbolp backend)
@@ -2696,7 +2686,12 @@ For more details see `company-insertion-on-trigger' and
     (cancel-timer company-timer)
     (setq company-timer nil))
   (company-echo-cancel t)
-  (company-uninstall-map))
+  (unless (memq this-original-command
+                '(describe-key
+                  describe-key-briefly
+                  describe-map
+                  describe-bindings))
+    (company-uninstall-map)))
 
 (defun company-post-command ()
   (when (and company-candidates
@@ -3616,6 +3611,12 @@ automatically show the documentation buffer for each selection."
     (company--show-doc-buffer)))
 (put 'company-show-doc-buffer 'company-keep t)
 
+(defun company--show-doc-buffer-and-warn (&optional toggle-auto-update)
+  (interactive "P")
+  (company--warn-changed-binding)
+  (company-show-doc-buffer toggle-auto-update))
+(put 'company--show-doc-buffer-and-warn 'company-keep t)
+
 (defun company-show-location ()
   "Temporarily display a buffer showing the selected candidate in context."
   (interactive)
@@ -3636,6 +3637,12 @@ automatically show the documentation buffer for each selection."
               (forward-line (1- pos))))
           (set-window-start nil (point)))))))
 (put 'company-show-location 'company-keep t)
+
+(defun company--show-location-and-warn ()
+  (interactive)
+  (company--warn-changed-binding)
+  (company-show-location))
+(put 'company--show-location-and-warn 'company-keep t)
 
 ;;; package functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

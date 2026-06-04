@@ -2,6 +2,21 @@
 
 # Next
 
+* Default key bindings have been changed, moving `company-show-doc-buffer` and
+  `company-show-location` to `M-h` and `M-g` (from `C-h`/`<f1>` and `C-w`)
+  ([#1537](https://github.com/company-mode/company-mode/issues/1537)). The
+  previous bindings still work, but show a warning and will be removed after
+  the next release. To undo that change locally, do:
+
+```el
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "C-h") #'company-show-doc-buffer)
+  (define-key company-active-map (kbd "<f1>") #'company-show-doc-buffer)
+  (define-key company-active-map (kbd "C-w") #'company-show-location)
+  (define-key company-active-map (kbd "M-h") nil)
+  (define-key company-active-map (kbd "M-g") nil))
+```
+
 * `company-search-regexp-function` defaults to
   `company-search-words-in-any-order-regexp`. Another alternative value for it
   was also added: `company-search-flex-words-in-any-order-regexp`, working
