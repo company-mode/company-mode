@@ -36,7 +36,8 @@
   :group 'company)
 
 (defcustom company-capf-disabled-functions '(tags-completion-at-point-function
-                                             ispell-completion-at-point)
+                                             ispell-completion-at-point
+                                             company--fake-capf-complete-common)
   "List of completion functions which should be ignored in this backend.
 
 By default it contains the functions that duplicate the built-in backends

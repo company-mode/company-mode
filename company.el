@@ -98,11 +98,11 @@
   "Face used for the deprecated items.")
 
 (defface company-tooltip-search
-  '((default :inherit highlight))
+  '((default :inherit isearch))
   "Face used for the search string in the tooltip.")
 
 (defface company-tooltip-search-selection
-  '((default :inherit highlight))
+  '((default :inherit isearch))
   "Face used for the search string inside the selection in the tooltip.")
 
 (defface company-tooltip-mouse
@@ -174,7 +174,7 @@
   "Face used for the common part of the completion preview.")
 
 (defface company-preview-search
-  '((default :inherit company-tooltip-common-selection))
+  '((default :inherit isearch))
   "Face used for the search string in the completion preview.")
 
 (defface company-echo nil
@@ -886,7 +886,11 @@ asynchronous call into synchronous.")
 
 ;;; mode ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar company-mode-map (make-sparse-keymap)
+(defvar company-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap [remap indent-for-tab-command] 'company-indent-for-tab-command)
+    (define-key keymap [remap c-indent-line-or-region] 'company-indent-for-tab-command)
+    keymap)
   "Keymap used by `company-mode'.")
 
 (defvar company-active-map
@@ -912,6 +916,7 @@ asynchronous call into synchronous.")
     (define-key keymap [tab] 'company-complete-common-or-cycle)
     (define-key keymap (kbd "TAB") 'company-complete-common-or-cycle)
     (define-key keymap [backtab] 'company-cycle-backward)
+    (define-key keymap (kbd "C-M-i") 'company-complete-common)
     (define-key keymap (kbd "<f1>") 'company-show-doc-buffer)
     (define-key keymap (kbd "C-h") 'company-show-doc-buffer)
     (define-key keymap "\C-w" 'company-show-location)
@@ -1053,8 +1058,20 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                       (const :tag "Except" not)
                       (repeat :inline t (symbol :tag "mode")))))
 
+(defcustom company-global-minibuffer t
+  "Non-nil to enable `company-mode' in the minibuffer.
+The value can be t (meaning only enable if the minibuffer has a local
+`completion-at-point-functions' value) or a custom predicate function.
+
+The overlay based popup is not supported, completion won't start in
+minibuffer if it's in configured frontends: use `company-childframe'."
+  :type 'boolean)
+
 ;;;###autoload
-(define-globalized-minor-mode global-company-mode company-mode company-mode-on)
+(define-globalized-minor-mode global-company-mode company-mode company-mode-on
+  (if global-company-mode
+      (add-hook 'minibuffer-setup-hook #'company--minibuffer-on 100)
+    (remove-hook 'minibuffer-setup-hook #'company--minibuffer-on)))
 
 (defun company-mode-on ()
   (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
@@ -1063,6 +1080,14 @@ means that `company-mode' is always turned on except in `message-mode' buffers."
                    ((eq (car-safe company-global-modes) 'not)
                     (not (memq major-mode (cdr company-global-modes))))
                    (t (memq major-mode company-global-modes))))
+    (company-mode 1)))
+
+(defun company--minibuffer-on ()
+  (when (and company-global-minibuffer
+             (not (try-completion "company-pseudo-tooltip" company-frontends))
+             (if (eq company-global-minibuffer t)
+                 (local-variable-p 'completion-at-point-functions)
+               (funcall company-global-minibuffer)))
     (company-mode 1)))
 
 (defsubst company-assert-enabled ()
@@ -2247,7 +2272,7 @@ Searches for each in the currently visible part of the current buffer and
 prioritizes the matches according to `company-occurrence-weight-function'.
 The rest of the list is appended unchanged.
 Keywords and function definition names are ignored."
-  (let* ((w-start (window-start))
+  (let* ((w-start (max (window-start) (field-beginning)))
          (w-end (window-end))
          (start-point (point))
          occurs
@@ -2739,7 +2764,7 @@ For more details see `company-insertion-on-trigger' and
 
 ;;; search ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcustom company-search-regexp-function #'regexp-quote
+(defcustom company-search-regexp-function #'company-search-words-in-any-order-regexp
   "Function to construct the search regexp from input.
 It's called with one argument, the current search input.  It must return
 either a regexp without groups, or one where groups don't intersect and
@@ -2750,7 +2775,9 @@ each one wraps a part of the input string."
           (const :tag "Words separated with spaces, in any order"
                  company-search-words-in-any-order-regexp)
           (const :tag "All characters in given order, with anything in between"
-                 company-search-flex-regexp)))
+                 company-search-flex-regexp)
+          (const :tag "Space separated words in any order, all chars inside a word with anything in between"
+                 company-search-flex-words-in-any-order-regexp)))
 
 (defvar-local company-search-string "")
 
@@ -2784,11 +2811,22 @@ each one wraps a part of the input string."
 (defun company-search-flex-regexp (input)
   (if (zerop (length input))
       ""
-    (concat (regexp-quote (string (aref input 0)))
+    (concat (format "\\(%s\\)" (regexp-quote (string (aref input 0))))
             (mapconcat (lambda (c)
                          (concat "[^" (string c) "]*"
-                                 (regexp-quote (string c))))
+                                 (format "\\(%s\\)"
+                                         (regexp-quote (string c)))))
                        (substring input 1) ""))))
+
+(defun company-search-flex-words-in-any-order-regexp (input)
+  (let* ((words (mapcar (lambda (word) (format "\\(?:%s\\)"
+                                          (company-search-flex-regexp word)))
+                        (split-string input " +" t)))
+         (permutations (company--permutations words)))
+    (mapconcat (lambda (words)
+                 (mapconcat #'identity words ".*"))
+               permutations
+               "\\|")))
 
 (defun company--permutations (lst)
   (if (not lst)
@@ -2840,9 +2878,16 @@ each one wraps a part of the input string."
   (let* ((selection (or company-selection 0))
          (pos (company--search new (nthcdr selection company-candidates))))
     (if (null pos)
+        (let ((pos (company--search new (nthcdr (- company-candidates-length
+                                                   selection)
+                                                (reverse company-candidates)))))
+          (if (null pos)
+              (ding)
+            (setq company-search-string new)
+            (company-set-selection (- selection pos 1) t)))
         (ding)
-      (setq company-search-string new)
-      (company-set-selection (+ selection pos) t))))
+        (setq company-search-string new)
+        (company-set-selection (+ selection pos) t))))
 
 (defun company--search-assert-input ()
   (company--search-assert-enabled)
@@ -2855,7 +2900,7 @@ each one wraps a part of the input string."
   (company--search-assert-input)
   (let* ((selection (or company-selection 0))
          (pos (company--search company-search-string
-                              (cdr (nthcdr selection company-candidates)))))
+                               (cdr (nthcdr selection company-candidates)))))
     (if (null pos)
         (ding)
       (company-set-selection (+ selection pos 1) t))))
@@ -3539,6 +3584,25 @@ from the candidates list.")
         (setq other-window-scroll-buffer (get-buffer doc-buffer))
         (let ((win (display-buffer doc-buffer t)))
           (set-window-start win (if start start (point-min)))))))
+
+(defun company--fake-capf-complete-common (&rest _)
+  (company-complete-common)
+  (list (point) (point) nil))
+
+(defun company-indent-for-tab-command (&optional arg)
+  "Like `indent-for-tab-command' which see but calls `company-complete-common'
+instead of `completion-at-point' as the fallback.  That only happens when
+`tab-always-indent' is `complete', and only when reindentation was a no-op."
+  (interactive)
+  (unwind-protect
+      (progn
+        (add-hook 'completion-at-point-functions
+                  #'company--fake-capf-complete-common
+                  nil t)
+        (funcall-interactively #'indent-for-tab-command arg))
+    (remove-hook 'completion-at-point-functions
+                 #'company--fake-capf-complete-common
+                 t)))
 
 (defun company-show-doc-buffer (&optional toggle-auto-update)
   "Show the documentation buffer for the selection.
@@ -4513,6 +4577,9 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defvar-local company-preview-overlay nil)
 
 (defun company-preview-show-at-point (pos completion &optional boundaries)
+  (when (minibufferp)
+    (company-echo-hide))
+
   (company-preview-hide)
 
   (let* ((boundaries (or boundaries (company--boundaries completion)))
@@ -4573,6 +4640,8 @@ Delay is determined by `company-tooltip-idle-delay'."
       (let ((ov company-preview-overlay))
         (overlay-put ov (if (> end beg) 'display 'after-string)
                      completion)
+        ;; Show before minibuffer-message-overlay if there.
+        (overlay-put ov 'priority 1101)
         (overlay-put ov 'window (selected-window))))))
 
 (defun company-preview-hide ()
@@ -4652,9 +4721,31 @@ Delay is determined by `company-tooltip-idle-delay'."
 (defun company-echo-show (&optional getter)
   (let ((last-msg company-echo-last-msg)
         (message-log-max nil)
+        (preview-o company-preview-overlay)
         (message-truncate-lines company-echo-truncate-lines))
     (when getter
       (setq company-echo-last-msg (funcall getter)))
+    (when-let* ((mini-window (and company-echo-truncate-lines
+                                  (active-minibuffer-window)))
+                (posn (posn-at-point
+                       (with-current-buffer (window-buffer mini-window)
+                         (max (point-min)
+                              (1- (point-max))))
+                       mini-window))
+                (max-len (max 0
+                              (- (window-width mini-window)
+                                 (car
+                                  (posn-col-row posn))
+                                 (if preview-o
+                                     (company--string-width
+                                      (or
+                                       (overlay-get preview-o 'display)
+                                       (overlay-get preview-o 'after-string)
+                                       ""))
+                                   0)
+                                 5))))
+      (when (> (length company-echo-last-msg) max-len)
+        (setq company-echo-last-msg (substring company-echo-last-msg 0 max-len))))
     ;; Avoid modifying the echo area if we don't have anything to say, and we
     ;; didn't put the previous message there (thus there's nothing to clear),
     ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=62816#20
@@ -4740,8 +4831,7 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-echo-hide ()
   (unless (string-empty-p company-echo-last-msg)
-    (setq company-echo-last-msg "")
-    (company-echo-show)))
+    (company-echo-show #'ignore)))
 
 (defun company-echo-frontend (command)
   "`company-mode' frontend showing the candidates in the echo area."
@@ -4759,11 +4849,34 @@ Delay is determined by `company-tooltip-idle-delay'."
   "`company-mode' frontend showing the documentation in the echo area."
   (pcase command
     (`pre-command
-     (when (> company-echo-delay 0)
+     (when (and (> company-echo-delay 0)
+                (or (not (minibufferp))
+                    (memq this-command
+                          '(self-insert-command
+                            delete-backward-char
+                            company-select-next
+                            company-select-previous
+                            company-select-next-or-abort
+                            company-select-previous-or-abort
+                            company-next-page
+                            company-previous-page
+                            company-search-repeat-forward
+                            company-search-repeat-backward
+                            company-complete-common-or-cycle))))
        (company-echo-show)))
     (`post-command (company-echo-show-soon 'company-fetch-metadata))
     (`unhide (company-echo-show))
     (`hide (company-echo-hide))))
+
+(eldoc-add-command-completions "company-")
+
+(defun company--eldoc-no-inteference-p ()
+  (or (not company-candidates)
+      (member company-echo-last-msg '(nil ""))))
+
+(advice-add #'eldoc-display-message-no-interference-p
+            :after-while
+            #'company--eldoc-no-inteference-p)
 
 (provide 'company)
 ;;; company.el ends here
