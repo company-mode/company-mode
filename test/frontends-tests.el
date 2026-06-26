@@ -48,7 +48,8 @@
     (let ((col (company--column))
           (company-candidates-length 2)
           (company-candidates '("123" "45"))
-          (company-backend 'ignore))
+          (company-backend 'ignore)
+          (company-tooltip-minimum-width 0))
       (company-pseudo-tooltip-show (company--row) col 0)
       (let ((ov company-pseudo-tooltip-overlay))
         ;; With margins.
@@ -85,7 +86,8 @@
           (company-candidates '("123" "45" "67" "89" "1011"))
           (company-backend 'ignore)
           (company-tooltip-limit 4)
-          (company-tooltip-offset-display 'scrollbar))
+          (company-tooltip-offset-display 'scrollbar)
+          (company-tooltip-minimum-width 0))
       (company-pseudo-tooltip-show (company--row)
                                    (company--column)
                                    0)
@@ -122,7 +124,8 @@
                                (when (eq action 'annotation)
                                  (cdr (assoc arg '(("123" . "(4)")))))))
             (company-candidates '("123" "45"))
-            company-tooltip-align-annotations)
+            company-tooltip-align-annotations
+            (company-tooltip-minimum-width 0))
         (company-pseudo-tooltip-show-at-point (point) 0)
         (let ((ov company-pseudo-tooltip-overlay))
           ;; With margins.
@@ -143,7 +146,8 @@
                                  (cdr (assoc arg '(("123" . "(4)")
                                                    ("67" . "(891011)")))))))
             (company-candidates '("123" "45" "67"))
-            (company-tooltip-annotation-padding 2))
+            (company-tooltip-annotation-padding 2)
+            (company-tooltip-minimum-width 0))
         (company-pseudo-tooltip-show-at-point (point) 0)
         (let ((ov company-pseudo-tooltip-overlay))
           ;; With margins.
@@ -164,7 +168,8 @@
                                  (cdr (assoc arg '(("123" . "(4)")
                                                    ("67" . "(891011)")))))))
             (company-candidates '("123" "45" "67"))
-            (company-tooltip-align-annotations t))
+            (company-tooltip-align-annotations t)
+            (company-tooltip-minimum-width 0))
         (company-pseudo-tooltip-show-at-point (point) 0)
         (let ((ov company-pseudo-tooltip-overlay))
           ;; With margins.
@@ -186,7 +191,8 @@
                                                    ("67" . "(891011)")))))))
             (company-candidates '("123" "45" "67"))
             (company-tooltip-align-annotations t)
-            (company-tooltip-annotation-padding 2))
+            (company-tooltip-annotation-padding 2)
+            (company-tooltip-minimum-width 0))
         (company-pseudo-tooltip-show-at-point (point) 0)
         (let ((ov company-pseudo-tooltip-overlay))
           ;; With margins.
@@ -196,6 +202,7 @@
 
 (ert-deftest company-create-lines-shows-quick-access ()
   (let ((company-show-quick-access t)
+        (company-tooltip-minimum-width 0)
         (company-candidates '("x" "y" "z"))
         (company-candidates-length 3)
         (company-backend 'ignore))
@@ -204,6 +211,7 @@
 
 (ert-deftest company-create-lines-shows-quick-access-on-the-left ()
   (let ((company-show-quick-access 'left)
+        (company-tooltip-minimum-width 0)
         (company-candidates '("x" "y" "z"))
         (company-candidates-length 3)
         (company-backend 'ignore))
@@ -212,6 +220,7 @@
 
 (ert-deftest company-create-lines-combines-quick-access-on-the-left-and-icons ()
   (let ((company-show-quick-access 'left)
+        (company-tooltip-minimum-width 0)
         (company-candidates '("x" "y" "z"))
         (company-format-margin-function (lambda (_candidate _selected)
                                           "X"))
@@ -221,7 +230,8 @@
                    (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-truncates-annotations ()
-  (let* ((ww (company--window-width))
+  (let* ((company-tooltip-maximum-width most-positive-fixnum)
+         (ww (company--window-width))
          (data `(("1" . "(123)")
                  ("2" . nil)
                  ("3" . ,(concat "(" (make-string (- ww 2) ?4) ")"))
@@ -246,7 +256,8 @@
                      (cdr (company--create-lines 0 999)))))))
 
 (ert-deftest company-create-lines-truncates-common-part ()
-  (let* ((ww (company--window-width))
+  (let* ((company-tooltip-maximum-width most-positive-fixnum)
+         (ww (company--window-width))
          (company-candidates-length 2)
          (company-tooltip-margin 1)
          (company-backend #'ignore))
@@ -286,6 +297,7 @@
 (ert-deftest company-create-lines-clears-out-non-printables ()
   :tags '(interactive)
   (let (company-show-quick-access
+        (company-tooltip-minimum-width 0)
         (company-candidates (list
                              (decode-coding-string "avalis\351e" 'utf-8)
                              "avatar"))
@@ -301,13 +313,15 @@
   (let (company-show-quick-access
         (company-candidates '("蛙蛙蛙蛙" "蛙abc"))
         (company-candidates-length 2)
-        (company-backend 'ignore))
+        (company-backend 'ignore)
+        (company-tooltip-minimum-width 0))
     (should (equal '(" 蛙蛙蛙蛙﻿﻿﻿﻿ "
                      " 蛙abc﻿    ")
                    (cdr (company--create-lines 0 999))))))
 
 (ert-deftest company-create-lines-handles-multiple-width-in-annotation ()
   (let* (company-show-quick-access
+         (company-tooltip-minimum-width 0)
          (alist '(("a" . " ︸") ("b" . " ︸︸")))
          (company-candidates (mapcar #'car alist))
          (company-candidates-length 2)
@@ -322,6 +336,7 @@
   :tags '(interactive)
   :expected-result (if (display-graphic-p) :failed :passed)
   (let* (company-show-quick-access
+         (company-tooltip-minimum-width 0)
          (company-candidates '("MIRAI発売1カ月"
                                "MIRAI発売2カ月"))
          (company-candidates-length 2)
