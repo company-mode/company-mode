@@ -2,6 +2,13 @@
 
 # Next
 
+* `company-tooltip-minimum-width` has a new value: 15.
+* `company-tooltip-maximum-width`: same, 100.
+* `company-tooltip-width-grow-only` learned how to grow only up to particular
+  size (implemented in `company--create-lines`). The default value is 50.
+* `company-childframe` gets enabled by default on NS/Mac/W32/PGTK systems, and
+  on all others (notably X11 builds) when Emacs is at least 31
+  ([#1542](https://github.com/company-mode/company-mode/pull/1542)).
 * Default key bindings have been changed, moving `company-show-doc-buffer` and
   `company-show-location` to `M-h` and `M-g` (from `C-h`/`<f1>` and `C-w`)
   ([#1537](https://github.com/company-mode/company-mode/issues/1537)). The

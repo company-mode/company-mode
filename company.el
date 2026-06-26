@@ -217,7 +217,11 @@
         (setq value (append (delq f value) (list f)))))
     (set variable value)))
 
-(defcustom company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
+(defcustom company-frontends `(,@(list
+                                  (if (or (memq window-system '(ns mac w32 pgtk))
+                                          (< 30 emacs-major-version))
+                                      'company-childframe-unless-just-one-frontend
+                                    'company-pseudo-tooltip-unless-just-one-frontend))
                                company-preview-if-just-one-frontend
                                company-echo-metadata-frontend)
   "The list of active frontends (visualizations).
@@ -243,6 +247,7 @@ for technical reasons.
 The visualized data is stored in `company-prefix', `company-candidates',
 `company-common', `company-selection', `company-point' and
 `company-search-string'."
+  :package-version '(company . "1.1.0")
   :set 'company-frontends-set
   :type '(repeat (choice (const :tag "echo" company-echo-frontend)
                          (const :tag "echo, strip common"
@@ -276,22 +281,22 @@ When that many lines are not available between point and the bottom of the
 window, display the tooltip above point."
   :type 'integer)
 
-(defcustom company-tooltip-minimum-width 0
+(defcustom company-tooltip-minimum-width 15
   "The minimum width of the tooltip's inner area.
 This doesn't include the margins and the scroll bar."
   :type 'integer
-  :package-version '(company . "0.8.0"))
+  :package-version '(company . "1.1.0"))
 
-(defcustom company-tooltip-maximum-width most-positive-fixnum
+(defcustom company-tooltip-maximum-width 100
   "The maximum width of the tooltip's inner area.
 This doesn't include the margins and the scroll bar."
   :type 'integer
-  :package-version '(company . "0.9.5"))
+  :package-version '(company . "1.1.0"))
 
-(defcustom company-tooltip-width-grow-only nil
+(defcustom company-tooltip-width-grow-only 50
   "When non-nil, the tooltip width is not allowed to decrease."
   :type 'boolean
-  :package-version '(company . "0.10.0"))
+  :package-version '(company . "1.1.0"))
 
 (defcustom company-tooltip-margin 1
   "Width of margin columns to show around the toolip."
@@ -4217,7 +4222,13 @@ but adjust the expected values appropriately."
                             width))))
 
     (when company-tooltip-width-grow-only
-      (setq width (max company--tooltip-current-width width))
+      (setq width (max
+                   (min
+                    (if (numberp company-tooltip-width-grow-only)
+                        company-tooltip-width-grow-only
+                      most-positive-fixnum)
+                    company--tooltip-current-width)
+                   width))
       (setq company--tooltip-current-width width))
 
     (let ((items (nreverse items))
