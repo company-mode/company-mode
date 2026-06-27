@@ -175,7 +175,9 @@ Users of HiDPI screens might like to set it to 2."
   (when (and (frame-live-p company-childframe--frame)
              (frame-visible-p company-childframe--frame))
     ;; PGTK/NS/W32 protocols can update the display atomically.
-    (when (eq window-system 'x)
+    (when (and (eq window-system 'x)
+               ;; https://debbugs.gnu.org/80961
+               (< 32 emacs-major-version))
       ;; Seems to help avoid the final flicker - probably by keeping the parent's
       ;; display matrix up to date (so it can repaint on Expose immediately).
       (redisplay))
