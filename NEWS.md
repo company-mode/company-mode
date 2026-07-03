@@ -7,7 +7,7 @@
 * `company-tooltip-width-grow-only` learned how to grow only up to particular
   size (implemented in `company--create-lines`). The default value is 50.
 * `company-childframe` gets enabled by default on NS/Mac/W32/PGTK systems, and
-  on all others (notably X11 builds) when Emacs is at least 31
+  on all others (notably X11 builds) when Emacs is at least 31.1.
   ([#1542](https://github.com/company-mode/company-mode/pull/1542)).
 * Default key bindings have been changed, moving `company-show-doc-buffer` and
   `company-show-location` to `M-h` and `M-g` (from `C-h`/`<f1>` and `C-w`)
@@ -44,15 +44,15 @@
 * The minimum required version of Emacs is now 26.1.
 * `TAB` binding changed to `company-complete-common-or-cycle`, and `backtab`
   binding to `company-cycle-backward`
-  (#[1499](https://github.com/company-mode/company-mode/pull/1499)).
+  ([#1499](https://github.com/company-mode/company-mode/pull/1499)).
 * Completion is restarted if it enters a new "field" at the end, as indicated by
   the `adjust-boundaries` backend action
-  (#[1497](https://github.com/company-mode/company-mode/pull/1497)). This
+  ([#1497](https://github.com/company-mode/company-mode/pull/1497)). This
   benefits file name (and directory) completion.  The user option
   `company-files-chop-trailing-slash` has been removed, and the
   `post-completion` handler in `company-files` has been removed as well.
 * Handle the case when the current c-a-p-f function changes mid-session
-  (#[1494](https://github.com/company-mode/company-mode/pull/1494)).
+  ([#1494](https://github.com/company-mode/company-mode/pull/1494)).
 
 # 2024-09-23 (1.0.2)
 
@@ -70,9 +70,9 @@
   it queries `completion-try-completion`. `company-dabbrev-code` and
   `company-etags` also do that when `completion-styles` support is enabled.
 * `company-dabbrev-other-buffers` and `company-dabbrev-code-other-buffers` can
-  now take a function as its value (#[1485](https://github.com/company-mode/company-mode/issues/1485))
+  now take a function as its value ([#1485](https://github.com/company-mode/company-mode/issues/1485))
 * Completion works in the middle of a symbol
-  (#[1474](https://github.com/company-mode/company-mode/pull/1474)).
+  ([#1474](https://github.com/company-mode/company-mode/pull/1474)).
 * New user option `company-inhibit-inside-symbols`. Set it to `t` to switch
   closer to the previous behavior.
 * Improved behavior when user types new character while completion is being
@@ -87,11 +87,11 @@
 * `company-files` shows shorter completions.  Previously, the popup spanned
   the whole absolute file name being completed, and now it starts after the
   nearest directory separator
-  (#[1040](https://github.com/company-mode/company-mode/issues/1040)).
+  ([#1040](https://github.com/company-mode/company-mode/issues/1040)).
 * New user option `company-capf-disabled-functions`
-  (#[1437](https://github.com/company-mode/company-mode/issues/1437)).
+  ([#1437](https://github.com/company-mode/company-mode/issues/1437)).
 * Better support for `yas-key-syntaxes`
-  (#[1268](https://github.com/company-mode/company-mode/issues/1268)).
+  ([#1268](https://github.com/company-mode/company-mode/issues/1268)).
 * New user option `company-tooltip-scrollbar-width` with default 0.4.
 * The tooltip uses a more complex rendering approach, supporting double
   width/CJK characters, as well as buffer text of different sizes
