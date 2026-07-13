@@ -958,8 +958,8 @@ customization:
  '(company-tooltip-selection
    ((t (:background "LemonChiffon1" :foreground "MistyRose4"))))
  '(company-tooltip-common ((t (:weight bold :foreground "pink1"))))
- '(company-scrollbar-fg ((t (:background "ivory3"))))
- '(company-scrollbar-bg ((t (:background "ivory2"))))
+ '(company-tooltip-scrollbar-thumb ((t (:background "ivory3"))))
+ '(company-tooltip-scrollbar-track ((t (:background "ivory2"))))
  '(company-tooltip-annotation ((t (:foreground "MistyRose2")))))
 @end lisp
 
