@@ -673,11 +673,10 @@ following example:
 @end defun
 
 The ``childframe'' family of frontends uses graphical elements to show
-the popup above the buffer.  It can cross window boundaries and be
-used in the minibuffer.  On some ports it's implemented using X11
-child windows, and uses native widgets on others. It has been slowert
-han the overlay-based ones historically, but the gap has narrowed
-lately.
+the popup above the buffer.  It can cross window boundaries and works
+in the minibuffer.  On some ports it's implemented using X11 child
+windows, and uses native widgets on others. It has been a little
+slower than the overlay-based ones, but the gap got smaller lately.
 
 @defun company-childframe-unless-just-one-frontend
 This is one of the default frontends (except with X11 and Emacs<31.1).
@@ -958,7 +957,7 @@ customization:
    ((t (:background "ivory" :foreground "MistyRose3"))))
  '(company-tooltip-selection
    ((t (:background "LemonChiffon1" :foreground "MistyRose4"))))
- '(company-toolti p-common ((t (:weight bold :foreground "pink1"))))
+ '(company-tooltip-common ((t (:weight bold :foreground "pink1"))))
  '(company-scrollbar-fg ((t (:background "ivory3"))))
  '(company-scrollbar-bg ((t (:background "ivory2"))))
  '(company-tooltip-annotation ((t (:foreground "MistyRose2")))))
