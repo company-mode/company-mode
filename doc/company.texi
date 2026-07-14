@@ -637,8 +637,7 @@ faces, display specs, or certain glyphs.
 This has been the default frontend before the introduction of the
 ``childframe'' family of frontends (now it remains such in Emacs<31.1
 under X11).  It starts displaying a tooltip only if more than one
-completion candidate is available, which nicely combines --- and it is
-done so by default --- with
+completion candidate is available, which nicely combines with
 @code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
 @end defun
 
