@@ -620,27 +620,31 @@ quick-accessed.
 @section Tooltip Frontends
 
 @cindex tooltip
+@cindex popup
 @cindex pop-up
 This group of frontends displays completion candidates in a
-rectangular tooltip (aka @w{pop-up}).  Company provides multiple
+rectangular tooltip (aka @w{popup}).  Company provides multiple
 @emph{tooltip frontends}, listed below.
 
 The ``pseudo-tooltip'' family of frontends uses ``overlays'' (a
 display engine feature) to render the popup inside the buffer.  It
 has a very stable and fast implementation, with known limitations:
-buffers with mixed fonts, complex formatting, some complex glyphs, and
-being limited to the bounds of the buffer's window.
+being limited to the bounds of the buffer's window, and partially
+broken display in buffers with mixed fonts, complex formatting using
+faces or display specs, and those using certain complex glyphs.
 
 @defun company-pseudo-tooltip-unless-just-one-frontend
-This has been the most frequently used frontend.  It starts displaying
-a tooltip only if more than one completion candidate is available,
-which nicely combines --- and it is done so by default --- with
+This has been the default frontend before the introduction of the
+``childframe'' family of frontends (now it remains such in Emacs<31.1
+under X11).  It starts displaying a tooltip only if more than one
+completion candidate is available, which nicely combines --- and it is
+done so by default --- with
 @code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
 @end defun
 
 @defun company-pseudo-tooltip-frontend
 This frontend outputs a tooltip for any number of completion
-candidates.  It's the basic version that related frontends build on.
+candidates.  It is the basic version that related frontends build on.
 @end defun
 
 @defun company-pseudo-tooltip-unless-just-one-frontend-with-delay
@@ -679,7 +683,7 @@ windows, and uses native widgets on others. It has been a little
 slower than the overlay-based ones, but the gap got smaller lately.
 
 @defun company-childframe-unless-just-one-frontend
-This is one of the default frontends (except with X11 and Emacs<31.1).
+This is one of the default frontends (except in Emacs<31.1 under X11).
 It starts displaying its graphical tooltip only if more than one
 completion candidate is available, which nicely combines --- and it is
 done so by default --- with
