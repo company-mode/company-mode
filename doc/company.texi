@@ -627,11 +627,11 @@ rectangular tooltip (aka @w{popup}).  Company provides multiple
 @emph{tooltip frontends}, listed below.
 
 The ``pseudo-tooltip'' family of frontends uses ``overlays'' (a
-display engine feature) to render the popup inside the buffer.  It
-has a very stable and fast implementation, with known limitations:
-being limited to the bounds of the buffer's window, and partially
-broken display in buffers with mixed fonts, complex formatting using
-faces or display specs, and those using certain complex glyphs.
+display engine feature) to render the popup inside the buffer.  It has
+a stable and fast implementation, with known caveats: it is limited to
+the bounds of the buffer's window, and rendering might be partially
+incorrect in buffers with mixed fonts, complex formatting involving
+faces, display specs, or certain glyphs.
 
 @defun company-pseudo-tooltip-unless-just-one-frontend
 This has been the default frontend before the introduction of the
