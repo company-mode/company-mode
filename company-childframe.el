@@ -102,14 +102,22 @@ Users of HiDPI screens might like to set it to 2."
          ;; TODO: Strictly speaking, if company-childframe-font is not nil, that
          ;; should be used to find the default width...
          (expected-margin-width (* (plist-get info :company-margin) (default-font-width)))
+         (border-width (if (display-graphic-p)
+                           company-childframe-border-width
+                         0))
+         (min-bottom-distance (+ (* company-tooltip-minimum
+                                    (+ (or (default-value 'line-spacing) 0)
+                                       (plist-get info :font-height)))
+                                 (* 2 border-width)))
          (xy (posn-x-y posn)))
     (setcar xy (- (car xy) expected-margin-width
-                  (if (display-graphic-p)
-                      company-childframe-border-width
-                    0)
+                  border-width
                   ;; Might bite us if the posn-at-point behavior changes
                   ;; someday, but the odds seem low.
                   after-string-width))
+    (when (< (plist-get info :posframe-height) min-bottom-distance)
+      (cl-decf (plist-get info :parent-frame-height)
+               (- min-bottom-distance (plist-get info :posframe-height))))
     (posframe-poshandler-point-bottom-left-corner (plist-put info :position posn))))
 
 (defun company-childframe-show ()
