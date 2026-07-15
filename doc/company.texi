@@ -748,7 +748,7 @@ available candidates is larger than this option's value, Company
 paginates the results.
 
 @lisp
-(setq company-tooltip-limit 4)
+(setq company-tooltip-limit 5)
 @end lisp
 
 @img{tooltip-limit}
@@ -776,7 +776,7 @@ the bottom of a window is less than @w{@code{company-tooltip-minimum}}
 value, the tooltip is displayed above point.
 
 @lisp
-(setq company-tooltip-minimum 4)
+(setq company-tooltip-minimum 5)
 @end lisp
 
 @img{tooltip-minimum-below}
@@ -793,7 +793,8 @@ When this setting is enabled, no matter if a tooltip is shown above or
 below point, the candidates are always listed starting near point.
 (Putting it differently, the candidates are mirrored vertically if a
 tooltip changes its position, instead of being commonly listed
-top-to-bottom.)
+top-to-bottom.) This is only supported by the ``pseudo tooktip''
+backends for now.
 
 @lisp
 (setq company-tooltip-flip-when-above t)
