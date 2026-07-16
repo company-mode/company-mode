@@ -85,6 +85,8 @@ Users of HiDPI screens might like to set it to 2."
   #'company-childframe-show-at-prefix
   "Poshandler for the completion dialog.")
 
+(defvar company-childframe--shown-above nil)
+
 (defun company-childframe-show-at-prefix (info)
   "Poshandler showing `company-childframe' at `company-prefix'."
   (let* ((parent-window (plist-get info :parent-window))
@@ -109,7 +111,8 @@ Users of HiDPI screens might like to set it to 2."
                                     (+ (or (default-value 'line-spacing) 0)
                                        (plist-get info :font-height)))
                                  (* 2 border-width)))
-         (xy (posn-x-y posn)))
+         (xy (posn-x-y posn))
+         handler-res)
     (setcar xy (- (car xy) expected-margin-width
                   border-width
                   ;; Might bite us if the posn-at-point behavior changes
@@ -118,7 +121,15 @@ Users of HiDPI screens might like to set it to 2."
     (when (< (plist-get info :posframe-height) min-bottom-distance)
       (cl-decf (plist-get info :parent-frame-height)
                (- min-bottom-distance (plist-get info :posframe-height))))
-    (posframe-poshandler-point-bottom-left-corner (plist-put info :position posn))))
+    (setq handler-res
+          (posframe-poshandler-point-bottom-left-corner
+           (plist-put info :position posn)))
+    (setq company-childframe--shown-above
+          (> (+
+              (nth 1 (window-body-pixel-edges parent-window))
+              (cdr (posn-x-y posn)))
+             (cdr handler-res)))
+    handler-res))
 
 (defun company-childframe-show ()
   "Show company-childframe candidate menu."
@@ -169,6 +180,11 @@ Users of HiDPI screens might like to set it to 2."
            (list :company-margin margin
                  :company-prefix-length (length (car (company--boundaries))))
            company-childframe-show-params)
+    (when (and company-childframe--shown-above
+               company-tooltip-flip-when-above)
+      (with-current-buffer buffer
+        (erase-buffer)
+        (insert (mapconcat #'identity (reverse lines) "\n"))))
     (with-current-buffer buffer
       (use-local-map company-childframe-buffer-map)
       (setq company-childframe--frame posframe--frame)
