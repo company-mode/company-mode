@@ -691,7 +691,7 @@ done so by default --- with
 
 @defun company-childframe-frontend
 This frontend displays its graphical tooltip for any number of
-completion candidates. It's the basic version that related frontends
+completion candidates. It is the basic version that related frontends
 build on.
 @end defun
 
