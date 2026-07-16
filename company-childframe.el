@@ -119,7 +119,7 @@ Users of HiDPI screens might like to set it to 2."
                   ;; someday, but the odds seem low.
                   after-string-width))
     (when (< (plist-get info :posframe-height) min-bottom-distance)
-      (cl-decf (plist-get info :parent-frame-height)
+      (cl-decf (cadr (plist-member info :parent-frame-height))
                (- min-bottom-distance (plist-get info :posframe-height))))
     (setq handler-res
           (posframe-poshandler-point-bottom-left-corner
