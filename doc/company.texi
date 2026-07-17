@@ -2,8 +2,8 @@
 @c %**start of header
 @setfilename company.info
 @settitle Company User Manual
-@set VERSION 1.0.3-snapshot
-@set UPDATED 7 December 2024
+@set VERSION 1.1.0
+@set UPDATED 3 July 2026
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -13,7 +13,7 @@
 This user manual is for Company version @value{VERSION}
 @w{(@value{UPDATED})}.
 
-Copyright @copyright{} 2021-2024  Free Software Foundation, Inc.
+Copyright @copyright{} 2021-2026  Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -246,6 +246,13 @@ To have Company always enabled for the following sessions, add the
 line @w{@code{(global-company-mode)}} to the Emacs configuration file
 (@pxref{Init File,,,emacs}).
 
+@vindex company-global-minibuffer
+When @code{company-global-minibuffer} is non-nil (the default),
+Company can be used in the minibuffer as well.  The necessary
+conditions are that a supported popup frontend is configured (any of
+@code{company-childframe-*-frontend}), and the minibuffer has a local
+value of @code{completion-at-point-functions}.
+
 @node Usage Basics
 @section Usage Basics
 
@@ -344,7 +351,22 @@ Insert the @emph{common part} of all completion candidates or --- if
 no @emph{common part} is present --- select the next candidate
 (@code{company-complete-common-or-cycle}).  In the latter case,
 wraparound is implicitly enabled
-(@pxref{company-selection-wrap-around}).
+(@pxref{company-selection-wrap-around}).  The @emph{common part}
+behavior can add characters before and after point, as decided by the
+backend's implementation.
+
+@item S-TAB
+@itemx <backtab>
+@kindex S-TAB
+@cindex cycle backwards
+@findex company-cycle-backward
+Select the previous candidate, with wraparound implicitly enabled.
+
+@item C-M-i
+@kindex C-M-i
+@cindex common part
+@findex company-complete-common
+Insert the @emph{common part} of all completion candidates.
 
 @item C-g
 @itemx <ESC ESC ESC>
@@ -357,19 +379,18 @@ wraparound is implicitly enabled
 @findex company-abort
 Cancel @emph{company-mode} activity (@code{company-abort}).
 
-@item C-h
-@itemx <F1>
-@kindex C-h
+@item M-h
+@kindex M-h
 @cindex doc
 @findex company-show-doc-buffer
 Display a buffer with the documentation for the selected candidate
 (@w{@code{company-show-doc-buffer}}).  With a prefix argument
-(@kbd{C-u C-h}, @kbd{C-u @key{F1}}), this command toggles between
-temporary showing the documentation and keeping the documentation
-buffer up-to-date whenever the selection changes.
+(@kbd{C-u M-h}), this command toggles between temporary showing the
+documentation and keeping the documentation buffer up-to-date whenever
+the selection changes.
 
-@item C-w
-@kindex C-w
+@item M-g
+@kindex M-g
 @cindex definition
 @cindex location
 @findex company-show-location
@@ -384,7 +405,6 @@ a more user-friendly output of the pre-defined key bindings, utilize
 @w{@kbd{M-x describe-keymap @key{RET} company-active-map}} or @w{@kbd{C-h
 f @key{RET} company-mode}}.}.
 
-@findex company-complete-common
 @findex company-indent-or-complete-common
 @findex company-complete
 Moreover, Company is bundled with a number of convenience commands
@@ -600,21 +620,53 @@ quick-accessed.
 @section Tooltip Frontends
 
 @cindex tooltip
+@cindex popup
 @cindex pop-up
-This group of frontends displays completion candidates in an overlayed
-tooltip (aka @w{pop-up}).  Company provides three @emph{tooltip
-frontends}, listed below.
+This group of frontends displays completion candidates in a
+rectangular tooltip (aka @w{popup}).  Company provides multiple
+@emph{tooltip frontends}, listed below.
+
+@subheading Childframe Frontends
+
+The ``childframe'' family of frontends natually uses a special frame
+to show the popup above the buffer.  It can cross window boundaries
+and works in the minibuffer.  On some builds it's implemented using
+X11 child windows, and uses native widgets on others. It also works in
+the terminal starting with Emacs 31.
+
+@defun company-childframe-unless-just-one-frontend
+This is one of the default frontends (except in Emacs<31.1 under X11).
+It starts displaying its graphical tooltip only if more than one
+completion candidate is available, which nicely combines --- and it is
+done so by default --- with
+@code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
+@end defun
+
+@defun company-childframe-frontend
+This frontend shows its tooltip for any number of completion
+candidates. It is the basic version that related frontends extend.
+@end defun
+
+@subheading Pseudo-Tooltip Frontends
+
+The ``pseudo-tooltip'' family of frontends uses ``overlays'' (a
+display engine feature) to render the popup inside the buffer.  It has
+a stable and fast implementation, with known caveats: it is limited to
+the bounds of the buffer's window, and rendering might be partially
+incorrect in buffers with mixed fonts, complex formatting involving
+faces, display specs, or certain glyphs.
 
 @defun company-pseudo-tooltip-unless-just-one-frontend
-This is one of the default frontends.  It starts displaying a tooltip
-only if more than one completion candidate is available, which nicely
-combines --- and it is done so by default --- with
+This has been the default frontend before the introduction of the
+``childframe'' family of frontends (now it remains such in Emacs<31.1
+under X11).  It starts displaying a tooltip only if more than one
+completion candidate is available, which nicely combines with
 @code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
 @end defun
 
 @defun company-pseudo-tooltip-frontend
 This frontend outputs a tooltip for any number of completion
-candidates.
+candidates.  It is the basic version that related frontends extend.
 @end defun
 
 @defun company-pseudo-tooltip-unless-just-one-frontend-with-delay
@@ -699,7 +751,7 @@ available candidates is larger than this option's value, Company
 paginates the results.
 
 @lisp
-(setq company-tooltip-limit 4)
+(setq company-tooltip-limit 5)
 @end lisp
 
 @img{tooltip-limit}
@@ -727,7 +779,7 @@ the bottom of a window is less than @w{@code{company-tooltip-minimum}}
 value, the tooltip is displayed above point.
 
 @lisp
-(setq company-tooltip-minimum 4)
+(setq company-tooltip-minimum 5)
 @end lisp
 
 @img{tooltip-minimum-below}
@@ -744,7 +796,8 @@ When this setting is enabled, no matter if a tooltip is shown above or
 below point, the candidates are always listed starting near point.
 (Putting it differently, the candidates are mirrored vertically if a
 tooltip changes its position, instead of being commonly listed
-top-to-bottom.)
+top-to-bottom.) This is only supported by the ``pseudo tooktip''
+backends for now.
 
 @lisp
 (setq company-tooltip-flip-when-above t)
@@ -756,27 +809,26 @@ top-to-bottom.)
 @defopt company-tooltip-minimum-width
 Sets the minimum width of a tooltip, excluding the margins and the
 scroll bar.  Changing this value especially makes sense if the user
-navigates between tooltip pages.  Keeping this value at the default
-@code{0} allows Company to always adapt the width of the tooltip to
-the longest shown candidate.  Enlarging
-@code{company-tooltip-minimum-width} prevents possible significant
-shifts in the width of the tooltip when navigating to the
-next/previous tooltip page.  (For an alternate solution, see
-@code{company-tooltip-width-grow-only}.)
+navigates between tooltip pages.  The default value of @code{15} helps
+reduce how often the tooltip's size changes when you are typing or
+paging.  Set it to a higher value to limit the resizes further.  Or
+vice versa to @code{0} to always adapt to the longest shown candidate.
+And see the related option @code{company-tooltip-width-grow-only}.
 @end defopt
 
 @defopt company-tooltip-width-grow-only
-This is another way to restrict auto-adaptation of the tooltip width
-(another is by adjusting @code{company-tooltip-minimum-width} value)
-when navigating between the tooltip pages.
+This is another way to reduce how often the tooltip resizes (in
+addition to @code{company-tooltip-minimum-width}), prohibiting
+reducing the width within one completion session when this option is
+non-nil.  And when the value is a number, this is the maximum width up
+to which the non-shrink behavior has effect.  The default value is
+@code{50}.
 @end defopt
 
 @defopt company-tooltip-maximum-width
 This user option controls the maximum width of the tooltip inner area.
-By default, its value is pseudo-limitless, potentially permitting the
-output of extremely long candidates.  But if long lines become an
-issue, set this option to a smaller number, such as @code{60} or
-@code{70}.
+By default, its value is @code{100}.  Change it to allow different
+limits.
 @end defopt
 
 @defopt company-tooltip-margin
@@ -913,8 +965,8 @@ customization:
  '(company-tooltip-selection
    ((t (:background "LemonChiffon1" :foreground "MistyRose4"))))
  '(company-tooltip-common ((t (:weight bold :foreground "pink1"))))
- '(company-scrollbar-fg ((t (:background "ivory3"))))
- '(company-scrollbar-bg ((t (:background "ivory2"))))
+ '(company-tooltip-scrollbar-thumb ((t (:background "ivory3"))))
+ '(company-tooltip-scrollbar-track ((t (:background "ivory2"))))
  '(company-tooltip-annotation ((t (:foreground "MistyRose2")))))
 @end lisp
 
@@ -1039,8 +1091,9 @@ To quit the search mode, hit @kbd{C-g}.
 @defopt company-search-regexp-function
 The value of this user option must be a function that interprets the
 search input.  By default it is set to the function
-@code{regexp-quote}, with looks for an exact match.  Company defines
-several more functions suitable for this option. They are listed below.
+@code{company-search-words-in-any-order-regexp}, which looks for
+matching words in any order.  Company defines several more functions
+suitable for this option. They are listed below.
 @end defopt
 
 @defun company-search-words-regexp
@@ -1053,6 +1106,11 @@ Searches for words separated with spaces in any order.
 
 @defun company-search-flex-regexp
 Searches for characters in the given order, with anything in between.
+@end defun
+
+@defun company-search-flex-words-in-any-order-regexp
+Searches for words separated with spaces in any order, with anything
+in between the characters of each word.
 @end defun
 
 @cindex custom
@@ -1553,20 +1611,6 @@ look this way:
 @lisp
 (setq company-files-exclusions '(".git/" ".DS_Store"))
 @end lisp
-@end defopt
-
-@defopt company-files-chop-trailing-slash
-This setting is enabled by default, which results in stripping off a
-trailing slash from an inserted directory name.  On typing a trailing
-slash, the process of completion gets started again, from inside the
-just inserted directory.
-
-Setting @w{@code{company-files-chop-trailing-slash}} to @code{nil}
-makes directory names to be inserted as is, with a trailing slash.  In
-this case, the completion process can be continued, for example,
-either by explicitly calling @emph{company-files} backend
-(@pxref{Backends Usage Basics}) or by starting typing a name of a
-file/directory known to be located under the inserted directory.
 @end defopt
 
 @end defun
