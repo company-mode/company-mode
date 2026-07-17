@@ -293,7 +293,7 @@ Hit @key{RET} to choose a selected candidate for completion.
 @kindex TAB
 Hit @key{TAB} to expand the @dfn{common part} of all completions.
 Exactly what that means, can vary by backend.  In the simplest case
-it's the longest string that all completion start with, but when a
+it is the longest string that all completion start with, but when a
 backend returns @emph{non-prefix matches}, it can implement the same
 kind of expansion logic for the input string.
 
@@ -628,11 +628,12 @@ rectangular tooltip (aka @w{popup}).  Company provides multiple
 
 @subheading Childframe Frontends
 
-The ``childframe'' family of frontends natually uses a special frame
+@cindex childframe
+The ``childframe'' family of frontends naturally uses a special frame
 to show the popup above the buffer.  It can cross window boundaries
-and works in the minibuffer.  On some builds it's implemented using
-X11 child windows, and uses native widgets on others. It also works in
-the terminal starting with Emacs 31.
+and works in the minibuffer.  On some builds it is implemented using
+X11 child windows, while on others it uses native widgets. It also
+works in the terminal starting with Emacs 31.
 
 @defun company-childframe-unless-just-one-frontend
 This is one of the default frontends (except in Emacs<31.1 under X11).
@@ -649,6 +650,7 @@ candidates. It is the basic version that related frontends extend.
 
 @subheading Pseudo-Tooltip Frontends
 
+@cindex pseudo-tooltip
 The ``pseudo-tooltip'' family of frontends uses ``overlays'' (a
 display engine feature) to render the popup inside the buffer.  It has
 a stable and fast implementation, with known caveats: it is limited to
