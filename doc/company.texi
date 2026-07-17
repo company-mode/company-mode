@@ -626,6 +626,29 @@ This group of frontends displays completion candidates in a
 rectangular tooltip (aka @w{popup}).  Company provides multiple
 @emph{tooltip frontends}, listed below.
 
+@subheading Childframe Frontends
+
+The ``childframe'' family of frontends natually uses a special frame
+to show the popup above the buffer.  It can cross window boundaries
+and works in the minibuffer.  On some builds it's implemented using
+X11 child windows, and uses native widgets on others. It also works in
+the terminal starting with Emacs 31.
+
+@defun company-childframe-unless-just-one-frontend
+This is one of the default frontends (except in Emacs<31.1 under X11).
+It starts displaying its graphical tooltip only if more than one
+completion candidate is available, which nicely combines --- and it is
+done so by default --- with
+@code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
+@end defun
+
+@defun company-childframe-frontend
+This frontend shows its tooltip for any number of completion
+candidates. It is the basic version that related frontends extend.
+@end defun
+
+@subheading Pseudo-Tooltip Frontends
+
 The ``pseudo-tooltip'' family of frontends uses ``overlays'' (a
 display engine feature) to render the popup inside the buffer.  It has
 a stable and fast implementation, with known caveats: it is limited to
@@ -643,7 +666,7 @@ completion candidate is available, which nicely combines with
 
 @defun company-pseudo-tooltip-frontend
 This frontend outputs a tooltip for any number of completion
-candidates.  It is the basic version that related frontends build on.
+candidates.  It is the basic version that related frontends extend.
 @end defun
 
 @defun company-pseudo-tooltip-unless-just-one-frontend-with-delay
@@ -673,26 +696,6 @@ following example:
                     (and company-candidates
                          (company-call-frontends 'post-command)))))
 @end lisp
-@end defun
-
-The ``childframe'' family of frontends uses graphical elements to show
-the popup above the buffer.  It can cross window boundaries and works
-in the minibuffer.  On some ports it's implemented using X11 child
-windows, and uses native widgets on others. It has been a little
-slower than the overlay-based ones, but the gap got smaller lately.
-
-@defun company-childframe-unless-just-one-frontend
-This is one of the default frontends (except in Emacs<31.1 under X11).
-It starts displaying its graphical tooltip only if more than one
-completion candidate is available, which nicely combines --- and it is
-done so by default --- with
-@code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
-@end defun
-
-@defun company-childframe-frontend
-This frontend displays its graphical tooltip for any number of
-completion candidates. It is the basic version that related frontends
-build on.
 @end defun
 
 @subheading User Options
