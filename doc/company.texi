@@ -106,9 +106,9 @@ Backends
 
 @dfn{Company} is a modular text completion framework for GNU Emacs.
 
-In other words, it is a package for retrieving, manipulating, and
-displaying text completion candidates.  It aims to assist developers,
-writers, and scientists during code and text writing.
+In other words, it is a package for collecting, displaying, and acting
+on completion candidates.  It aims to help developers, writers, and
+scientists write code and prose.
 
 @menu
 * Terminology::
