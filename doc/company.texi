@@ -107,7 +107,7 @@ Backends
 @dfn{Company} is a modular text completion framework for GNU Emacs.
 
 In other words, it is a package for retrieving, manipulating, and
-displaying text completion candidates. It aims to assist developers,
+displaying text completion candidates.  It aims to assist developers,
 writers, and scientists during code and text writing.
 
 @menu
@@ -293,7 +293,7 @@ Hit @key{RET} to choose a selected candidate for completion.
 @kindex TAB
 Hit @key{TAB} to expand the @dfn{common part} of all completions.
 Exactly what that means, can vary by backend.  In the simplest case
-it is the longest string that all completion start with, but when a
+it is the longest string that all completions start with, but when a
 backend returns @emph{non-prefix matches}, it can implement the same
 kind of expansion logic for the input string.
 
@@ -503,8 +503,8 @@ when in the middle of a symbol.
 This option allows to specify in which major modes @emph{company-mode}
 can be enabled by @code{(global-company-mode)}. @xref{Initial Setup}.
 The default value of @code{t} enables Company in all major modes.
-Setting @code{company-global-modes} to @code{nil} equal in action to
-toggling off @emph{global-company-mode}.  Providing a list of major
+Setting @code{company-global-modes} to @code{nil} is equal in action
+to toggling off @emph{global-company-mode}.  Providing a list of major
 modes results in having @emph{company-mode} enabled in the listed
 modes only.  For the opposite result, provide a list of major modes
 with @code{not} being the first element of the list, as shown in the
@@ -536,7 +536,7 @@ option configured to call the function
 @end defopt
 
 @defopt company-lighter-base
-This user options allows to configure a string indicator of the
+This user option allows configuring a string indicator of the
 enabled @emph{company-mode} in the mode line.  The default value is
 @samp{company}.
 @end defopt
@@ -564,7 +564,7 @@ one of: a string of characters, a list of syntax description
 characters (@pxref{Syntax Class Table,,,elisp}), or a predicate
 function.  By default, this user option is set to the list of the
 syntax characters: @w{@code{(?\ ?\) ?.)}}, which translates to the
-whitespaces, close parenthesis, and punctuation.  It is safe to
+whitespace, close parenthesis, and punctuation.  It is safe to
 configure the value to a character that can potentially be part of a
 valid completion; in this case, Company does not treat such characters
 as triggers.
@@ -655,7 +655,7 @@ done so by default --- with
 
 @defun company-childframe-frontend
 This frontend shows its tooltip for any number of completion
-candidates. It is the basic version that related frontends extend.
+candidates.  It is the basic version that related frontends extend.
 @end defun
 
 @node Pseudo-Tooltip Frontends
@@ -684,7 +684,7 @@ candidates.  It is the basic version that related frontends extend.
 
 @defun company-pseudo-tooltip-unless-just-one-frontend-with-delay
 @vindex company-tooltip-idle-delay
-This is a peculiar frontend, that displays a tooltip only if more than
+This is a peculiar frontend that displays a tooltip only if more than
 one candidate is available, and only after a delay.  The delay can be
 configured with the user option @w{@code{company-tooltip-idle-delay}}.
 A typical use case for plugging in this frontend would be displaying a
@@ -810,7 +810,7 @@ When this setting is enabled, no matter if a tooltip is shown above or
 below point, the candidates are always listed starting near point.
 (Putting it differently, the candidates are mirrored vertically if a
 tooltip changes its position, instead of being commonly listed
-top-to-bottom.) This is only supported by the ``pseudo tooktip''
+top-to-bottom.)  This is only supported by the ``pseudo tooltip''
 backends for now.
 
 @lisp
@@ -826,7 +826,7 @@ scroll bar.  Changing this value especially makes sense if the user
 navigates between tooltip pages.  The default value of @code{15} helps
 reduce how often the tooltip's size changes when you are typing or
 paging.  Set it to a higher value to limit the resizes further.  Or
-vice versa to @code{0} to always adapt to the longest shown candidate.
+vice versa, to @code{0}, to always adapt to the longest shown candidate.
 And see the related option @code{company-tooltip-width-grow-only}.
 @end defopt
 
@@ -874,9 +874,9 @@ see the user option @code{company-text-icons-mapping} or the variable
 @defopt company-format-margin-function
 @cindex margin
 Allows setting a function to format the left margin of a tooltip inner
-area; namely, to output candidate's @emph{icons}.  The predefined
+area; namely, to output candidates' @emph{icons}.  The predefined
 formatting functions are listed below.  The user may also set this
-option to a custom function. To disable left margin formatting, set
+option to a custom function.  To disable left margin formatting, set
 the value of the option to @code{nil} (this way control over the size
 of the left margin returns to the user option
 @code{company-tooltip-margin}).
@@ -898,7 +898,7 @@ options are @code{company-icon-size} and @code{company-icon-margin}.
 
 @defun company-text-icons-margin
 @vindex company-text-icons-format
-This function produces letters and symbols formatted according to the
+This function produces letters and symbols formatted according to
 @w{@code{company-text-icons-format}}.  The rest of the user options
 affecting this function behavior are listed below.
 
@@ -946,7 +946,7 @@ generated background is applied.
 @end defopt
 
 @defun company-detect-icons-margin
-This is the default margin formatting function, that applies one of
+This is the default margin formatting function that applies one of
 the @w{@code{company-vscode-*-icons-margin}} functions if
 @samp{vscode} icons set is supported; otherwise applies a
 @w{@code{company-text-icons-margin}} function.
@@ -972,7 +972,7 @@ on where to start customizing Company interface.
 Namely, the look of a tooltip is controlled by the
 @code{company-tooltip*} named faces.
 
-The following example suggests how users may approach tooltip faces
+The following example suggests how users may approach tooltip face
 customization:
 
 @lisp
@@ -1046,7 +1046,7 @@ The look of the preview is controlled by the following faces:
 @cindex face
 @cindex company-echo
 The frontends listed in this section display information in the
-Emacs's echo area, @ref{Echo Area,,,emacs}.
+Emacs echo area, @ref{Echo Area,,,emacs}.
 
 @defun company-echo-metadata-frontend
 This frontend is a part of the predefined frontends set.  Its
@@ -1099,7 +1099,7 @@ the faces @w{@code{company-echo}} and @code{company-echo-common}.
 By default, when @emph{company-mode} is in action, a key binding
 @kbd{C-s} starts looking for matches to additionally typed characters
 among the displayed candidates.  When a search is initiated, an
-indicator @w{@samp{Search: CHARACTERS}} is shown in the Emacs's mode
+indicator @w{@samp{Search: CHARACTERS}} is shown in the Emacs mode
 line.
 
 @kindex C-g
@@ -1207,7 +1207,7 @@ approach:
 @end lisp
 
 A modifier should be one of @code{meta}, @code{super}, @code{hyper},
-@code{ control}.
+@code{control}.
 
 @cindex face
 @cindex font
@@ -1216,7 +1216,7 @@ A modifier should be one of @code{meta}, @code{super}, @code{hyper},
 @cindex custom
 @cindex configure
 The following example applies a bit of customization and demonstrates
-how to change quick-access hints faces.
+how to change quick-access hint faces.
 
 @lisp
 (setq company-show-quick-access t)
@@ -1294,7 +1294,7 @@ like:
 It is also possible to specifically start a backend with the command
 @w{@kbd{M-x company-begin-backend}} or by calling a backend by its
 name, for instance: @w{@kbd{M-x company-capf}}.  As usual for Emacs,
-such backends calls can be assigned to key bindings, for example:
+such backend calls can be assigned to key bindings, for example:
 
 @lisp
 (global-set-key (kbd "C-c y") 'company-yasnippet)
@@ -1430,7 +1430,7 @@ Value t means complete in all modes.
 @end defopt
 
 @defopt company-dabbrev-code-other-buffers
-This variable determined whether @code{company-dabbrev-code} will
+This variable determines whether @code{company-dabbrev-code} will
 search other buffers for completions.  If @code{all}, it will search
 all other buffers except the ignored ones (names starting with a
 space).  If @code{t}, it will search buffers with the same major mode.
@@ -1588,7 +1588,7 @@ transformation is performed; in the environment described above,
 typing @samp{Enj} results in the candidate @samp{Enjoy} being
 suggested.  When the option is set to @code{t}, the down-cased
 candidate @samp{enjoy} is suggested.  By default, this option is set
-to @code{case-replace}, meaning taking a value of the Emacs's variable
+to @code{case-replace}, meaning taking the value of the Emacs variable
 @code{case-replace} (@code{t} is the current default).
 @end defopt
 
@@ -1602,7 +1602,7 @@ a built-in Emacs package that performs spell-checking.
 @emph{Ispell} uses only one dictionary at a time (combining several
 dictionaries into one file is an accepted practice).  By default,
 @emph{company-ispell} suggests candidates from a dictionary specified
-by the Emacs's setting @code{ispell-complete-word-dict}.
+by the Emacs setting @code{ispell-complete-word-dict}.
 
 @defopt company-ispell-dictionary
 Optionally, set a file path for @emph{company-ispell} to use another
