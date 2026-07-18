@@ -623,8 +623,9 @@ quick-accessed.
 @cindex popup
 @cindex pop-up
 This group of frontends displays completion candidates in a
-rectangular tooltip (aka @w{popup}).  Company provides multiple
-@emph{tooltip frontends}, listed below.
+rectangular tooltip (aka @w{popup}).  Company provides two sets of
+@emph{tooltip frontends}.  They are described in this section,
+together with user options and @emph{faces} that affect them.
 
 @menu
 * Childframe Frontends::
