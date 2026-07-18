@@ -137,7 +137,7 @@ several non-prefix matching styles configured through the user option
 shows matches, @pxref{Frontends}.
 
 The package name @samp{Company} combines @samp{Complete} and
-@samp{Anything}.  This refers to the extensible design.
+@samp{Anything}, reflecting its extensible design.
 
 @node Structure
 @section Structure
@@ -147,39 +147,33 @@ The package name @samp{Company} combines @samp{Complete} and
 @cindex extensible
 @cindex backend
 @cindex frontend
-The Company is easily extensible because its significant building
-blocks are pluggable modules: backends (@pxref{Backends}) and
-frontends (@pxref{Frontends}).
+Company is extensible because its main building blocks are pluggable
+modules: backends (@pxref{Backends}) and frontends (@pxref{Frontends}).
 
 @cindex backend
 @cindex frontend
 @cindex module
 @cindex third-party
-The @dfn{backends} are responsible for retrieving completion
-candidates; which are then displayed by the @dfn{frontends}.  For an
-easy and quick initial setup, Company is supplied with the
-preconfigured sets of the backends and frontends.  The default
-behavior of the modules can be adjusted for particular needs, and
-preferences.  It is also typical to utilize backends from a variety of
+@dfn{Backends} collect completion candidates, and @dfn{frontends}
+display them.  Company comes with preconfigured sets of the backends
+and frontends, which can be adjusted to fit particular needs and
+preferences.  It is also common to use backends from
 @uref{https://github.com/company-mode/company-mode/wiki/Third-Party-Packages,
-third-party libraries}, developed to be pluggable with Company.
+third-party packages}.
 
-But Company consists not only of the backends and frontends.
-
-A core of the package plays the role of a controller, connecting the
-modules, making them work together; and exposing configurations and
-commands for the user to operate with.  For more details,
-@ref{Customization} and @ref{Commands}.
+Around these modules, Company provides the coordination logic,
+commands, and user options.  For more details, @ref{Customization} and
+@ref{Commands}.
 
 @cindex TAB
 @cindex company-tng
 @cindex Tab and Go
 @findex company-tng-frontend
 @findex company-tng-mode
-Also, Company is bundled with an alternative workflow configuration
-@dfn{company-tng} --- defining @code{company-tng-frontend},
-@code{company-tng-mode}, and @w{@code{company-tng-map}} --- that
-allows performing completion with just @key{TAB}.  To enable this
+Company is also bundled with an alternative workflow configuration
+called @dfn{company-tng}.  It defines @code{company-tng-frontend},
+@code{company-tng-mode}, and @w{@code{company-tng-map}}, and allows
+performing completion with just @key{TAB}.  To enable this
 configuration, add the following line to the Emacs initialization file
 (@pxref{Init File,,,emacs}):
 
