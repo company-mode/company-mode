@@ -120,30 +120,24 @@ scientists write code and prose.
 
 @cindex completion
 @cindex complete
-@dfn{Completion} is an act of intelligently guessing possible variants
-of words based on already typed characters.  To @dfn{complete} a word
-means to insert a correctly guessed variant into the buffer.
+@dfn{Completion} is the process of suggesting possible text based on
+what has already been typed.  To @dfn{complete} text means to insert
+one of those suggestions into the buffer.
 
 @cindex candidate
 @cindex prefix matches
 @cindex non-prefix matches
-Consequently, the @dfn{candidates} are the aforementioned guessed
-variants of words.  Each of the candidates has the potential to be
-chosen for successful completion.  And each of the candidates contains
-the initially typed characters: either only at the beginning
-(so-called @dfn{prefix matches}), or also inside of a candidate
-(@dfn{non-prefix matches}).  Which matching method is used, depends on
-the current @emph{backend} (@pxref{Structure}).  @code{company-capf} is
-an example of a backend that supports a number of particular
-non-prefix matching algorithms which are configurable through the user
-option @code{completion-styles}, which see.  For illustrations on how
-Company visualizes the matches, @pxref{Frontends}.
+A @dfn{candidate} is one possible completion.  Candidates usually
+match the text before point either at the beginning (@dfn{prefix
+matches}) or somewhere inside the candidate (@dfn{non-prefix matches}).
+The matching method depends on the current @emph{backend}
+(@pxref{Structure}).  For example, @code{company-capf} supports
+several non-prefix matching styles configured through the user option
+@code{completion-styles}, which see.  For examples of how Company
+shows matches, @pxref{Frontends}.
 
-The package's name @samp{Company} is based on the combination of the
-two words: @samp{Complete} and @samp{Anything}.  These words reflect
-the package's commitment to handling completion candidates and its
-extensible nature allowing it to cover a wide range of usage
-scenarios.
+The package name @samp{Company} combines @samp{Complete} and
+@samp{Anything}.  This refers to the extensible design.
 
 @node Structure
 @section Structure
