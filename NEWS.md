@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-# Next
+# 2026-07-21 (1.1.0)
 
 * `company-tooltip-minimum-width` has a new value: 15.
 * `company-tooltip-maximum-width`: same, 100.
