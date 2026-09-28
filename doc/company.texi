@@ -1515,6 +1515,13 @@ prevent potential performance issues.  But in many scenarios, it may
 be acceptable to lower this value.  Note that this option also affects
 the behavior of the @emph{company-dabbrev-code} backend.
 
+@defopt company-dabbrev-maximum-length
+This option sets the maximum length of a completion candidate to
+collect from the text.  The default value of @samp{30} is intended to
+prevent noise in case dabbrev parses non-legible text (like obfuscated
+code or base64 text) Note that this option also affects the behavior
+of the @emph{company-dabbrev-code} backend.
+
 @lisp
 (setq company-dabbrev-minimum-length 2)
 @end lisp
