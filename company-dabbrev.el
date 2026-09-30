@@ -79,12 +79,11 @@ Any other value means downcase."
           (const :tag "Downcase" t)
           (const :tag "Use case-replace" case-replace)))
 
-(defcustom company-dabbrev-maximum-length 30
+(defcustom company-dabbrev-maximum-length 40
   "The maximum length for the completion candidate to be included.
 This variable affects both `company-dabbrev' and `company-dabbrev-code'."
   :type 'integer
   :package-version '(company . "1.1.1"))
-
 
 (defcustom company-dabbrev-minimum-length 4
   "The minimum length for the completion candidate to be included.
