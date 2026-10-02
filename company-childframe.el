@@ -135,6 +135,7 @@ Users of HiDPI screens might like to set it to 2."
   "Show company-childframe candidate menu."
   (defvar x-wait-for-event-timeout)
   (defvar x-fast-protocol-requests)
+  (defvar x-use-fast-mouse-position)
   (let* ((x-wait-for-event-timeout (and (>= emacs-major-version 31)
                                         ;; debbugs#80662
                                         (bound-and-true-p
@@ -142,6 +143,8 @@ Users of HiDPI screens might like to set it to 2."
          (before-make-frame-hook)
          (after-make-frame-functions)
          (x-fast-protocol-requests t)
+         (x-use-fast-mouse-position 'really-fast)
+         (posframe-mouse-banish-function #'ignore)
          (height (min company-tooltip-limit
                       (if company-search-mode
                           (1+ company-candidates-length)
