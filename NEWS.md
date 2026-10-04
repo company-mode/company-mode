@@ -2,7 +2,7 @@
 
 # 2026-09-30 (1.1.1)
 
-* New user option `company-dabbrev-maximum-length` with default 50, similar to
+* New user option `company-dabbrev-maximum-length` with default 80, similar to
   the existing option `company-dabbrev-minimum-length`.
 
 # 2026-07-21 (1.1.0)
