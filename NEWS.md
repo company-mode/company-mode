@@ -5,6 +5,8 @@
 * ([#1547](https://github.com/company-mode/company-mode/pull/1547)) New user
   option `company-dabbrev-maximum-length` with default 80, similar to the
   existing option `company-dabbrev-minimum-length`.
+* Reduced `company-childframe`'s popup latency over X forwarding
+  ([#1548](https://github.com/company-mode/company-mode/pull/1548)).
 
 # 2026-07-21 (1.1.0)
 
