@@ -97,7 +97,7 @@ Users of HiDPI screens might like to set it to 2."
           (with-current-buffer (window-buffer parent-window)
             (setq ls
                   (company-childframe--line-spacing
-                   line-spacing
+                   (or line-spacing 0)
                    (plist-get info :font-height)))
             (thread-last
               (and (= point (point-max))
