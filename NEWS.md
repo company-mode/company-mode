@@ -2,6 +2,7 @@
 
 # Next
 
+* Less GC churn with completion styles that support `completion-lazy-hilit`.
 * ([#1549](https://github.com/company-mode/company-mode/issues/1549)) Support
   for line-spacing cons values.
 * ([#1547](https://github.com/company-mode/company-mode/pull/1547)) New user

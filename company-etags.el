@@ -66,6 +66,7 @@ Set it to t or to a list of major modes."
 
 (defvar-local company-etags-buffer-table 'unknown)
 (defvar-local company-etags--boundaries nil)
+(defvar-local company-etags--hilit-fn nil)
 
 (defun company-etags-find-table ()
   (let ((file (expand-file-name
@@ -94,7 +95,9 @@ Set it to t or to a list of major modes."
                (setq company-etags--boundaries
                      (company--capf-boundaries-markers
                       (assoc-default :boundaries res)
-                      company-etags--boundaries))
+                      company-etags--boundaries)
+                     company-etags--hilit-fn
+                     (assoc-default :hilit-fn res))
                (assoc-default :completions res))
            (all-completions prefix table)))))
 
@@ -139,7 +142,9 @@ Set it to t or to a list of major modes."
                     (let ((buffer (find-tag-noselect arg)))
                       (cons buffer (with-current-buffer buffer (point))))))))
     (match (when company-etags-completion-styles
-             (company--match-from-capf-face arg)))
+             (company--match-from-capf-face
+              (company--lazy-hilit arg
+                                   company-etags--hilit-fn))))
     (ignore-case company-etags-ignore-case)))
 
 (provide 'company-etags)
