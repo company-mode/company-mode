@@ -1926,7 +1926,10 @@ update if FORCE-UPDATE."
 (defun company--preprocess-candidates (candidates)
   (cl-assert (cl-every #'stringp candidates))
   (unless (company-call-backend 'sorted)
-    (setq candidates (sort candidates 'string<)))
+    (setq candidates (sort candidates
+                           (if (< emacs-major-version 30)
+                               'string<
+                             nil))))
   (when (company-call-backend 'duplicates)
     (company--strip-duplicates candidates))
   candidates)
