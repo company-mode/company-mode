@@ -3609,7 +3609,7 @@ from the candidates list.")
   "Like `indent-for-tab-command' which see but calls `company-complete-common'
 instead of `completion-at-point' as the fallback.  That only happens when
 `tab-always-indent' is `complete', and only when reindentation was a no-op."
-  (interactive)
+  (interactive "P")
   (unwind-protect
       (progn
         (add-hook 'completion-at-point-functions
