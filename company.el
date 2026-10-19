@@ -1274,7 +1274,7 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
                                               table pred
                                               (length prefix)
                                               meta))
-             (hilit-fn completion-lazy-hilit-fn)
+             (hilit-fn (bound-and-true-p completion-lazy-hilit-fn))
              (last (last all))
              (base-size (or (cdr last) 0))
              ;; base-suffix-size is not available, but it's usually simple.
