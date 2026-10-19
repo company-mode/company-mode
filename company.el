@@ -1229,6 +1229,9 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
          (concat prefix (substring s len))))
      strings)))
 
+(defvar completion-lazy-hilit)
+(defvar completion-lazy-hilit-fn)
+
 (defun company--lazy-hilit (str hilit-fn)
   (let ((completion-lazy-hilit-fn hilit-fn)
         (completion-lazy-hilit t))
