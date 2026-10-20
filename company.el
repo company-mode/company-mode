@@ -3603,14 +3603,13 @@ from the candidates list.")
           (set-window-start win (if start start (point-min)))))))
 
 (defun company--fake-capf-complete-common (&rest _)
-  (company-complete-common)
-  (list (point) (point) nil))
+  #'company-complete-common)
 
 (defun company-indent-for-tab-command (&optional arg)
   "Like `indent-for-tab-command' which see but calls `company-complete-common'
 instead of `completion-at-point' as the fallback.  That only happens when
 `tab-always-indent' is `complete', and only when reindentation was a no-op."
-  (interactive)
+  (interactive "P")
   (unwind-protect
       (progn
         (add-hook 'completion-at-point-functions
