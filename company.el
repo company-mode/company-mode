@@ -875,13 +875,6 @@ This is a default value of `company-quick-access-hint-function'."
   :type '(choice (const :tag "off" nil)
                  (const :tag "on" t)))
 
-(defcustom company-async-redisplay-delay 0.005
-  "Delay before redisplay when fetching candidates asynchronously.
-
-You might want to set this to a higher value if your backends respond
-quickly, to avoid redisplaying twice per each typed character."
-  :type 'number)
-
 (defvar company-async-wait 0.03
   "Pause between checks to see if the value's been set when turning an
 asynchronous call into synchronous.")
@@ -1857,15 +1850,10 @@ update if FORCE-UPDATE."
                 (setq candidates (all-completions prefix prev))
                 (cl-return t)))))
         ;; No cache match, call the backend.
-        (let ((refresh-timer (run-with-timer company-async-redisplay-delay
-                                             nil
-                                             #'company--sneaky-refresh
-                                             prefix suffix)))
-          (unwind-protect
-              (setq candidates (company--preprocess-candidates
-                                (company--fetch-candidates prefix suffix)))
-            ;; If the backend is synchronous, no chance for the timer to run.
-            (cancel-timer refresh-timer))
+        (progn
+          (company--sneaky-refresh prefix suffix)
+          (setq candidates (company--preprocess-candidates
+                            (company--fetch-candidates prefix suffix)))
           ;; Save in cache.
           (push (cons prefix candidates) company-candidates-cache)))
     ;; Only now apply the predicate and transformers.
@@ -1919,7 +1907,8 @@ update if FORCE-UPDATE."
            (company-call-frontends 'unhide))))
   (let (inhibit-redisplay)
     (redisplay))
-  (when company-candidates (company-call-frontends 'pre-command)))
+  (let ((inhibit-redisplay t))
+    (when company-candidates (company-call-frontends 'pre-command))))
 
 (defun company--flyspell-workaround-p ()
   ;; https://debbugs.gnu.org/23980
@@ -4675,17 +4664,19 @@ Delay is determined by `company-tooltip-idle-delay'."
         (overlay-put ov 'priority 1101)
         (overlay-put ov 'window (selected-window))))))
 
-(defun company-preview-hide ()
+(defun company-preview-hide (&optional keep-for-unhide)
   (when company-preview-overlay
     (delete-overlay company-preview-overlay)
-    (setq company-preview-overlay nil)))
+    (unless keep-for-unhide
+      (setq company-preview-overlay nil))))
 
 (defun company-preview-frontend (command)
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
-    (`pre-command (company-preview-hide))
+    (`pre-command (company-preview-hide t))
     (`unhide
-     (when company-selection
+     ;; This makes c-p-o carry dual purpose, but at least the effect is close.
+     (when (and company-selection company-preview-overlay)
        (let* ((current (nth company-selection company-candidates)))
          (company-preview-show-at-point (point) current))))
     (`post-command
@@ -4696,9 +4687,16 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-preview-if-just-one-frontend (command)
   "`company-preview-frontend', but only shown for single candidates."
-  (when (or (not (memq command '(post-command unhide)))
-            (company--show-inline-p))
-    (company-preview-frontend command)))
+  (cond
+   ((company--show-inline-p)
+    (company-preview-frontend command))
+   ;; Do nothing if not inline:
+   ((memq command '(post-command unhide)))
+   ;; Hide and discard, to skip `unhide':
+   ((eq command 'pre-command)
+    (company-preview-hide))
+   (t ;; Only `hide', currently.
+    (company-preview-frontend command))))
 
 (defun company--show-inline-p ()
   (let* ((boundaries (and company-candidates (company--boundaries)))
