@@ -2902,7 +2902,6 @@ each one wraps a part of the input string."
               (ding)
             (setq company-search-string new)
             (company-set-selection (- selection pos 1) t)))
-        (ding)
         (setq company-search-string new)
         (company-set-selection (+ selection pos) t))))
 
