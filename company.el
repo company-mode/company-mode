@@ -1851,7 +1851,7 @@ update if FORCE-UPDATE."
                 (cl-return t)))))
         ;; No cache match, call the backend.
         (progn
-          (company--sneaky-refresh prefix suffix)
+          (company--early-refresh prefix suffix)
           (setq candidates (company--preprocess-candidates
                             (company--fetch-candidates prefix suffix)))
           ;; Save in cache.
@@ -1899,7 +1899,7 @@ update if FORCE-UPDATE."
               (throw 'interrupted 'new-input)
             res-was))))))
 
-(defun company--sneaky-refresh (prefix suffix)
+(defun company--early-refresh (prefix suffix)
   (when company-candidates
     (let* ((company-prefix prefix)
            (company-suffix suffix))
