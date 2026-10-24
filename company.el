@@ -1837,6 +1837,8 @@ update if FORCE-UPDATE."
                      common))
             (car company-candidates)))))
 
+(defvar-local company--show-inline nil)
+
 (defun company-calculate-candidates (prefix ignore-case suffix)
   (let ((candidates (cdr (assoc prefix company-candidates-cache))))
     (or candidates
@@ -1856,6 +1858,7 @@ update if FORCE-UPDATE."
                             (company--fetch-candidates prefix suffix)))
           ;; Save in cache.
           (push (cons prefix candidates) company-candidates-cache)))
+    (setq company--show-inline nil)
     ;; Only now apply the predicate and transformers.
     (company--postprocess-candidates candidates)))
 
@@ -4664,19 +4667,17 @@ Delay is determined by `company-tooltip-idle-delay'."
         (overlay-put ov 'priority 1101)
         (overlay-put ov 'window (selected-window))))))
 
-(defun company-preview-hide (&optional keep-for-unhide)
+(defun company-preview-hide ()
   (when company-preview-overlay
     (delete-overlay company-preview-overlay)
-    (unless keep-for-unhide
-      (setq company-preview-overlay nil))))
+    (setq company-preview-overlay nil)))
 
 (defun company-preview-frontend (command)
   "`company-mode' frontend showing the selection as if it had been inserted."
   (pcase command
-    (`pre-command (company-preview-hide t))
+    (`pre-command (company-preview-hide))
     (`unhide
-     ;; This makes c-p-o carry dual purpose, but at least the effect is close.
-     (when (and company-selection company-preview-overlay)
+     (when company-selection
        (let* ((current (nth company-selection company-candidates)))
          (company-preview-show-at-point (point) current))))
     (`post-command
@@ -4687,18 +4688,19 @@ Delay is determined by `company-tooltip-idle-delay'."
 
 (defun company-preview-if-just-one-frontend (command)
   "`company-preview-frontend', but only shown for single candidates."
-  (cond
-   ((company--show-inline-p)
-    (company-preview-frontend command))
-   ;; Do nothing if not inline:
-   ((memq command '(post-command unhide)))
-   ;; Hide and discard, to skip `unhide':
-   ((eq command 'pre-command)
-    (company-preview-hide))
-   (t ;; Only `hide', currently.
-    (company-preview-frontend command))))
+  (when (or (not (memq command '(post-command unhide)))
+            (company--show-inline-p))
+    (company-preview-frontend command)))
 
 (defun company--show-inline-p ()
+  (let* ((new (or (company--show-inline-check) 'no))
+         (_ (unless company--show-inline
+              (setq company--show-inline new)))
+         (old
+          (not (eq company--show-inline 'no))))
+    (and old (not (eq new 'no)))))
+
+(defun company--show-inline-check ()
   (let* ((boundaries (and company-candidates (company--boundaries)))
          (prefix (car boundaries))
          (suffix (cdr boundaries))
