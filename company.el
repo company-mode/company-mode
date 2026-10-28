@@ -4693,6 +4693,10 @@ Delay is determined by `company-tooltip-idle-delay'."
     (company-preview-frontend command)))
 
 (defun company--show-inline-p ()
+  ;; This function is called from frontends' `pre-command' and `unhide', the
+  ;; former before the prefix change, and the latter after.  But with
+  ;; `company-candidates' still having the previous value.  So we check whether
+  ;; inline display fit both old and new prefixes.
   (let* ((new (or (company--show-inline-check) 'no))
          (_ (unless company--show-inline
               (setq company--show-inline new)))
