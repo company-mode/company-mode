@@ -122,6 +122,7 @@ Users of HiDPI screens might like to set it to 2."
                   ;; Might bite us if the posn-at-point behavior changes
                   ;; someday, but the odds seem low.
                   after-string-width))
+    (setcdr xy (- (cdr xy) border-width))
     (when (< (plist-get info :posframe-height) min-bottom-distance)
       (cl-decf (cadr (plist-member info :parent-frame-height))
                (- min-bottom-distance (plist-get info :posframe-height))))
