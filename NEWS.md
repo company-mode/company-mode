@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-# Next
+# 2026-11-06 (1.2.0)
 
 * Typed char is shown right away, with minimal latency
   ([#1553](https://github.com/company-mode/company-mode/pull/1553)).
