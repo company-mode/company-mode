@@ -143,8 +143,10 @@ so we can't just use the preceding variable instead.")
                          :company-docsig)))
        (when f (funcall f arg))))
     (`doc-buffer
-     (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
-                         :company-doc-buffer)))
+     (cl-letf ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
+                             :company-doc-buffer))
+               ((symbol-function #'help-buffer) ;; Work around bug#79792
+                (lambda () (get-buffer-create " *company-capf-doc*"))))
        (when f (funcall f arg))))
     (`location
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
