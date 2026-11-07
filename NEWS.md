@@ -2,6 +2,8 @@
 
 # Next
 
+* `C-M-i` is remapped to `company-complete-common` in all supported buffers
+  ([#1536](https://github.com/company-mode/company-mode/pull/1536)).
 * Legacy bindings on `C-h`/`<f1>` and `C-w` have been removed.
 
 # 2026-11-06 (1.2.0)
