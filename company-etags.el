@@ -136,6 +136,7 @@ Set it to t or to a list of major modes."
                              company-etags--boundaries)))
     (expand-common (company-etags--expand-common arg (car rest)))
     (no-cache company-etags-completion-styles)
+    (kind 'text)
     (location (let ((tags-table-list (company-etags-buffer-table)))
                 (when (fboundp 'find-tag-noselect)
                   (save-excursion
