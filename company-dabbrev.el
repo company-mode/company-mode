@@ -79,6 +79,12 @@ Any other value means downcase."
           (const :tag "Downcase" t)
           (const :tag "Use case-replace" case-replace)))
 
+(defcustom company-dabbrev-maximum-length 80
+  "The maximum length for the completion candidate to be included.
+This variable affects both `company-dabbrev' and `company-dabbrev-code'."
+  :type 'integer
+  :package-version '(company . "1.1.1"))
+
 (defcustom company-dabbrev-minimum-length 4
   "The minimum length for the completion candidate to be included.
 This variable affects both `company-dabbrev' and `company-dabbrev-code'."
@@ -112,6 +118,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
                  ()
                  (let ((match (match-string-no-properties 0)))
                    (when (and (>= (length match) company-dabbrev-minimum-length)
+                              (<= (length match) company-dabbrev-maximum-length)
                               (not (and company-dabbrev-ignore-invisible
                                         (invisible-p (match-beginning 0)))))
                      (puthash match t symbols)))))

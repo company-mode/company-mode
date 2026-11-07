@@ -25,6 +25,7 @@
 (require 'company-tests)
 (require 'company-capf)
 (require 'cl-lib)
+(require 'company-childframe)
 
 (defmacro company-capf-with-buffer (contents &rest body)
   (declare (indent 0) (debug (sexp &rest form)))

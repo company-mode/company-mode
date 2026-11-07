@@ -2,8 +2,8 @@
 @c %**start of header
 @setfilename company.info
 @settitle Company User Manual
-@set VERSION 1.0.3-snapshot
-@set UPDATED 7 December 2024
+@set VERSION 1.1.0
+@set UPDATED 3 July 2026
 @documentencoding UTF-8
 @documentlanguage en
 @paragraphindent asis
@@ -13,12 +13,13 @@
 This user manual is for Company version @value{VERSION}
 @w{(@value{UPDATED})}.
 
-Copyright @copyright{} 2021-2024  Free Software Foundation, Inc.
+Copyright @copyright{} 2021-2026  Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation.
+any later version published by the Free Software Foundation, with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
 @end quotation
 @end copying
 
@@ -105,9 +106,9 @@ Backends
 
 @dfn{Company} is a modular text completion framework for GNU Emacs.
 
-In other words, it is a package for retrieving, manipulating, and
-displaying text completion candidates. It aims to assist developers,
-writers, and scientists during code and text writing.
+In other words, it is a package for collecting, displaying, and acting
+on completion candidates.  It aims to help developers, writers, and
+scientists write code and prose.
 
 @menu
 * Terminology::
@@ -119,30 +120,24 @@ writers, and scientists during code and text writing.
 
 @cindex completion
 @cindex complete
-@dfn{Completion} is an act of intelligently guessing possible variants
-of words based on already typed characters.  To @dfn{complete} a word
-means to insert a correctly guessed variant into the buffer.
+@dfn{Completion} is the process of suggesting possible text based on
+what has already been typed.  To @dfn{complete} text means to insert
+one of those suggestions into the buffer.
 
 @cindex candidate
 @cindex prefix matches
 @cindex non-prefix matches
-Consequently, the @dfn{candidates} are the aforementioned guessed
-variants of words.  Each of the candidates has the potential to be
-chosen for successful completion.  And each of the candidates contains
-the initially typed characters: either only at the beginning
-(so-called @dfn{prefix matches}), or also inside of a candidate
-(@dfn{non-prefix matches}).  Which matching method is used, depends on
-the current @emph{backend} (@pxref{Structure}).  @code{company-capf} is
-an example of a backend that supports a number of particular
-non-prefix matching algorithms which are configurable through the user
-option @code{completion-styles}, which see.  For illustrations on how
-Company visualizes the matches, @pxref{Frontends}.
+A @dfn{candidate} is one possible completion.  Candidates usually
+match the text before point either at the beginning (@dfn{prefix
+matches}) or somewhere inside the candidate (@dfn{non-prefix matches}).
+The matching method depends on the current @emph{backend}
+(@pxref{Structure}).  For example, @code{company-capf} supports
+several non-prefix matching styles configured through the user option
+@code{completion-styles}, which see.  For examples of how Company
+shows matches, @pxref{Frontends}.
 
-The package's name @samp{Company} is based on the combination of the
-two words: @samp{Complete} and @samp{Anything}.  These words reflect
-the package's commitment to handling completion candidates and its
-extensible nature allowing it to cover a wide range of usage
-scenarios.
+The package name @samp{Company} combines @samp{Complete} and
+@samp{Anything}, reflecting its extensible design.
 
 @node Structure
 @section Structure
@@ -152,39 +147,33 @@ scenarios.
 @cindex extensible
 @cindex backend
 @cindex frontend
-The Company is easily extensible because its significant building
-blocks are pluggable modules: backends (@pxref{Backends}) and
-frontends (@pxref{Frontends}).
+Company is extensible because its main building blocks are pluggable
+modules: backends (@pxref{Backends}) and frontends (@pxref{Frontends}).
 
 @cindex backend
 @cindex frontend
 @cindex module
 @cindex third-party
-The @dfn{backends} are responsible for retrieving completion
-candidates; which are then displayed by the @dfn{frontends}.  For an
-easy and quick initial setup, Company is supplied with the
-preconfigured sets of the backends and frontends.  The default
-behavior of the modules can be adjusted for particular needs, and
-preferences.  It is also typical to utilize backends from a variety of
+@dfn{Backends} collect completion candidates, and @dfn{frontends}
+display them.  Company comes with preconfigured sets of the backends
+and frontends, which can be adjusted to fit particular needs and
+preferences.  It is also common to use backends from
 @uref{https://github.com/company-mode/company-mode/wiki/Third-Party-Packages,
-third-party libraries}, developed to be pluggable with Company.
+third-party packages}.
 
-But Company consists not only of the backends and frontends.
-
-A core of the package plays the role of a controller, connecting the
-modules, making them work together; and exposing configurations and
-commands for the user to operate with.  For more details,
-@ref{Customization} and @ref{Commands}.
+Around these modules, Company provides the coordination logic,
+commands, and user options.  For more details, @ref{Customization} and
+@ref{Commands}.
 
 @cindex TAB
 @cindex company-tng
 @cindex Tab and Go
 @findex company-tng-frontend
 @findex company-tng-mode
-Also, Company is bundled with an alternative workflow configuration
-@dfn{company-tng} --- defining @code{company-tng-frontend},
-@code{company-tng-mode}, and @w{@code{company-tng-map}} --- that
-allows performing completion with just @key{TAB}.  To enable this
+Company is also bundled with an alternative workflow configuration
+called @dfn{company-tng}.  It defines @code{company-tng-frontend},
+@code{company-tng-mode}, and @w{@code{company-tng-map}}, and allows
+performing completion with just @key{TAB}.  To enable this
 configuration, add the following line to the Emacs initialization file
 (@pxref{Init File,,,emacs}):
 
@@ -245,6 +234,13 @@ To have Company always enabled for the following sessions, add the
 line @w{@code{(global-company-mode)}} to the Emacs configuration file
 (@pxref{Init File,,,emacs}).
 
+@vindex company-global-minibuffer
+When @code{company-global-minibuffer} is non-nil (the default),
+Company can be used in the minibuffer as well.  The necessary
+conditions are that a supported popup frontend is configured (any of
+@code{company-childframe-*-frontend}), and the minibuffer has a local
+value of @code{completion-at-point-functions}.
+
 @node Usage Basics
 @section Usage Basics
 
@@ -285,7 +281,7 @@ Hit @key{RET} to choose a selected candidate for completion.
 @kindex TAB
 Hit @key{TAB} to expand the @dfn{common part} of all completions.
 Exactly what that means, can vary by backend.  In the simplest case
-it's the longest string that all completion start with, but when a
+it is the longest string that all completions start with, but when a
 backend returns @emph{non-prefix matches}, it can implement the same
 kind of expansion logic for the input string.
 
@@ -343,7 +339,22 @@ Insert the @emph{common part} of all completion candidates or --- if
 no @emph{common part} is present --- select the next candidate
 (@code{company-complete-common-or-cycle}).  In the latter case,
 wraparound is implicitly enabled
-(@pxref{company-selection-wrap-around}).
+(@pxref{company-selection-wrap-around}).  The @emph{common part}
+behavior can add characters before and after point, as decided by the
+backend's implementation.
+
+@item S-TAB
+@itemx <backtab>
+@kindex S-TAB
+@cindex cycle backwards
+@findex company-cycle-backward
+Select the previous candidate, with wraparound implicitly enabled.
+
+@item C-M-i
+@kindex C-M-i
+@cindex common part
+@findex company-complete-common
+Insert the @emph{common part} of all completion candidates.
 
 @item C-g
 @itemx <ESC ESC ESC>
@@ -356,19 +367,18 @@ wraparound is implicitly enabled
 @findex company-abort
 Cancel @emph{company-mode} activity (@code{company-abort}).
 
-@item C-h
-@itemx <F1>
-@kindex C-h
+@item M-h
+@kindex M-h
 @cindex doc
 @findex company-show-doc-buffer
 Display a buffer with the documentation for the selected candidate
 (@w{@code{company-show-doc-buffer}}).  With a prefix argument
-(@kbd{C-u C-h}, @kbd{C-u @key{F1}}), this command toggles between
-temporary showing the documentation and keeping the documentation
-buffer up-to-date whenever the selection changes.
+(@kbd{C-u M-h}), this command toggles between temporary showing the
+documentation and keeping the documentation buffer up-to-date whenever
+the selection changes.
 
-@item C-w
-@kindex C-w
+@item M-g
+@kindex M-g
 @cindex definition
 @cindex location
 @findex company-show-location
@@ -383,7 +393,6 @@ a more user-friendly output of the pre-defined key bindings, utilize
 @w{@kbd{M-x describe-keymap @key{RET} company-active-map}} or @w{@kbd{C-h
 f @key{RET} company-mode}}.}.
 
-@findex company-complete-common
 @findex company-indent-or-complete-common
 @findex company-complete
 Moreover, Company is bundled with a number of convenience commands
@@ -482,8 +491,8 @@ when in the middle of a symbol.
 This option allows to specify in which major modes @emph{company-mode}
 can be enabled by @code{(global-company-mode)}. @xref{Initial Setup}.
 The default value of @code{t} enables Company in all major modes.
-Setting @code{company-global-modes} to @code{nil} equal in action to
-toggling off @emph{global-company-mode}.  Providing a list of major
+Setting @code{company-global-modes} to @code{nil} is equal in action
+to toggling off @emph{global-company-mode}.  Providing a list of major
 modes results in having @emph{company-mode} enabled in the listed
 modes only.  For the opposite result, provide a list of major modes
 with @code{not} being the first element of the list, as shown in the
@@ -515,7 +524,7 @@ option configured to call the function
 @end defopt
 
 @defopt company-lighter-base
-This user options allows to configure a string indicator of the
+This user option allows configuring a string indicator of the
 enabled @emph{company-mode} in the mode line.  The default value is
 @samp{company}.
 @end defopt
@@ -543,7 +552,7 @@ one of: a string of characters, a list of syntax description
 characters (@pxref{Syntax Class Table,,,elisp}), or a predicate
 function.  By default, this user option is set to the list of the
 syntax characters: @w{@code{(?\ ?\) ?.)}}, which translates to the
-whitespaces, close parenthesis, and punctuation.  It is safe to
+whitespace, close parenthesis, and punctuation.  It is safe to
 configure the value to a character that can potentially be part of a
 valid completion; in this case, Company does not treat such characters
 as triggers.
@@ -599,26 +608,71 @@ quick-accessed.
 @section Tooltip Frontends
 
 @cindex tooltip
+@cindex popup
 @cindex pop-up
-This group of frontends displays completion candidates in an overlayed
-tooltip (aka @w{pop-up}).  Company provides three @emph{tooltip
-frontends}, listed below.
+This group of frontends displays completion candidates in a
+rectangular tooltip (aka @w{popup}).  Company provides two sets of
+@emph{tooltip frontends}.  They are described in this section,
+together with user options and @emph{faces} that affect them.
+
+@menu
+* Childframe Frontends::
+* Pseudo-Tooltip Frontends::
+* User Options::
+* Candidates Icons::
+* Faces::
+@end menu
+
+@node Childframe Frontends
+@subsection Childframe Frontends
+
+@cindex childframe
+The ``childframe'' family of frontends naturally uses a special frame
+to show the popup above the buffer.  It can cross window boundaries
+and works in the minibuffer.  On some builds it is implemented using
+X11 child windows, while on others it uses native widgets. It also
+works in the terminal starting with Emacs 31.
+
+@defun company-childframe-unless-just-one-frontend
+This is one of the default frontends (except in Emacs<31.1 under X11).
+It starts displaying its graphical tooltip only if more than one
+completion candidate is available, which nicely combines --- and it is
+done so by default --- with
+@code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
+@end defun
+
+@defun company-childframe-frontend
+This frontend shows its tooltip for any number of completion
+candidates.  It is the basic version that related frontends extend.
+@end defun
+
+@node Pseudo-Tooltip Frontends
+@subsection Pseudo-Tooltip Frontends
+
+@cindex pseudo-tooltip
+The ``pseudo-tooltip'' family of frontends uses ``overlays'' (a
+display engine feature) to render the popup inside the buffer.  It has
+a stable and fast implementation, with known caveats: it is limited to
+the bounds of the buffer's window, and rendering might be partially
+incorrect in buffers with mixed fonts, complex formatting involving
+faces, display specs, or certain glyphs.
 
 @defun company-pseudo-tooltip-unless-just-one-frontend
-This is one of the default frontends.  It starts displaying a tooltip
-only if more than one completion candidate is available, which nicely
-combines --- and it is done so by default --- with
+This has been the default frontend before the introduction of the
+``childframe'' family of frontends (now it remains such in Emacs<31.1
+under X11).  It starts displaying a tooltip only if more than one
+completion candidate is available, which nicely combines with
 @code{company-preview-if-just-one-frontend}, @ref{Preview Frontends}.
 @end defun
 
 @defun company-pseudo-tooltip-frontend
 This frontend outputs a tooltip for any number of completion
-candidates.
+candidates.  It is the basic version that related frontends extend.
 @end defun
 
 @defun company-pseudo-tooltip-unless-just-one-frontend-with-delay
 @vindex company-tooltip-idle-delay
-This is a peculiar frontend, that displays a tooltip only if more than
+This is a peculiar frontend that displays a tooltip only if more than
 one candidate is available, and only after a delay.  The delay can be
 configured with the user option @w{@code{company-tooltip-idle-delay}}.
 A typical use case for plugging in this frontend would be displaying a
@@ -645,7 +699,8 @@ following example:
 @end lisp
 @end defun
 
-@subheading User Options
+@node User Options
+@subsection User Options
 
 @macro img{name}
 @ifnothtml
@@ -698,7 +753,7 @@ available candidates is larger than this option's value, Company
 paginates the results.
 
 @lisp
-(setq company-tooltip-limit 4)
+(setq company-tooltip-limit 5)
 @end lisp
 
 @img{tooltip-limit}
@@ -726,7 +781,7 @@ the bottom of a window is less than @w{@code{company-tooltip-minimum}}
 value, the tooltip is displayed above point.
 
 @lisp
-(setq company-tooltip-minimum 4)
+(setq company-tooltip-minimum 5)
 @end lisp
 
 @img{tooltip-minimum-below}
@@ -743,7 +798,8 @@ When this setting is enabled, no matter if a tooltip is shown above or
 below point, the candidates are always listed starting near point.
 (Putting it differently, the candidates are mirrored vertically if a
 tooltip changes its position, instead of being commonly listed
-top-to-bottom.)
+top-to-bottom.)  This is only supported by the ``pseudo tooltip''
+backends for now.
 
 @lisp
 (setq company-tooltip-flip-when-above t)
@@ -755,27 +811,26 @@ top-to-bottom.)
 @defopt company-tooltip-minimum-width
 Sets the minimum width of a tooltip, excluding the margins and the
 scroll bar.  Changing this value especially makes sense if the user
-navigates between tooltip pages.  Keeping this value at the default
-@code{0} allows Company to always adapt the width of the tooltip to
-the longest shown candidate.  Enlarging
-@code{company-tooltip-minimum-width} prevents possible significant
-shifts in the width of the tooltip when navigating to the
-next/previous tooltip page.  (For an alternate solution, see
-@code{company-tooltip-width-grow-only}.)
+navigates between tooltip pages.  The default value of @code{15} helps
+reduce how often the tooltip's size changes when you are typing or
+paging.  Set it to a higher value to limit the resizes further.  Or
+vice versa, to @code{0}, to always adapt to the longest shown candidate.
+And see the related option @code{company-tooltip-width-grow-only}.
 @end defopt
 
 @defopt company-tooltip-width-grow-only
-This is another way to restrict auto-adaptation of the tooltip width
-(another is by adjusting @code{company-tooltip-minimum-width} value)
-when navigating between the tooltip pages.
+This is another way to reduce how often the tooltip resizes (in
+addition to @code{company-tooltip-minimum-width}), prohibiting
+reducing the width within one completion session when this option is
+non-nil.  And when the value is a number, this is the maximum width up
+to which the non-shrink behavior has effect.  The default value is
+@code{50}.
 @end defopt
 
 @defopt company-tooltip-maximum-width
 This user option controls the maximum width of the tooltip inner area.
-By default, its value is pseudo-limitless, potentially permitting the
-output of extremely long candidates.  But if long lines become an
-issue, set this option to a smaller number, such as @code{60} or
-@code{70}.
+By default, its value is @code{100}.  Change it to allow different
+limits.
 @end defopt
 
 @defopt company-tooltip-margin
@@ -791,7 +846,8 @@ inner area.  If @code{company-format-margin-function} is set,
 @img{tooltip-margin}
 @end defopt
 
-@subheading Candidates Icons
+@node Candidates Icons
+@subsection Candidates Icons
 
 @cindex icon
 @cindex kind
@@ -806,9 +862,9 @@ see the user option @code{company-text-icons-mapping} or the variable
 @defopt company-format-margin-function
 @cindex margin
 Allows setting a function to format the left margin of a tooltip inner
-area; namely, to output candidate's @emph{icons}.  The predefined
+area; namely, to output candidates' @emph{icons}.  The predefined
 formatting functions are listed below.  The user may also set this
-option to a custom function. To disable left margin formatting, set
+option to a custom function.  To disable left margin formatting, set
 the value of the option to @code{nil} (this way control over the size
 of the left margin returns to the user option
 @code{company-tooltip-margin}).
@@ -830,7 +886,7 @@ options are @code{company-icon-size} and @code{company-icon-margin}.
 
 @defun company-text-icons-margin
 @vindex company-text-icons-format
-This function produces letters and symbols formatted according to the
+This function produces letters and symbols formatted according to
 @w{@code{company-text-icons-format}}.  The rest of the user options
 affecting this function behavior are listed below.
 
@@ -878,13 +934,15 @@ generated background is applied.
 @end defopt
 
 @defun company-detect-icons-margin
-This is the default margin formatting function, that applies one of
+This is the default margin formatting function that applies one of
 the @w{@code{company-vscode-*-icons-margin}} functions if
 @samp{vscode} icons set is supported; otherwise applies a
 @w{@code{company-text-icons-margin}} function.
 @end defun
 
-@subheading Faces
+@node Faces
+@subsection Faces
+
 @cindex company-tooltip
 @cindex face
 @cindex font
@@ -902,7 +960,7 @@ on where to start customizing Company interface.
 Namely, the look of a tooltip is controlled by the
 @code{company-tooltip*} named faces.
 
-The following example suggests how users may approach tooltip faces
+The following example suggests how users may approach tooltip face
 customization:
 
 @lisp
@@ -912,8 +970,8 @@ customization:
  '(company-tooltip-selection
    ((t (:background "LemonChiffon1" :foreground "MistyRose4"))))
  '(company-tooltip-common ((t (:weight bold :foreground "pink1"))))
- '(company-scrollbar-fg ((t (:background "ivory3"))))
- '(company-scrollbar-bg ((t (:background "ivory2"))))
+ '(company-tooltip-scrollbar-thumb ((t (:background "ivory3"))))
+ '(company-tooltip-scrollbar-track ((t (:background "ivory2"))))
  '(company-tooltip-annotation ((t (:foreground "MistyRose2")))))
 @end lisp
 
@@ -976,7 +1034,7 @@ The look of the preview is controlled by the following faces:
 @cindex face
 @cindex company-echo
 The frontends listed in this section display information in the
-Emacs's echo area, @ref{Echo Area,,,emacs}.
+Emacs echo area, @ref{Echo Area,,,emacs}.
 
 @defun company-echo-metadata-frontend
 This frontend is a part of the predefined frontends set.  Its
@@ -1029,7 +1087,7 @@ the faces @w{@code{company-echo}} and @code{company-echo-common}.
 By default, when @emph{company-mode} is in action, a key binding
 @kbd{C-s} starts looking for matches to additionally typed characters
 among the displayed candidates.  When a search is initiated, an
-indicator @w{@samp{Search: CHARACTERS}} is shown in the Emacs's mode
+indicator @w{@samp{Search: CHARACTERS}} is shown in the Emacs mode
 line.
 
 @kindex C-g
@@ -1038,8 +1096,9 @@ To quit the search mode, hit @kbd{C-g}.
 @defopt company-search-regexp-function
 The value of this user option must be a function that interprets the
 search input.  By default it is set to the function
-@code{regexp-quote}, with looks for an exact match.  Company defines
-several more functions suitable for this option. They are listed below.
+@code{company-search-words-in-any-order-regexp}, which looks for
+matching words in any order.  Company defines several more functions
+suitable for this option. They are listed below.
 @end defopt
 
 @defun company-search-words-regexp
@@ -1052,6 +1111,11 @@ Searches for words separated with spaces in any order.
 
 @defun company-search-flex-regexp
 Searches for characters in the given order, with anything in between.
+@end defun
+
+@defun company-search-flex-words-in-any-order-regexp
+Searches for words separated with spaces in any order, with anything
+in between the characters of each word.
 @end defun
 
 @cindex custom
@@ -1131,7 +1195,7 @@ approach:
 @end lisp
 
 A modifier should be one of @code{meta}, @code{super}, @code{hyper},
-@code{ control}.
+@code{control}.
 
 @cindex face
 @cindex font
@@ -1140,7 +1204,7 @@ A modifier should be one of @code{meta}, @code{super}, @code{hyper},
 @cindex custom
 @cindex configure
 The following example applies a bit of customization and demonstrates
-how to change quick-access hints faces.
+how to change quick-access hint faces.
 
 @lisp
 (setq company-show-quick-access t)
@@ -1218,7 +1282,7 @@ like:
 It is also possible to specifically start a backend with the command
 @w{@kbd{M-x company-begin-backend}} or by calling a backend by its
 name, for instance: @w{@kbd{M-x company-capf}}.  As usual for Emacs,
-such backends calls can be assigned to key bindings, for example:
+such backend calls can be assigned to key bindings, for example:
 
 @lisp
 (global-set-key (kbd "C-c y") 'company-yasnippet)
@@ -1354,7 +1418,7 @@ Value t means complete in all modes.
 @end defopt
 
 @defopt company-dabbrev-code-other-buffers
-This variable determined whether @code{company-dabbrev-code} will
+This variable determines whether @code{company-dabbrev-code} will
 search other buffers for completions.  If @code{all}, it will search
 all other buffers except the ignored ones (names starting with a
 space).  If @code{t}, it will search buffers with the same major mode.
@@ -1456,6 +1520,14 @@ the behavior of the @emph{company-dabbrev-code} backend.
 @end lisp
 @end defopt
 
+@defopt company-dabbrev-maximum-length
+This option sets the maximum length of a completion candidate to
+collect from the text.  The default value of @samp{80} is intended to
+prevent noise in case dabbrev parses non-legible text (like obfuscated
+code or base64 text) Note that this option also affects the behavior
+of the @emph{company-dabbrev-code} backend.
+@end defopt
+
 @defopt company-dabbrev-other-buffers
 By default, @emph{company-dabbrev} collects completion candidates from
 all not ignored buffers (see more on that below).  This behavior can
@@ -1512,7 +1584,7 @@ transformation is performed; in the environment described above,
 typing @samp{Enj} results in the candidate @samp{Enjoy} being
 suggested.  When the option is set to @code{t}, the down-cased
 candidate @samp{enjoy} is suggested.  By default, this option is set
-to @code{case-replace}, meaning taking a value of the Emacs's variable
+to @code{case-replace}, meaning taking the value of the Emacs variable
 @code{case-replace} (@code{t} is the current default).
 @end defopt
 
@@ -1526,7 +1598,7 @@ a built-in Emacs package that performs spell-checking.
 @emph{Ispell} uses only one dictionary at a time (combining several
 dictionaries into one file is an accepted practice).  By default,
 @emph{company-ispell} suggests candidates from a dictionary specified
-by the Emacs's setting @code{ispell-complete-word-dict}.
+by the Emacs setting @code{ispell-complete-word-dict}.
 
 @defopt company-ispell-dictionary
 Optionally, set a file path for @emph{company-ispell} to use another
@@ -1552,20 +1624,6 @@ look this way:
 @lisp
 (setq company-files-exclusions '(".git/" ".DS_Store"))
 @end lisp
-@end defopt
-
-@defopt company-files-chop-trailing-slash
-This setting is enabled by default, which results in stripping off a
-trailing slash from an inserted directory name.  On typing a trailing
-slash, the process of completion gets started again, from inside the
-just inserted directory.
-
-Setting @w{@code{company-files-chop-trailing-slash}} to @code{nil}
-makes directory names to be inserted as is, with a trailing slash.  In
-this case, the completion process can be continued, for example,
-either by explicitly calling @emph{company-files} backend
-(@pxref{Backends Usage Basics}) or by starting typing a name of a
-file/directory known to be located under the inserted directory.
 @end defopt
 
 @end defun

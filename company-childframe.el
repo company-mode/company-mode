@@ -85,32 +85,82 @@ Users of HiDPI screens might like to set it to 2."
   #'company-childframe-show-at-prefix
   "Poshandler for the completion dialog.")
 
+(defvar company-childframe--shown-above nil)
+
 (defun company-childframe-show-at-prefix (info)
   "Poshandler showing `company-childframe' at `company-prefix'."
   (let* ((parent-window (plist-get info :parent-window))
-         (point (with-current-buffer (window-buffer parent-window)
-                  (- (plist-get info :position)
-                     (plist-get info :company-prefix-length))))
+         (point (- (plist-get info :position)
+                   (plist-get info :company-prefix-length)))
+         (ls nil)
+         (after-string-width
+          (with-current-buffer (window-buffer parent-window)
+            (setq ls
+                  (company-childframe--line-spacing
+                   (or line-spacing 0)
+                   (plist-get info :font-height)))
+            (thread-last
+              (and (= point (point-max))
+                   (overlays-in point point))
+              (mapcar (lambda (o) (company--string-pixel-width
+                              (overlay-get o 'after-string))))
+              (cl-reduce #'+))))
          (posn (posn-at-point point parent-window))
          ;; TODO: Strictly speaking, if company-childframe-font is not nil, that
          ;; should be used to find the default width...
          (expected-margin-width (* (plist-get info :company-margin) (default-font-width)))
-         (xy (posn-x-y posn)))
-    (setcar xy (- (car xy) expected-margin-width (if (display-graphic-p)
-                                                     company-childframe-border-width
-                                                   0)))
-    (posframe-poshandler-point-bottom-left-corner (plist-put info :position posn))))
+         (border-width (if (display-graphic-p)
+                           company-childframe-border-width
+                         0))
+         (min-bottom-distance (+ (* company-tooltip-minimum
+                                    (+ ls (plist-get info :font-height)))
+                                 (* 2 border-width)))
+         (xy (posn-x-y posn))
+         handler-res)
+    (setcar xy (- (car xy) expected-margin-width
+                  border-width
+                  ;; Might bite us if the posn-at-point behavior changes
+                  ;; someday, but the odds seem low.
+                  after-string-width))
+    (setcdr xy (- (cdr xy) border-width))
+    (when (< (plist-get info :posframe-height) min-bottom-distance)
+      (cl-decf (cadr (plist-member info :parent-frame-height))
+               (- min-bottom-distance (plist-get info :posframe-height))))
+    (setq handler-res
+          (posframe-poshandler-point-bottom-left-corner
+           (plist-put info :position posn)))
+    (setq company-childframe--shown-above
+          (> (+
+              (nth 1 (window-body-pixel-edges parent-window))
+              (cdr (posn-x-y posn)))
+             (cdr handler-res)))
+    (unless company-childframe--shown-above
+      (setcdr handler-res (+ (cdr handler-res) ls)))
+    handler-res))
+
+(defun company-childframe--line-spacing (spacing font-height)
+  (let ((total
+         (pcase spacing
+           ((pred numberp) spacing)
+           (`(,above . ,below) (+ above below)))))
+    (if (floatp total)
+        (truncate (* total font-height))
+      total)))
 
 (defun company-childframe-show ()
   "Show company-childframe candidate menu."
   (defvar x-wait-for-event-timeout)
   (defvar x-fast-protocol-requests)
+  (defvar x-use-fast-mouse-position)
   (let* ((x-wait-for-event-timeout (and (>= emacs-major-version 31)
                                         ;; debbugs#80662
-                                        x-wait-for-event-timeout))
+                                        (bound-and-true-p
+                                         x-wait-for-event-timeout)))
          (before-make-frame-hook)
          (after-make-frame-functions)
          (x-fast-protocol-requests t)
+         (x-use-fast-mouse-position 'really-fast)
+         (posframe-mouse-banish-function #'ignore)
          (height (min company-tooltip-limit
                       (if company-search-mode
                           (1+ company-candidates-length)
@@ -147,8 +197,13 @@ Users of HiDPI screens might like to set it to 2."
            :poshandler company-childframe-poshandler
            :poshandler-extra-info
            (list :company-margin margin
-                 :company-prefix-length (length company-prefix))
+                 :company-prefix-length (length (car (company--boundaries))))
            company-childframe-show-params)
+    (when (and company-childframe--shown-above
+               company-tooltip-flip-when-above)
+      (with-current-buffer buffer
+        (erase-buffer)
+        (insert (mapconcat #'identity (reverse lines) "\n"))))
     (with-current-buffer buffer
       (use-local-map company-childframe-buffer-map)
       (setq company-childframe--frame posframe--frame)
@@ -163,7 +218,9 @@ Users of HiDPI screens might like to set it to 2."
   (when (and (frame-live-p company-childframe--frame)
              (frame-visible-p company-childframe--frame))
     ;; PGTK/NS/W32 protocols can update the display atomically.
-    (when (eq window-system 'x)
+    (when (and (eq window-system 'x)
+               ;; https://debbugs.gnu.org/80961
+               (< emacs-major-version 32))
       ;; Seems to help avoid the final flicker - probably by keeping the parent's
       ;; display matrix up to date (so it can repaint on Expose immediately).
       (redisplay))
@@ -184,7 +241,9 @@ For COMMAND refer to `company-frontends'."
     (hide
      (company-childframe-hide))
     (post-command
-     (company-childframe-show))
+     (when (equal (window-buffer (selected-window))
+                  (current-buffer))
+       (company-childframe-show)))
     (select-mouse
      (company-childframe--select-mouse))))
 

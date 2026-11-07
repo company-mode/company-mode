@@ -1044,15 +1044,17 @@
 
 (ert-deftest company-capf-completions ()
   (let ((table '("ab-de-b" "ccc" "abc-de-b")))
-    (let ((completion-styles '(partial-completion)))
+    (let* ((completion-styles '(partial-completion))
+           (res (company--capf-completions "ab-d" "b" table)))
       (should
-       (equal (company--capf-completions "ab-d" "b" table)
-              '((:completions . ("ab-de-b" "abc-de-b"))
-                (:boundaries . ("ab-d" . "b"))))))
-    (let ((completion-styles '(emacs22)))
+       (equal (assoc-default :completions res) '("ab-de-b" "abc-de-b")))
       (should
-       (equal (company--capf-completions "ab-d" "b" table)
-              '((:completions . ("ab-de-b"))
-                (:boundaries . ("ab-d" . ""))))))))
+       (equal (assoc-default :boundaries res) '("ab-d" . "b"))))
+    (let* ((completion-styles '(emacs22))
+           (res (company--capf-completions "ab-d" "b" table)))
+      (should
+       (equal (assoc-default :completions res) '("ab-de-b")))
+      (should
+       (equal (assoc-default :boundaries res) '("ab-d" . ""))))))
 
 ;;; core-tests.el ends here.

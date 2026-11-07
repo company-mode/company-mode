@@ -60,7 +60,7 @@
 ;; you can use the arrow keys or M-n/M-p to select and insert
 ;; candidates. You also need to decide which keys to unbind, depending
 ;; on whether you want them to do the Company action or the default
-;; Emacs action (for example C-s or C-w).
+;; Emacs action (for example C-s or M-g).
 ;;
 ;; We recommend to disable `company-require-match' to allow free typing at any
 ;; point.

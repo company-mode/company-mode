@@ -81,6 +81,7 @@ parameter and returns a list of major modes to search.  See also
 
 (defvar-local company-dabbrev--boundaries nil)
 (defvar-local company-dabbrev-code--sorted nil)
+(defvar-local company-dabbrev-code--hilit-fn nil)
 
 (defun company-dabbrev-code--make-regexp (prefix)
   (let ((prefix-re
@@ -125,7 +126,10 @@ comments or strings."
     (no-cache t)
     (ignore-case company-dabbrev-code-ignore-case)
     (match (when company-dabbrev-code-completion-styles
-             (company--match-from-capf-face arg)))
+             (company--match-from-capf-face
+              (company--lazy-hilit
+               arg
+               company-dabbrev-code--hilit-fn))))
     (duplicates t)))
 
 (defun company-dabbrev-code--expand-common (prefix suffix)
@@ -180,7 +184,9 @@ comments or strings."
       (setq company-dabbrev--boundaries
             (company--capf-boundaries-markers
              (assoc-default :boundaries res)
-             company-dabbrev--boundaries))
+             company-dabbrev--boundaries)
+            company-dabbrev-code--hilit-fn
+            (assoc-default :hilit-fn res))
       (assoc-default :completions res))))
 
 (provide 'company-dabbrev-code)
