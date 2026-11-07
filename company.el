@@ -913,10 +913,7 @@ asynchronous call into synchronous.")
     (define-key keymap (kbd "TAB") 'company-complete-common-or-cycle)
     (define-key keymap [backtab] 'company-cycle-backward)
     (define-key keymap (kbd "C-M-i") 'company-complete-common)
-    (define-key keymap (kbd "<f1>") 'company--show-doc-buffer-and-warn)
-    (define-key keymap (kbd "C-h") 'company--show-doc-buffer-and-warn)
     (define-key keymap (kbd "M-h") 'company-show-doc-buffer)
-    (define-key keymap (kbd "C-w") 'company--show-location-and-warn)
     (define-key keymap (kbd "M-g") 'company-show-location)
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
@@ -925,13 +922,6 @@ asynchronous call into synchronous.")
   "Keymap that is enabled during an active completion.")
 
 (defvar company--disabled-backends nil)
-
-(defun company--warn-changed-binding ()
-  (interactive)
-  (run-with-idle-timer
-   0.01 nil
-   (lambda ()
-     (message "Warning: default bindings are being changed to M-h and M-g"))))
 
 (defun company-init-backend (backend)
   (and (symbolp backend)
@@ -3621,12 +3611,6 @@ automatically show the documentation buffer for each selection."
     (company--show-doc-buffer)))
 (put 'company-show-doc-buffer 'company-keep t)
 
-(defun company--show-doc-buffer-and-warn (&optional toggle-auto-update)
-  (interactive "P")
-  (company--warn-changed-binding)
-  (company-show-doc-buffer toggle-auto-update))
-(put 'company--show-doc-buffer-and-warn 'company-keep t)
-
 (defun company-show-location ()
   "Temporarily display a buffer showing the selected candidate in context."
   (interactive)
@@ -3647,12 +3631,6 @@ automatically show the documentation buffer for each selection."
               (forward-line (1- pos))))
           (set-window-start nil (point)))))))
 (put 'company-show-location 'company-keep t)
-
-(defun company--show-location-and-warn ()
-  (interactive)
-  (company--warn-changed-binding)
-  (company-show-location))
-(put 'company--show-location-and-warn 'company-keep t)
 
 ;;; package functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

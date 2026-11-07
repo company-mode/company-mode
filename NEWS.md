@@ -1,5 +1,9 @@
 # History of user-visible changes
 
+# Next
+
+* Legacy bindings on `C-h`/`<f1>` and `C-w` have been removed.
+
 # 2026-11-06 (1.2.0)
 
 * Typed char is shown right away, with minimal latency
