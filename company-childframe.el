@@ -141,6 +141,7 @@ Users of HiDPI screens might like to set it to 2."
 (defun company-childframe--line-spacing (spacing font-height)
   (let ((total
          (pcase spacing
+           ((guard (not (display-graphic-p))) 0)
            ((pred numberp) spacing)
            (`(,above . ,below) (+ above below)))))
     (if (floatp total)
