@@ -136,8 +136,8 @@ so we can't just use the preceding variable instead.")
                    arg
                    company-capf--current-completion-hilit-fn))))
     (`duplicates t)
-    (`no-cache t)   ;Not much can be done here, as long as we handle
-                    ;non-prefix matches.
+    ;; Not much can be done here, as long as we handle non-prefix matches.
+    (`no-cache t)
     (`meta
      (let ((f (plist-get (nthcdr 4 company-capf--current-completion-data)
                          :company-docsig)))

@@ -88,9 +88,9 @@ and `c-electric-colon', for automatic completion right after \">\" and
          (setq doc (match-string 1 doc)))
     (concat summary
             (when doc
-                  (if (< (+ (length doc) (length summary) 4) (window-width))
-                      " -- "
-                    "\n"))
+              (if (< (+ (length doc) (length summary) 4) (window-width))
+                  " -- "
+                "\n"))
             doc)))
 
 (defun company-semantic-doc-buffer (tag)

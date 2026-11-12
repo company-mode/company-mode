@@ -61,8 +61,8 @@ Set it to t or to a list of major modes."
                  (list :tag "Custom list of styles" symbol))
   :package-version '(company . "1.0.0"))
 
-(defvar company-etags-modes '(prog-mode c-mode objc-mode c++-mode java-mode
-                              jde-mode pascal-mode perl-mode python-mode))
+(defvar company-etags-modes '( prog-mode c-mode objc-mode c++-mode java-mode
+                               jde-mode pascal-mode perl-mode python-mode))
 
 (defvar-local company-etags-buffer-table 'unknown)
 (defvar-local company-etags--boundaries nil)

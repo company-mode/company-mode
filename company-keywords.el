@@ -71,13 +71,13 @@
      "while")
     (crystal-mode
      ;; from https://github.com/crystal-lang/crystal-book/issues/124#issuecomment-1008311227
-    "abstract" "alias" "annotation" "as" "as?" "asm" "begin" "break" "case" "class"
-    "def" "do" "else" "elsif" "end" "ensure" "enum" "extend" "false" "for" "fun"
-    "if" "in" "include" "instance_sizeof" "is_a?" "lib" "macro" "module" "next"
-    "nil" "nil?" "of" "offsetof" "out" "pointerof" "private" "protected" "require"
-    "rescue" "responds_to?" "return" "select" "self" "sizeof" "struct" "super"
-    "then" "true" "type" "typeof" "uninitialized" "union" "unless" "until" "verbatim"
-    "when" "while" "with" "yield")
+     "abstract" "alias" "annotation" "as" "as?" "asm" "begin" "break" "case" "class"
+     "def" "do" "else" "elsif" "end" "ensure" "enum" "extend" "false" "for" "fun"
+     "if" "in" "include" "instance_sizeof" "is_a?" "lib" "macro" "module" "next"
+     "nil" "nil?" "of" "offsetof" "out" "pointerof" "private" "protected" "require"
+     "rescue" "responds_to?" "return" "select" "self" "sizeof" "struct" "super"
+     "then" "true" "type" "typeof" "uninitialized" "union" "unless" "until" "verbatim"
+     "when" "while" "with" "yield")
     (csharp-mode
      "abstract" "add" "alias" "as" "base" "bool" "break" "byte" "case"
      "catch" "char" "checked" "class" "const" "continue" "decimal" "default"
@@ -128,7 +128,8 @@
      "after" "and" "andalso" "band" "begin" "bnot" "bor" "bsl" "bsr" "bxor"
      "case" "catch" "cond" "div" "end" "fun" "if" "let" "not" "of" "or" "orelse"
      "receive" "rem" "try" "when" "xor")
-    (f90-mode .
+    (f90-mode
+     .
      ;; from f90.el
      ;; ".AND." ".GE." ".GT." ".LT." ".LE." ".NE." ".OR." ".TRUE." ".FALSE."
      ,(company-keywords-upper-lower
@@ -309,7 +310,7 @@
      "false" "fn" "for" "if" "impl" "in" "let" "loop" "macro" "match" "mod"
      "move" "mut" "pub" "ref" "return" "self" "static" "struct" "super"
      "trait" "true" "type" "unsafe" "use" "where" "while")
-    ; Extract from R7RS-small Tex: https://small.r7rs.org/
+    ;; Extract from R7RS-small Tex: https://small.r7rs.org/
     (scheme-mode
      "abs" "acos" "angle" "append" "apply" "asin" "assoc" "assq" "assv"
      "atan" "binary-port?" "body" "boolean=?" "boolean?" "bytevector"
@@ -408,19 +409,19 @@
      "i16" "i32" "i64" "include" "list" "map" "oneway" "optional" "required"
      "service" "set" "string" "struct" "throws" "typedef" "void"
      )
-    (tuareg-mode 
+    (tuareg-mode
      ;; ocaml, from https://v2.ocaml.org/manual/lex.html#sss:keywords
      "and" "as" "asr" "assert" "begin" "class"
-     "constraint" "do" "done" "downto" "else" "end" 
+     "constraint" "do" "done" "downto" "else" "end"
      "exception" "external" "false" "for" "fun" "function"
      "functor" "if" "in" "include" "inherit" "initializer"
      "land" "lazy" "let" "lor" "lsl" "lsr"
      "lxor" "match" "method" "mod" "module" "mutable"
      "new" "nonrec" "object" "of" "open" "or"
-     "private" "rec" "sig" "struct" "then" "to" 
-     "true" "try" "type" "val" "virtual" "when" 
-     "while" "with" 
-    )
+     "private" "rec" "sig" "struct" "then" "to"
+     "true" "try" "type" "val" "virtual" "when"
+     "while" "with"
+     )
     ;; aliases
     (caml-mode . tuareg-mode)
     (js2-mode . javascript-mode)

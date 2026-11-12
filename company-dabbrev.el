@@ -97,7 +97,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
   :package-version '(company . "0.9.0"))
 
 (defmacro company-dabbrev--time-limit-while (test start limit freq &rest body)
-  (declare (indent 3) (debug t))
+  (declare (indent 4) (debug t))
   `(let ((company-time-limit-while-counter 0))
      (catch 'done
        (while ,test
@@ -111,48 +111,48 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 (defun company-dabbrev--make-regexp ()
   (concat "\\(?:" company-dabbrev-char-regexp "\\)+"))
 
-(defun company-dabbrev--search-buffer (regexp pos symbols start limit
-                                       ignore-comments)
+(defun company-dabbrev--search-buffer ( regexp pos symbols start limit
+                                        ignore-comments)
   (save-excursion
     (cl-labels ((maybe-collect-match
-                 ()
-                 (let ((match (match-string-no-properties 0)))
-                   (when (and (>= (length match) company-dabbrev-minimum-length)
-                              (<= (length match) company-dabbrev-maximum-length)
-                              (not (and company-dabbrev-ignore-invisible
-                                        (invisible-p (match-beginning 0)))))
-                     (puthash match t symbols)))))
+                  ()
+                  (let ((match (match-string-no-properties 0)))
+                    (when (and (>= (length match) company-dabbrev-minimum-length)
+                               (<= (length match) company-dabbrev-maximum-length)
+                               (not (and company-dabbrev-ignore-invisible
+                                         (invisible-p (match-beginning 0)))))
+                      (puthash match t symbols)))))
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
         (company-dabbrev--time-limit-while (and (not (input-pending-p))
                                                 (> tmp-end (point-min)))
             start limit 1
-          (ignore-errors
-            (forward-char -10000))
-          (forward-line 0)
-          (save-excursion
-            ;; Before, we used backward search, but it matches non-greedily, and
-            ;; that forced us to use the "beginning/end of word" anchors in
-            ;; `company-dabbrev--make-regexp'.  It's also about 2x slower.
-            (while (and (not (input-pending-p))
-                        (re-search-forward regexp tmp-end t))
-              (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
-                  (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
-                (maybe-collect-match))))
-          (setq tmp-end (point))))
+            (ignore-errors
+              (forward-char -10000))
+            (forward-line 0)
+            (save-excursion
+              ;; Before, we used backward search, but it matches non-greedily, and
+              ;; that forced us to use the "beginning/end of word" anchors in
+              ;; `company-dabbrev--make-regexp'.  It's also about 2x slower.
+              (while (and (not (input-pending-p))
+                          (re-search-forward regexp tmp-end t))
+                (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
+                    (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
+                  (maybe-collect-match))))
+            (setq tmp-end (point))))
       (goto-char (or pos (point-min)))
       ;; Search after pos.
       (company-dabbrev--time-limit-while (and (not (input-pending-p))
                                               (re-search-forward regexp nil t))
           start limit 25
-        (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
-            (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
-          (maybe-collect-match)))
+          (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
+              (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
+            (maybe-collect-match)))
       symbols)))
 
-(defun company-dabbrev--search (regexp &optional limit other-buffer-modes
-                                ignore-comments)
+(defun company-dabbrev--search ( regexp &optional limit other-buffer-modes
+                                 ignore-comments)
   (let* ((start (current-time))
          (symbols (company-dabbrev--search-buffer regexp (point)
                                                   (make-hash-table :test 'equal)

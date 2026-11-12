@@ -373,8 +373,8 @@ the minimum padding, and otherwise just the constant one."
                               company-capf
                               company-clang
                               company-files
-                              (company-dabbrev-code company-gtags company-etags
-                               company-keywords)
+                              ( company-dabbrev-code company-gtags company-etags
+                                company-keywords)
                               company-oddmuse company-dabbrev)
   "The list of active backends (completion engines).
 
@@ -920,7 +920,7 @@ asynchronous call into synchronous.")
     (define-key keymap "\C-s" 'company-search-candidates)
     (define-key keymap "\C-\M-s" 'company-filter-candidates)
     (company-keymap--bind-quick-access keymap)
-     keymap)
+    keymap)
   "Keymap that is enabled during an active completion.")
 
 (defvar company--disabled-backends nil)
@@ -1567,7 +1567,8 @@ be recomputed when this value changes."
      (cons prefix suffix))))
 
 (defun company--multi-backend-adapter-candidates (backends min-length separate)
-  (let* (backend-prefix suffix
+  (let* (backend-prefix
+         suffix
          (pairs (cl-loop for backend in backends
                          when (let ((bp (let ((company-backend backend))
                                           (company-call-backend 'prefix))))
@@ -2713,7 +2714,7 @@ For more details see `company-insertion-on-trigger' and
         (progn
           (unless (and (equal (point) company-point)
                        (equal (point-max) company--point-max))
-            (let (company-idle-delay) ; Against misbehavior while debugging.
+            (let (company-idle-delay)   ; Against misbehavior while debugging.
               (company--perform)))
           (if company-candidates
               (progn
@@ -2725,14 +2726,14 @@ For more details see `company-insertion-on-trigger' and
                     (user-error nil)
                     (quit nil))))
             (let ((delay (company--idle-delay)))
-             (and (numberp delay)
-                  (not defining-kbd-macro)
-                  (company--should-begin)
-                  (setq company-timer
-                        (run-with-timer delay nil
-                                        'company-idle-begin
-                                        (current-buffer) (selected-window)
-                                        (buffer-chars-modified-tick) (point)))))))
+              (and (numberp delay)
+                   (not defining-kbd-macro)
+                   (company--should-begin)
+                   (setq company-timer
+                         (run-with-timer delay nil
+                                         'company-idle-begin
+                                         (current-buffer) (selected-window)
+                                         (buffer-chars-modified-tick) (point)))))))
       (error (message "Company: An error occurred in post-command")
              (message "%s" (error-message-string err))
              (company-cancel))))
@@ -2740,9 +2741,9 @@ For more details see `company-insertion-on-trigger' and
 
 (defun company--idle-delay ()
   (let ((delay
-          (if (functionp company-idle-delay)
-              (funcall company-idle-delay)
-            company-idle-delay)))
+         (if (functionp company-idle-delay)
+             (funcall company-idle-delay)
+           company-idle-delay)))
     (if (memql delay '(t 0 0.0))
         0.01
       delay)))
@@ -2886,8 +2887,8 @@ each one wraps a part of the input string."
               (ding)
             (setq company-search-string new)
             (company-set-selection (- selection pos 1) t)))
-        (setq company-search-string new)
-        (company-set-selection (+ selection pos) t))))
+      (setq company-search-string new)
+      (company-set-selection (+ selection pos) t))))
 
 (defun company--search-assert-input ()
   (company--search-assert-enabled)
@@ -2911,9 +2912,9 @@ each one wraps a part of the input string."
   (company--search-assert-input)
   (let* ((selection (or company-selection 0))
          (pos (company--search company-search-string
-                              (nthcdr (- company-candidates-length
-                                         selection)
-                                      (reverse company-candidates)))))
+                               (nthcdr (- company-candidates-length
+                                          selection)
+                                       (reverse company-candidates)))))
     (if (null pos)
         (ding)
       (company-set-selection (- selection pos 1) t))))
@@ -3246,10 +3247,10 @@ With ARG, move by that many elements."
     (let ((tick (buffer-chars-modified-tick)))
       (call-interactively 'company-complete-common)
       (when (eq tick (buffer-chars-modified-tick))
-          (let ((company-tooltip-idle-delay 0.0))
-            (company-complete)
-            (and company-candidates
-                 (company-call-frontends 'post-command)))))))
+        (let ((company-tooltip-idle-delay 0.0))
+          (company-complete)
+          (and company-candidates
+               (company-call-frontends 'post-command)))))))
 
 (defun company-indent-or-complete-common (arg)
   "Indent the current line or region, or complete the common part."
@@ -4112,9 +4113,9 @@ but adjust the expected values appropriately."
     ;; XXX: Also see branch 'more-precise-extend'.
     (let* ((nl-face `(,@(when (version<= "27" emacs-version)
                           '(:extend t))
-                     :inverse-video nil
-                     :background ,(or (company--face-attribute 'default :background)
-                                     (face-attribute 'default :background nil t))))
+                      :inverse-video nil
+                      :background ,(or (company--face-attribute 'default :background)
+                                       (face-attribute 'default :background nil t))))
            (str (apply #'concat
                        (when nl " \n")
                        (cl-mapcan
@@ -4377,50 +4378,50 @@ Returns a negative number if the tooltip should be displayed above point."
 (defun company-pseudo-tooltip-show (row column selection)
   (company-pseudo-tooltip-hide)
 
-    (let* ((height (company--pseudo-tooltip-height))
-           above)
+  (let* ((height (company--pseudo-tooltip-height))
+         above)
 
-      (when (< height 0)
-        (setq row (+ row height -1)
-              above t))
+    (when (< height 0)
+      (setq row (+ row height -1)
+            above t))
 
-      ;; This can happen in Emacs versions which allow arbitrary scrolling,
-      ;; such as Yamamoto's Mac Port.
-      (unless (pos-visible-in-window-p (window-start))
-        (cl-decf row))
+    ;; This can happen in Emacs versions which allow arbitrary scrolling,
+    ;; such as Yamamoto's Mac Port.
+    (unless (pos-visible-in-window-p (window-start))
+      (cl-decf row))
 
-      (let (nl beg end ov args)
-        (save-excursion
-          (setq nl (< (move-to-window-line row) row))
-          ;; HACK: Very specific to the log-edit buffer.  Could alternatively
-          ;; look up the `display-line-numbers-disable' property, but with
-          ;; larger consequences.
-          (when (and (not nl) (> height 0))
-            (while (eq (get-char-property (point) 'face)
-                       'log-edit-headers-separator)
-              (vertical-motion 1)))
-          (setq beg (point)
-                end (save-excursion
-                      (vertical-motion (abs height))
-                      (point))
-                ov (make-overlay beg end nil t t)
-                args (list (mapcar 'company-plainify
-                                   (company-buffer-lines beg end))
-                           column nl above)))
+    (let (nl beg end ov args)
+      (save-excursion
+        (setq nl (< (move-to-window-line row) row))
+        ;; HACK: Very specific to the log-edit buffer.  Could alternatively
+        ;; look up the `display-line-numbers-disable' property, but with
+        ;; larger consequences.
+        (when (and (not nl) (> height 0))
+          (while (eq (get-char-property (point) 'face)
+                     'log-edit-headers-separator)
+            (vertical-motion 1)))
+        (setq beg (point)
+              end (save-excursion
+                    (vertical-motion (abs height))
+                    (point))
+              ov (make-overlay beg end nil t t)
+              args (list (mapcar 'company-plainify
+                                 (company-buffer-lines beg end))
+                         column nl above)))
 
-        (setq company-pseudo-tooltip-overlay ov)
-        (overlay-put ov 'company-replacement-args args)
+      (setq company-pseudo-tooltip-overlay ov)
+      (overlay-put ov 'company-replacement-args args)
 
-        (let* ((lines-and-offset (company--create-lines selection (abs height)))
-               (lines (cdr lines-and-offset))
-               (column-offset (car lines-and-offset)))
-          (overlay-put ov 'company-display
-                       (apply 'company--replacement-string
-                              lines column-offset args))
-          (overlay-put ov 'company-width (company--string-width (car lines))))
+      (let* ((lines-and-offset (company--create-lines selection (abs height)))
+             (lines (cdr lines-and-offset))
+             (column-offset (car lines-and-offset)))
+        (overlay-put ov 'company-display
+                     (apply 'company--replacement-string
+                            lines column-offset args))
+        (overlay-put ov 'company-width (company--string-width (car lines))))
 
-        (overlay-put ov 'company-column column)
-        (overlay-put ov 'company-height height))))
+      (overlay-put ov 'company-column column)
+      (overlay-put ov 'company-height height))))
 
 (defun company-pseudo-tooltip-show-at-point (pos column-offset)
   (let* ((col-row (company--col-row pos))

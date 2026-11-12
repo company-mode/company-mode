@@ -127,8 +127,8 @@ confirm the selection and finish the completion."
        (setq this-command 'company-complete-selection)))
     (post-command
      (when (and (eq this-command 'company-complete-selection)
-             (zerop (length (car (company--boundaries))))
-             (eql (preceding-char) (car unread-command-events)))
+                (zerop (length (car (company--boundaries))))
+                (eql (preceding-char) (car unread-command-events)))
        (delete-char -1)))))
 
 (defvar company-clang-insert-arguments)
@@ -163,7 +163,7 @@ confirm the selection and finish the completion."
 
 ;;;###autoload
 (define-minor-mode company-tng-mode
- "This minor mode enables `company-tng-frontend'."
+  "This minor mode enables `company-tng-frontend'."
   :init-value nil
   :global t
   (cond
