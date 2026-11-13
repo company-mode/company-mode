@@ -111,44 +111,68 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 (defun company-dabbrev--make-regexp ()
   (concat "\\(?:" company-dabbrev-char-regexp "\\)+"))
 
+(defun company-dabbrev--ppss (last-pos last-state)
+  "Compute PPSS based on the last position and state.
+More efficient than `syntax-ppss' for the straightforward case of only
+scanning forward."
+  (save-match-data
+    (syntax-propertize (point))
+    (with-syntax-table (or syntax-ppss-table (syntax-table))
+      (parse-partial-sexp last-pos (point) nil nil last-state))))
+
 (defun company-dabbrev--search-buffer ( regexp pos symbols start limit
                                         ignore-comments)
   (save-excursion
-    (cl-labels ((maybe-collect-match
-                  ()
-                  (let ((match (match-string-no-properties 0)))
-                    (when (and (>= (length match) company-dabbrev-minimum-length)
-                               (<= (length match) company-dabbrev-maximum-length)
-                               (not (and company-dabbrev-ignore-invisible
-                                         (invisible-p (match-beginning 0)))))
-                      (puthash match t symbols)))))
+    (let ((maybe-collect-match
+           (lambda ()
+             (let ((match (match-string-no-properties 0)))
+               (when (and (>= (length match) company-dabbrev-minimum-length)
+                          (<= (length match) company-dabbrev-maximum-length)
+                          (not (and company-dabbrev-ignore-invisible
+                                    (invisible-p (match-beginning 0)))))
+                 (puthash match t symbols)))))
+          last-pos last-state)
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
         (company-dabbrev--time-limit-while (and (not (input-pending-p))
                                                 (> tmp-end (point-min)))
             start limit 1
-            (ignore-errors
-              (forward-char -10000))
-            (forward-line 0)
-            (save-excursion
-              ;; Before, we used backward search, but it matches non-greedily, and
-              ;; that forced us to use the "beginning/end of word" anchors in
-              ;; `company-dabbrev--make-regexp'.  It's also about 2x slower.
-              (while (and (not (input-pending-p))
-                          (re-search-forward regexp tmp-end t))
-                (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
-                    (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
-                  (maybe-collect-match))))
-            (setq tmp-end (point))))
+          (ignore-errors
+            (forward-char -10000))
+          (forward-line 0)
+          (when ignore-comments
+            (setq last-state (syntax-ppss)
+                  last-pos (point)))
+          (save-excursion
+            ;; Before, we used backward search, but it matches non-greedily, and
+            ;; that forced us to use the "beginning/end of word" anchors in
+            ;; `company-dabbrev--make-regexp'.  It's also about 2x slower.
+            (while (and (not (input-pending-p))
+                        (re-search-forward regexp tmp-end t))
+              (if (and ignore-comments
+                       (progn
+                         (setq last-state (company-dabbrev--ppss last-pos last-state)
+                               last-pos (point))
+                         (nth 8 last-state)))
+                  (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
+                (funcall maybe-collect-match))))
+          (setq tmp-end (point))))
       (goto-char (or pos (point-min)))
+      (when ignore-comments
+        (setq last-state (syntax-ppss)
+              last-pos (point)))
       ;; Search after pos.
       (company-dabbrev--time-limit-while (and (not (input-pending-p))
                                               (re-search-forward regexp nil t))
           start limit 25
-          (if (and ignore-comments (save-match-data (company-in-string-or-comment)))
-              (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
-            (maybe-collect-match)))
+        (if (and ignore-comments
+                 (progn
+                   (setq last-state (company-dabbrev--ppss last-pos last-state)
+                         last-pos (point))
+                   (nth 8 last-state)))
+            (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
+          (funcall maybe-collect-match)))
       symbols)))
 
 (defun company-dabbrev--search ( regexp &optional limit other-buffer-modes
