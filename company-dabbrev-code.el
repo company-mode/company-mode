@@ -87,7 +87,7 @@ parameter and returns a list of major modes to search.  See also
   (let ((prefix-re
          (cond
           ((string-empty-p prefix)
-           "\\([a-zA-Z]\\|\\s_\\)")
+           "\\(?:[a-zA-Z]\\|\\s_\\)")
           ((not company-dabbrev-code-completion-styles)
            (regexp-quote prefix))
           (t
@@ -97,11 +97,11 @@ parameter and returns a list of major modes to search.  See also
                              (substring prefix 0 2)
                            prefix)))
              (concat
-              "\\(\\sw\\|\\s_\\)*"
+              "\\(?:\\sw\\|\\s_\\)*"
               (mapconcat #'regexp-quote
                          (mapcar #'string prefix)
-                         "\\(\\sw\\|\\s_\\)*")))))))
-    (concat "\\_<" prefix-re "\\(\\sw\\|\\s_\\)*\\_>")))
+                         "\\(?:\\sw\\|\\s_\\)*")))))))
+    (concat "\\_<" prefix-re "\\(?:\\sw\\|\\s_\\)*\\_>")))
 
 ;;;###autoload
 (defun company-dabbrev-code (command &optional arg &rest rest)
