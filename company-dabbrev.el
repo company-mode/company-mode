@@ -133,17 +133,18 @@ scanning forward."
   (save-excursion
     (let ((maybe-collect-match
            (lambda ()
-             (when (or (not not-regexp-before)
-                       (= (match-beginning 0) (point-min))
-                       (save-excursion
-                         (goto-char (1- (match-beginning 0)))
-                         (not (looking-at-p not-regexp-before))))
-               (let ((match (match-string-no-properties 0)))
-                 (when (and (>= (length match) company-dabbrev-minimum-length)
-                            (<= (length match) company-dabbrev-maximum-length)
-                            (not (and company-dabbrev-ignore-invisible
-                                      (invisible-p (match-beginning 0)))))
-                   (puthash match t symbols))))))
+             (when (and (<= company-dabbrev-minimum-length
+                            (- (match-end 0)
+                               (match-beginning 0))
+                            company-dabbrev-maximum-length)
+                        (or (not not-regexp-before)
+                            (= (match-beginning 0) (point-min))
+                            (save-excursion
+                              (goto-char (1- (match-beginning 0)))
+                              (not (looking-at-p not-regexp-before))))
+                        (not (and company-dabbrev-ignore-invisible
+                                  (invisible-p (match-beginning 0)))))
+               (puthash (match-string-no-properties 0) t symbols))))
           last-pos last-state)
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
