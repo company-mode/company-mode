@@ -169,14 +169,13 @@ comments or strings."
         (completion-styles (if (listp company-dabbrev-code-completion-styles)
                                company-dabbrev-code-completion-styles
                              completion-styles))
-        (metadata (completion-metadata prefix table nil))
-        res)
+        res metadata)
     (if (not company-dabbrev-code-completion-styles)
         (all-completions prefix table)
       (setq res (company--capf-completions
                  prefix suffix
                  table nil
-                 metadata))
+                 (setq metadata (completion-metadata prefix table nil))))
       (when-let* ((sort-fn (completion-metadata-get metadata 'display-sort-function)))
         (setq company-dabbrev-code--sorted t)
         (setf (alist-get :completions res)
