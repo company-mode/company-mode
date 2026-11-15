@@ -123,9 +123,11 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
 More efficient than `syntax-ppss' for the straightforward case of only
 scanning forward."
   (save-match-data
-    (syntax-propertize (point))
-    (with-syntax-table (or syntax-ppss-table (syntax-table))
-      (parse-partial-sexp last-pos (point) nil nil last-state))))
+    (if (not last-state)
+        (syntax-ppss)
+      (syntax-propertize (point))
+      (with-syntax-table (or syntax-ppss-table (syntax-table))
+        (parse-partial-sexp last-pos (point) nil nil last-state)))))
 
 (defun company-dabbrev--search-buffer ( regexp pos symbols start limit
                                         ignore-comments
@@ -156,8 +158,8 @@ scanning forward."
             (forward-char -10000))
           (forward-line 0)
           (when ignore-comments
-            (setq last-state (syntax-ppss)
-                  last-pos (point)))
+            (setq last-pos (point)
+                  last-state nil))
           (save-excursion
             ;; Before, we used backward search, but it matches non-greedily, and
             ;; that forced us to use the "beginning/end of word" anchors in
@@ -174,8 +176,8 @@ scanning forward."
           (setq tmp-end (point))))
       (goto-char (or pos (point-min)))
       (when ignore-comments
-        (setq last-state (syntax-ppss)
-              last-pos (point)))
+        (setq last-pos (point)
+              last-state nil))
       ;; Search after pos.
       (company-dabbrev--time-limit-while (and (not (input-pending-p))
                                               (re-search-forward regexp nil t))
