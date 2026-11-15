@@ -116,7 +116,7 @@ comments or strings."
                  (or company-dabbrev-code-everywhere
                      (not (company-in-string-or-comment)))
                  (company-grab-symbol-parts)))
-    (candidates (company-dabbrev--candidates arg (car rest)))
+    (candidates (company-dabbrev-code--candidates arg (car rest)))
     (adjust-boundaries (and company-dabbrev-code-completion-styles
                             (company--capf-boundaries
                              company-dabbrev--boundaries)))
@@ -140,7 +140,7 @@ comments or strings."
       (company--capf-expand-common prefix suffix
                                    (company-dabbrev-code--table prefix)))))
 
-(defun company-dabbrev--candidates (prefix suffix)
+(defun company-dabbrev-code--candidates (prefix suffix)
   (let* ((case-fold-search company-dabbrev-code-ignore-case))
     (company-dabbrev-code--filter
      prefix suffix
