@@ -133,21 +133,28 @@ scanning forward."
                                         ignore-comments
                                         &optional not-regexp-before)
   (save-excursion
-    (let ((maybe-collect-match
-           (lambda ()
-             (when (and (<= company-dabbrev-minimum-length
-                            (- (match-end 0)
-                               (match-beginning 0))
-                            company-dabbrev-maximum-length)
-                        (or (not not-regexp-before)
-                            (= (match-beginning 0) (point-min))
-                            (save-excursion
-                              (goto-char (1- (match-beginning 0)))
-                              (not (looking-at-p not-regexp-before))))
-                        (not (and company-dabbrev-ignore-invisible
-                                  (invisible-p (match-beginning 0)))))
-               (puthash (match-string-no-properties 0) t symbols))))
-          last-pos last-state)
+    (let* (last-pos
+           last-state
+           (maybe-collect-match
+            (lambda (tmp-end)
+              (when (and (<= company-dabbrev-minimum-length
+                             (- (match-end 0)
+                                (match-beginning 0))
+                             company-dabbrev-maximum-length)
+                         (or (not not-regexp-before)
+                             (= (match-beginning 0) (point-min))
+                             (save-excursion
+                               (goto-char (1- (match-beginning 0)))
+                               (not (looking-at-p not-regexp-before))))
+                         (not (and company-dabbrev-ignore-invisible
+                                   (invisible-p (match-beginning 0)))))
+                (if (and ignore-comments
+                         (progn
+                           (setq last-state (company-dabbrev--ppss last-pos last-state)
+                                 last-pos (point))
+                           (nth 8 last-state)))
+                    (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
+                  (puthash (match-string-no-properties 0) t symbols))))))
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
@@ -166,13 +173,7 @@ scanning forward."
             ;; `company-dabbrev--make-regexp'.  It's also about 2x slower.
             (while (and (not (input-pending-p))
                         (re-search-forward regexp tmp-end t))
-              (if (and ignore-comments
-                       (progn
-                         (setq last-state (company-dabbrev--ppss last-pos last-state)
-                               last-pos (point))
-                         (nth 8 last-state)))
-                  (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
-                (funcall maybe-collect-match))))
+              (funcall maybe-collect-match tmp-end)))
           (setq tmp-end (point))))
       (goto-char (or pos (point-min)))
       (when ignore-comments
@@ -182,13 +183,7 @@ scanning forward."
       (company-dabbrev--time-limit-while (and (not (input-pending-p))
                                               (re-search-forward regexp nil t))
           start limit 25
-        (if (and ignore-comments
-                 (progn
-                   (setq last-state (company-dabbrev--ppss last-pos last-state)
-                         last-pos (point))
-                   (nth 8 last-state)))
-            (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
-          (funcall maybe-collect-match)))
+        (funcall maybe-collect-match nil))
       symbols)))
 
 (defun company-dabbrev--search ( regexp &optional limit other-buffer-modes
