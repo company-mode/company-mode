@@ -162,7 +162,7 @@ scanning forward."
                                                 (> tmp-end (point-min)))
             start limit 1
           (ignore-errors
-            (forward-char -10000))
+            (forward-char -20000))
           (forward-line 0)
           (when ignore-comments
             (setq last-pos (point)
