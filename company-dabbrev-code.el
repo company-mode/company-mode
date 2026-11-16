@@ -97,10 +97,10 @@ parameter and returns a list of major modes to search.  See also
                              (substring prefix 0 2)
                            prefix)))
              (concat
-              "\\(?:\\sw\\|\\s_\\)*"
+              "\\(?:\\sw\\|\\s_\\)*?"
               (mapconcat #'regexp-quote
                          (mapcar #'string prefix)
-                         "\\(?:\\sw\\|\\s_\\)*")))))))
+                         "\\(?:\\sw\\|\\s_\\)*?")))))))
     (concat "\\_<" prefix-re "\\(?:\\sw\\|\\s_\\)*\\_>")))
 
 ;;;###autoload
