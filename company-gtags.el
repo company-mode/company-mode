@@ -142,8 +142,8 @@ completion."
     (prefix (and (company-gtags--executable)
                  buffer-file-name
                  (cl-some #'derived-mode-p company-gtags-modes)
-                 (not (company-in-string-or-comment))
                  (company-gtags--tags-available-p)
+                 (not (company-in-string-or-comment))
                  (or (company-grab-symbol) 'stop)))
     (candidates (company-gtags--fetch-tags arg))
     (sorted t)
