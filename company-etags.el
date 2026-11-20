@@ -107,7 +107,11 @@ Set it to t or to a list of major modes."
     (and (or tags-file-name tags-table-list)
          (fboundp 'tags-completion-table)
          (save-excursion
-           (visit-tags-table-buffer)
+           ;; We pass CONT to avoid debbugs#82287
+           (visit-tags-table-buffer (and (not (cdr tags-table-list))
+                                         (not (local-variable-p 'tags-file-name))
+                                         (not default-tags-table-function)
+                                         (car tags-table-list)))
            (tags-completion-table)))))
 
 (defun company-etags--expand-common (prefix suffix)
