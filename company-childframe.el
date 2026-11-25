@@ -170,16 +170,22 @@ Users of HiDPI screens might like to set it to 2."
          (margin (car company-lines))
          (lines (cdr company-lines))
          (width (length (car lines)))
-         (contents (mapconcat #'identity lines "\n"))
-         (buffer (get-buffer-create company-childframe-buffer)))
+         (buffer (get-buffer-create company-childframe-buffer))
+         (flipped (and company-childframe--shown-above
+                       company-tooltip-flip-when-above)))
     (when (and (eq (frame-live-p company-childframe--frame) 'x)
                (not (eq (car (frame-list)) company-childframe--frame)))
       ;; Make sure it's the first in the list, to avoid premature sync when some
       ;; other frame is redisplayed first.  Again, non-atomic updated on X11.
       ;; https://debbugs.gnu.org/80662#185
       (delete-frame company-childframe--frame))
+    (with-current-buffer buffer
+      (erase-buffer)
+      (when flipped (setq lines (nreverse lines)))
+      (insert (car lines))
+      (dolist (line (cdr lines))
+        (insert ?\n line)))
     (apply #'posframe-show buffer
-           :string contents
            :height height
            :width (if (or (<= company-candidates-length
                               height)
@@ -200,11 +206,15 @@ Users of HiDPI screens might like to set it to 2."
            (list :company-margin margin
                  :company-prefix-length (length (car (company--boundaries))))
            company-childframe-show-params)
-    (when (and company-childframe--shown-above
-               company-tooltip-flip-when-above)
+    (unless (equal (and company-childframe--shown-above
+                      company-tooltip-flip-when-above)
+                   flipped)
+      (setq lines (nreverse lines))
       (with-current-buffer buffer
         (erase-buffer)
-        (insert (mapconcat #'identity (reverse lines) "\n"))))
+        (insert (car lines))
+        (dolist (line (cdr lines))
+          (insert ?\n line))))
     (with-current-buffer buffer
       (use-local-map company-childframe-buffer-map)
       (setq company-childframe--frame posframe--frame)
