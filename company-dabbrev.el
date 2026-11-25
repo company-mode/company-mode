@@ -135,6 +135,7 @@ scanning forward."
   (save-excursion
     (let* (last-pos
            last-state
+           match
            (maybe-collect-match
             (lambda (tmp-end)
               (when (and (<= company-dabbrev-minimum-length
@@ -147,14 +148,19 @@ scanning forward."
                                (goto-char (1- (match-beginning 0)))
                                (not (looking-at-p not-regexp-before))))
                          (not (and company-dabbrev-ignore-invisible
-                                   (invisible-p (match-beginning 0)))))
+                                   (invisible-p (match-beginning 0))))
+                         (setq match (match-string-no-properties 0))
+                         ;; Check for duplicates first: a new parse state is
+                         ;; more expensive than allocating a new string.
+                         (not (and ignore-comments
+                                   (gethash match symbols))))
                 (if (and ignore-comments
                          (progn
                            (setq last-state (company-dabbrev--ppss last-pos last-state)
                                  last-pos (point))
                            (nth 8 last-state)))
                     (re-search-forward "\\s>\\|\\s!\\|\\s\"" tmp-end t)
-                  (puthash (match-string-no-properties 0) t symbols))))))
+                  (puthash match t symbols))))))
       (goto-char (if pos (1- pos) (point-min)))
       ;; Search before pos.
       (let ((tmp-end (point)))
