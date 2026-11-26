@@ -141,28 +141,12 @@ comments or strings."
    prefix suffix
    (company-dabbrev-code--table prefix)))
 
-(defun company-dabbrev-code--search-prefix (prefix)
-  (let ((cached (company-cache-fetch
-                 'dabbrev-code-prefix
-                 (lambda () prefix)
-                 :expire t)))
-    (if (or
-         (equal cached prefix)
-         (and
-          ;; If the cached result is for prefix shorter than minimum,
-          ;; recompute when prefix gets longer (a more thorough scan).
-          (>= (length cached) company-minimum-prefix-length)
-          (string-prefix-p cached prefix)))
-        cached
-      ;; Flush when the user backspaces over cached input.
-      (company-cache-delete 'dabbrev-code-prefix)
-      (company-dabbrev-code--search-prefix prefix))))
-
 (defun company-dabbrev-code--table (prefix)
   (let ((case-fold-search company-dabbrev-code-ignore-case)
         (regexp (company-dabbrev-code--make-regexp
-                 (company-dabbrev-code--search-prefix
-                  prefix))))
+                 (company-dabbrev--search-prefix
+                  prefix
+                  'dabbrev-code-prefix))))
     (company-cache-fetch
      'dabbrev-code-candidates
      (lambda ()

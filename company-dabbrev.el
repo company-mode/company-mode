@@ -112,10 +112,7 @@ This variable affects both `company-dabbrev' and `company-dabbrev-code'."
   (concat
    (when (equal company-dabbrev-char-regexp "\\sw")
      "\\<")
-   (regexp-quote
-    (if (>= (length prefix) 2)
-        (substring prefix 0 2)
-      prefix))
+   (regexp-quote prefix)
    "\\(?:" company-dabbrev-char-regexp "\\)+"))
 
 (defun company-dabbrev--ppss (last-pos last-state)
@@ -259,8 +256,28 @@ scanning forward."
                            (when (not (equal "\\sw" company-dabbrev-char-regexp))
                              company-dabbrev-char-regexp)))
 
+(defun company-dabbrev--search-prefix (prefix key)
+  (let ((cached (company-cache-fetch
+                 key
+                 (lambda () prefix)
+                 :expire t)))
+    (if (or
+         (equal cached prefix)
+         (and
+          ;; If the cached result is for prefix shorter than minimum,
+          ;; recompute when prefix gets longer (a more thorough scan).
+          (>= (length cached) company-minimum-prefix-length)
+          (string-prefix-p cached prefix)))
+        cached
+      ;; Flush when the user backspaces over cached input.
+      (company-cache-delete key)
+      (company-dabbrev--search-prefix prefix key))))
+
 (defun company-dabbrev--candidates (prefix)
-  (let ((regexp (company-dabbrev--make-regexp prefix)))
+  (let ((regexp (company-dabbrev--make-regexp
+                 (company-dabbrev--search-prefix
+                  prefix
+                  'dabbrev-prefix))))
     (company-dabbrev--filter
      prefix
      (company-cache-fetch
