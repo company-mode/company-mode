@@ -2841,8 +2841,7 @@ each one wraps a part of the input string."
 (defun company--permutations (lst)
   (if (not lst)
       '(nil)
-    ;; FIXME: Replace with `mapcan' in Emacs 26.
-    (cl-mapcan
+    (mapcan
      (lambda (e)
        (mapcar (lambda (perm) (cons e perm))
                (company--permutations (cl-remove e lst :count 1))))
