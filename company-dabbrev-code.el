@@ -131,15 +131,15 @@ comments or strings."
   (when company-dabbrev-code-completion-styles
     (let ((completion-styles (if (listp company-dabbrev-code-completion-styles)
                                  company-dabbrev-code-completion-styles
-                               completion-styles)))
+                               completion-styles))
+          (completion-ignore-case company-dabbrev-code-ignore-case))
       (company--capf-expand-common prefix suffix
                                    (company-dabbrev-code--table prefix)))))
 
 (defun company-dabbrev-code--candidates (prefix suffix)
-  (let* ((case-fold-search company-dabbrev-code-ignore-case))
-    (company-dabbrev-code--filter
-     prefix suffix
-     (company-dabbrev-code--table prefix))))
+  (company-dabbrev-code--filter
+   prefix suffix
+   (company-dabbrev-code--table prefix)))
 
 (defun company-dabbrev-code--search-prefix (prefix)
   (let ((cached (company-cache-fetch
@@ -159,7 +159,8 @@ comments or strings."
       (company-dabbrev-code--search-prefix prefix))))
 
 (defun company-dabbrev-code--table (prefix)
-  (let ((regexp (company-dabbrev-code--make-regexp
+  (let ((case-fold-search company-dabbrev-code-ignore-case)
+        (regexp (company-dabbrev-code--make-regexp
                  (company-dabbrev-code--search-prefix
                   prefix))))
     (company-cache-fetch
