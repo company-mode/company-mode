@@ -2,6 +2,9 @@
 
 # Next
 
+* Reduced overhead in `company-etags` with large TAGS files.
+* `company-childframe` and "grouped backend" performance (less allocation).
+* Faster `company-dabbrev` and `company-dabbrev-code` completion.
 * `company-text-icons-mapping` uses `"⇥"` for the icon beside the `snippet` kind
   of candidates.  This should work fine on modern terminals, but not e.g. on
   tty.  If that affects you, you can revert to the previous configuration:
