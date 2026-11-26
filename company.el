@@ -1501,7 +1501,8 @@ be recomputed when this value changes."
                     (let ((inhibit-redisplay t)
                           (company-backend backend))
                       (company--expand-common (company--prefix-str bp)
-                                              (company--suffix-str bp))))
+                                              (company--suffix-str bp)
+                                              'refetch)))
                   when (consp expansion)
                   collect
                   (list backend bp expansion)))
@@ -3168,12 +3169,14 @@ and adjusted suffix are empty strings, that means a new field."
     (let ((result (nth company-selection company-candidates)))
       (company-finish result))))
 
-(defun company--expand-common (prefix suffix)
+(defun company--expand-common (prefix suffix &optional refetch)
   (let ((expansion (company-call-backend 'expand-common prefix suffix)))
     (unless expansion
       ;; Backend doesn't implement this, try emulating.
-      (let* (;; XXX: We could also filter/group `company-candidates'.
-             (candidates (company-call-backend 'candidates prefix suffix))
+      (let* ((candidates
+              (if refetch
+                  (company-call-backend 'candidates prefix suffix)
+                company-candidates))
              ;; Assuming that boundaries don't vary between completions here.
              ;; If they do, the backend should have a custom `expand-common'.
              (boundaries-prefix (car (company--boundaries)))
