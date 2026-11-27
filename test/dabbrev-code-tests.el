@@ -112,7 +112,7 @@ sel")
           (company-dabbrev-code-completion-styles nil))
       (company-manual-begin)
       (should (equal '("self" "seller") company-candidates))
-      (backward-delete-char 1)
+      (delete-char -1)
       (company--perform)
       (should (equal '("second" "self" "seller") company-candidates)))))
 
