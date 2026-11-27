@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-# Next
+# 2026-11-27 (1.3.0)
 
 * Reduced overhead in `company-etags` with large TAGS files.
 * `company-childframe` and "grouped backend" performance (less allocation).
