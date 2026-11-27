@@ -1,6 +1,6 @@
 ;;; dabbrev-code-tests.el --- company-mode tests  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2024-2025  Free Software Foundation, Inc.
+;; Copyright (C) 2024-2026  Free Software Foundation, Inc.
 
 ;; Author: Denis Zubarev
 
@@ -20,6 +20,7 @@
 ;; along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.
 
 (require 'company-tests)
+(require 'company-dabbrev-code)
 
 (ert-deftest company-dabbrev-code-with-flex-style-test ()
   (skip-unless (version<= "27.0" emacs-version))
@@ -36,10 +37,6 @@ se")
           (company-dabbrev-code-modes t)
           (company-backends '(company-dabbrev-code))
           (company-dabbrev-code-completion-styles '(flex)))
-      (ignore company-dabbrev-code-other-buffers
-              company-dabbrev-code-modes
-              company-dabbrev-code-completion-styles)
-
       (company-manual-begin)
       (should (equal '("self" "sa_enum" "scheduled_job") company-candidates)))))
 
@@ -57,9 +54,6 @@ se")
           (company-dabbrev-code-modes t)
           (company-backends '(company-dabbrev-code))
           (company-dabbrev-code-completion-styles '(basic)))
-      (ignore company-dabbrev-code-other-buffers
-              company-dabbrev-code-modes
-              company-dabbrev-code-completion-styles)
       (company-manual-begin)
       (should (equal '("self") company-candidates)))))
 
@@ -79,9 +73,5 @@ sa")
           (company-dabbrev-code-modes t)
           (company-backends '(company-dabbrev-code))
           (company-dabbrev-code-completion-styles '(substring)))
-      (ignore company-dabbrev-code-other-buffers
-              company-dabbrev-code-modes
-              company-dabbrev-code-completion-styles)
-
       (company-manual-begin)
       (should (equal '("_sa_e" "ssa_enum") company-candidates)))))
