@@ -172,7 +172,8 @@ Users of HiDPI screens might like to set it to 2."
          (width (length (car lines)))
          (buffer (get-buffer-create company-childframe-buffer))
          (flipped (and company-childframe--shown-above
-                       company-tooltip-flip-when-above)))
+                       company-tooltip-flip-when-above))
+         (inhibit-read-only t))
     (when (and (eq (frame-live-p company-childframe--frame) 'x)
                (not (eq (car (frame-list)) company-childframe--frame)))
       ;; Make sure it's the first in the list, to avoid premature sync when some
@@ -218,6 +219,7 @@ Users of HiDPI screens might like to set it to 2."
     (with-current-buffer buffer
       (use-local-map company-childframe-buffer-map)
       (setq company-childframe--frame posframe--frame)
+      (remove-text-properties (point-min) (point-max) '(read-only t))
       ;; FIXME: Does not honor remappings by minor modes in the parent buffer,
       ;; e.g. the special behavior of C-d with parent-mode, etc.
       (add-hook 'pre-command-hook
