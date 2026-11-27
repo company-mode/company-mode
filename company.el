@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher
 ;; Maintainer: Dmitry Gutov <dmitry@gutov.dev>
 ;; URL: http://company-mode.github.io/
-;; Version: 1.3.0
+;; Version: 1.3.1
 ;; Keywords: abbrev, convenience, matching
 ;; Package-Requires: ((emacs "26.1") (posframe "1.5.1"))
 
@@ -2136,7 +2136,7 @@ end of the match."
     (reference "r" font-lock-doc-face)
     (search "q" minibuffer-prompt)
     (snippet "⇥" font-lock-string-face)
-    (string "" font-lock-string-face)
+    (string "s" font-lock-string-face)
     (struct "%" font-lock-variable-name-face)
     (text "w" shadow)
     (type-parameter "p" font-lock-type-face)
