@@ -1208,12 +1208,13 @@ MAX-LEN is how far back to try to match the IDLE-BEGIN-AFTER-RE regexp."
 (defun company-substitute-prefix (prefix strings)
   (let* ((len (length prefix))
          (up (and (> len 1)
-                  (cl-every #'char-uppercase-p prefix)))
+                  (equal (upcase prefix) prefix)))
          (down (if (> len 1)
-                    (equal
-                     (substring prefix 1)
-                     (downcase (substring prefix 1)))
-                 (not (char-uppercase-p (aref prefix 0))))))
+                   (equal
+                    (substring prefix 1)
+                    (downcase (substring prefix 1)))
+                 (equal (aref prefix 0)
+                        (downcase (aref prefix 0))))))
     (mapcar
      (lambda (s)
        (cond
