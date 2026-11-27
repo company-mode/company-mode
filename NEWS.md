@@ -1,6 +1,6 @@
 # History of user-visible changes
 
-# Next
+# 2026-11-28 (1.3.1)
 
 * The meaning of `company-dabbrev-downcase` set to `case-replace` has changed.
   When set to `case-replace`, and the value of `case-replace` is non-nil,
@@ -8,6 +8,8 @@
   prefix in either direction, if it is unambiguous.
 * `company-dabbrev-ignore-case` is now a simple boolean.
 * `company-ispell` now also adjusts completion case to match the prefix.
+
+**Please file an issue if this seems worse for you than what was before.**
 
 # 2026-11-27 (1.3.0)
 
