@@ -59,20 +59,18 @@ Or a function that returns non-nil for such buffers."
   "A regular expression matching the characters `company-dabbrev' looks for."
   :type 'regexp)
 
-(defcustom company-dabbrev-ignore-case 'keep-prefix
-  "Non-nil to ignore case when collecting completion candidates.
-When it's `keep-prefix', the text before point will remain unchanged after
-candidate is inserted, even some of its characters have different case."
+(defcustom company-dabbrev-ignore-case t
+  "Non-nil to ignore case when collecting completion candidates."
   :type '(choice
           (const :tag "Don't ignore case" nil)
-          (const :tag "Ignore case" t)
-          (const :tag "Keep case before point" keep-prefix)))
+          (const :tag "Ignore case" t)))
 
 (defcustom company-dabbrev-downcase 'case-replace
-  "Whether to downcase the returned candidates.
+  "Whether to adjust the case of the returned candidates.
 
-The value of nil means keep them as-is.
-`case-replace' means use the value of `case-replace'.
+The value of nil means keep them as-is.  `case-replace' means use the value
+of `case-replace'.  And if `case-replace' is non-nil in such case, adjust
+the case of each candidates to fit the prefix's case if it is unambiguous.
 Any other value means downcase."
   :type '(choice
           (const :tag "Keep as-is" nil)
@@ -227,19 +225,19 @@ scanning forward."
 (defun company-dabbrev--filter (prefix candidates)
   (let* ((completion-ignore-case company-dabbrev-ignore-case)
          (filtered (all-completions prefix candidates))
-         (lp (length prefix))
-         (downcase (if (eq company-dabbrev-downcase 'case-replace)
-                       case-replace
-                     company-dabbrev-downcase)))
-    (when downcase
+         (lp (length prefix)))
+    (cond
+     ((eq company-dabbrev-downcase 'case-replace)
+      (when (and case-replace
+                 (not (= lp 0)))
+        (company-substitute-prefix prefix filtered)))
+     (company-dabbrev-downcase
       (let ((ptr filtered))
         (while ptr
           (setcar ptr (downcase (car ptr)))
-          (setq ptr (cdr ptr)))))
-    (if (and (eq company-dabbrev-ignore-case 'keep-prefix)
-             (not (= lp 0)))
-        (company-substitute-prefix prefix filtered)
-      filtered)))
+          (setq ptr (cdr ptr))))
+      filtered)
+     (t filtered))))
 
 (defun company-dabbrev--fetch (regexp)
   (company-dabbrev--search regexp

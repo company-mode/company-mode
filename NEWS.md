@@ -1,5 +1,14 @@
 # History of user-visible changes
 
+# Next
+
+* The meaning of `company-dabbrev-downcase` set to `case-replace` has changed.
+  When set to `case-replace`, and the value of `case-replace` is non-nil,
+  `company-dabbrev` adjusts the case of completions to match the case of the
+  prefix in either direction, if it is unambiguous.
+* `company-dabbrev-ignore-case` is now a simple boolean.
+* `company-ispell` now also adjusts completion case to match the prefix.
+
 # 2026-11-27 (1.3.0)
 
 * Reduced overhead in `company-etags` with large TAGS files.
