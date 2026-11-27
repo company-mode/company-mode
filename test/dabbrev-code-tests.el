@@ -75,3 +75,84 @@ sa")
           (company-dabbrev-code-completion-styles '(substring)))
       (company-manual-begin)
       (should (equal '("_sa_e" "ssa_enum") company-candidates)))))
+
+(ert-deftest company-dabbrev-code-with-prefix-growing ()
+  (with-temp-buffer
+    (insert "scheduled_job
+second
+self
+seller
+se")
+    (company-mode)
+    (let (company-frontends
+          company-transformers
+          (company-dabbrev-code-other-buffers nil)
+          (company-dabbrev-code-modes t)
+          (company-backends '(company-dabbrev-code))
+          (company-dabbrev-code-completion-styles nil))
+      (company-manual-begin)
+      (should (equal '("second" "self" "seller") company-candidates))
+      (insert "l")
+      (company--perform)
+      (should (equal '("self" "seller") company-candidates)))))
+
+(ert-deftest company-dabbrev-code-with-prefix-shrinking ()
+  (with-temp-buffer
+    (insert "scheduled_job
+second
+self
+seller
+sel")
+    (company-mode)
+    (let (company-frontends
+          company-transformers
+          (company-dabbrev-code-other-buffers nil)
+          (company-dabbrev-code-modes t)
+          (company-backends '(company-dabbrev-code))
+          (company-dabbrev-code-completion-styles nil))
+      (company-manual-begin)
+      (should (equal '("self" "seller") company-candidates))
+      (backward-delete-char 1)
+      (company--perform)
+      (should (equal '("second" "self" "seller") company-candidates)))))
+
+(ert-deftest company-dabbrev-code-skips-strings-and-comments ()
+  (with-temp-buffer
+    (insert "scheduled_job
+// seldom selected
+second
+var s = \"segment seen\";
+self
+seller
+sel")
+    (js-mode)
+    (company-mode)
+    (let (company-frontends
+          company-transformers
+          (company-dabbrev-code-other-buffers nil)
+          (company-dabbrev-code-modes t)
+          (company-backends '(company-dabbrev-code))
+          (company-dabbrev-code-completion-styles nil))
+      (company-manual-begin)
+      (should (equal '("self" "seller") company-candidates)))))
+
+(ert-deftest company-dabbrev-code-everywhere ()
+  (with-temp-buffer
+    (insert "scheduled_job
+// seldom selected
+second
+var s = \"segment seen\";
+self
+seller
+sel")
+    (js-mode)
+    (company-mode)
+    (let (company-frontends
+          company-transformers
+          (company-dabbrev-code-other-buffers nil)
+          (company-dabbrev-code-modes t)
+          (company-backends '(company-dabbrev-code))
+          (company-dabbrev-code-completion-styles nil)
+          (company-dabbrev-code-everywhere t))
+      (company-manual-begin)
+      (should (equal '("seldom" "selected" "self" "seller") company-candidates)))))
